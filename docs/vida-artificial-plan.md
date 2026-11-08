@@ -1028,6 +1028,49 @@ También, y esto sí se midió pero no se corrigió: en la prueba de comida prop
 - **El miedo no se atenúa como el hambre.** Un tercero muy superior o que pega debería frenar los celos (el diseño lo prevé). Esa parte no está probada.
 - **Coste.** La envidia cuesta alrededor del 2 % del paso con cualquier número de criaturas. Los celos crecen más con el número de criaturas por el seguimiento de atención entre pares (de 3 a 6 % hasta 4, 11 a 13 % con 6 a 8 y un 20 % con 12). El límite actual de 4 por sala es razonable, y no se debería ampliar sin optimizar antes la percepción social (por ejemplo, calcular la atención solo entre vecinas o cada pocos pasos).
 
+## El miedo frena los celos (caso 30)
+
+Primer pendiente de la tanda barata tras la integración. El diseño de celos decía: «un tercero muy superior o con fama de pegar los convierte en evitación y no en acercamiento». Hasta aquí los celos no tenían ningún freno por miedo.
+
+### Qué se añadió
+
+- **`temorA(id)`** en la criatura: lo mayor entre su fama de pegar (`reputacion`, que se forma al ver pegar con la cuenta de gustos activa; va por identidad y se consulta aunque la tenga demasiado lejos para percibirla) y el peligro que ha aprendido de la presencia de esa criatura (daño esperado de su proto de presencia, por su confianza). De 0 a 1.
+- **Los celos suben menos:** la tasa se multiplica por `1 - 0,8 × miedo a la tercera`.
+- **Y empujan menos a acercarse:** el término de acercarse al vínculo se descuenta por el miedo a esa tercera (`celoPorVinculo` multiplica por `1 - temor`) y por el miedo emocional que tenga en ese momento.
+- No hay acciones nuevas, no se toca la red, ni ningún peso global.
+
+### Resultados (10 semillas, ocho réplicas por condición)
+
+| Condición (celos encendidos) | Celos (pico, mediana) | Segundos que ve la atención del vínculo |
+|---|---|---|
+| Inmovilizada, tercera neutra | 0,95 | 56,8 |
+| Inmovilizada, le hizo daño (miedo 0,35) | 0,86 | 56,8 |
+| Inmovilizada, fama de pegar (miedo 1,0) | **0,46** | 56,8 |
+| Libre, tercera neutra | 0,95 | 56,8 |
+| Libre, le hizo daño | 0,39 | **10,5** |
+| Libre, fama de pegar | 0,33 | 50,5 |
+
+Por criterio: los siete pasan en 9 o 10 de 10 semillas (aprueba 9 de 10, el mínimo es 0,8). La semilla 10 falla en el criterio de celos con la tercera neutra libre (el pico mediano no llega a 0,2: allí la criatura se queda lejos de su vínculo ya sin miedo y apenas ve nada).
+
+- **El freno por miedo, aislado.** Inmovilizada, ve la atención el mismo tiempo (56,8 s) en las tres condiciones. Con fama de pegar los celos bajan a la mitad (0,46 frente a 0,95). Esto es solo la modulación emocional.
+- **Un miedo moderado casi no se nota.** Con daño aprendido el miedo es 0,35 y los celos bajan de 0,95 a 0,86. La tasa baja un 28 %, pero el nivel sube hacia 1 durante 60 s y el techo lo tapa. Para que el miedo frene claramente hay que llegar a un miedo alto. Es una consecuencia de la fórmula, no un ajuste.
+- **Libre y con daño aprendido, la bajada es sobre todo evitación.** Se queda a 2,9 s de 58 cerca de su vínculo (con los celos apagados, 1,4 s) y ve la atención 10,5 s en vez de 56,8. Los celos bajan a 0,39 porque no ve, no porque el miedo los modere. Es la evitación que ya existía (peligro esperado de la zona), y este caso la deja anotada como tal.
+- **Lo que los celos añaden al acercarse a su vínculo** (acercamientos con celos menos acercamientos con celos apagados, libre): 4 con la tercera neutra, 2 con fama de pegar, 0 con daño aprendido (ahí no se acerca con ni sin celos).
+- **Sin agresión ni frustración.** 0 golpes en todas las condiciones después de la historia, y la frustración no sube (0 de mediana en todas).
+- **Se evita a la tercera, no se la ataca:** no se acerca a ella en ninguna condición (0 s cerca de la tercera en la mediana).
+
+### Dos hallazgos que condicionan cómo se mide
+
+1. **Con la cuenta de gustos activa no se puede medir esto.** `gustos` hace a su vínculo mucho más atractivo para ella (nueve o diez acercamientos en 60 s aunque los celos estén apagados), y los celos no tienen margen. Por eso la fama de pegar se coloca en la escena como dato de laboratorio (`reputacion`), y en el juego se formaría con `gustos` activo. Comprobado en una versión previa: viéndola pegar, con `gustos`, el miedo llega a 1,0 igualmente.
+2. **Un fallo propio, corregido a mitad de camino.** `temorA` devolvía 0 si la tercera no estaba entre los percibidos. Pero la criatura ve la atención de su vínculo hasta 468 unidades y solo percibe a las demás hasta 360, así que en esa franja la fama de pegar no se aplicaba (un 0 de miedo en alguna semilla). Ahora la fama se consulta siempre y el peligro aprendido solo si la percibe.
+
+### Límites
+
+- **El miedo moderado casi no frena los celos** (arriba). Si se quisiera un freno gradual con miedos medios habría que cambiar la fórmula, y eso no se ha hecho.
+- **Un tercero «muy superior»** (más grande o fuerte) como causa de miedo sin historia no se prueba: solo daño aprendido y fama.
+- **El miedo emocional del momento** (el que sube al recibir un golpe) se incluye en el término de acercarse, pero no se prueba por separado: en la escena el golpe ocurre 100 s antes y ya se ha ido.
+- **La semilla 10** muestra que hay criaturas que, sin ningún miedo, se quedan lejos y casi no ven la atención. Eso no se investigó.
+
 ## Celos y envidia (diseño aprobado; implementados los dos)
 
 Se representan los dos estados como campos propios de la criatura, con el mismo patrón que la fatiga de combate, y no como emociones nuevas. Se describe qué hay hoy, los riesgos de integración y dos casos informativos. **El diseño está aprobado con tres condiciones** (ver abajo) y todavía no se ha implementado.

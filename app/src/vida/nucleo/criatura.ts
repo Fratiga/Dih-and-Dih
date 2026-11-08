@@ -72,6 +72,8 @@ export interface Celo {
   nivel: number;
   pico: number;
   anotado: boolean;
+  /** Cuanto teme ahora a la tercera (de 0 a 1). Frena los celos y lo que le empujan a hacer. */
+  temor?: number;
 }
 
 export interface Traza {
@@ -845,10 +847,10 @@ export class Criatura {
     this.mem.anotar(env.t, `premio:maltrato:${id}`, `Recibió una caricia justo después de que ${p ? p.nombre : "otra criatura"} la golpeara.`, 0.2);
   }
 
-  /** Cuanto celo siente ahora por ver que `idVinculo` atiende a alguien (el mayor, si son varias). */
+  /** Cuanto celo siente ahora por ver que `idVinculo` atiende a alguien (el mayor, si son varias), descontado el miedo que le tenga a esa tercera: si la teme, el celo no la empuja a acercarse. */
   celoPorVinculo(idVinculo: number): number {
     let m = 0;
-    for (const c of this.celosEstado) if (c.vinculo === idVinculo) m = Math.max(m, c.nivel);
+    for (const c of this.celosEstado) if (c.vinculo === idVinculo) m = Math.max(m, c.nivel * (1 - (c.temor ?? 0)));
     return m;
   }
 
@@ -869,6 +871,16 @@ export class Criatura {
   /** Celos: ve a alguien a quien quiere atender a otra (por la senal de atencion social, que solo cuenta lo que ella misma ve). Sube con cuanto quiere a su vinculo y
       con su apego y su soledad, sube mas si ese vinculo la atendia a ella hace poco y menos si tambien quiere a la tercera. Baja con el tiempo, mas deprisa
       si su vinculo vuelve a atenderla. No toca la frustracion ni el miedo. */
+  /** Cuanto teme a esa criatura: lo mayor entre su fama de pegar (si lleva la cuenta de gustos) y el peligro que ha aprendido de su presencia. De 0 a 1. */
+  temorA(idCriatura: number): number {
+    // La fama va por quien es y no necesita verle los rasgos; el peligro aprendido solo si la tiene lo bastante cerca para percibirla
+    const fama = this.reputacion[1000 + idCriatura]?.agresion ?? 0;
+    const p = this.percibidos.find((q) => q.id === 1000 + idCriatura);
+    if (!p) return acota(fama);
+    const pres = this.mem.predecir("presencia", p.f, p.m, 0);
+    return acota(Math.max(fama, pres.res[C.dano] * pres.conf));
+  }
+
   private sentirCelos(env: Entorno, dt: number): void {
     const alcance = AJ.vista * this.genoma.vista * 1.3;
     const vistas: Criatura[] = [this];
@@ -891,7 +903,8 @@ export class Criatura {
         let c = this.celosEstado.find((q) => q.vinculo === v.id && q.tercero === t.id);
         if (!c) { c = { vinculo: v.id, tercero: t.id, nivel: 0, pico: 0, anotado: false }; this.celosEstado.push(c); }
         const perdida = env.t - (this.atendidaPor[v.id] ?? -999) < 180 ? 1.4 : 1;
-        const tasa = AJ.tasaCelos * afecto * (0.5 + this.rasgos[R.apego]) * (1 - 0.6 * afectoCon(t.id)) * (1 + 0.6 * this.nec[N.soledad]) * perdida;
+        c.temor = this.temorA(t.id);
+        const tasa = AJ.tasaCelos * afecto * (0.5 + this.rasgos[R.apego]) * (1 - 0.6 * afectoCon(t.id)) * (1 - 0.8 * c.temor) * (1 + 0.6 * this.nec[N.soledad]) * perdida;
         c.nivel = acota(c.nivel + tasa * dt * (1 - c.nivel));
         c.pico = Math.max(c.pico, c.nivel);
         if (c.nivel > 0.5 && !c.anotado) {

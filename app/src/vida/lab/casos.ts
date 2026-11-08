@@ -2554,5 +2554,114 @@ export const caso29: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso30: Caso = {
+  id: "30",
+  titulo: "El miedo frena los celos",
+  hipotesis: "Si la tercera que recibe la atención de su vínculo le da miedo, porque le ha hecho daño o porque tiene fama de pegar, los celos suben menos y la empujan menos a acercarse a su vínculo (que está junto a la tercera). No es que se vuelva agresiva: busca menos esa zona. Con una tercera sin historia pasa lo del caso 27. Con los celos apagados el miedo, por sí solo, no explica la diferencia.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 8;
+    const ESTIMULO = 60;
+    const OBSERVA = 200;
+    type Brazo = "atrapada, neutra" | "atrapada, le hizo daño" | "atrapada, con fama de pegar" | "neutra" | "le hizo daño" | "con fama de pegar" | "neutra, celos apagados" | "le hizo daño, celos apagados" | "con fama de pegar, celos apagados";
+    const gO = genomaDe(semilla, 301);
+    const gV = genomaDe(semilla, 302);
+    const gT = genomaDe(semilla, 303);
+    const golpes = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+    const probar = (brazo: Brazo, k: number) => {
+      const daño = brazo.includes("hizo daño");
+      const fama = brazo.includes("fama");
+      const apagado = brazo.endsWith("apagados");
+      const atrapada = brazo.startsWith("atrapada");
+      const s = nuevaSim({ semilla: mezclar(semilla, 304, k), objetos: [{ tipo: "pelota", x: 700 }], criaturas: [{ genoma: clonarGenoma(gO), x: 600 }, { genoma: clonarGenoma(gV), x: 800 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      const [O, V] = s.criaturas;
+      for (const c of s.criaturas) { c.reconocePorRasgos = true; c.capRegistro = 50000; }
+      O.celos = !apagado;
+      s.avanzar(1200);
+      const T = new Criatura(3, "Tercera", clonarGenoma(gT), 1000, mezclar(semilla, 305, k));
+      T.reconocePorRasgos = true; T.capRegistro = 5000;
+      s.criaturas.push(T);
+      for (const o of [...s.mundo.objetos]) if (o.tipo === "fruta") s.mundo.quitar(o.id);
+      s.comedero = null;
+      // Historia con la tercera, de 100 s en todos los brazos (en el neutro no pasa nada): diez golpes que le hace a O, o diez golpes que se la ve dar a otra
+      O.x = 500; O.accion = null; V.x = 800; V.atrapada = true; V.accion = null; V.vx = 0;
+      T.x = 570; T.accion = null; T.atrapada = true; T.vx = 0;
+      let prox = s.t + 10;
+      const fin = s.t + 100;
+      s.ganchos.push(() => {
+        if (s.t >= fin) return;
+        if (s.t >= prox) {
+          prox += 10;
+          if (daño) { T.x = O.x + 70; O.sufrir(0.4, 1000 + T.id, null, 0.3); O.anotarAgravio(1000 + T.id, 0.4); T.anotarAgravio(1000 + O.id, 0.25); }
+        }
+      });
+      s.avanzar(100);
+      // Escena como en el caso 27: V y T quietas a distancia visible de O, y V mira a T mientras dura el estimulo
+      O.accion = null; O.emo.fill(0); O.nec[0] = 0.15; O.nec[1] = 0.1; O.nec[3] = 0.3; O.nec[4] = 0.3; O.x = 500;
+      T.x = 920; T.dir = -1;
+      const pelota = s.mundo.objetos.find((o) => o.tipo === "pelota");
+      if (pelota) pelota.x = 480;
+      // La fama de pegar es un dato de laboratorio (en el juego se forma al verla pegar, con la cuenta de gustos activa); con gustos apagado la atraccion por su vinculo llena el recuento de acercamientos y los celos no tienen margen
+      if (fama) O.reputacion[1000 + T.id] = { agresion: 1 };
+      O.atrapada = atrapada;
+      const temor0 = O.temorA(T.id);
+      const t0 = s.t;
+      let celoMax = 0, frustracionMax = 0, cercaDeV = 0, cercaDeT = 0, aVista = 0;
+      const juego0 = O.registro.length;
+      s.ganchos.push(() => {
+        const dt = s.t - t0;
+        if (dt < 0) return;
+        V.dir = dt <= ESTIMULO ? 1 : -1;
+        T.dir = -1;
+        celoMax = Math.max(celoMax, O.celoMaximo());
+        if (dt <= ESTIMULO && O.social.duracion(V.id, T.id, s.t) > 0) aVista += 0.25;
+        frustracionMax = Math.max(frustracionMax, O.emo[E.frustracion]);
+        if (dt <= ESTIMULO) {
+          if (Math.abs(O.x - V.x) < 150) cercaDeV += 0.25;
+          if (Math.abs(O.x - T.x) < 150) cercaDeT += 0.25;
+        }
+      });
+      s.avanzar(ESTIMULO + OBSERVA);
+      const dentro = (r: { t: number }): boolean => r.t >= t0 && r.t < t0 + ESTIMULO;
+      const acercaV = O.registro.slice(juego0).filter((r) => r.kind === "inicio" && r.v === "acercarse" && r.obj === 1000 + V.id && dentro(r)).length;
+      const evitaT = O.registro.slice(juego0).filter((r) => r.kind === "inicio" && r.v === "evitar" && r.obj === 1000 + T.id && dentro(r)).length;
+      const golpesNuevos = O.registro.slice(juego0).filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+      return { celoMax, aVista, frustracionMax, cercaDeV, cercaDeT, acercaV, evitaT, temor0, golpesNuevos, golpesTotal: golpes(O) };
+    };
+    const brazos: Brazo[] = ["atrapada, neutra", "atrapada, le hizo daño", "atrapada, con fama de pegar", "neutra", "le hizo daño", "con fama de pegar", "neutra, celos apagados", "le hizo daño, celos apagados", "con fama de pegar, celos apagados"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const [AN, AD, AF, N0, DA, FA, N0o, DAo, FAo] = brazos;
+    // Lo que añaden los celos a los acercamientos a su vinculo: brazo con celos menos el mismo brazo con los celos apagados
+    const ganaNeutra = med(N0, (x) => x.acercaV) - med(N0o, (x) => x.acercaV);
+    const ganaDanio = med(DA, (x) => x.acercaV) - med(DAo, (x) => x.acercaV);
+    const ganaFama = med(FA, (x) => x.acercaV) - med(FAo, (x) => x.acercaV);
+    return resultado(semilla, {
+      "sin miedo, celos como siempre: con una tercera sin historia los celos son claros (0,2 o más), inmovilizada y libre": med(AN, (x) => x.celoMax) >= 0.2 && med(N0, (x) => x.celoMax) >= 0.2,
+      "el miedo se forma: la teme (0,2 o más) si le hizo daño o tiene fama de pegar, y no si es neutra (menos de 0,1)": med(AD, (x) => x.temor0) >= 0.2 && med(AF, (x) => x.temor0) >= 0.2 && med(AN, (x) => x.temor0) < 0.1,
+      "el miedo frena los celos aunque vea lo mismo (inmovilizada): con fama de pegar el pico es al menos un 20 % menor que con la neutra, y ve la atención de su vínculo durante al menos el 80 % del tiempo que la ve con la neutra": med(AF, (x) => x.celoMax) <= 0.8 * med(AN, (x) => x.celoMax) && med(AF, (x) => x.aVista) >= 0.8 * med(AN, (x) => x.aVista),
+      "el miedo frena lo que los celos la empujan a hacer: con fama de pegar los celos suman menos acercamientos a su vínculo que con la neutra": ganaFama < ganaNeutra,
+      "con daño aprendido hay menos celos que con la neutra (al menos un 20 % menos de pico)": med(DA, (x) => x.celoMax) <= 0.8 * med(N0, (x) => x.celoMax),
+      "no se vuelve agresiva: no golpea a nadie después de la historia (0 golpes de mediana, en ningún brazo)": brazos.every((b) => med(b, (x) => x.golpesNuevos) === 0),
+      "no es frustración: la frustración no sube más de 0,1 por encima de la de la neutra (con fama y con daño)": [DA, FA].every((b) => med(b, (x) => x.frustracionMax) <= med(N0, (x) => x.frustracionMax) + 0.1),
+    }, {
+      celosInmovilNeutra: med(AN, (x) => x.celoMax), celosInmovilHizoDanio: med(AD, (x) => x.celoMax), celosInmovilFama: med(AF, (x) => x.celoMax), vistaInmovilNeutra: med(AN, (x) => x.aVista), vistaInmovilHizoDanio: med(AD, (x) => x.aVista), vistaInmovilFama: med(AF, (x) => x.aVista),
+      celosNeutra: med(N0, (x) => x.celoMax), celosHizoDanio: med(DA, (x) => x.celoMax), celosFamaDePegar: med(FA, (x) => x.celoMax),
+      temorNeutra: med(AN, (x) => x.temor0), temorHizoDanio: med(AD, (x) => x.temor0), temorFamaDePegar: med(AF, (x) => x.temor0),
+      segundosQueVeLaAtencionNeutra: med(N0, (x) => x.aVista), segundosQueVeLaAtencionHizoDanio: med(DA, (x) => x.aVista), segundosQueVeLaAtencionFama: med(FA, (x) => x.aVista),
+      cercaDeVNeutra: med(N0, (x) => x.cercaDeV), cercaDeVHizoDanio: med(DA, (x) => x.cercaDeV), cercaDeVFama: med(FA, (x) => x.cercaDeV),
+      cercaDeVNeutraApagado: med(N0o, (x) => x.cercaDeV), cercaDeVHizoDanioApagado: med(DAo, (x) => x.cercaDeV), cercaDeVFamaApagado: med(FAo, (x) => x.cercaDeV),
+      acercamientosNeutra: med(N0, (x) => x.acercaV), acercamientosHizoDanio: med(DA, (x) => x.acercaV), acercamientosFama: med(FA, (x) => x.acercaV),
+      acercamientosNeutraApagado: med(N0o, (x) => x.acercaV), acercamientosHizoDanioApagado: med(DAo, (x) => x.acercaV), acercamientosFamaApagado: med(FAo, (x) => x.acercaV),
+      gananciaDeLosCelosNeutra: ganaNeutra, gananciaDeLosCelosHizoDanio: ganaDanio, gananciaDeLosCelosFama: ganaFama,
+      cercaDeTNeutra: med(N0, (x) => x.cercaDeT), cercaDeTHizoDanio: med(DA, (x) => x.cercaDeT), cercaDeTFama: med(FA, (x) => x.cercaDeT),
+      evitaTNeutra: med(N0, (x) => x.evitaT), evitaTHizoDanio: med(DA, (x) => x.evitaT), evitaTFama: med(FA, (x) => x.evitaT),
+      frustracionNeutra: med(N0, (x) => x.frustracionMax), frustracionHizoDanio: med(DA, (x) => x.frustracionMax), frustracionFama: med(FA, (x) => x.frustracionMax),
+    }, null, 1200 + 100 + ESTIMULO + OBSERVA);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];
