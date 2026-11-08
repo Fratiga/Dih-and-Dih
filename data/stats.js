@@ -1437,5 +1437,62 @@ window.STATS = [
       { nombre: "Descarga de Nigredo (Acción, Recarga 5–6)", descripcion: "Las venas se le iluminan y suelta una descarga morada en una línea de 40 pies de largo y 5 de ancho. Cada criatura en ella hace una salvación de Destreza CD 15: 5d8 necrótico (mitad si supera). Quien quede a 0 PV por esta descarga no puede estabilizarse con una prueba de Medicina; solo la curación mágica o una poción de curación lo salva." }
     ],
     estrategia: "«¡Esta vez no te voy a dejar! ¡Aguanta!» Va directo a por Rojo y lo aguanta casi todo con su Aguante de orco. No esquiva ni se cubre: se planta y golpea. Usa la Descarga de Nigredo cuando Rojo y varios jugadores quedan alineados. Cuanto más herido está, más peligroso se pone y más se ríe. Contra él funcionan el fuego y la luz, que le cortan la Sangre que cierra y el Aguante. Si Rojo cae de verdad, Morado se queda quieto un turno entero, sin acción, mirando el sitio donde estaba (el juego ya no tiene con quién jugarse). Con 4 jugadores de nivel 6 más Darian y Torvrena, empieza con estos PV; si el grupo es menor, quita 20 de cada uno."
+  },
+  {
+    id: "viktor-reanimado",
+    imagen: "assets/enemigos/viktor.png",
+    nombre: "Viktor, el Reanimado",
+    rol: "Jefe · Aguante · Descargas",
+    tipo: "Monstruosidad",
+    raza: "Reanimado Grande · Neutral",
+    nivel: 6,
+    pv: 320,
+    ca: 17,
+    velocidad: "30 pies",
+    stats: { fue: 24, des: 12, con: 22, int: 10, sab: 12, car: 8 },
+    notas: [
+      "Salvaciones: FUE +10, CON +9. Percepción pasiva 11. Competencia +3. +10 al impacto y CD 17 en sus habilidades.",
+      "Resistencia al daño necrótico. Inmunidad al daño eléctrico y de veneno, y a los estados envenenado y asustado. Visión en la oscuridad 60 pies.",
+      "Tiene una acción y una acción adicional por turno. No usa dos veces en el mismo turno una habilidad con recarga.",
+      "Empieza la escena sin despertar. Despierta cuando el Ensamblaje llega a 6 (ver la escena). Cada Cable de la mesa que los jugadores corten antes de que despierte le quita un rasgo: el primero Arranque, el segundo la onda y 50 PV de Reanimación eléctrica, el tercero Batería de dolor.",
+      "Despierta sin memoria y sin saber dónde está. Su primer turno ataca a lo más cercano que se mueva."
+    ],
+    habilidades: [
+      { nombre: "Giro del cañón (Pasiva)", descripcion: "Empieza cada combate haciendo 2 grapas en su Multiataque. Gana 1 grapa más por cada turno consecutivo que termina sin haberse movido, hasta un máximo de 4. Si se mueve, vuelve a 2." },
+      { nombre: "Multiataque (Acción)", descripcion: "Dispara Memento Mori tantas veces como grapas tenga. Cada grapa puede ir a un objetivo distinto." },
+      { nombre: "Memento Mori (Acción)", descripcion: "Grapadora eléctrica. +10 al impacto, alcance 60/120 pies, un objetivo. Daño: 2d8+4 perforante más 1d8 eléctrico. Con desventaja si el objetivo está a más de 60 pies." },
+      { nombre: "Batería de dolor (Pasiva)", descripcion: "Gana 1 carga por cada 25 PV de daño que recibe (guarda el resto). Con 4 cargas o más puede usar Descarga de dolor. No pierde las cargas si no las usa." },
+      { nombre: "Descarga de dolor (Acción adicional, 4 cargas)", descripcion: "Gasta 4 cargas y lanza rayos contra hasta tres criaturas distintas que vea a 40 pies. Cada una hace una salvación de Destreza CD 17 o recibe 4d10 de daño eléctrico (mitad si supera). Las criaturas sobre charcos de fluido tienen desventaja en la salvación." },
+      { nombre: "Arranque (Acción adicional, 2/combate)", descripcion: "Se da un golpe de corriente a sí mismo. Pierde 15 PV y hasta el final de su siguiente turno tiene +10 pies de velocidad, ventaja en salvaciones contra efectos que lo ralenticen o lo inmovilicen, y recupera 10 PV al inicio de su turno. El daño cuenta para su Batería de dolor." },
+      { nombre: "Aura de sufrimiento (Acción, Recarga 5–6)", descripcion: "Canaliza durante hasta 3 turnos suyos un aura de 20 pies. Las criaturas que empiecen su turno dentro hacen una salvación de Constitución CD 17: 2d8 eléctrico el primer turno, 3d8 el segundo y 4d8 el tercero (mitad si superan), y su velocidad se reduce a la mitad. Viktor recibe 10, 15 y 20 de daño en esos turnos, que no se puede reducir. Mientras la canaliza no puede usar Memento Mori ni moverse más de 10 pies. Termina si queda Aturdido, Incapacitado o a 0 PV." },
+      { nombre: "Cosido sin remedio (2/combate)", descripcion: "Cuando falla una salvación, puede elegir superarla." },
+      { nombre: "Reanimación eléctrica (Pasiva, 1/combate)", descripcion: "Cuando queda a 0 PV no cae. Libera una onda y las criaturas a 15 pies hacen una salvación de Fuerza CD 17 o tienen velocidad 0 hasta el final de su siguiente turno. Al final de esa ronda se levanta con 100 PV y suelta una descarga de 20 pies: Constitución CD 17 o 4d8 eléctrico y quedan Aturdidas hasta el final de su siguiente turno (si superan, la mitad y sin aturdir). No funciona si la Bobina madre está destruida." },
+      { nombre: "Sobrecarga (Pasiva)", descripcion: "Mientras le queden la mitad de sus PV o menos, Memento Mori hace 1d8 eléctrico adicional y la Descarga de dolor solo pide 3 cargas." }
+    ],
+    estrategia: "Despierta confundido y dispara a lo que se mueve, sin distinguir a nadie. Después se coloca en un punto con vista a todo el cuarto y se queda quieto para que el Giro del cañón llegue a 4 grapas. Usa la Descarga de dolor en cuanto tiene cargas, sobre todo si tres o más jugadores están a la vista. Abre el Aura de sufrimiento cuando el grupo se le acerca a pegarle, porque se hace daño a sí mismo y eso alimenta su Batería. Contra él funciona el daño repartido en el tiempo antes que un solo golpe grande: las cargas se acumulan con lo que pierde. Cortar los Cables de la mesa antes de que despierte y destruir la Bobina madre le quitan sus mejores trucos. Con 4 jugadores de nivel 6 más Darian y Torvrena empieza con estos PV. Si el grupo es menor, quítale 40 PV por cada miembro que falte."
+  },
+  {
+    id: "doctor-ayudante",
+    nombre: "Doctor ayudante",
+    rol: "Soporte · Ensamblaje",
+    tipo: "Humanoide",
+    raza: "Humano · Neutral",
+    nivel: 4,
+    pv: 45,
+    ca: 13,
+    velocidad: "30 pies",
+    stats: { fue: 8, des: 14, con: 12, int: 16, sab: 12, car: 10 },
+    notas: [
+      "Salvaciones: INT +5, SAB +3. Habilidades: Medicina +5, Arcanos +5. Percepción pasiva 11. Competencia +3.",
+      "En la escena de Viktor hay dos. No se mueven de la mesa mientras Viktor esté sin despertar.",
+      "Tiene una acción y una acción adicional por turno."
+    ],
+    habilidades: [
+      { nombre: "Conectar (Acción)", descripcion: "Si está a 5 pies de la mesa o de la Bobina madre, suma 1 al Ensamblaje. Si no lo hace en su turno, el Ensamblaje no sube por él." },
+      { nombre: "Estabilizar (Acción adicional)", descripcion: "Mientras Viktor esté sin despertar, le devuelve 15 PV si estaban por debajo de su máximo. Cuando ya despertó, lo toca a 5 pies y le da 5 PV temporales." },
+      { nombre: "Escalpelo (Acción)", descripcion: "+5 al impacto, alcance 5 pies, un objetivo. Daño: 1d6+3 cortante." },
+      { nombre: "¡Está vivo! ¡Fuera! (Reacción)", descripcion: "Cuando Viktor despierta o cuando queda a 15 PV o menos, se mueve hasta su velocidad hacia la salida sin provocar ataques de oportunidad y deja de ser un objetivo para el resto del combate." }
+    ],
+    estrategia: "Trabaja sin mirar a nadie. Prefiere terminar el ensamblaje antes que defenderse, y se queja de que lo interrumpan. Si le pegan sigue conectando cables hasta que se lo impidan. Huye en cuanto Viktor despierta."
   }
 ];
