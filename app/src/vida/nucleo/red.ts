@@ -7,6 +7,8 @@ import { Azar } from "./azar.ts";
 
 export interface EstadoRed {
   nIn: number;
+  /** Cuantas de las entradas son las de siempre; el resto son entradas ampliables. Si falta, son todas (red guardada antes de poder ampliarse). */
+  nBase?: number;
   nH: number;
   nOut: number;
   semilla: number;
@@ -20,8 +22,26 @@ export interface EstadoRed {
 const sig = (x: number) => 1 / (1 + Math.exp(-x));
 const SESGO_SALIDA = -3;
 
+/* Entradas ampliables. Una red puede crecer por la derecha del vector de entrada (para verbos y sensores nuevos) sin mover nada de lo que ya mide el laboratorio:
+   - los pesos con los que nace se generan exactamente como antes, con el tamaño de las entradas de siempre (`nBase`), y a las entradas nuevas se les da peso cero;
+   - con entrada cero, una entrada nueva suma 0 a cada neurona y su peso no cambia al aprender (el cambio es proporcional a la entrada) ni al olvidar (nace en cero);
+   - las columnas nuevas se colocan entre las entradas y la parte recurrente, y el resto de los pesos conserva su valor y su orden de calculo. */
+export function insertarColumnas(w1: number[], nInAntes: number, nInDespues: number, nH: number): number[] {
+  if (nInDespues === nInAntes) return w1.slice();
+  const antes = nInAntes + nH;
+  const despues = nInDespues + nH;
+  const out = new Array<number>(nH * despues).fill(0);
+  for (let j = 0; j < nH; j++) {
+    for (let i = 0; i < nInAntes; i++) out[j * despues + i] = w1[j * antes + i];
+    for (let i = 0; i < nH; i++) out[j * despues + nInDespues + i] = w1[j * antes + nInAntes + i];
+  }
+  return out;
+}
+
 export class Red {
   nIn: number;
+  /** Entradas de siempre (las que fijan los pesos de nacimiento). */
+  nBase: number;
   nH: number;
   nOut: number;
   semilla: number;
@@ -35,22 +55,24 @@ export class Red {
   private w10: number[];
   private w20: number[];
 
-  constructor(nIn: number, nH: number, nOut: number, semilla: number, e?: EstadoRed) {
-    this.nIn = nIn;
+  /** `nBase` son las entradas de siempre y `nExtra` las ampliables (peso cero al nacer). Si se restaura un estado guardado con menos entradas, se le rellenan con ceros. */
+  constructor(nBase: number, nH: number, nOut: number, semilla: number, e?: EstadoRed, nExtra = 0) {
+    this.nBase = nBase;
+    this.nIn = Math.max(nBase + nExtra, e ? e.nIn : 0);
     this.nH = nH;
     this.nOut = nOut;
     this.semilla = semilla;
-    const inicial = Red.pesosIniciales(nIn, nH, nOut, semilla);
-    this.w10 = inicial.w1;
+    const inicial = Red.pesosIniciales(nBase, nH, nOut, semilla);
+    this.w10 = insertarColumnas(inicial.w1, nBase, this.nIn, nH);
     this.w20 = inicial.w2;
     if (e) {
-      this.w1 = e.w1.slice();
+      this.w1 = insertarColumnas(e.w1, e.nIn, this.nIn, nH);
       this.b1 = e.b1.slice();
       this.w2 = e.w2.slice();
       this.b2 = e.b2.slice();
       this.h = e.h.slice();
     } else {
-      this.w1 = inicial.w1.slice();
+      this.w1 = this.w10.slice();
       this.b1 = new Array(nH).fill(0);
       this.w2 = inicial.w2.slice();
       this.b2 = new Array(nOut).fill(SESGO_SALIDA);
@@ -69,11 +91,13 @@ export class Red {
   }
 
   estado(): EstadoRed {
-    return { nIn: this.nIn, nH: this.nH, nOut: this.nOut, semilla: this.semilla, w1: this.w1.slice(), b1: this.b1.slice(), w2: this.w2.slice(), b2: this.b2.slice(), h: this.h.slice() };
+    return { nIn: this.nIn, nBase: this.nBase, nH: this.nH, nOut: this.nOut, semilla: this.semilla, w1: this.w1.slice(), b1: this.b1.slice(), w2: this.w2.slice(), b2: this.b2.slice(), h: this.h.slice() };
   }
 
-  static desde(e: EstadoRed): Red {
-    return new Red(e.nIn, e.nH, e.nOut, e.semilla, e);
+  /** Restaura una red guardada. `nExtra` son las entradas ampliables que debe tener ahora (si el estado traia menos, se rellenan con ceros). */
+  static desde(e: EstadoRed, nExtra = 0): Red {
+    const nBase = e.nBase ?? e.nIn;
+    return new Red(nBase, e.nH, e.nOut, e.semilla, e, nExtra);
   }
 
   private oculta(x: number[]): number[] {

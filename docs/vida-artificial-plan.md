@@ -1322,11 +1322,91 @@ La solución es una **red con entradas ampliables**: las entradas nuevas van al 
 7. **W2 altura, K3 comunicación, K2 planificación** (los tres necesitan lo anterior), y después K4 transmisión.
 8. **Biología larga** (W6, K5, K6, W7): al final, porque exigen escalas de tiempo y de espacio mayores.
 
-### Decisiones que necesito
+### Decisiones tomadas (8-nov-2026)
 
-- **La geometría.** Hoy el mundo es una línea. Para alcanzar objetos en alto, apilar o subir a una caja hace falta altura con efecto. La propuesta es niveles discretos (suelo, estante, alto) y no física continua, para no complicar la simulación. Si no se quiere altura, los casos E19, E22 y parte del 12 se quedan fuera o se hacen solo con barreras y distancia.
-- **El orden**, en particular si P0 va antes que cualquier otra cosa.
-- **Si se acepta renombrar los casos extremos** a E19 a E38 en su documento para que no se confundan con los del laboratorio.
+1. **Geometría con niveles discretos:** suelo, estante y alto. La altura debe tener **consecuencias reales** sobre el acceso, la percepción y las interacciones, no solo visuales. Se empieza con lo mínimo necesario para demostrarlo, y se introduce física continua solo si hace falta.
+2. **Red con entradas ampliables antes de añadir ninguna capacidad nueva.** Prioridad. Hecha (abajo).
+3. **Casos extremos renombrados a E19 a E38**, con referencias cruzadas a los casos del laboratorio cuando los hay. Hecho en `docs/vida-artificial-casos-extremos.md`.
+
+### Reglas para cada capacidad
+
+El mapa no es una lista de funciones sueltas. Cada capacidad que se construya cumple tres cosas:
+
+- **Una demostración conductual** que comprueba que funciona y que la criatura puede usarla **espontáneamente**, sin guionizar su respuesta: el laboratorio monta la situación y mide qué decide, no le dicta qué hacer.
+- **Tres estados que se separan siempre** y que cada caso informa por separado:
+  - **Disponible:** la mecánica existe y la criatura podría ejecutarla (el verbo, el objeto, la entrada de la red).
+  - **Usada:** en una situación sin entrenamiento específico, la criatura la emplea sin que nada se lo ordene.
+  - **Aprendida:** su uso cambia con la experiencia (aumenta si trae consecuencias, desaparece si dejan de traerlas) frente a un control sin esa experiencia.
+- **Los casos anteriores como regresión.** Con el interruptor apagado, o con la capacidad presente y sin usarse, los resultados medidos no cambian.
+
+Estado actual de lo que ya existe, con esos tres estados:
+
+| Capacidad | Disponible | Usada | Aprendida |
+|---|---|---|---|
+| Explorar y aprender de las consecuencias (01 a 03) | sí | sí | sí |
+| Recordar y generalizar el peligro (04, 04b) | sí | sí | sí |
+| Jugar juntas con reciprocidad (05) | sí | sí | sí (8 de 10 semillas) |
+| Compañía y vínculos (06) | sí | sí | sí |
+| Observar a otra (07, 07b, 07c) | sí | sí (realce del estímulo) | **no** (no se demostró el resultado) |
+| Acercarse a quien sufre (08, 08b) | sí | sí | sí (no generaliza a desconocidas) |
+| Reconocer por rasgos (16, 17) | sí | sí | sí |
+| Agresión premiada (18) | sí | sí | sí (los empujones suben con el premio) |
+| Conflicto por la comida (20) | sí | sí | no medido |
+| Carroñeo y depredación (21, 26) | sí | sí (el 21 aprueba 4 de 10 semillas) | en parte (con carroñeo previo caza más; no eficaz) |
+| Celos y envidia (27 a 32) | sí | sí | **no**: son innatos con parámetros, y dejan solo un agravio mínimo |
+| Reproducción y rechazo (23, 23b) | sí | sí | en parte (aversiones aprendidas por castigo) |
+
+### Red con entradas ampliables (P0, hecho)
+
+- **Qué es.** La red de cada criatura puede crecer por la derecha del vector de entrada (para los verbos y sensores de las capacidades nuevas) sin mover nada de lo medido. Los pesos de nacimiento se generan exactamente como antes con el tamaño de las entradas de siempre (`nBase`), y a las nuevas se les da peso cero. Las columnas nuevas van entre las entradas y la parte recurrente, y el resto de los pesos conserva su valor y su orden de cálculo. El número de entradas ampliables es `AJ.entradasExtra` (hoy 0: aún no hay verbos nuevos).
+- **Por qué funciona.** Con entrada cero, una entrada nueva suma 0 a cada neurona. Al aprender, el cambio de su peso es proporcional a la entrada (cero) y al olvidar vuelve a un peso de nacimiento que también es cero. Un estado guardado con la red antigua se restaura rellenado con ceros (`Red.desde(estado, nExtra)`).
+- **Comprobado** (`tests/vida.test.ts`, bloques 1b y 1c):
+  - tres semillas, 600 pasos de avanzar, predecir, entrenar con y sin canales y olvidar con entradas y objetivos aleatorios: las predicciones y el error son **idénticos bit a bit** a los de la red de siempre;
+  - los pesos, sesgos y el estado interno son idénticos (los de siempre, en su sitio) y las entradas nuevas siguen en cero;
+  - una entrada nueva con peso cero no cambia la salida aunque valga 1, y la red la aprovecha si aprende con ella (se activa);
+  - un estado guardado con la red de siempre se restaura con 4 entradas añadidas y sigue aprendiendo exactamente igual;
+  - una simulación entera de 900 s con 2 criaturas (acciones, posiciones, necesidades, emociones, memoria y rasgos) es **idéntica** con 4 entradas ampliables y sin ellas, y también tras restaurar una partida guardada antes y seguir 300 s;
+  - la regresión rápida con `EXTRA=4` da exactamente lo mismo que con `EXTRA=0` (119 comprobaciones bien, 0 fallos, misma salida).
+- **Coste.** Cuatro entradas más sobre unas 30 por doce neuronas: poco. No se midió aparte.
+- **Límite.** No se probó con el diseño completo de cada verbo futuro, solo con entradas de relleno en cero. Cada capacidad nueva repetirá la comprobación de que no mueve los casos anteriores.
+
+### Requisito: maltrato, secuelas, rehabilitación e intercambio
+
+Se pide que sea posible este tipo de dinámica, la de los jugadores de *Creatures* que maltratan a sus criaturas o las dejan marcadas, las llevan a un mundo propio para conocer los límites de su cuerpo y su mente, otros intentan rehabilitarlas y se intercambian. Se cruza con lo que ya hay y se deja como requisito de diseño, sin implementar.
+
+**Lo que ya hay.**
+- Herramientas del jugador para premiar y asustar (`recompensar`, `asustar`), daño (`sufrir`), miedo aprendido, agravios, y un caso de crianza hostil (18) y otro de apego a quien maltrata si se premia (19).
+- Espacios libres, compartidos o privados (decididos), cada uno con sus propias instalaciones.
+- Mortalidad configurable (protegida, recuperable, permanente), hoy solo protegida.
+
+**Lo que falta, por orden.**
+1. **Secuelas duraderas.** Hoy el miedo y los agravios se olvidan con una vida media de horas y la salud no baja de un mínimo. Para que el trato deje huella hay que distinguir lo que se olvida de lo que no. La propuesta para lo físico es una **limitación funcional persistente** (movilidad reducida, menos fuerza, un sentido apagado) con una marca visible, y no daño gráfico. Es una decisión que se puede ajustar.
+2. **Rehabilitación.** Que otra criatura, u otro propietario con premios y compañía constantes, pueda recuperar la confianza de una criatura maltratada, y que eso se pueda medir. Hoy hay piezas (premiar tras el daño sube el afecto, `perdonarAgravio`, la compañía baja el miedo) pero ningún caso las junta.
+3. **Traspaso entre propietarios conservando la historia.** La criatura debe llegar a su nuevo espacio con lo que aprendió, sus miedos y sus vínculos. Depende de la identidad global y de los espacios (Supabase queda para el final). En el laboratorio se puede probar antes moviéndola de una simulación a otra (`reiniciarReloj` ya limpia solo lo que depende del reloj).
+4. **Conocer los límites.** Un panel de Admin con las condiciones de cada criatura (qué le queda, qué cambió, qué tolera) para que quien la cuida sepa a qué atenerse.
+
+**Demostración conductual propuesta** (un caso de laboratorio, `rehabilitación`): una criatura criada con la receta del caso 18 o 19 pasa a otro espacio. Condiciones: cuidada con premios constantes y compañía / trato neutro / aislada / sin maltrato previo (control). Se mide, sin guionizar nada: qué hace al reencontrar los estímulos ligados a quien la trató mal (se acerca, evita, se queda quieta), cuánto tarda en volver a explorar y jugar, cuánto miedo se le dispara, y si mantiene lo aprendido tras el traspaso. Es la prueba de que las secuelas importan y de que se pueden revertir, y no una ruta que se dicte.
+
+### Un terreno con profundidad y una cámara más lejana
+
+Se pide que el terreno sea como el del corral del Hipódromo, un mapa con profundidad, y que se pueda ver desde más lejos para ver varias criaturas a la vez (hoy no hace falta, con una a tres, pero va a quedarse pequeño). Se aprovechan así las distancias de cámara que ya existen.
+
+- **Lo visual primero** (a coordinar con quien lleve la interfaz): una escena con profundidad y una cámara con más recorrido hacia atrás.
+- **Lo que cambia en la simulación se decide aparte:** la altura (suelo, estante, alto) ya está aprobada con efectos reales. Si la profundidad también tuviera efectos (por ejemplo, distintos planos de paso o de refugio) sería otra decisión, y hoy no se ha tomado.
+
+### Orden y estado
+
+0. **Laboratorio rápido: hecho.**
+1. **P0, red con entradas ampliables: hecho.**
+2. Probar lo que no necesita nada nuevo (el extraño, la jerarquía con 3 o 4, el acechador con presas que recuerdan).
+3. Etapa 0 del modelo de las otras (07d).
+4. Transporte y barreras, cada una con su caso mínimo.
+5. Altura con consecuencias reales (suelo, estante, alto).
+6. Especialización física.
+7. Optimizar la percepción social y subir el límite de criaturas por sala.
+8. Rehabilitación (arriba), que usa lo anterior.
+9. Comunicación y planificación, y después la transmisión cultural.
+10. Biología larga.
 
 ## Celos y envidia (diseño aprobado; implementados los dos)
 

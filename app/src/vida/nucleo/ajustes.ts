@@ -41,6 +41,9 @@ export const AJ = {
 
   /* --- Red --- */
   ocultas: 12,
+  /** Entradas ampliables de la red (a la derecha de las de siempre). Con 0 todo es igual que antes; con cualquier valor, una criatura que no use las nuevas se comporta igual
+      (probado en tests/vida.test.ts, y con EXTRA=4 en toda la regresion). Cada capacidad con verbos o sensores nuevos sube este numero. */
+  entradasExtra: 0,
   lrRed: 0.12,
   olvidoRed: 0.00002,
 

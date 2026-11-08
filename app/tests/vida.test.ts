@@ -1,4 +1,5 @@
-import { Red } from "../src/vida/nucleo/red.ts";
+import { Azar } from "../src/vida/nucleo/azar.ts";
+import { Red, insertarColumnas } from "../src/vida/nucleo/red.ts";
 import { Simulacion } from "../src/vida/nucleo/simulacion.ts";
 import { genomaNuevo, clonarGenoma, cruzar, sexoDe } from "../src/vida/nucleo/genoma.ts";
 import { AJ } from "../src/vida/nucleo/ajustes.ts";
@@ -11,6 +12,8 @@ import { calentada, ejecutarCaso, impactos, nuevaSim, tablaInforme } from "../sr
 let fallos = 0, ok = 0;
 const afirma = (c: boolean, m: string) => { if (c) ok++; else { fallos++; console.log("FALLA:", m); } };
 
+// EXTRA=4 ejecuta todo con 4 entradas ampliables en la red: los resultados tienen que ser identicos a los de EXTRA=0 (ninguna criatura las usa)
+if (process.env.EXTRA) AJ.entradasExtra = Number(process.env.EXTRA);
 const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fruta", x: 1100 }], g = genomaNuevo(semilla)) => ({
   semilla, objetos, criaturas: [{ genoma: g, x: 300 }], comedero: { cada: 150, max: 2, tipo: "fruta" },
 });
@@ -34,6 +37,85 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   afirma(r.h.some((v, i) => v !== h0[i]), "la red es recurrente: su estado interno cambia con lo que percibe");
   r.olvidar(1);
   afirma(r.predecir(x)[0] < 0.12, "olvido total: vuelve a los pesos de nacimiento");
+}
+
+// 1b. Red con entradas ampliables: con entrada cero no cambia nada de lo que ya hacia
+{
+  const EXTRA = 5;
+  let identicas = true, pesosIguales = true, extrasEnCero = true;
+  for (const semilla of [1, 7, 99]) {
+    const a = new Red(NI, AJ.ocultas, NC, semilla);
+    const b = new Red(NI, AJ.ocultas, NC, semilla, undefined, EXTRA);
+    const azar = new Azar(semilla * 31 + 5);
+    for (let paso = 0; paso < 600; paso++) {
+      const xa = Array.from({ length: NI }, () => azar.next());
+      const xb = xa.concat(new Array(EXTRA).fill(0));
+      const objetivo = Array.from({ length: NC }, () => azar.next());
+      const canales = paso % 3 === 0 ? [true, false, true, false, true] : undefined;
+      if (paso % 4 === 0) { a.avanzar(xa); b.avanzar(xb); }
+      const pa = a.predecir(xa), pb = b.predecir(xb);
+      if (pa.some((v, i) => v !== pb[i])) identicas = false;
+      if (a.entrenar(xa, objetivo, 0.12, canales) !== b.entrenar(xb, objetivo, 0.12, canales)) identicas = false;
+      if (paso % 50 === 0) { a.olvidar(0.05); b.olvidar(0.05); }
+    }
+    const ampliada = insertarColumnas(a.w1, NI, NI + EXTRA, a.nH);
+    if (ampliada.some((v, i) => v !== b.w1[i])) pesosIguales = false;
+    if (a.w2.some((v, i) => v !== b.w2[i]) || a.b1.some((v, i) => v !== b.b1[i]) || a.b2.some((v, i) => v !== b.b2[i]) || a.h.some((v, i) => v !== b.h[i])) pesosIguales = false;
+    const nCol = NI + EXTRA + b.nH;
+    for (let j = 0; j < b.nH; j++) for (let i = NI; i < NI + EXTRA; i++) if (b.w1[j * nCol + i] !== 0) extrasEnCero = false;
+  }
+  afirma(identicas, "una red con entradas ampliables da las mismas predicciones y el mismo error que la de siempre, paso a paso (avanzar, predecir, entrenar y olvidar)");
+  afirma(pesosIguales, "y deja exactamente los mismos pesos, sesgos y estado interno (los de siempre, en su sitio)");
+  afirma(extrasEnCero, "las entradas ampliables siguen en cero tras aprender y olvidar mientras valen cero");
+  // La entrada nueva puede usarse: con peso cero no cambia la salida aunque valga 1, y al aprender con ella se activa
+  const c = new Red(NI, AJ.ocultas, NC, 3, undefined, 2);
+  const x1 = new Array(NI + 2).fill(0).map((_, i) => (i < NI ? (i % 3) / 3 : 0));
+  const x2 = x1.slice(); x2[NI] = 1;
+  afirma(JSON.stringify(c.predecir(x1)) === JSON.stringify(c.predecir(x2)), "una entrada nueva con peso cero no cambia la salida aunque valga 1");
+  for (let i = 0; i < 300; i++) c.entrenar(x2, [0.9, 0, 0, 0, 0], 0.12);
+  afirma(Math.abs(c.predecir(x2)[0] - c.predecir(x1)[0]) > 0.02, "pero al aprender con ella la red la aprovecha");
+  // Guardar y restaurar: un estado de la red de siempre se restaura en una ampliable, rellenado con ceros, y sigue igual
+  const vieja = new Red(NI, AJ.ocultas, NC, 11);
+  const xs = new Array(NI).fill(0).map((_, i) => ((i * 7) % 5) / 5);
+  for (let i = 0; i < 100; i++) { vieja.avanzar(xs); vieja.entrenar(xs, [0.5, 0.1, 0, 0.2, 0], 0.1); }
+  const nueva = Red.desde(JSON.parse(JSON.stringify(vieja.estado())), 4);
+  const xe = xs.concat([0, 0, 0, 0]);
+  afirma(nueva.nIn === NI + 4 && nueva.nBase === NI, "un estado guardado con la red de siempre se restaura con las entradas ampliables añadidas");
+  let sigue = true;
+  for (let i = 0; i < 100; i++) {
+    const objetivo = [0.2 + (i % 3) / 10, 0, 0.3, 0, 0];
+    if (vieja.entrenar(xs, objetivo, 0.1) !== nueva.entrenar(xe, objetivo, 0.1)) sigue = false;
+    vieja.avanzar(xs); nueva.avanzar(xe);
+    if (vieja.predecir(xs).some((v, k) => v !== nueva.predecir(xe)[k])) sigue = false;
+  }
+  afirma(sigue, "y desde ahi sigue aprendiendo exactamente igual que la original");
+  const guardada = Red.desde(JSON.parse(JSON.stringify(nueva.estado())), 4);
+  afirma(JSON.stringify(guardada.predecir(xe)) === JSON.stringify(nueva.predecir(xe)) && guardada.nBase === NI, "una red ampliable se guarda y se restaura igual");
+}
+
+// 1c. Entradas ampliables en una simulacion entera: nada cambia para quien no las usa
+{
+  const correr = (extra: number, sim?: ReturnType<typeof nuevaSim>, mas = 900) => {
+    AJ.entradasExtra = extra;
+    const s = sim ?? nuevaSim({ semilla: 61, objetos: [{ tipo: "pelota", x: 700 }, { tipo: "palanca", x: 1000 }], criaturas: [{ genoma: genomaNuevo(1), x: 300 }, { genoma: genomaNuevo(2), x: 600 }], comedero: { cada: 80, max: 2, tipo: "fruta" } });
+    s.avanzar(mas);
+    return s;
+  };
+  const huella = (s: ReturnType<typeof nuevaSim>): string => JSON.stringify(s.criaturas.map((c) => [c.registro, c.x, c.nec, c.emo, c.mem.protos.length, c.mem.episodios.length, c.rasgos]));
+  const previo = AJ.entradasExtra;
+  const base = correr(0);
+  const ampliada = correr(4);
+  afirma(ampliada.criaturas.every((c) => c.red.nIn === NI + 4) && base.criaturas.every((c) => c.red.nIn === NI), "las criaturas de la simulacion ampliada tienen la red con las entradas nuevas");
+  afirma(huella(base) === huella(ampliada), "una simulacion de 900 s con 2 criaturas es idéntica con 4 entradas ampliables y sin ellas (acciones, posiciones, necesidades, emociones, memoria y rasgos)");
+  // Restaurar un estado antiguo en un mundo con entradas ampliables y seguir: idéntico a seguir sin ellas
+  const guardado = base.serializar();
+  AJ.entradasExtra = 0;
+  const seguirBase = correr(0, Simulacion.restaurar(JSON.parse(JSON.stringify(guardado))), 300);
+  AJ.entradasExtra = 4;
+  const restaurada = Simulacion.restaurar(JSON.parse(JSON.stringify(guardado)));
+  const seguirAmp = correr(4, restaurada, 300);
+  afirma(seguirAmp.criaturas.every((c) => c.red.nIn === NI + 4) && huella(seguirBase) === huella(seguirAmp), "restaurar una partida guardada antes de las entradas ampliables y seguir 300 s da lo mismo que seguir sin ellas");
+  AJ.entradasExtra = previo;
 }
 
 // 2. Determinismo y semilla

@@ -306,7 +306,7 @@ export class Criatura {
     this.base = genoma.rasgos.slice();
     this.rasgos = genoma.rasgos.slice();
     this.mem = new Memoria(genoma.memoria, genoma.plasticidad);
-    this.red = new Red(NI, AJ.ocultas, NC_RED, genoma.semillaCerebro);
+    this.red = new Red(NI, AJ.ocultas, NC_RED, genoma.semillaCerebro, undefined, AJ.entradasExtra);
     this.emo[E.curiosidad] = this.rasgos[R.curiosidad] * 0.6;
   }
 
@@ -553,7 +553,8 @@ export class Criatura {
   /* ---------- Entrada de la red ---------- */
 
   entrada(f: number[], v: Verbo, x: number, ancho: number): number[] {
-    const out = new Array<number>(NI).fill(0);
+    // Las entradas de siempre son las NI primeras; las ampliables van detras y valen cero mientras nadie las use
+    const out = new Array<number>(this.red.nIn).fill(0);
     for (let i = 0; i < D; i++) out[i] = f[i];
     out[D + VERBOS.indexOf(v)] = 1;
     let o = D + VERBOS.length;
@@ -1104,7 +1105,7 @@ export class Criatura {
     c.emo = e.emo.slice();
     c.rasgos = e.rasgos.slice();
     c.mem.restaurar(e.mem);
-    c.red = Red.desde(e.red);
+    c.red = Red.desde(e.red, AJ.entradasExtra);
     c.accion = e.accion ? JSON.parse(JSON.stringify(e.accion)) : null;
     c.trazas = JSON.parse(JSON.stringify(e.trazas));
     c.edad = e.edad;
