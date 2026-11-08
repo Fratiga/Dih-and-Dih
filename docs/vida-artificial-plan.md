@@ -1151,6 +1151,86 @@ El criterio de validez (que la criatura vea a T la mitad del reencuentro o más)
 
 Lo que habría que predecir a partir de esto: que una criatura que acaba de sentir celos **no evita** a la tercera y la busca algo antes mientras los celos duran. Pasado ese rato, se comporta como si no hubiera pasado nada. Esto es lo único que el caso aporta como verdad de campo para ese modelo.
 
+## Modelo de las otras criaturas (diseño, sin código)
+
+Se propone que cada criatura aprenda, de lo que ve, qué suele pasar después de lo que hace otra, y que use eso para dos cosas: acreditar a una acción el resultado que vio, y notar lo inesperado. Es lo que el plan lleva tiempo pidiendo como «aprendizaje por observación de verdad». Este apartado fija qué se construye, cómo se mide y qué lo haría fallar, antes de escribir nada. Nada de esto está implementado.
+
+### El problema, con lo medido
+
+- **El 07b dice que hoy no hay aprendizaje que permanezca** (2 de 10): junto a la experta la criatura usa la palanca 2 a 4 veces más, pero una novata que no sabe nada produce casi lo mismo, y cuando la compañera se va no queda diferencia. Es facilitación.
+- **El 07c añade un realce duradero del estímulo** con `aprendeObservando`: tras ver a la experta, va primero a la palanca el 100 % de las veces (0 % sin el modo). Pero ocurre igual con la palanca estropeada, así que no es aprendizaje del resultado.
+- **El 07c no puede separar las dos cosas:** el primer gránulo cuesta lo mismo en todas las condiciones con acceso a la palanca, y puede que los gránulos se descubran solos porque huelen a comida (no se ha separado). El propio plan lo dice: hace falta una prueba en la que la comida no se pueda descubrir por sí sola.
+- **Hoy la criatura no tiene dónde guardar «lo que le pasó a la otra».** El modo de observación escribe un recuerdo de la palanca con un resultado fijo y suave (`pesoVicario`). No hay una estimación de qué suele seguir a esa acción de esa otra, ni de lo que sorprendería.
+
+### Lo primero es una prueba, no un módulo (etapa 0)
+
+Antes de construir nada, hay que saber si el mecanismo que ya existe aprende el resultado cuando se le quita el confusor. Si lo aprende, el módulo nuevo no hace falta para el 07. Si no, el módulo tiene algo que demostrar.
+
+**Caso 07d, comida que no se descubre sola.** El mismo diseño del 07c, con un premio que la criatura no puede encontrar por olfato ni a la vista hasta que sale de la máquina, y dos palancas que se distinguen por su aspecto: una que da el premio y otra estropeada. Observando a la experta, la observadora ve a la experta comer tras la palanca buena y no comer tras la mala. Después se la suelta sola. Se mide a cuál va primero y cuánto tarda en comer. Si con el modo actual elige la buena más que la mala, hay aprendizaje del resultado. Si elige igual, solo hay realce del estímulo, y eso queda demostrado con la comparación entre las dos palancas, que el 07c no tenía.
+
+Esta prueba usa solo lo que existe, salvo el premio sin olor. Hay que ver si el catálogo lo permite o si hace falta un objeto solo de laboratorio.
+
+### El módulo (si la etapa 0 dice que hace falta)
+
+**Qué es.** Un módulo aparte por criatura (`nucleo/modeloajeno.ts`), tras un interruptor propio `modeloAjeno`, apagado por defecto. Apagado, no se ejecuta ni se guarda nada. No toca la red principal, sus entradas ni las emociones. Mismo patrón que `celos` y `envidia`.
+
+**Qué ve.** Solo lo que puede percibir de otra criatura dentro de su campo de visión: su posición, qué hace (el verbo y el objeto sobre el que actúa), sus rasgos visibles y lo que le ve pasar después. No lee sus necesidades, emociones, vínculos ni intenciones. Se calcula desde quien observa, como la atención social.
+
+**Qué predice.** Qué suele pasar a continuación, como sucesos observables en una ventana de unos segundos (el mismo tipo de ventana que usa hoy el crédito retrasado):
+
+- aparece algo que se puede comer cerca del objeto;
+- la otra come;
+- la otra se hace daño;
+- la otra se acerca o se aleja de quien mira.
+
+Cuatro canales. Cada uno es una estimación de «tras esta acción de esta otra sobre este tipo de objeto, ¿cuántas veces ocurrió esto y cuántas no?».
+
+**Cómo aprende.** Se propone empezar con **conteos de contingencia con olvido** (cuántas veces siguió cada suceso a cada par acción-objeto, agrupando por parecido de rasgos con el mismo núcleo de semejanza que ya usa la memoria) y no con una red nueva. Razones:
+
+1. El plan ya midió que el límite no es la capacidad de la red: entre 6 y 48 neuronas no hay tendencia. Lo que falta es una entrada.
+2. Una criatura ve unas decenas de sucesos en un tramo corto. Con tan pocos datos un conteo aprende antes y se puede inspeccionar (cuántas observaciones respaldan cada estimación).
+3. Da la confianza por canal que el plan lleva pendiente: saber de qué se sabe y no solo cuánto. Es justo lo que se rompió con la trampa de confianza del 07c.
+
+Una red pequeña queda como variante para comparar más adelante, si los conteos se quedan cortos.
+
+**Qué hace con lo aprendido.**
+
+- **Acreditar.** Cuando vea a la otra actuar y seguirse un suceso que le interesa, la criatura guarda en su memoria el recuerdo de esa acción con el resultado visto, con una fuerza proporcional a lo que respalda el conteo (no un peso fijo). Es el uso que desbloquea el 07.
+- **Sorprenderse.** El error de predicción (lo observado menos lo esperado) sube la atención hacia esa acción y esa otra criatura, y da más peso a lo inesperado al aprender. Es el uso que más tarde desbloquea el 08c y el 15.
+- **No decide por sí solo.** No añade acciones ni un término nuevo a la utilidad. Entra por la memoria, que es por donde ya entra el resto de lo aprendido.
+
+### Qué lo falsaría
+
+Tres brazos, como pide la regla del proyecto: **sin modelo** (hoy), **con el modelo sin aprender** (presente pero con la actualización apagada) y **con el modelo aprendiendo**.
+
+1. **El error de predicción baja.** Con el modelo aprendiendo, el error al predecir qué sigue a las acciones de la experta (en sucesos que no se usaron para aprender) es menor que con el modelo sin aprender. Si no, el módulo no aprende nada.
+2. **Aprende el resultado y no solo el estímulo (el 07b con la palanca que funciona frente a la estropeada).** Con el modelo aprendiendo, tras irse la compañera, la criatura elige la palanca que funciona más que la estropeada, y más que sin modelo. Es la comparación que le faltaba al 07b y al 07c.
+3. **La contingencia importa, no la mera presencia.** Una experta que pulsa la palanca sin que salga nunca nada (o una que acierta por azar) no deja preferencia por la palanca en quien observa.
+4. **Sin oráculo.** Si la observadora no puede ver a la experta (fuera de su campo de visión), no aprende nada.
+5. **Sin efecto fuera de lo que debe.** Con el interruptor apagado, la regresión completa da lo mismo que ahora. Encendido, no se espera que cambie el 05 ni el 06, que no dependen de resultados vistos; si cambian, se investiga qué información está entrando antes de dar nada por bueno.
+6. **Coste.** Se mide como el de celos y envidia (`tests/vida-coste.ts`). Referencia: la envidia cuesta alrededor del 2 % del paso.
+
+### Riesgos
+
+- **Confundir otra vez ver con saber.** El módulo cuenta como observación del resultado solo lo que se vio ocurrir después, no la atención prestada. Es la trampa del 07c.
+- **Correlaciones de la escena.** Si la experta pulsa la palanca a intervalos regulares y la comida llega también a intervalos regulares, se aprende la regularidad y no la causa. Los casos deben variar los intervalos y llevar un control de azar.
+- **Pocos datos.** Con menos de unas diez observaciones por contingencia, la estimación no debe pesar casi nada. La fuerza va con el número de observaciones.
+- **Interacción con `confPropia` y `aprendeObservando`.** El modo actual se queda como está. El módulo nuevo, encendido, lo sustituye en el crédito de resultados vistos, y habría que comprobar que no se cuenta dos veces.
+- **Mostrarlo al jugador.** Lo que el modelo espera de otras es un estado interno. Si se enseña, solo en Admin.
+
+### Etapas
+
+0. **Caso 07d** (arriba), con lo que existe. Decide si hace falta el módulo.
+1. **Caso de predicción** sin usar lo aprendido para decidir: el módulo observa y se mide solo el error de predicción de los tres brazos.
+2. **Uso en el crédito** (sustituir `pesoVicario` fijo por la fuerza del conteo) y repetir el 07d con los tres brazos.
+3. **Sorpresa dirigiendo la atención** y, después, **predecir la siguiente acción de la otra** (uso para el 08c y el 15).
+
+### Decisiones que necesito
+
+- Si se acepta empezar por la etapa 0 y no por el módulo.
+- Si se acepta empezar con conteos de contingencia y dejar la red pequeña como variante.
+- Si hace falta un objeto de laboratorio sin olor para el premio del 07d, o se prefiere buscar otra forma de que no se descubra solo.
+
 ## Celos y envidia (diseño aprobado; implementados los dos)
 
 Se representan los dos estados como campos propios de la criatura, con el mismo patrón que la fatiga de combate, y no como emociones nuevas. Se describe qué hay hoy, los riesgos de integración y dos casos informativos. **El diseño está aprobado con tres condiciones** (ver abajo) y todavía no se ha implementado.
@@ -1342,7 +1422,7 @@ El experimento se hace en el laboratorio con réplicas, no con criaturas reales 
 
 ## Recomendación para la siguiente fase
 
-1. **Aprendizaje por observación del resultado.** El 07c muestra que con el modo hay un realce duradero del estímulo, pero no que aprenda qué consigue la otra. Hace falta una prueba en la que la comida no se pueda descubrir sola. Y, en general, una confianza de recuerdo por canal que no perjudique a los casos sociales.
+1. **Aprendizaje por observación del resultado** (diseño en «Modelo de las otras criaturas», arriba; empieza por la prueba 07d). El 07c muestra que con el modo hay un realce duradero del estímulo, pero no que aprenda qué consigue la otra. Hace falta una prueba en la que la comida no se pueda descubrir sola. Y, en general, una confianza de recuerdo por canal que no perjudique a los casos sociales.
 2. **Una prueba de conducta que separe el consuelo causal del apareado** (08c dice que hoy no la hay), y después probar el consuelo con otras formas de angustia y con desconocidas.
 3. **Herramientas de entrenamiento** (recompensa por zona, marcadores, barreras) y **transporte de objetos**: abren los casos 09 a 12.
 4. **Medir antes de ampliar.** Cada capacidad nueva debe llegar con su caso en el laboratorio, con control y 10 semillas, y con un control que pueda hacerla fallar. Antes de tocar nada global, correr 05, 06, 07 y 08b.
