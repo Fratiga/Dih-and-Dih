@@ -364,9 +364,16 @@
   color: #fff; font: 40cqh "VT323", monospace; letter-spacing: .05em;
 }
 .cz-rejilla-feud .cz-celda-cara { color: #fff; }
-/* Fichas sobre la madera: al voltearlas queda el hueco vacío */
-.cz-rejilla-madera .cz-celda-dorso { border-radius: 50%; aspect-ratio: 1; height: auto; width: min(100%, 100cqh); margin: auto; font-size: 46cqh; background: radial-gradient(circle at 50% 50%, #fff 0 18%, var(--cz-contorno) 18% 24%, transparent 24%), linear-gradient(var(--cz-tc) 0 47%, var(--cz-contorno) 47% 53%, #fff 53%); color: transparent; }
-.cz-rejilla-madera .cz-celda-cara { border-radius: 50%; aspect-ratio: 1; width: min(100%, 100cqh); margin: auto; background: rgba(70, 40, 15, .25); box-shadow: inset 0 8px 0 rgba(0, 0, 0, .25); color: var(--cz-tinta); font-size: 30cqh; }
+/* Fichas redondas, como de casino: al voltearlas queda el hueco vacío */
+.cz-rejilla-madera .cz-celda-dorso {
+  border-radius: 50%; aspect-ratio: 1; height: auto; width: min(100%, 100cqh); margin: auto;
+  background:
+    radial-gradient(circle, var(--cz-tc) 0 49%, rgba(255, 255, 255, .92) 49% 53%, var(--cz-tc) 53% 68%, transparent 68%),
+    repeating-conic-gradient(var(--cz-tc) 0deg 18deg, #fff 18deg 36deg);
+  color: #fff; font-size: 40cqh;
+  -webkit-text-stroke: .06em var(--cz-contorno); paint-order: stroke fill;
+}
+.cz-rejilla-madera .cz-celda-cara { border-radius: 50%; aspect-ratio: 1; height: auto; width: min(100%, 100cqh); margin: auto; background: rgba(70, 40, 15, .25); box-shadow: inset 0 8px 0 rgba(0, 0, 0, .25); color: var(--cz-tinta); font-size: 30cqh; }
 
 /* ---------------------------------------------------------------- matriz de categorías */
 
