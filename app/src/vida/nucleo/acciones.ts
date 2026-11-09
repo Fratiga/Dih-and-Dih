@@ -230,7 +230,7 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
   c.vx = 0;
 
   if (a.fase === "ir") {
-    if (c.bloqueo > AJ.tiempoBloqueo) { c.bloqueo = 0; c.mem.contar("bloqueada:barrera"); terminar(c, a, env, true); return; }
+    if (c.bloqueo > AJ.tiempoBloqueo) { c.bloqueo = 0; c.mem.contar("bloqueada:barrera"); c.aprenderBloqueo(a, env); terminar(c, a, env, true); return; }
     let pos = a.dest;
     let objetivo: Objeto | undefined;
     if (a.v === "probar" || a.v === "empujar" || a.v === "tocar" || a.v === "cargar" || a.v === "soltar") {

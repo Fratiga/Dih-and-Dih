@@ -1797,6 +1797,33 @@ Criterios, fijados ahora, por semilla (un 80 %, caso informativo).
 
 Si algún criterio resulta mal planteado, se corrige a la vista y se anota como cambio hecho después de ver datos. No se espera que todos se cumplan. Lo que se quiere saber es si los medios se usan, y si lo que la criatura hace con ellos cambia con la experiencia.
 
+### Resultados de los casos 41 y 42 (11-nov-2026)
+
+Primera ejecución, 10 semillas, criterios sin cambiar. **Ninguno de los dos casos aprueba, y la causa es la misma en los dos. Lo disponible funciona y lo aprendido no se llega a ver, porque la criatura nunca prueba lo que habría que aprender.**
+
+**Caso 41, transporte.** Criterios: 0 de 10 (carga en la placa peligrosa), 0 de 10 (come fuera de la placa), 7 de 10 (menos tiempo sobre la placa que sin transporte) y 10 de 10 (no carga todas).
+- **Disponible:** sí, comprobado en el bloque 1j.
+- **Usada espontáneamente:** sí, pero no donde se había planteado. Sin peligro (condición C, placa inocua) carga la fruta 3,1 veces de media en 900 s (1 a 7 en las diez semillas), y sin placa (D) 4,1 (1 a 8), sin que nadie se lo indique. Con la placa peligrosa (A) **no carga nunca** (0 en las diez semillas).
+- **Por qué.** En A y en B (sin transporte) la criatura pisa la placa una vez, en el primer minuto (de 0,5 a 1,5 s), recibe la descarga y **no vuelve a acercarse a la fruta en los 900 s**, con el hambre subiendo. El miedo aprendido al trayecto hasta la placa pesa más que el hambre. En el diseño actual, el hambre extrema solo rebaja el peligro de comer algo que sienta mal (último recurso), no el de cruzar un sitio que se sabe peligroso. No hay nada que probar y por eso no hay nada que aprender.
+- **Aprendida:** no se puede juzgar. El 0,55 de comidas fuera de la placa que sale en C (placa inocua, mediana de la segunda mitad) es la referencia de que, sin motivo, comer lejos o encima sale a partes iguales.
+- Lo que falta para que el caso pueda dar respuesta es un mecanismo, no un peso. Una criatura muy hambrienta tiene que poder cruzar lo que sabe que duele. Queda como paso siguiente, con interruptor y criterios propios.
+
+**Caso 42, barreras.** Criterios: 10 de 10 (barrera real), 0 de 10 (empuja la reja 3 veces), 0 de 10 (la rompe y come detrás), 0 de 10 (aprendida), 0 de 10 (por la comida) y 1 de 10 (deja de empujar la fija).
+- **Disponible:** sí. Con la reja intacta la criatura no pasa nunca de x = 774, ni con la reja que se rompe ni con la fija, y la comida visible al otro lado no se alcanza.
+- **Usada espontáneamente:** depende de por qué. **Con comida detrás (A)**, empuja la reja 1,1 veces de media en la primera mitad y 0,1 en la segunda, nunca la rompe y no llega a ningún episodio completo (5 episodios por semilla, todos agotados por tiempo). **Sin comida detrás (B)**, la empuja 9,4 veces en la primera mitad y 18,8 en la segunda, y la rompe sin que le sirva de nada (8 episodios). Con la reja fija (C) la empuja 1,1 y luego 0,1. Sin reja (D), llega a la fruta en 54 s de media.
+- **Por qué.** La criatura hambrienta insiste en ir a la fruta, choca con la reja, desiste a los 1,5 s, se frustra un poco y lo intenta otra vez. Ese choque no le enseña nada sobre la fruta (la acción se corta antes de llegar al objeto), de modo que `probar` la fruta sigue valiendo lo mismo que antes y le gana a todo lo demás, incluida una reja que solo da un entretenimiento de 0,12. Cuando la fruta no está detrás, empujar la reja compite sin rival y la rompe por entretenimiento. Es lo contrario del orden que se esperaba: **la criatura usa la reja cuando no la necesita y no la usa cuando la necesita.**
+- **Aprendida:** no se puede juzgar, por lo mismo.
+- Lo que falta es un mecanismo, no un peso: que un intento bloqueado deje un recuerdo de que eso, ahí, no se consigue.
+
+**Lo que se hace con esto.** Se añade un mecanismo opcional para el bloqueo, y el mismo caso 42 se repite con él (caso 42b), con los seis criterios ya escritos. Está en la adenda siguiente, fijada antes de ejecutar. El de la hambre contra el peligro conocido (caso 41) queda anotado y sin hacer en esta ronda.
+
+### Adenda fijada antes de ejecutar el caso 42b (11-nov-2026)
+
+- **Mecanismo.** Un interruptor por criatura, `aprendeBloqueos` (apagado por defecto). Cuando una barrera corta un intento de llegar a un objeto (probar, empujar, tocar o cargar), la criatura lo recuerda como un intento sin resultado, con los rasgos del objeto y en el sitio del objeto (la memoria asociativa distingue sitios), y se anota como un fallo de esa acción. Nada más: no se le dice que empuje la reja, ni que una reja se rompa, ni que haya otra cosa que hacer. La memoria de la red no se toca.
+- **Caso 42b.** El mismo experimento del caso 42, las mismas semillas y los mismos cuatro brazos, con el interruptor encendido en todos. Los criterios son los seis del caso 42 sin cambiar nada, aplicados a los brazos del caso 42b (la barrera real, empujar al menos 3 veces, romper y comer detrás, tardar menos en el último episodio, empujar más con comida detrás que sin ella, y dejar de empujar la reja fija).
+- **Qué se mira además, sin criterio.** Que no se generaliza de más. En el brazo B (sin comida detrás) se cuentan los bocados de fruta del lado de la criatura, para comprobar que la fruta no ha dejado de alimentar en todas partes.
+- **Qué pasa si no funciona.** Se cuenta tal cual. No se ajusta nada para que salga.
+
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 
 Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:

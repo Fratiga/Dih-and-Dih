@@ -3730,12 +3730,7 @@ export const caso41: Caso = {
 
 /* ---------------------------------------------------------------------------------------------------------------- */
 
-export const caso42: Caso = {
-  id: "42",
-  titulo: "Barreras: comida detrás de una reja",
-  hipotesis: "Una reja cierra el paso a una fruta visible. Una criatura hambrienta puede, sin que nadie se lo indique, empujar la reja (lo hace por curiosidad, no por saber que se rompe), romperla, llegar a la comida y, con los episodios, tardar menos. Controles: la misma reja sin comida detrás (empuja por la comida y no por costumbre) y una reja que no se rompe (deja de empujarla cuando no sirve). Criterios fijados antes de ejecutar (ver el plan).",
-  minimo: 0.8,
-  ejecutar(semilla) {
+function ejecutar42(semilla: number, aprende: boolean): ResSemilla {
     const DUR = 900;
     const MITAD = DUR / 2;
     const REJA = 800;
@@ -3746,6 +3741,7 @@ export const caso42: Caso = {
       const s = nuevaSim({ semilla: mezclar(semilla, 421), objetos: [], criaturas: [{ genoma: genomaDe(semilla, 421), x: 400 }], comedero: null, mortalidad: "protegida" });
       const c = s.criaturas[0];
       c.nec[0] = 0.8;
+      c.aprendeBloqueos = aprende;
       c.capRegistro = 50000;
       const hayReja = (): boolean => s.mundo.objetos.some((o) => o.tipo === tipoReja);
       const hayFrutaDetras = (): boolean => s.mundo.objetos.some((o) => o.tipo === "fruta" && o.x > REJA);
@@ -3801,8 +3797,23 @@ export const caso42: Caso = {
       episodiosD: D.episodios, tiempoMedioD: D.tiempos.length ? media(D.tiempos) : -1, maxXIntactaA: A.maxIntacta, maxXIntactaC: Cc.maxIntacta,
       episodiosB: B.episodios, episodiosC: Cc.episodios,
     }, null, DUR);
-  },
+}
+
+export const caso42: Caso = {
+  id: "42",
+  titulo: "Barreras: comida detrás de una reja",
+  hipotesis: "Una reja cierra el paso a una fruta visible. Una criatura hambrienta puede, sin que nadie se lo indique, empujar la reja (lo hace por curiosidad, no por saber que se rompe), romperla, llegar a la comida y, con los episodios, tardar menos. Controles: la misma reja sin comida detrás (empuja por la comida y no por costumbre) y una reja que no se rompe (deja de empujarla cuando no sirve). Criterios fijados antes de ejecutar (ver el plan).",
+  minimo: 0.8,
+  ejecutar: (semilla) => ejecutar42(semilla, false),
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso41, caso42, caso14];
+export const caso42b: Caso = {
+  id: "42b",
+  titulo: "Barreras: comida detrás de una reja, aprendiendo de los choques",
+  hipotesis: "El mismo experimento del caso 42 con el interruptor `aprendeBloqueos` encendido en la criatura: un intento cortado por una barrera deja un recuerdo de que ahí, con eso, no se consigue nada. Se espera que la criatura hambrienta deje de insistir contra la reja, la empuje, la rompa, llegue a la comida y tarde menos con los episodios, y que no lo haga por costumbre (sin comida detrás) ni con una reja que no se rompe. Los criterios 2 a 6 son los del caso 42, fijados antes (ver la adenda del plan).",
+  minimo: 0.8,
+  ejecutar: (semilla) => ejecutar42(semilla, true),
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso41, caso42, caso42b, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];
