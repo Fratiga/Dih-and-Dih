@@ -1702,6 +1702,16 @@ Una línea con ocho criaturas por generación y seis generaciones. Cada generaci
 3. **No se hereda lo vivido:** las crías de padres que han vivido y aprendido nacen sin asociaciones ni rasgos desarrollados (sin memoria y con los rasgos en su predisposición), y solo traen genes.
 4. **Especificidad:** la mandíbula de la línea de recursos no sube tanto como la de la depredadora (como mucho la mitad).
 
+### Adenda fijada antes de la segunda ejecución (11-nov-2026)
+
+Tras la primera ejecución de los casos 38 a 40 (resultados en la sección siguiente) se ven dos defectos de medida o de potencia, y se corrigen **antes de volver a ejecutar**, dejando escrito qué cambia y qué no:
+
+- **Caso 38: la medida satura y la defensa era casi automática.** Contar empujones da 0, 1 o 2 por réplica (la defensa es una decisión de un solo momento y el ocupante deja de comer al empujar), así que no distingue condiciones. Y en la base defendía en el 92 % de las réplicas, que incumple el criterio 6 («no es automática», entre el 20 % y el 90 %) fijado antes. Cambios:
+  1. Los criterios 1 a 5 y 7 se miden como **probabilidad** de defender (fracción de réplicas con al menos un empujón), con 12 réplicas por condición. La dirección de cada uno no cambia. Las diferencias exigidas son: el criterio 1, al menos 0,15 más que saciada; el 2, como mucho la mitad con vínculo; el 3, 4 y 5, estrictamente mayor o menor que la base; el 7, mayor probabilidad de defender y mayor de apropiarse según corresponda.
+  2. El peso `pesoDefensa` (1,6, igual a `pesoDisputa` por simetría) se calibra con una regla fijada ahora: **se toma el mayor peso de la grilla (1,6; 0,8; 0,4; 0,2) con el que la probabilidad de defender en la base queda entre 0,20 y 0,90 en la mediana de las semillas** (el criterio 6, que ya estaba fijado). Con ese peso se evalúan los demás criterios, y no se vuelve a tocar. Es la exigencia de «no automática» aplicada a la intensidad, no un ajuste para que salgan los otros criterios.
+- **Caso 40: poca potencia.** Una medición por genoma, ocho criaturas y seis generaciones dejan la selección ahogada por el azar. Se sube la potencia sin cambiar ningún criterio: el rendimiento de cada genoma es la media de tres mediciones, y son ocho generaciones.
+- **Caso 39: sin cambios.** La regla de elección ya estaba fijada, y su resultado se explica en la sección siguiente.
+
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 
 Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:
