@@ -194,19 +194,19 @@
 
 .cz-boton {
   display: flex; align-items: center; justify-content: space-between; gap: .4em;
-  padding: 0 .7em 0 .8em;
+  padding: 0 .45em 0 .55em;
   background: var(--cz-boton);
   color: var(--cz-bt, var(--cz-boton-t));
   border: var(--cz-borde) solid var(--cz-contorno);
   border-radius: 22px;
   box-shadow: var(--cz-sombra);
-  font: 48cqh var(--cz-f-titulo);
+  font: min(48cqh, 13.5cqw) var(--cz-f-titulo);
   line-height: 1;
 }
 .cz-boton-t { outline: none; white-space: nowrap; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .cz-chev { height: .45em; width: .9em; flex: none; }
 .cz-chev path { fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
-[data-tema="camara"] .cz-boton { border-radius: 18px; font-size: 56cqh; }
+[data-tema="camara"] .cz-boton { border-radius: 18px; font-size: min(56cqh, 15cqw); }
 [data-tema="vineta"] .cz-boton { justify-content: center; text-transform: uppercase; border-radius: 0; font-weight: 700; }
 [data-tema="vineta"] .cz-boton .cz-chev { display: none; }
 

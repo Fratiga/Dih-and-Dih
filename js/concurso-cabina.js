@@ -244,6 +244,9 @@
     $("#czEnviarAire").disabled = C.editId === v.escena;
     const sig = e && e.pasos[v.paso];
     $("#czAireSiguiente").textContent = sig ? "Siguiente: " + describirPaso(e, sig) : "";
+    // Las notas de la escena al aire solo las ve el anfitrión (respuestas, ideas, recordatorios)
+    $("#czAireNotas").textContent = (e && e.notas) || "";
+    $("#czAireNotas").hidden = !(e && e.notas);
   }
 
   /* --- panel lateral: propiedades o jugadores --- */
@@ -304,6 +307,7 @@
         <h3 class="cz-lado-tit">Escena</h3>
         <label class="cz-campo"><span>Nombre</span><input data-esc="nombre" value="${esc(e.nombre)}"></label>
         <label class="cz-campo"><span>Carpeta</span><input data-esc="carpeta" value="${esc(e.carpeta)}" placeholder="Por ejemplo: Preguntas"></label>
+        <label class="cz-campo"><span>Notas tuyas (no salen al aire; las ves junto al monitor)</span><textarea data-esc="notas" rows="4" placeholder="Respuesta, pistas, recordatorios...">${esc(e.notas || "")}</textarea></label>
         <div class="cz-campo"><span>Tema</span><div class="cz-segmento" data-esc-elegir="tema"><button type="button" data-v="" class="${!e.tema ? "activo" : ""}">El de la partida</button>${Object.entries(CZ.TEMAS).map(([k, t]) => `<button type="button" data-v="${k}" class="${e.tema === k ? "activo" : ""}">${esc(t.nombre)}</button>`).join("")}</div></div>
         <div class="cz-campo"><span>Fondo</span><div class="cz-segmento" data-esc-fondo="tipo">${[["tema", "Del tema"], ["color", "Color"], ["patron", "Patrón"], ["imagen", "Imagen"]].map(([k, t]) => `<button type="button" data-v="${k}" class="${f.tipo === k ? "activo" : ""}">${t}</button>`).join("")}</div></div>
         ${f.tipo === "color" ? `<div class="cz-campo">${campoColor("fondoColor", f.valor, tema)}</div>` : ""}
@@ -1178,6 +1182,7 @@
     m.innerHTML = `
       <button type="button" data-partida="nueva">Nueva partida vacía</button>
       <button type="button" data-partida="ejemplo">Nueva partida de ejemplo</button>
+      ${(CZ.PLANTILLAS || []).map(t => `<button type="button" data-plantilla="${t.id}" title="${esc(t.descripcion || "")}">Nueva: ${esc(t.nombre)}</button>`).join("")}
       <button type="button" data-partida="exportar">Exportar esta partida (JSON)</button>
       <button type="button" data-partida="importar">Importar una partida (JSON)</button>
       ${otras.length ? `<div class="cz-menu-sep">Abrir otra</div>` + otras.map(x => `<button type="button" data-abrir-partida="${x.id}">${esc(x.nombre)} <small>${new Date(x.actualizada).toLocaleDateString("es")}</small></button>`).join("") : ""}
@@ -1188,6 +1193,7 @@
       if (!b) return;
       cerrarMenus();
       if (b.dataset.abrirPartida) { abrirPartida(CZ.local.cargar(b.dataset.abrirPartida)); return; }
+      if (b.dataset.plantilla) { const t = CZ.PLANTILLAS.find(x => x.id === b.dataset.plantilla); if (t) abrirPartida(t.crear()); return; }
       switch (b.dataset.partida) {
         case "nueva": abrirPartida(CZ.nuevaPartida("Partida nueva", false)); break;
         case "ejemplo": abrirPartida(CZ.nuevaPartida("El Gran Concurso", true)); break;
