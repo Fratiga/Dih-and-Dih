@@ -115,6 +115,32 @@ Petición del 11-nov-2026: que las criaturas tengan que beber, para que el agua 
 6. **La sed.** Opcional y aparte del vector de necesidades (recomendado). Falta decidir cuánto daña no beber y si el agua puede acabarse (un charco que se seca, una fuente que se recarga).
 7. **Variación de criaturas.** Todo sale del genoma base. Falta decidir qué rasgos de medio y de cuerpo entran en el genoma (preferencia de medio, aletas, branquias, peso) antes de los planes corporales.
 
+## 4 bis. Decisiones tomadas (11-nov-2026)
+
+Aprobadas por el DM con estas precisiones.
+
+1. **Grafo**, con ramificaciones y circuitos. Esquema de conexiones (no a escala): habitación principal, que conecta con comedero, hábitat natural, zona de obstáculos y observación. Y entre sí: hábitat natural con zona acuática, zona acuática con zona elevada, zona elevada con zona de obstáculos y zona de obstáculos con la habitación principal. Las salas no cuelgan solo de la principal. **Contención y cuarentena no son salas de tránsito**: son instalaciones especiales con acceso administrativo o conexiones controladas. Las **cámaras experimentales** quedan fuera del mundo libre, de una sala y reproducibles.
+2. **Tamaños iniciales (unidades).** Cámaras 1600 (no cambian). Mundo libre: habitación principal 4000, comedor 2400, hábitat natural 3200, zona de obstáculos 2400, zona acuática 3200, zona elevada 2400, observación 1600. La entrada de la red no cambia de normalización por ahora. Antes de dar por buena la memoria por sala se comprueba que una criatura en el mismo lugar relativo de una sala conserva la misma interpretación que hoy.
+3. **Capacidad inicial.** Cámaras 4, salas pequeñas de 4 a 6, habitación principal y hábitats grandes de 6 a 8. Son límites de partida. Antes de subirlos se mide el coste de la percepción social y de las interacciones por sala, y qué pasa con una sala llena: si las criaturas evitan entrar, si se acumulan junto a la puerta y si pueden salir. El hacinamiento no debe pasar de dentro de la sala al umbral de la siguiente.
+4. **Sed.** Una necesidad independiente del hambre, con interruptor apagado por defecto en las cámaras antiguas. El agua es un recurso funcional que exige acercarse y beber. La deshidratación tiene un periodo de gracia y después un daño progresivo, no una muerte inmediata. Su intensidad influye en la búsqueda de agua y en el riesgo que se acepta (como `hambreArriesga`). **El agua no se acaba al principio.** Primero hay que demostrar que la criatura la reconoce, la busca y bebe sola. Las fuentes limitadas, la regeneración, la competencia y la escasez vienen después, una a una.
+5. **Genoma.** Una base heredable, sin lista de especies. Cinco dimensiones separadas, todas con un valor por defecto que no altera a las criaturas ni a las pruebas de ahora.
+
+| Dimensión | Qué representa |
+|---|---|
+| Afinidad ambiental | Preferencia por tierra, agua o ambientes mixtos |
+| Adaptación locomotora | Capacidad de desplazarse según el medio |
+| Morfología | Extremidades, cuerpo, alas, aletas |
+| Adaptación respiratoria | Tolerancia a permanecer bajo el agua |
+| Especialización | Ventajas y costes heredables concretos (lo que ya existe para el combate) |
+
+Elegir «acuático» no vuelve a una criatura nadadora perfecta: toda adaptación trae ventajas y desventajas, y se hereda. Se diseña ahora y se implementa **después** de construir el espacio y comprobar la navegación.
+
+**Requisitos que no quedan implícitos.**
+- Las conexiones permiten desplazarse de verdad, y la criatura conserva su posición relativa al cruzar una puerta.
+- Las cámaras experimentales conservan su comportamiento. La regresión tiene que demostrar la **equivalencia** (misma huella, no solo que compile).
+- La interfaz se diseña con la arquitectura: un mapa navegable del complejo, salas reconocibles, seguimiento de criaturas y presentación propia. No una lista de botones para cambiar de sala. El laboratorio libre tiene que sentirse como un lugar que se visita para ver qué hacen las criaturas, no como una pantalla de depuración más grande.
+- Los resultados de los casos 25 a 40 quedan marcados como obtenidos en un entorno congestionado. No se invalidan.
+
 ## 5. Orden de trabajo, con lo que cada paso no debe romper
 
 1. **Este documento y la decisión 1 a 5.** Sin código.
