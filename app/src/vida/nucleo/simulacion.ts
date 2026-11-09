@@ -46,6 +46,8 @@ export interface EstadoSim {
   extincion?: boolean;
   transporte?: boolean;
   aprendeBloqueos?: boolean;
+  /** Los canales de senal de las puertas (un mecanismo activa un canal y las puertas que lo escuchan se abren). */
+  canales?: Record<string, boolean>;
   /** Las salas de despues de la primera (cada una con su mundo). Sin ellas es una camara de una sala. */
   salasExtra?: { nombre: string; tipo: string; mundo: EstadoMundo; capacidad?: number; comedero?: { cada: number; max: number; tipo: string }; proxComedero?: number; mapa?: { c: number; f: number; w?: number } }[];
   legado?: Legado[];
@@ -92,12 +94,26 @@ export interface Sala {
   mapa?: { c: number; f: number; w?: number };
 }
 
+/** Una criatura que acaba de pasar por una puerta: de donde sale, a donde llega y lo que lleva. La escena lo usa para dibujar el cruce. */
+export interface Cruce {
+  t: number;
+  criatura: number;
+  de: { sala: number; x: number };
+  a: { sala: number; x: number };
+  lleva: number | null;
+  puerta: number;
+}
+
 export class Simulacion {
   semilla: number;
   t = 0;
   mundo: Mundo;
   /** Las salas del complejo. La primera comparte el mundo de `mundo`. Una camara experimental tiene una sola. */
   salas: Sala[] = [];
+  /** Los canales de senal de las puertas y si estan activos. */
+  canales: Record<string, boolean> = {};
+  /** Los ultimos cruces de puertas (no se guardan: solo sirven para dibujarlos). */
+  cruces: Cruce[] = [];
   criaturas: Criatura[] = [];
   azar: Azar;
   /** `activo: false` lo apaga (la criatura solo come lo que el jugador ponga). */
@@ -223,10 +239,21 @@ export class Simulacion {
   }
 
   /** Une dos salas con una puerta en cada una (la de una lleva a la otra). Devuelve las dos puertas. */
-  conectar(a: number, xa: number, b: number, xb: number, cerrada = false): [Objeto, Objeto] {
-    const pa = this.salas[a].mundo.agregar("puerta", xa, { destino: { sala: b, x: xb }, cerrada });
-    const pb = this.salas[b].mundo.agregar("puerta", xb, { destino: { sala: a, x: xa }, cerrada });
+  conectar(a: number, xa: number, b: number, xb: number, opciones: boolean | { cerrada?: boolean; canal?: string } = false): [Objeto, Objeto] {
+    const op = typeof opciones === "boolean" ? { cerrada: opciones } : opciones;
+    // Con canal, la puerta nace como lo diga el canal (cerrada si nadie lo ha activado)
+    const cerrada = op.canal ? !this.canales[op.canal] : !!op.cerrada;
+    const extra = op.canal ? { canal: op.canal } : {};
+    const pa = this.salas[a].mundo.agregar("puerta", xa, { destino: { sala: b, x: xb }, cerrada, ...extra });
+    const pb = this.salas[b].mundo.agregar("puerta", xb, { destino: { sala: a, x: xa }, cerrada, ...extra });
     return [pa, pb];
+  }
+
+  /** Un mecanismo (una palanca, una placa de peso, lo que sea) activa o apaga un canal, y todas las puertas que lo escuchan se abren o se cierran. Es la unica
+      manera de abrir una puerta por senal: pasa siempre por `fijarPuerta`, igual que abrirla a mano. */
+  fijarCanal(canal: string, activo: boolean): void {
+    this.canales[canal] = activo;
+    for (const s of this.salas) for (const o of s.mundo.objetos) if (o.tipo === "puerta" && o.canal === canal) this.fijarPuerta(s.id, o.id, !activo);
   }
 
   /** Abre o cierra una puerta y la de enfrente. */
@@ -243,6 +270,7 @@ export class Simulacion {
     const d = puerta.destino;
     const destino = d ? this.salas[d.sala] : undefined;
     if (!d || !destino || puerta.cerrada) return false;
+    const origenSala = c.sala;
     const origen = this.salas[c.sala].mundo;
     const objeto = c.lleva !== null ? origen.obj(c.lleva) : undefined;
     if (objeto) { origen.quitar(objeto.id); destino.mundo.acoger(objeto); }
@@ -254,6 +282,8 @@ export class Simulacion {
     c.accion = null;
     c.hogar = null;
     c.percibidos = [];
+    this.cruces.push({ t: this.t, criatura: c.id, de: { sala: origenSala, x: puerta.x }, a: { sala: d.sala, x: d.x }, lleva: c.lleva, puerta: puerta.id });
+    if (this.cruces.length > 24) this.cruces.shift();
     return true;
   }
 
@@ -385,13 +415,14 @@ export class Simulacion {
     return JSON.parse(
       JSON.stringify({
         v: 1, semilla: this.semilla, t: this.t, mundo: this.mundo.estado(), ...(this.salas.length > 1 ? { salasExtra: this.salas.slice(1).map((s) => ({ nombre: s.nombre, tipo: s.tipo, mundo: s.mundo.estado(), ...(s.capacidad ? { capacidad: s.capacidad } : {}), ...(s.comedero ? { comedero: s.comedero, proxComedero: s.proxComedero } : {}), ...(s.mapa ? { mapa: s.mapa } : {}) })) } : {}), criaturas: this.criaturas.map((c) => c.estado()), azar: this.azar.s,
-        comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, secuelas: this.secuelas, extincion: this.extincion, transporte: this.transporte, aprendeBloqueos: this.aprendeBloqueos, legado: this.legado, embarazos: this.embarazos,
+        comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, secuelas: this.secuelas, extincion: this.extincion, transporte: this.transporte, aprendeBloqueos: this.aprendeBloqueos, ...(Object.keys(this.canales).length ? { canales: this.canales } : {}), legado: this.legado, embarazos: this.embarazos,
       }),
     ) as EstadoSim;
   }
 
   static restaurar(e: EstadoSim): Simulacion {
     const s = new Simulacion({ semilla: e.semilla, objetos: [], criaturas: [], comedero: e.comedero, protegida: e.protegida, mortalidad: e.mortalidad, secuelas: e.secuelas, extincion: e.extincion, transporte: e.transporte, aprendeBloqueos: e.aprendeBloqueos });
+    s.canales = { ...(e.canales ?? {}) };
     s.legado = JSON.parse(JSON.stringify(e.legado ?? []));
     s.embarazos = JSON.parse(JSON.stringify(e.embarazos ?? []));
     s.t = e.t;

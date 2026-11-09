@@ -377,6 +377,15 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   // Guardar y restaurar un complejo
   const g = Simulacion.restaurar(JSON.parse(JSON.stringify(s.serializar())));
   afirma(g.salas.length === 2 && g.salas[k].mundo.ancho === 2400 && g.criaturas[0].sala === k && g.salas[k].mundo.obj(pb.id)?.destino?.sala === 0, "un complejo se guarda y se restaura con sus salas, sus puertas y la sala de cada criatura");
+  // Puertas con canal: un mecanismo activa el canal y las puertas que lo escuchan se abren, por el mismo camino que abrirlas a mano
+  const k2 = s.agregarSala("Otra", "habitat", 1600);
+  const [qa, qb] = s.conectar(0, 900, k2, 300, { canal: "c1" });
+  afirma(qa.cerrada === true && qb.cerrada === true && s.cruzarSala(c, qa) === false, "una puerta con canal nace cerrada si nadie lo ha activado");
+  s.fijarCanal("c1", true);
+  afirma(!s.salas[0].mundo.obj(qa.id)?.cerrada && !s.salas[k2].mundo.obj(qb.id)?.cerrada, "activar el canal abre las dos puertas que lo escuchan");
+  s.fijarCanal("c1", false);
+  afirma(s.salas[0].mundo.obj(qa.id)?.cerrada === true && s.salas[k2].mundo.obj(qb.id)?.cerrada === true, "apagar el canal las cierra");
+  afirma(s.cruces.length >= 1 && s.cruces[0].de.sala === 0 && s.cruces[0].a.sala === k, "cada cruce queda anotado con su origen y su destino, para dibujarlo");
   const v1 = JSON.parse(JSON.stringify(nuevaSim({ semilla: 82, objetos: [], criaturas: [{ genoma: genomaNuevo(1), x: 300 }], comedero: null }).serializar()));
   afirma(v1.salasExtra === undefined && Simulacion.restaurar(v1).salas.length === 1, "un guardado de una sola sala sigue siendo el de siempre");
 }

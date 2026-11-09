@@ -32,6 +32,8 @@ export interface Objeto {
   /** Si es una puerta, a donde lleva (la sala y la posicion de la puerta de enfrente) y si esta cerrada. */
   destino?: { sala: number; x: number };
   cerrada?: boolean;
+  /** Si lo controla un mecanismo, el canal por el que recibe su senal (abierta con el canal activo). Sin canal, se abre y se cierra a mano. */
+  canal?: string;
 }
 
 export interface Sonido {
