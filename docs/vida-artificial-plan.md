@@ -1398,8 +1398,8 @@ Se pide que el terreno sea como el del corral del Hipódromo, un mapa con profun
 
 0. **Laboratorio rápido: hecho.**
 1. **P0, red con entradas ampliables: hecho.**
-2. **Probar lo que no necesita nada nuevo: hecho** (el extraño, caso 34; la jerarquía con cuatro, caso 35; el acechador con presas que recuerdan, caso 36, que no pudo medirse porque el cazador apenas persigue).
-3. **Etapa 0 del modelo de las otras (07d): hecha.** Siguiente: etapa 1 del módulo.
+2. **Probar lo que no necesita nada nuevo: hecho** (el extraño, caso 34; la jerarquía con cuatro, caso 35; el acechador con presas que recuerdan, caso 36, donde la presa que recuerda aprende pero el cazador espera mucho).
+3. **Etapa 0 del modelo de las otras (07d): hecha.** Etapa 1 del módulo: hecha, con resultado parcial (ver más abajo). Siguiente: etapa 2 (sustituir `pesoVicario` por la fuerza del conteo).
 4. Transporte y barreras, cada una con su caso mínimo.
 5. Altura con consecuencias reales (suelo, estante, alto).
 6. Especialización física.
@@ -1554,6 +1554,25 @@ La prueba que decide si hace falta el módulo (ver «Modelo de las otras criatur
 - **Veredicto de la etapa 0.** El mecanismo que existe no aprende lo que consigue la otra, solo se fija en lo que toca. Eso es exactamente lo que el módulo propuesto tendría que corregir, y la prueba queda como el caso de medida: con el módulo aprendiendo, quien vio la estropeada tiene que ir a la buena de otro color más que sin experiencia (el criterio B).
 - **Límites.** Solo una experta, una máquina y un resultado (comida). No se separó el efecto del color del de la posición más allá de alternar los lados.
 
+### Etapa 1 del modelo de las otras: hecha, con un resultado parcial
+
+Se implementó el módulo de conteos de contingencia (`nucleo/modeloajeno.ts`), tras la opción `modelo` de la criatura (apagada por defecto, y apagada no se ejecuta ni se guarda nada). No toca la red ni sus entradas.
+
+- **Qué hace.** Cada vez que ve a otra actuar sobre un objeto (por ejemplo, pulsar una palanca) apunta la acción, y si en los 6 s siguientes aparece algo comestible a partir de ese objeto (lo que ya ve la criatura con sus propios ojos), la cuenta como un resultado. No lee nada interno de la otra.
+- **Para qué se usa.** El realce que provoca ver a otra tocar algo (curiosidad, excitación y un recuerdo de diversión del objeto) se multiplica por la evidencia. Sin datos suficientes (menos de 3 acciones cerradas) vale 1, como hasta ahora. Con datos vale el doble de la fracción de veces que a la acción le siguió un resultado (con tope en 1), y 0 si nunca.
+- **Comprobado** (bloque 1h, 9 comprobaciones): sin datos vale 1, cada acción se cuenta una vez, sin resultados vale 0, con resultado a cada acción se mantiene en 1, con uno de cada tres vale el doble de esa fracción, un resultado fuera de plazo no cuenta, se guarda y se restaura.
+- **En el caso 07d** (seis condiciones, 12 réplicas por semilla):
+
+| Qué vio | Sin el módulo | Con el módulo | Sin experiencia |
+|---|---|---|---|
+| Pulsar la buena: va primero a la buena | 1,00 | **1,00** | 0,58 |
+| Pulsar la estropeada: va a la buena del otro color | 0,00 | **0,46** | 0,42 |
+
+  El módulo quita el engaño: quien vio pulsar la estropeada, que no dio nada, deja de ir a ella y se comporta como lo haría sin experiencia (0,46 frente a 0,42). Quien vio pulsar la buena conserva todo su realce (1,00).
+- **Lo que no hace.** El criterio pedía más que eso: ir a la buena del otro color más de lo que iría sin experiencia (+0,1), es decir, evitar activamente la que vio pulsar sin éxito. Se cumple en 3 de 10 semillas. La etapa 1 produce indiferencia y no preferencia por lo que no vio. No hay un aprendizaje de «las palancas de este tipo no sirven» que se traslade a otra palanca distinta.
+- **Qué queda de la etapa 1 del diseño.** Hoy el módulo solo gobierna el realce. No acredita al resultado una preferencia propia (la ruta de `aprenderDeOtra` sigue como estaba), no predice la acción siguiente de la otra ni usa la sorpresa. La etapa 2 del diseño (sustituir `pesoVicario` por la fuerza del conteo) y la etapa 3 siguen pendientes.
+- **Regresión.** Apagado, no cambia ningún caso.
+
 ## La jerarquía alrededor de la comida (caso 35)
 
 El caso E24 con cuatro criaturas, todas hambrientas, y un solo punto de comida que se repone cada 25 s (con la agresión y el conflicto por comida encendidos, y un control con ambos apagados). 1500 s, con la que más ha comido retirada a los 750 s. Cinco réplicas por semilla.
@@ -1567,13 +1586,17 @@ El caso E24 con cuatro criaturas, todas hambrientas, y un solo punto de comida q
 
 ## El acechador y las presas que recuerdan (caso 36)
 
-El caso E21 con lo que hay: un cazador agresivo con carroñeo previo (3 rondas con un cadáver) y una presa libre para huir, siempre la misma o una nueva cada ronda. Ocho rondas de 90 s, con la salud de la presa reiniciada en cada ronda. Cinco réplicas por semilla.
+El caso E21 con lo que hay: un cazador agresivo con carroñeo previo (3 rondas con un cadáver) y una presa libre para huir, siempre la misma o una nueva cada ronda. Ocho rondas de 90 s, con la salud de la presa reiniciada en cada ronda. Cinco réplicas por semilla. La presa empieza a 250 del cazador, a su vista.
 
-- **Casi no hay caza.** 1,25 golpes por ronda de mediana en las dos primeras rondas con la misma presa, y solo 4 de 10 semillas llegan al mínimo de 5 golpes en las ocho rondas. El cazador se acerca una vez por ronda de mediana y espera mucho (28 s de cada 90 al principio). Una presa libre queda casi sin molestar. Este caso no puede evaluar bien el acecho mientras el cazador apenas persigue.
-- **La presa que recuerda recibe menos golpes** (de 1,25 a 0,00), 10 de 10 semillas, pero una presa nueva también baja (de 1,75 a 0,75), así que parte del descenso es del cazador, que espera menos y se acerca igual (13,6 s de espera en las dos últimas rondas frente a 28 s). En las dos últimas rondas la que recuerda recibe 0,00 y la nueva 0,75: la memoria ayuda, con muy pocos golpes en juego (6 de 10 semillas).
-- **No huye antes.** La latencia de la primera huida va de 52 s a 65 s con la misma presa (4 de 10 semillas con el criterio cumplido). Al revés de lo esperado. La presa casi no necesita huir porque el cazador casi no la alcanza.
-- **Lo que hace falta.** Una persecución persistente del cazador (hoy el costo del viaje y la fatiga la frenan). No se ha tocado, porque subir pesos para que cace más es justo lo que se ha decidido no hacer. Queda ligado a la especialización física (mandíbula, garras, agilidad) del orden de trabajo.
-- **Resultado del caso:** aprueba 0 de 10 semillas (informativo). Hay que leerlo como «el cazador no persigue lo bastante para medir» y no como «las presas no aprenden».
+**Un diagnóstico que cambió el planteamiento.** La primera versión ponía la presa a 500, y el cazador casi no la atacaba (1 golpe por ronda). Se pensó en subir el peso del interés depredador, y no se hizo: se midió primero la utilidad de cada opción del cazador. A 500 de distancia la presa no está entre lo que percibe (la vista llega a 360), así que no hay ningún candidato de acercarse ni de empujar. A 250, empujar a una presa sana tiene utilidad 0,87, muy por encima de probar (0,34) o explorar (0,13). El interés depredador estaba bien. El defecto era de la escena. El caso 26 pone la presa a 500 a 1000, así que parte de lo que dice (que huir no importa, 2 de 10) puede venir de lo mismo y no se ha repetido.
+
+**Resultados con la presa a la vista** (aprueba 1 de 10 semillas, informativo):
+
+- **La presa que recuerda aprende** (10 de 10 semillas): de 2,0 golpes por ronda en las dos primeras rondas a 0,0 en las dos últimas.
+- **La memoria importa** (8 de 10): en las dos últimas rondas la presa que recuerda recibe 0,0 golpes frente a 1,0 de una presa nueva. Una presa nueva también recibe menos al final (de 2,0 a 1,0), así que parte del descenso es del cazador.
+- **No huye antes** (4 de 10): la latencia de la primera huida va de 46 s a 38 s con la misma presa, sin una tendencia clara. Recibe menos golpes sin huir antes.
+- **Hay caza, aunque poca** (5 de 10 semillas con 5 golpes o más en las ocho rondas): el cazador espera 36 s de cada 90 aunque la presa esté a la vista, y se acerca una vez por ronda de mediana.
+- **Lo que queda:** por qué espera tanto el cazador con una presa sana a la vista, cuando la utilidad de empujarla es la más alta. Queda por mirar (fatiga de combate, y que el reinicio de cada ronda lo suelta de lo que hacía).
 
 ## Interfaz: añadir razas simples desde la sala
 

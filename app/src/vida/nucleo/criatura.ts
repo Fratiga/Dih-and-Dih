@@ -8,6 +8,7 @@ import { afectoDe, candidatas, contrasteAspecto, elegir, featuresObjeto, firmaDe
 import { ejecutar, iniciar } from "./acciones.ts";
 import { sexoDe, type Genoma } from "./genoma.ts";
 import { SeguimientoAtencion } from "./social.ts";
+import { ModeloAjeno, type EstadoModeloAjeno } from "./modeloajeno.ts";
 import { Memoria, articulo, semejanza, type EstadoMemoria } from "./memoria.ts";
 import type { Mundo, Objeto } from "./mundo.ts";
 import { Red, type EstadoRed } from "./red.ts";
@@ -166,6 +167,7 @@ export interface EstadoCriatura {
   celos: boolean;
   celosEstado: Celo[];
   rutina?: Rutina | null;
+  modelo?: EstadoModeloAjeno | null;
   extincion?: boolean;
   permiteSecuelas?: boolean;
   secuelas?: Secuela[];
@@ -259,6 +261,8 @@ export class Criatura {
   celosEstado: Celo[] = [];
   /** Raza simple (ver `Rutina`). Con null decide con su cerebro, como todas. */
   rutina: Rutina | null = null;
+  /** Opcional: modelo de las otras criaturas (etapa 1). Si no es null, lleva la cuenta de lo que suele seguir a lo que ve hacer a otras y escala con ello el realce de verlas actuar. */
+  modelo: ModeloAjeno | null = null;
   /** Opcional: si los golpes graves o repetidos dejan secuelas fisicas. Apagado, no se acumula nada y la criatura es la de siempre. */
   permiteSecuelas = false;
   /** Opcional: el miedo aprendido a alguien baja cuando se le tiene delante sin que pase nada malo, mas deprisa con buena compania. Apagado, el miedo solo se olvida con el tiempo. */
@@ -371,6 +375,7 @@ export class Criatura {
     this.percibidos = percibir(this, env);
     this.notarApariciones(env);
     this.mirarAOtros(env);
+    if (this.modelo) this.modelo.cerrar(env.t);
     if (this.celos) this.sentirCelos(env, dt);
     if (this.envidia) this.sentirEnvidia(env, dt);
     if (this.extincion) this.extinguirMiedos(env, dt);
@@ -729,11 +734,18 @@ export class Criatura {
       const ob = env.mundo.obj(u.obj);
       if (!ob) continue;
       this.atencion = { obj: u.obj, v: u.v, t: u.t, quien: o.id };
-      this.emo[E.curiosidad] = acota(this.emo[E.curiosidad] + 0.12);
-      this.emo[E.excitacion] = acota(this.emo[E.excitacion] + 0.1);
+      // Con el modelo de las otras, el realce vale lo que la evidencia de esa accion: sin datos, 1; con datos, segun a cuantas siguio un resultado
+      let realce = 1;
+      if (this.modelo) {
+        const clave = `${u.v}:${ob.tipo}`;
+        this.modelo.verAccion(clave, u.t, u.obj);
+        realce = this.modelo.realce(clave);
+      }
+      this.emo[E.curiosidad] = acota(this.emo[E.curiosidad] + 0.12 * realce);
+      this.emo[E.excitacion] = acota(this.emo[E.excitacion] + 0.1 * realce);
       const def = CATALOGO[ob.tipo];
-      this.mem.aprender(u.v, featuresObjeto(ob), ob.x / env.mundo.ancho, [0, 0, def.efecto * 0.5, 0.1, 0], ob.tipo, def.nombre, env.t, [false, false, true, true, false], 0.5, false);
-      this.forzar = true;
+      this.mem.aprender(u.v, featuresObjeto(ob), ob.x / env.mundo.ancho, [0, 0, def.efecto * 0.5 * realce, 0.1 * realce, 0], ob.tipo, def.nombre, env.t, [false, false, true, true, false], 0.5, false);
+      if (realce > 0.3) this.forzar = true;
     }
   }
 
@@ -744,6 +756,7 @@ export class Criatura {
       const origen = env.mundo.obj(ap.origen);
       if (!ob || !origen || Math.abs(ob.x - this.x) > AJ.vista * this.genoma.vista) continue;
       const valor = valorDeProbar(this, featuresObjeto(ob), env);
+      if (this.modelo) this.modelo.verResultado(ap.origen, env.t);
       for (const tr of this.trazas) {
         if (tr.obj !== ap.origen || env.t - tr.t > 6) continue;
         tr.cred = Math.max(tr.cred, 0.85 * valor);
@@ -1228,7 +1241,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, extincion: this.extincion, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, modelo: this.modelo ? this.modelo.estado() : null, extincion: this.extincion, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -1271,6 +1284,7 @@ export class Criatura {
     c.agresion = e.agresion ?? false;
     c.celos = e.celos ?? false;
     c.rutina = e.rutina ?? null;
+    c.modelo = e.modelo ? ModeloAjeno.desde(e.modelo) : null;
     c.extincion = e.extincion ?? false;
     c.permiteSecuelas = e.permiteSecuelas ?? false;
     c.secuelas = JSON.parse(JSON.stringify(e.secuelas ?? []));

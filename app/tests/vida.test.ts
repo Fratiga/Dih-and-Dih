@@ -7,6 +7,7 @@ import { Memoria, semejanza } from "../src/vida/nucleo/memoria.ts";
 import { Criatura, NI } from "../src/vida/nucleo/criatura.ts";
 import { C, NC_RED as NC, RASGOS } from "../src/vida/nucleo/tipos.ts";
 import { featuresCriatura } from "../src/vida/nucleo/conducta.ts";
+import { ModeloAjeno } from "../src/vida/nucleo/modeloajeno.ts";
 import { CASOS, CASOS_OBLIGATORIOS } from "../src/vida/lab/casos.ts";
 import { actor, calentada, ejecutarCaso, impactos, nuevaSim, tablaInforme } from "../src/vida/lab/laboratorio.ts";
 
@@ -219,6 +220,33 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   c2.trazas.push({ v: "tocar", tipo: "pelota", f: [0.9, 0.4, 0.5, 0.4, 0.5, 0.2, 0, 0.5, 0, 0.5], nombre: "pelota", t: 5 } as never);
   c2.recompensar({ mundo: nuevaSim({ semilla: 1, objetos: [], criaturas: [], comedero: null }).mundo, criaturas: [c2], t: 6 });
   afirma(c2.mem.protos.some((p) => p.v === "probar" && p.tipo === "pelota" && p.res[2] > 0.1) && c2.mem.protos.some((p) => p.v === "empujar" && p.tipo === "pelota" && p.res[2] > 0.1), "premiar tras tocar la pelota la vuelve agradable también para probarla y empujarla");
+}
+
+// 1h. Modelo de las otras (etapa 1): lleva la cuenta de lo que suele seguir a lo que se ve hacer, y escala el realce con ello
+{
+  const m = new ModeloAjeno();
+  afirma(m.realce("empujar:palanca") === 1, "sin datos el realce vale 1 (como hasta ahora)");
+  for (let i = 0; i < 5; i++) { m.verAccion("empujar:palanca", i * 10, 7); m.verAccion("empujar:palanca", i * 10, 7); }
+  m.cerrar(100);
+  afirma(m.cuenta("empujar:palanca").cerradas === 5, "cada acción vista se cuenta una sola vez");
+  afirma(m.realce("empujar:palanca") === 0, "tras cinco acciones sin ningún resultado, el realce de verlas vale 0");
+  const b = new ModeloAjeno();
+  for (let i = 0; i < 6; i++) { b.verAccion("empujar:palanca2", i * 10, 8); b.verResultado(8, i * 10 + 2); }
+  b.cerrar(100);
+  afirma(b.realce("empujar:palanca2") === 1 && b.cuenta("empujar:palanca2").exitos === 6, "si a cada acción le sigue un resultado, el realce se mantiene en 1");
+  const c = new ModeloAjeno();
+  for (let i = 0; i < 6; i++) { c.verAccion("tocar:x", i * 10, 9); if (i < 2) c.verResultado(9, i * 10 + 1); }
+  c.cerrar(100);
+  afirma(Math.abs(c.realce("tocar:x") - (2 * 2) / 6) < 1e-12, "con un resultado cada tres acciones, el realce es el doble de esa fracción");
+  c.verAccion("tocar:x", 200, 9); c.verResultado(9, 300);
+  c.cerrar(400);
+  afirma(c.cuenta("tocar:x").cerradas === 7 && c.cuenta("tocar:x").exitos === 2, "un resultado fuera del plazo no cuenta");
+  afirma(JSON.stringify(ModeloAjeno.desde(c.estado()).estado()) === JSON.stringify(c.estado()), "el modelo se guarda y se restaura igual");
+  const cr = new Criatura(1, "A", genomaNuevo(1), 300, 1);
+  cr.modelo = new ModeloAjeno();
+  cr.modelo.verAccion("empujar:palanca", 3, 1);
+  afirma(Criatura.desde(JSON.parse(JSON.stringify(cr.estado())), 1).modelo?.cuenta("empujar:palanca") !== undefined && Criatura.desde(JSON.parse(JSON.stringify(cr.estado())), 1).modelo !== null, "la criatura guarda y restaura su modelo de las otras");
+  afirma(new Criatura(1, "A", genomaNuevo(1), 300, 1).modelo === null, "por defecto no hay modelo (apagado)");
 }
 
 // 2. Determinismo y semilla

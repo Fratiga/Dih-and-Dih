@@ -10,6 +10,7 @@ import { Azar, mezclar } from "../nucleo/azar.ts";
 import { semejanza } from "../nucleo/memoria.ts";
 import { featuresCriatura } from "../nucleo/conducta.ts";
 import { Criatura, type Registro } from "../nucleo/criatura.ts";
+import { ModeloAjeno } from "../nucleo/modeloajeno.ts";
 import { Simulacion } from "../nucleo/simulacion.ts";
 import { actor, avanzarMuestreando, conteoAcciones, genomaDe, impactos, media, mediana, nuevaSim, replica, type Caso, type ResSemilla } from "./laboratorio.ts";
 
@@ -3108,17 +3109,18 @@ export const caso07d: Caso = {
     X.criaturas[0].nec[0] = 0.5;
     X.avanzar(1200);
     const estadoExperta = X.criaturas[0].estado();
-    type Brazo = "ve pulsar la buena" | "ve pulsar la estropeada" | "ve la palanca quieta" | "ve pulsar la buena, sin el modo";
+    type Brazo = "ve pulsar la buena" | "ve pulsar la estropeada" | "ve la palanca quieta" | "ve pulsar la buena, sin el modo" | "ve pulsar la buena, con el modelo" | "ve pulsar la estropeada, con el modelo";
     /** 400 s inmovilizada viendo a la experta (o la palanca quieta) y luego 120 s suelta, sola, con hambre 0,5, entre dos palancas de distinto color (cambian de lado en cada replica).
         Quien ve pulsar la buena o las quietas se encuentra la buena de ese color y la estropeada del otro; quien ve pulsar la estropeada se encuentra esa estropeada y la buena del otro color. */
     const prueba = (brazo: Brazo, k: number): { buena: number } => {
-      const vioEstropeada = brazo === "ve pulsar la estropeada";
+      const vioEstropeada = brazo === "ve pulsar la estropeada" || brazo === "ve pulsar la estropeada, con el modelo";
       const objetos = vioEstropeada ? [{ tipo: "palanca_rota", x: 800 }] : [{ tipo: "palanca", x: 800 }];
       const s = nuevaSim({ semilla: mezclar(semilla, 703, k), objetos, criaturas: [{ genoma: gO, x: 560 }], comedero: null });
       const obs = s.criaturas[0];
       obs.nec[0] = 0.5;
       obs.aprendeObservando = brazo !== "ve pulsar la buena, sin el modo";
       obs.atrapada = true;
+      if (brazo.endsWith("con el modelo")) obs.modelo = new ModeloAjeno();
       const conExperta = brazo !== "ve la palanca quieta";
       if (conExperta) {
         const e = Criatura.desde({ ...estadoExperta, id: 2, x: 700, accion: null }, mezclar(semilla, 704, k));
@@ -3150,23 +3152,25 @@ export const caso07d: Caso = {
       s.avanzar(120);
       return { buena: primero === "buena" ? 1 : primero === "mala" ? 0 : 0.5, pulsaciones } as { buena: number };
     };
-    const brazos: Brazo[] = ["ve pulsar la buena", "ve pulsar la estropeada", "ve la palanca quieta", "ve pulsar la buena, sin el modo"];
+    const brazos: Brazo[] = ["ve pulsar la buena", "ve pulsar la estropeada", "ve la palanca quieta", "ve pulsar la buena, sin el modo", "ve pulsar la buena, con el modelo", "ve pulsar la estropeada, con el modelo"];
     const p: Record<string, { buena: number }> = {};
     for (const b of brazos) {
       const r = Array.from({ length: REP }, (_, k) => prueba(b, k));
       p[b] = { buena: media(r.map((x) => x.buena)) };
     }
-    const [A, B, C, D] = brazos;
+    const [A, B, C, D, A2, B2] = brazos;
     // Con la palanca quieta se mide la preferencia de base por el color: va a la buena (del color 1) frente a la estropeada del color 2. Para quien vio la estropeada del color 1,
     // lo que hubiera hecho sin experiencia es el reves: ir a la buena del color 2 es 1 menos eso.
     const baseA = p[C].buena, baseB = 1 - p[C].buena;
     return resultado(semilla, {
-      "ve el resultado: quien vio a la experta pulsar la palanca buena va primero a la buena más que quien vio la palanca quieta (+0,2) y en 2 de cada 3 veces o más": p[A].buena >= 0.65 && p[A].buena > baseA + 0.2,
-      "no es solo estímulo: quien vio a la experta pulsar la estropeada (y no salir nada) va a la buena del otro color más de lo que iría sin experiencia (+0,1), en lugar de a la que vio pulsar": p[B].buena > baseB + 0.1,
+      "realce actual: sin el módulo, quien vio a la experta pulsar la palanca buena va primero a la buena más que quien vio la palanca quieta (+0,2) y en 2 de cada 3 veces o más": p[A].buena >= 0.65 && p[A].buena > baseA + 0.2,
+      "sin el módulo no aprende el resultado: quien vio pulsar la estropeada va a la buena del otro color como mucho lo que iría sin experiencia (no se aleja de la que vio pulsar)": p[B].buena <= baseB,
+      "con el módulo sí: quien vio a la experta pulsar la estropeada (y no salir nada) va a la buena del otro color más de lo que iría sin experiencia (+0,1)": p[B2].buena > baseB + 0.1,
+      "y con el módulo no pierde el realce de lo que da resultado: quien vio pulsar la buena sigue yendo primero a ella en 2 de cada 3 veces o más": p[A2].buena >= 0.65,
       "sin el modo de observación no aprende: ver pulsar la buena no la hace ir más a la buena que quien vio la palanca quieta (a lo sumo +0,1)": p[D].buena <= baseA + 0.1,
     }, {
       buenaVioPulsarLaBuena: p[A].buena, buenaVioPulsarLaEstropeada: p[B].buena, buenaVioLaPalancaQuieta: p[C].buena, buenaSinElModo: p[D].buena,
-      lineaDeBaseParaLaEstropeada: baseB,
+      buenaVioPulsarLaBuenaConModelo: p[A2].buena, buenaVioPulsarLaEstropeadaConModelo: p[B2].buena, lineaDeBaseParaLaEstropeada: baseB,
     }, null, 520);
   },
 };
@@ -3240,7 +3244,7 @@ export const caso35: Caso = {
 export const caso36: Caso = {
   id: "36",
   titulo: "El acechador y las presas que recuerdan",
-  hipotesis: "El caso 26 usaba una presa nueva en cada ronda, y por eso no se podía ver si huir importa. Aquí la presa es siempre la misma, libre para huir y con memoria. Se espera que quien sufre rondas de caza aprenda a huir antes o a recibir menos golpes que una presa nueva cada vez, y se mide si el cazador cambia lo que hace (esperar, acercarse, empujar). No se le dice que se esconda ni que espere: se mide qué sale. Es el caso E21 con lo que hay hoy: no hay escondites ni rodeos, solo los verbos de siempre.",
+  hipotesis: "El caso 26 usaba una presa nueva en cada ronda, y por eso no se podía ver si huir importa. Aquí la presa es siempre la misma, libre para huir y con memoria. Se espera que quien sufre rondas de caza aprenda a huir antes o a recibir menos golpes que una presa nueva cada vez, y se mide si el cazador cambia lo que hace (esperar, acercarse, empujar). No se le dice que se esconda ni que espere: se mide qué sale. Es el caso E21 con lo que hay hoy: no hay escondites ni rodeos, solo los verbos de siempre. La presa empieza a la vista del cazador (a 250 de distancia: la vista llega a 360). Una primera versión la ponía a 500, fuera de su vista, y el cazador casi no la atacaba porque ni la veía.",
   minimo: 0.8,
   ejecutar(semilla) {
     const REP = 5;
@@ -3274,7 +3278,7 @@ export const caso36: Caso = {
         if (!misma || r === 0) presa = nuevaPresa(r);
         s.criaturas = [H, presa];
         H.x = 400; H.accion = null; H.nec[0] = 0.7; H.emo.fill(0);
-        presa.x = 900; presa.accion = null; presa.emo.fill(0); presa.nec[0] = 0.3; presa.salud = 0.6;
+        presa.x = 650; presa.accion = null; presa.emo.fill(0); presa.nec[0] = 0.3; presa.salud = 0.6;
         const t0 = s.t;
         const regH = H.registro.length, regP = presa.registro.length;
         let distHuida = 0, huida = POR_RONDA, espera = 0;
