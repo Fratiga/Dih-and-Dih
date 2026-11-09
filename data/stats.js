@@ -1494,5 +1494,38 @@ window.STATS = [
       { nombre: "¡Está vivo! ¡Fuera! (Reacción)", descripcion: "Cuando Viktor despierta o cuando queda a 15 PV o menos, se mueve hasta su velocidad hacia la salida sin provocar ataques de oportunidad y deja de ser un objetivo para el resto del combate." }
     ],
     estrategia: "Trabaja sin mirar a nadie. Prefiere terminar el ensamblaje antes que defenderse, y se queja de que lo interrumpan. Si le pegan sigue conectando cables hasta que se lo impidan. Huye en cuanto Viktor despierta."
+  },
+  {
+    id: "dexter-bondrewd",
+    nombre: "Dexter Bondrewd",
+    rol: "Jefe final · Control · Inmortalidad",
+    tipo: "Humanoide",
+    raza: "Humano · Científico · Legal malvado",
+    nivel: 7,
+    pv: 380,
+    ca: 18,
+    velocidad: "30 pies",
+    stats: { fue: 12, des: 16, con: 20, int: 22, sab: 18, car: 20 },
+    notas: [
+      "Salvaciones: INT +10, SAB +8, CON +9. Habilidades: Medicina +10, Arcanos +10, Perspicacia +8, Persuasión +9. Percepción pasiva 14. Competencia +4. +11 al impacto y CD 18 en sus habilidades.",
+      "Resistencia al daño necrótico. Inmunidad al veneno y a los estados asustado y hechizado. Ventaja en las salvaciones contra conjuros y otros efectos mágicos.",
+      "Resistencia legendaria (3/combate): cuando falla una salvación, puede elegir superarla.",
+      "Tiene una acción y una acción adicional por turno, y 3 acciones legendarias por ronda (las usa al final del turno de otra criatura, una sola a la vez).",
+      "Lleva una bandolera con tres cartuchos de Nigredo. Mientras los conserve, no puede morir (ver Cartuchos de Nigredo).",
+      "Trata a los jugadores con una cortesía tranquila, como a pacientes. No se altera aunque el combate vaya mal."
+    ],
+    habilidades: [
+      { nombre: "Multiataque (Acción)", descripcion: "Realiza tres ataques de Mano de Umbra. Cada ataque puede ir a un objetivo distinto." },
+      { nombre: "Mano de Umbra (Acción)", descripcion: "Un brazo largo y oscuro sale de su manga. +11 al impacto, alcance 20 pies, un objetivo. Daño: 2d8+5 contundente más 1d8 necrótico. Un objetivo Mediano o menor queda Agarrado (escapa con una prueba de Fuerza o Acrobacias CD 18). Puede mantener hasta tres criaturas Agarradas a la vez, una por Mano. Cada Mano tiene CA 16 y 30 PV. Si se destruye, suelta a la criatura y vuelve a crecer al inicio del siguiente turno de Dexter. El daño a una Mano no afecta a los PV de Dexter." },
+      { nombre: "Cobertura viva (Reacción)", descripcion: "Cuando una criatura lo ataca a distancia o cuerpo a cuerpo mientras tiene a una criatura Agarrada, el ataque va contra la criatura Agarrada en lugar de contra él." },
+      { nombre: "Ascender a la Estrella Matutina (Acción, Recarga 5–6)", descripcion: "Apunta con la palma y dispara un rayo de aniquilación en una línea de 90 pies de largo y 10 de ancho. Cada criatura en ella hace una salvación de Destreza CD 18 o recibe 7d10 de daño de fuerza (mitad si supera). Los objetos y estructuras no mágicos de la línea quedan destruidos." },
+      { nombre: "Cartuchos de Nigredo (Pasiva, 3 cartuchos)", descripcion: "Cuando queda a 0 PV, consume uno sin gastar acción: no cae y recupera 80 PV, y una onda de Nigredo sale de él en 20 pies. Las criaturas en el área hacen una salvación de Constitución CD 18 o reciben 4d8 de daño necrótico y no recuperan PV hasta el final del siguiente turno de Dexter (mitad y sin esa pérdida si superan). Cuando se agotan los tres cartuchos, el siguiente 0 PV lo mata. Una criatura a 5 pies de él puede, como acción, hacer una prueba de Atletismo o Juego de manos contra CD 18 para arrancarle un cartucho de la bandolera. Con ventaja si Dexter está Agarrado o Restringido. Ese cartucho ya no puede usarlo." },
+      { nombre: "Regeneración de laboratorio (Pasiva)", descripcion: "Al inicio de su turno recupera 10 PV si tiene al menos 1 PV. Si desde su último turno recibió daño de fuego, ácido o radiante, no se regenera ese turno." },
+      { nombre: "Mente fría (Pasiva)", descripcion: "No puede ser sorprendido y siempre sabe cuántos aliados le quedan cerca. Los efectos que lo obliguen a moverse contra su voluntad lo mueven la mitad." },
+      { nombre: "Mano rápida (Acción legendaria, cuesta 1)", descripcion: "Realiza un ataque de Mano de Umbra." },
+      { nombre: "Paso de sombra (Acción legendaria, cuesta 1)", descripcion: "Se mueve hasta 20 pies sin provocar ataques de oportunidad. Las criaturas Agarradas por él se mueven con él." },
+      { nombre: "Cartucho de reserva (Acción legendaria, cuesta 2)", descripcion: "Gasta un cartucho de Nigredo sin esperar a caer y recupera 40 PV. Solo puede hacerlo si le queda al menos uno, y entonces se pierde ese cartucho." }
+    ],
+    estrategia: "«Pasen. No toquen nada. Cada cosa aquí tiene su lugar.» Empieza en el centro de la sala sin moverse y deja que los jugadores se acerquen. Abre con el rayo si tres o más están en línea. Usa las Manos para agarrar a los que más daño hacen y los pone delante como cobertura. Concentra las Manos en un blanco y las demás en otro, así nadie escapa de todo. Tarda en gastar un cartucho, porque confía en poder terminar el combate antes. Con el primer cartucho consumido deja de hablar. Contra él funciona el fuego, el ácido y la luz, que le cortan la regeneración. Darian con Golpe Cauterizante le impide curarse. Torvrena puede sujetarlo con arpones y trampas, y entonces cualquiera puede arrancarle un cartucho con ventaja. Destruir las Manos no le hace daño, pero libera a los agarrados y le obliga a perder tiempo. Con 4 jugadores de nivel 6 más Darian y Torvrena empieza con estos PV. Si el grupo es menor, quítale 40 PV por cada miembro que falte."
   }
 ];
