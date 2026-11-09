@@ -3662,5 +3662,147 @@ export const caso40: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso41: Caso = {
+  id: "41",
+  titulo: "Transporte: comida donde hace daño",
+  hipotesis: "Con el transporte encendido, una criatura sola con hambre y una fruta sobre una placa que da descargas puede, sin que nadie se lo indique, recoger la fruta y comerla fuera de la placa, y hacerlo más con la experiencia porque la placa duele. Se separa lo disponible (comprobado aparte, bloque 1j de los tests), lo usado espontáneamente (cargar al menos una vez) y lo aprendido (comer fuera de la placa en la segunda mitad, más que con una placa inocua, y menos tiempo sobre la placa que sin transporte). Criterios fijados antes de ejecutar (ver el plan).",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const DUR = 900;
+    const MITAD = DUR / 2;
+    const PLACA = 900;
+    const previo = AJ.entradasExtra;
+    AJ.entradasExtra = Math.max(previo, 4);
+    try {
+      type Cond = "A" | "B" | "C" | "D";
+      const correr = (cond: Cond) => {
+        const s = nuevaSim({ semilla: mezclar(semilla, 411), objetos: [], criaturas: [{ genoma: genomaDe(semilla, 411), x: 400 }], comedero: null, mortalidad: "protegida" });
+        const c = s.criaturas[0];
+        c.puedeCargar = cond !== "B";
+        c.nec[0] = 0.75;
+        c.capRegistro = 50000;
+        if (cond !== "D") s.mundo.agregar(cond === "C" ? "placa_inocua" : "placa", PLACA);
+        s.mundo.agregar("fruta", PLACA);
+        let frutas = 1, sinFruta = -1, cargas = 0, cargas1 = 0, previa: number | null = null;
+        const seg = [0, 0];
+        const xs: number[] = [];
+        s.ganchos.push(() => {
+          xs.push(c.x);
+          const mitad = s.t < MITAD ? 0 : 1;
+          if (cond !== "D" && Math.abs(c.x - PLACA) <= 75) seg[mitad] += AJ.dt;
+          if (c.lleva !== null && previa === null) { cargas++; if (mitad === 0) cargas1++; }
+          previa = c.lleva;
+          const hay = s.mundo.objetos.some((o) => o.tipo === "fruta" && (Math.abs(o.x - PLACA) < 60 || o.llevadoPor !== undefined));
+          if (hay) sinFruta = -1;
+          else if (sinFruta < 0) sinFruta = s.t;
+          else if (s.t - sinFruta >= 25) { s.mundo.agregar("fruta", PLACA); frutas++; sinFruta = -1; }
+        });
+        s.avanzar(DUR);
+        const dentro = [0, 0], fuera = [0, 0];
+        for (const r of c.registro) {
+          if (r.kind !== "impacto" || r.v !== "probar" || (r.res?.[0] ?? 0) <= 0.1) continue;
+          const x = xs[Math.min(xs.length - 1, Math.max(0, Math.floor(r.t / AJ.dt) - 1))];
+          (Math.abs(x - PLACA) <= 75 ? dentro : fuera)[r.t < MITAD ? 0 : 1]++;
+        }
+        const prop2 = dentro[1] + fuera[1] > 0 ? fuera[1] / (dentro[1] + fuera[1]) : 0;
+        return { cargas, cargas1, frutas, seg, dentro, fuera, prop2, comidas2: dentro[1] + fuera[1] };
+      };
+      const A = correr("A"), B = correr("B"), Cc = correr("C"), D = correr("D");
+      return resultado(semilla, {
+        "usada espontáneamente: con transporte y placa peligrosa carga la fruta al menos una vez": A.cargas >= 1,
+        "aprendida por el daño: en la segunda mitad come fuera de la placa al menos la mitad de lo que come (con al menos 2 bocados) y 0,2 más que con una placa inocua": A.comidas2 >= 2 && A.prop2 >= 0.5 && A.prop2 - Cc.prop2 >= 0.2,
+        "menos tiempo sobre la placa en la segunda mitad que sin transporte (como mucho el 70 %)": A.seg[1] <= 0.7 * B.seg[1],
+        "no carga todas las frutas (como mucho el 95 %)": A.cargas <= 0.95 * A.frutas,
+      }, {
+        cargasA: A.cargas, cargasC: Cc.cargas, cargasD: D.cargas, frutasA: A.frutas,
+        cargasPrimeraMitadA: A.cargas1,
+        segPlacaA1: A.seg[0], segPlacaA2: A.seg[1], segPlacaB1: B.seg[0], segPlacaB2: B.seg[1], segPlacaC1: Cc.seg[0], segPlacaC2: Cc.seg[1],
+        dentroA1: A.dentro[0], fueraA1: A.fuera[0], dentroA2: A.dentro[1], fueraA2: A.fuera[1],
+        dentroB2: B.dentro[1], dentroC2: Cc.dentro[1], fueraC2: Cc.fuera[1], propFueraA2: A.prop2, propFueraC2: Cc.prop2,
+      }, null, DUR);
+    } finally {
+      AJ.entradasExtra = previo;
+    }
+  },
+};
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso42: Caso = {
+  id: "42",
+  titulo: "Barreras: comida detrás de una reja",
+  hipotesis: "Una reja cierra el paso a una fruta visible. Una criatura hambrienta puede, sin que nadie se lo indique, empujar la reja (lo hace por curiosidad, no por saber que se rompe), romperla, llegar a la comida y, con los episodios, tardar menos. Controles: la misma reja sin comida detrás (empuja por la comida y no por costumbre) y una reja que no se rompe (deja de empujarla cuando no sirve). Criterios fijados antes de ejecutar (ver el plan).",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const DUR = 900;
+    const MITAD = DUR / 2;
+    const REJA = 800;
+    const FRUTA = 900;
+    type Cond = "A" | "B" | "C" | "D";
+    const correr = (cond: Cond) => {
+      const tipoReja = cond === "C" ? "reja_fija" : "reja";
+      const s = nuevaSim({ semilla: mezclar(semilla, 421), objetos: [], criaturas: [{ genoma: genomaDe(semilla, 421), x: 400 }], comedero: null, mortalidad: "protegida" });
+      const c = s.criaturas[0];
+      c.nec[0] = 0.8;
+      c.capRegistro = 50000;
+      const hayReja = (): boolean => s.mundo.objetos.some((o) => o.tipo === tipoReja);
+      const hayFrutaDetras = (): boolean => s.mundo.objetos.some((o) => o.tipo === "fruta" && o.x > REJA);
+      const poner = (): void => {
+        if (cond !== "D" && !hayReja()) s.mundo.agregar(tipoReja, REJA);
+        if (cond !== "B" && !hayFrutaDetras()) s.mundo.agregar("fruta", FRUTA);
+      };
+      poner();
+      if (cond === "B") s.mundo.agregar("fruta", 150);
+      const xs: number[] = [];
+      let maxIntacta = 0;
+      let estado: "activo" | "espera" = "activo";
+      let t0 = 0, tEspera = 0, sinCerca = -1;
+      const episodios: { t0: number; t1: number }[] = [];
+      s.ganchos.push(() => {
+        xs.push(c.x);
+        if (cond !== "D" && hayReja()) maxIntacta = Math.max(maxIntacta, c.x);
+        if (cond === "B") {
+          const cerca = s.mundo.objetos.some((o) => o.tipo === "fruta" && o.x < 700);
+          if (cerca) sinCerca = -1;
+          else if (sinCerca < 0) sinCerca = s.t;
+          else if (s.t - sinCerca >= 25) { s.mundo.agregar("fruta", 150); sinCerca = -1; }
+        }
+        if (estado === "activo") {
+          const resuelto = cond === "D" ? !hayFrutaDetras() : cond === "B" ? !hayReja() : cond === "A" ? !hayReja() && !hayFrutaDetras() : false;
+          if (resuelto || s.t - t0 >= 150) { episodios.push({ t0, t1: s.t }); estado = "espera"; tEspera = s.t; }
+        } else if (s.t - tEspera >= 20) { c.x = 400; c.vx = 0; c.accion = null; poner(); estado = "activo"; t0 = s.t; }
+      });
+      s.avanzar(DUR);
+      const empujones = [0, 0];
+      for (const r of c.registro) if (r.kind === "inicio" && r.v === "empujar" && r.tipo === tipoReja) empujones[r.t < MITAD ? 0 : 1]++;
+      const xAt = (t: number): number => xs[Math.min(xs.length - 1, Math.max(0, Math.floor(t / AJ.dt) - 1))];
+      // Tiempo desde el inicio de cada episodio hasta el primer bocado de la fruta que estaba detras de la reja (o, sin reja, de la que estaba a la vista)
+      const tiempos: number[] = [];
+      for (const e of episodios) {
+        const b = c.registro.find((r) => r.kind === "impacto" && r.v === "probar" && (r.res?.[0] ?? 0) > 0.1 && r.t >= e.t0 && r.t <= e.t1 + 1 && xAt(r.t) > (cond === "D" ? 850 : REJA));
+        if (b) tiempos.push(b.t - e.t0);
+      }
+      return { empujones, tiempos, episodios: episodios.length, maxIntacta };
+    };
+    const A = correr("A"), B = correr("B"), Cc = correr("C"), D = correr("D");
+    const emA = A.empujones[0] + A.empujones[1];
+    return resultado(semilla, {
+      "barrera real: con la reja intacta nunca pasa de x = 774 (ni con la que se rompe ni con la fija)": A.maxIntacta <= 774.01 && Cc.maxIntacta <= 774.01,
+      "usada espontáneamente: empuja la reja al menos 3 veces": emA >= 3,
+      "llega a la comida: rompe la reja y come detrás al menos una vez": A.tiempos.length >= 1,
+      "aprendida: con al menos 3 episodios completados, el último tarda como mucho el 70 % del primero": A.tiempos.length >= 3 && A.tiempos[A.tiempos.length - 1] <= 0.7 * A.tiempos[0],
+      "por la comida: en la segunda mitad empuja la reja al menos 2 veces más con comida detrás que sin ella": A.empujones[1] >= B.empujones[1] + 2,
+      "aprende que no sirve: con la reja fija, los empujones de la segunda mitad son como mucho la mitad de los de la primera (con al menos 2 en la primera)": Cc.empujones[0] >= 2 && Cc.empujones[1] <= 0.5 * Cc.empujones[0],
+    }, {
+      empujonesA1: A.empujones[0], empujonesA2: A.empujones[1], empujonesB1: B.empujones[0], empujonesB2: B.empujones[1], empujonesC1: Cc.empujones[0], empujonesC2: Cc.empujones[1],
+      episodiosA: A.episodios, episodiosCompletadosA: A.tiempos.length, primeroA: A.tiempos[0] ?? -1, ultimoA: A.tiempos.length ? A.tiempos[A.tiempos.length - 1] : -1,
+      episodiosD: D.episodios, tiempoMedioD: D.tiempos.length ? media(D.tiempos) : -1, maxXIntactaA: A.maxIntacta, maxXIntactaC: Cc.maxIntacta,
+      episodiosB: B.episodios, episodiosC: Cc.episodios,
+    }, null, DUR);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso41, caso42, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

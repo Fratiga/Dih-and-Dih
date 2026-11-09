@@ -1781,7 +1781,7 @@ Se anotan además, sin criterio, las cargas de C y de D, los segundos sobre la p
 
 ### Caso 42. Barreras: comida detrás de una reja
 
-Una criatura sola en x = 400, hambre inicial 0,8, con una reja en x = 800 y una fruta en x = 900. Cuando la reja se rompe y la fruta se come (o cuando pasan 150 s sin ninguna de las dos), 20 s después reaparecen la reja y una fruta, y empieza un episodio nuevo. 900 s, mortalidad protegida. Cuatro condiciones.
+Una criatura sola en x = 400, hambre inicial 0,8, con una reja en x = 800 y una fruta en x = 900. Cuando la reja se rompe y la fruta se come (o cuando pasan 150 s sin ninguna de las dos), 20 s después reaparecen la reja y una fruta, y empieza un episodio nuevo, con la criatura de vuelta en x = 400 (así nunca empieza al otro lado de la reja). 900 s, mortalidad protegida. Cuatro condiciones.
 - **A.** Reja que se rompe, comida detrás.
 - **B.** Reja que se rompe, sin comida detrás. La criatura come de una fruta que aparece en x = 150 cada 25 s. Control de que empuja la reja por la comida y no por costumbre.
 - **C.** Reja fija (que no se rompe), comida detrás, con el mismo aspecto que la reja. Control de que deja de empujarla si no sirve.
