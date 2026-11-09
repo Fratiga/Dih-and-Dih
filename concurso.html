@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cabina · Concurso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lilita+One&family=Nunito:wght@600;700;800;900&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/concurso-escena.css?v=20271160">
+  <link rel="stylesheet" href="css/concurso.css?v=20271160">
+</head>
+<body class="cz-cabina">
+  <header class="cz-top">
+    <div class="cz-marca"><i aria-hidden="true"></i>Cabina</div>
+    <input class="cz-top-nombre" id="czNombrePartida" aria-label="Nombre de la partida">
+    <div class="cz-menu">
+      <button type="button" data-menu="czMenuPartidas">Partidas ▾</button>
+      <div class="cz-menu-lista" id="czMenuPartidas" hidden></div>
+    </div>
+    <label class="cz-campo cz-top-tema"><span>Tema</span><select id="czTemaPartida"></select></label>
+    <div class="cz-top-sep"></div>
+    <span class="cz-chip-remoto" id="czRemoto">Jugadores</span>
+    <button type="button" id="czPrograma" class="cz-btn-aire" title="La ventana que compartes por Discord">Abrir programa</button>
+  </header>
+
+  <aside class="cz-col-esc">
+    <div class="cz-col-cab"><h2>Escenas</h2><button type="button" class="cz-btn-mini" id="czEscenaNueva">+ Escena</button></div>
+    <div class="cz-escenas" id="czEscenas"></div>
+  </aside>
+
+  <main class="cz-centro">
+    <div class="cz-herr">
+      <button type="button" data-anadir="texto" title="Texto">Texto</button>
+      <button type="button" data-anadir="imagen" title="Imagen del equipo (también puedes pegarla o arrastrarla al escenario)">Imagen</button>
+      <div class="cz-menu">
+        <button type="button" data-menu="czMenuFormas">Formas ▾</button>
+        <div class="cz-menu-lista" id="czMenuFormas" hidden>
+          <button type="button" data-anadir="titulo">Título grande</button>
+          <button type="button" data-anadir="pestana">Texto en pestaña</button>
+          <button type="button" data-anadir="rect">Rectángulo</button>
+          <button type="button" data-anadir="circulo">Círculo</button>
+          <button type="button" data-anadir="anillo">Círculo de revelación</button>
+          <button type="button" data-anadir="linea">Línea</button>
+          <button type="button" data-anadir="boton">Botón (menu, answer, points)</button>
+        </div>
+      </div>
+      <div class="cz-menu">
+        <button type="button" data-menu="czMenuJuego">Piezas de juego ▾</button>
+        <div class="cz-menu-lista" id="czMenuJuego" hidden>
+          <button type="button" data-anadir="marcador">Marcador de jugador</button>
+          <button type="button" data-anadir="podio">Podio</button>
+          <button type="button" data-anadir="matriz">Matriz de categorías</button>
+          <button type="button" data-anadir="prueba">Imagen de prueba (recorte)</button>
+          <button type="button" data-anadir="silueta">Imagen de prueba (silueta)</button>
+          <button type="button" data-anadir="carta">Carta</button>
+          <button type="button" data-anadir="suerte">Cartas de riesgo</button>
+          <button type="button" data-anadir="feud">Respuestas ocultas</button>
+          <button type="button" data-anadir="fichas">Fichas por dificultad</button>
+          <button type="button" data-anadir="reloj">Temporizador</button>
+        </div>
+      </div>
+      <span class="cz-herr-sep"></span>
+      <button type="button" id="czDeshacer" title="Deshacer (Ctrl+Z)">↶</button>
+      <button type="button" id="czRehacer" title="Rehacer (Ctrl+Y)">↷</button>
+      <span class="cz-herr-tit">Editando <b id="czEditorTitulo"></b> <button type="button" id="czEnviarAire" class="cz-btn-aire" title="Ctrl+Enter">Poner al aire</button></span>
+    </div>
+    <div class="cz-editor-zona">
+      <div class="cz-editor" id="czEditor"></div>
+      <label class="cz-verpaso" title="Ver cómo queda la escena en cada paso">Vista <input type="range" id="czVerPaso" min="0" max="0" value="0"> <span id="czVerPasoTxt">Inicio</span></label>
+    </div>
+    <section class="cz-pasos">
+      <div class="cz-pasos-cab">
+        <h3>Pasos <small>Espacio avanza y Retroceso vuelve, con la escena al aire</small></h3>
+        <button type="button" class="cz-btn-mini" id="czPasoSonido">+ Sonido</button>
+        <button type="button" class="cz-btn-mini cz-btn-fuerte" id="czPasoNuevo">+ Paso con lo seleccionado</button>
+      </div>
+      <div class="cz-pasos-lista" id="czPasosLista"></div>
+    </section>
+  </main>
+
+  <aside class="cz-der">
+    <section class="cz-aire">
+      <div class="cz-aire-cab"><span class="cz-aire-luz">AL AIRE</span><span class="cz-aire-nom" id="czAireNombre"></span><button type="button" class="cz-btn-mini" id="czEditarAire">Editar</button></div>
+      <div class="cz-monitor" id="czMonitor" title="Haz clic en botones, celdas, cartas y temporizadores como si fuera el programa"></div>
+      <div class="cz-aire-ctrl">
+        <button type="button" class="cz-btn" id="czPasoAnt" title="Retroceso">◀</button>
+        <span class="cz-aire-paso" id="czAirePaso"></span>
+        <button type="button" class="cz-btn cz-btn-fuerte" id="czPasoSig" title="Espacio">Siguiente ▶</button>
+      </div>
+      <div class="cz-aire-sig" id="czAireSiguiente"></div>
+      <div class="cz-aire-pie">
+        <label class="cz-casilla"><input type="checkbox" id="czSilencio"><i></i><span>Silenciar el programa</span></label>
+        <label class="cz-casilla"><input type="checkbox" id="czSonidoCabina"><i></i><span>Sonidos aquí</span></label>
+        <button type="button" class="cz-btn-mini" id="czReiniciarAire" title="Quita celdas usadas, cartas volteadas y temporizadores de la escena al aire">Limpiar marcas</button>
+      </div>
+    </section>
+    <nav class="cz-pestanas"><button type="button" data-pestana="props">Propiedades</button><button type="button" data-pestana="jugadores">Jugadores</button></nav>
+    <div class="cz-lado">
+      <div id="czProps"></div>
+      <div id="czJug" hidden></div>
+    </div>
+  </aside>
+
+  <div class="cz-avisos" id="czAvisos"></div>
+
+  <script src="js/fichas-supabase.js?v=20271111"></script>
+  <script src="js/concurso-modelo.js?v=20271160"></script>
+  <script src="js/concurso-componentes.js?v=20271160"></script>
+  <script src="js/concurso-escena.js?v=20271160"></script>
+  <script src="js/concurso-sync.js?v=20271160"></script>
+  <script src="js/concurso-cabina.js?v=20271160"></script>
+</body>
+</html>
