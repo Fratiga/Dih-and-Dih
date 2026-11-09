@@ -1824,6 +1824,26 @@ Primera ejecución, 10 semillas, criterios sin cambiar. **Ninguno de los dos cas
 - **Qué se mira además, sin criterio.** Que no se generaliza de más. En el brazo B (sin comida detrás) se cuentan los bocados de fruta del lado de la criatura, para comprobar que la fruta no ha dejado de alimentar en todas partes.
 - **Qué pasa si no funciona.** Se cuenta tal cual. No se ajusta nada para que salga.
 
+### Resultados del caso 42b (11-nov-2026)
+
+Una ejecución, 10 semillas, criterios sin cambiar. No aprueba como caso (0 de 10 semillas cumplen los seis), pero la separación entre lo disponible, lo usado y lo aprendido queda mucho más clara que en el caso 42.
+
+| Criterio | 42 (sin el mecanismo) | 42b (con `aprendeBloqueos`) |
+|---|---|---|
+| Barrera real | 10/10 | 10/10 |
+| Usada espontáneamente (empuja la reja al menos 3 veces) | 0/10 | **10/10** |
+| Llega a la comida (rompe la reja y come detrás) | 0/10 | **8/10** |
+| Aprendida (el último episodio tarda como mucho el 70 % del primero) | 0/10 | 1/10 |
+| Por la comida (más empujones que sin comida detrás) | 0/10 | 0/10 |
+| Aprende que no sirve (reja fija) | 1/10 | **9/10** |
+
+- **Disponible.** Sí, como antes.
+- **Usada espontáneamente.** Con el mecanismo, la criatura hambrienta empuja la reja 10,2 veces de media en la primera mitad (8 a 12 en las diez semillas, frente a 1,1 sin él), la rompe en 8 de 10 semillas y come detrás (mediana de 5 bocados de la fruta de detrás en 900 s, frente a 0). Nadie le dice que empuje ni que se rompa. Sin comida detrás (B), empuja lo mismo que antes (9,4 y 18,8), y sus bocados de fruta no cambian (9,5 con y sin el mecanismo), así que no ha dejado de comer fruta en general.
+- **Aprendida a que no sirve.** Con la reja fija empuja 5,5 veces en la primera mitad y 0,6 en la segunda, y cumple el criterio en 9 de 10 semillas. Es un aprendizaje por lo que pasa (la reja no cede ni deja comer).
+- **Aprendida a que sirve: no demostrada.** El criterio 4 se cumple en 1 de 10. Hay pocos episodios completos (1,7 de media por semilla, de 5 por semilla; en 2 de 10 semillas no llega ninguno), y con la mediana de lo que tarda el primero (81 s) y la del último (76 s) no hay mejora medible. No se puede decir que tarde menos con la práctica, ni tampoco lo contrario, porque falta cantidad.
+- **Criterio 5 mal planteado.** La comparación de empujones de la segunda mitad entre A (12 de mediana) y B (19,5) sale a favor de B, pero B repone la reja más veces (8 episodios frente a 5) porque la rompe antes de que se acabe nada, y cuenta más rejas. No es evidencia de que empuje por costumbre. Se deja como está (no se cambia después de ver los datos) y se anota que haría falta medir los empujones por reja presentada. Queda pendiente.
+- **Lo que falta.** Un episodio más corto (el actual dura hasta 150 s y la criatura tarda unos 80) o una sala con más reposiciones, para que haya suficientes episodios completos y la pregunta de si tarda menos con la práctica tenga respuesta. Esa duración se puede ajustar en una ronda posterior con su propia adenda.
+
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 
 Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:

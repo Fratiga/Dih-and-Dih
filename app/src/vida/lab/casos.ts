@@ -3780,7 +3780,8 @@ function ejecutar42(semilla: number, aprende: boolean): ResSemilla {
         const b = c.registro.find((r) => r.kind === "impacto" && r.v === "probar" && (r.res?.[0] ?? 0) > 0.1 && r.t >= e.t0 && r.t <= e.t1 + 1 && xAt(r.t) > (cond === "D" ? 850 : REJA));
         if (b) tiempos.push(b.t - e.t0);
       }
-      return { empujones, tiempos, episodios: episodios.length, maxIntacta };
+      const bocados = c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "fruta" && (r.res?.[0] ?? 0) > 0.1).length;
+      return { empujones, tiempos, episodios: episodios.length, maxIntacta, bocados };
     };
     const A = correr("A"), B = correr("B"), Cc = correr("C"), D = correr("D");
     const emA = A.empujones[0] + A.empujones[1];
@@ -3795,7 +3796,7 @@ function ejecutar42(semilla: number, aprende: boolean): ResSemilla {
       empujonesA1: A.empujones[0], empujonesA2: A.empujones[1], empujonesB1: B.empujones[0], empujonesB2: B.empujones[1], empujonesC1: Cc.empujones[0], empujonesC2: Cc.empujones[1],
       episodiosA: A.episodios, episodiosCompletadosA: A.tiempos.length, primeroA: A.tiempos[0] ?? -1, ultimoA: A.tiempos.length ? A.tiempos[A.tiempos.length - 1] : -1,
       episodiosD: D.episodios, tiempoMedioD: D.tiempos.length ? media(D.tiempos) : -1, maxXIntactaA: A.maxIntacta, maxXIntactaC: Cc.maxIntacta,
-      episodiosB: B.episodios, episodiosC: Cc.episodios,
+      episodiosB: B.episodios, episodiosC: Cc.episodios, bocadosA: A.bocados, bocadosB: B.bocados, bocadosC: Cc.bocados, bocadosD: D.bocados,
     }, null, DUR);
 }
 
