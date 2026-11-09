@@ -746,6 +746,8 @@ export class Criatura {
       const def = CATALOGO[ob.tipo];
       this.mem.aprender(u.v, featuresObjeto(ob), ob.x / env.mundo.ancho, [0, 0, def.efecto * 0.5 * realce, 0.1 * realce, 0], ob.tipo, def.nombre, env.t, [false, false, true, true, false], 0.5, false);
       if (realce > 0.3) this.forzar = true;
+      // Si ha visto lo bastante para saber que eso no da nada, lo sabe de verdad: cuenta como conocimiento propio y deja de ser una novedad que explorar
+      if (this.modelo && realce === 0) this.saberQueNoSirve(ob, env);
     }
   }
 
@@ -1203,6 +1205,18 @@ export class Criatura {
       // El susto es del objeto y no solo de lo que acababa de hacer con el: se asocia igual con lo demas que puede hacer con el
       if (CATALOGO[ult.tipo]) this.extenderAlObjeto(ult, res, [false, true, false, false, true], env.t);
     } else this.mem.anotar(env.t, "susto:aire", "Se llevó un susto sin saber de dónde.", -0.4);
+  }
+
+  /** Por lo que ha visto hacer a otras, sabe que ese objeto no da nada: lo anota para todo lo que se puede hacer con el, como saber propio (no solo como algo visto), de modo que
+      deje de atraerla como novedad y pese menos que lo que no conoce. */
+  private saberQueNoSirve(ob: Objeto, env: Entorno): void {
+    const def = CATALOGO[ob.tipo];
+    const todos = [true, true, true, true, true, true];
+    for (const v of VERBOS_SOBRE_OBJETOS) {
+      const suyas = this.mem.protos.filter((p) => p.v === v && p.tipo === ob.tipo);
+      if (suyas.length) for (const p of suyas) this.mem.reforzar(p, resCero(), todos, 1, env.t, true);
+      else this.mem.aprender(v, featuresObjeto(ob), ob.x / env.mundo.ancho, resCero(), ob.tipo, def.nombre, env.t, todos, 1, true);
+    }
   }
 
   /** Lo que se le ensena con un susto o un premio sobre un objeto vale para todo lo que sabe hacer con el, no solo para lo ultimo: se mezcla en todas sus asociaciones con ese

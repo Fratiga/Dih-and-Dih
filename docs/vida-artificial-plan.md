@@ -1399,7 +1399,7 @@ Se pide que el terreno sea como el del corral del Hipódromo, un mapa con profun
 0. **Laboratorio rápido: hecho.**
 1. **P0, red con entradas ampliables: hecho.**
 2. **Probar lo que no necesita nada nuevo: hecho** (el extraño, caso 34; la jerarquía con cuatro, caso 35; el acechador con presas que recuerdan, caso 36, donde la presa que recuerda aprende pero el cazador espera mucho).
-3. **Etapa 0 del modelo de las otras (07d): hecha.** Etapa 1 del módulo: hecha, con resultado parcial (ver más abajo). Siguiente: etapa 2 (sustituir `pesoVicario` por la fuerza del conteo).
+3. **Etapa 0 del modelo de las otras (07d): hecha.** Etapas 1 y 2 del módulo: hechas (ver «Etapas 1 y 2»). Siguiente: sustituir `pesoVicario` por la fuerza del conteo, y la sorpresa.
 4. Transporte y barreras, cada una con su caso mínimo.
 5. Altura con consecuencias reales (suelo, estante, alto).
 6. Especialización física.
@@ -1554,23 +1554,23 @@ La prueba que decide si hace falta el módulo (ver «Modelo de las otras criatur
 - **Veredicto de la etapa 0.** El mecanismo que existe no aprende lo que consigue la otra, solo se fija en lo que toca. Eso es exactamente lo que el módulo propuesto tendría que corregir, y la prueba queda como el caso de medida: con el módulo aprendiendo, quien vio la estropeada tiene que ir a la buena de otro color más que sin experiencia (el criterio B).
 - **Límites.** Solo una experta, una máquina y un resultado (comida). No se separó el efecto del color del de la posición más allá de alternar los lados.
 
-### Etapa 1 del modelo de las otras: hecha, con un resultado parcial
+### Etapas 1 y 2 del modelo de las otras: hechas, y el 07d aprueba
 
 Se implementó el módulo de conteos de contingencia (`nucleo/modeloajeno.ts`), tras la opción `modelo` de la criatura (apagada por defecto, y apagada no se ejecuta ni se guarda nada). No toca la red ni sus entradas.
 
-- **Qué hace.** Cada vez que ve a otra actuar sobre un objeto (por ejemplo, pulsar una palanca) apunta la acción, y si en los 6 s siguientes aparece algo comestible a partir de ese objeto (lo que ya ve la criatura con sus propios ojos), la cuenta como un resultado. No lee nada interno de la otra.
-- **Para qué se usa.** El realce que provoca ver a otra tocar algo (curiosidad, excitación y un recuerdo de diversión del objeto) se multiplica por la evidencia. Sin datos suficientes (menos de 3 acciones cerradas) vale 1, como hasta ahora. Con datos vale el doble de la fracción de veces que a la acción le siguió un resultado (con tope en 1), y 0 si nunca.
-- **Comprobado** (bloque 1h, 9 comprobaciones): sin datos vale 1, cada acción se cuenta una vez, sin resultados vale 0, con resultado a cada acción se mantiene en 1, con uno de cada tres vale el doble de esa fracción, un resultado fuera de plazo no cuenta, se guarda y se restaura.
-- **En el caso 07d** (seis condiciones, 12 réplicas por semilla):
+- **Etapa 1: qué hace.** Cada vez que ve a otra actuar sobre un objeto (por ejemplo, pulsar una palanca) apunta la acción, y si en los 6 s siguientes aparece algo comestible a partir de ese objeto (lo que ya ve la criatura con sus propios ojos), la cuenta como un resultado. No lee nada interno de la otra. El realce que provoca ver a otra tocar algo (curiosidad, excitación y un recuerdo de diversión del objeto) se multiplica por la evidencia: sin datos suficientes (menos de 3 acciones cerradas) vale 1, como hasta ahora; con datos, el doble de la fracción de veces que a la acción le siguió un resultado (con tope en 1), y 0 si nunca.
+- **Etapa 2: saber por evidencia cuenta como saber propio.** Con la etapa 1 sola, quien vio pulsar la estropeada dejaba de ir a ella (0,46 frente a 0,42 sin experiencia) pero no prefería la otra. Lo que faltaba: en el modo de observación lo visto no cuenta como conocimiento propio (es el arreglo de la trampa de confianza del 07c), así que la palanca estropeada seguía siendo una novedad que explorar tanto como la otra. Ahora, cuando el realce vale 0 (ha visto lo bastante para saber que eso no da nada), la criatura lo anota para todo lo que se puede hacer con ese objeto (probar, empujar, tocar) como saber propio (`saberQueNoSirve`, con `Memoria.reforzar(..., propia)`). Deja de ser una novedad y pesa menos que lo que no conoce.
+- **Comprobado** (bloque 1h, 10 comprobaciones): sin datos vale 1, cada acción se cuenta una vez, sin resultados vale 0, con resultado a cada acción se mantiene en 1, con uno de cada tres vale el doble de esa fracción, un resultado fuera de plazo no cuenta, se guarda y se restaura, la criatura guarda su modelo, por defecto no hay, y reforzar con saber propio sube la confianza propia.
+- **En el caso 07d** (seis condiciones, 12 réplicas por semilla; aprueba 9 de 10 semillas):
 
-| Qué vio | Sin el módulo | Con el módulo | Sin experiencia |
-|---|---|---|---|
-| Pulsar la buena: va primero a la buena | 1,00 | **1,00** | 0,58 |
-| Pulsar la estropeada: va a la buena del otro color | 0,00 | **0,46** | 0,42 |
+| Qué vio | Sin el módulo | Con la etapa 1 sola | Con las etapas 1 y 2 | Sin experiencia |
+|---|---|---|---|---|
+| Pulsar la buena: va primero a la buena | 1,00 | 1,00 | **1,00** | 0,58 |
+| Pulsar la estropeada: va a la buena del otro color | 0,00 | 0,46 | **1,00** | 0,42 |
 
-  El módulo quita el engaño: quien vio pulsar la estropeada, que no dio nada, deja de ir a ella y se comporta como lo haría sin experiencia (0,46 frente a 0,42). Quien vio pulsar la buena conserva todo su realce (1,00).
-- **Lo que no hace.** El criterio pedía más que eso: ir a la buena del otro color más de lo que iría sin experiencia (+0,1), es decir, evitar activamente la que vio pulsar sin éxito. Se cumple en 3 de 10 semillas. La etapa 1 produce indiferencia y no preferencia por lo que no vio. No hay un aprendizaje de «las palancas de este tipo no sirven» que se traslade a otra palanca distinta.
-- **Qué queda de la etapa 1 del diseño.** Hoy el módulo solo gobierna el realce. No acredita al resultado una preferencia propia (la ruta de `aprenderDeOtra` sigue como estaba), no predice la acción siguiente de la otra ni usa la sorpresa. La etapa 2 del diseño (sustituir `pesoVicario` por la fuerza del conteo) y la etapa 3 siguen pendientes.
+  Sin el módulo, quien vio pulsar la estropeada va a ella siempre, aunque no diera nada. Con las etapas 1 y 2, va a la buena del otro color el 100 % de las veces (1,00 en las diez semillas). Quien vio pulsar la buena conserva todo su realce. Sin el modo de observación no aprende nada, como antes.
+- **Lo que no hace todavía.** No predice la acción siguiente de la otra ni usa la sorpresa para dirigir la atención, y no sustituye el peso fijo `pesoVicario` por la fuerza del conteo. Solo cubre un tipo de resultado (aparece comida cerca del objeto).
+- **Cuidado con leer 1,00 como aprendizaje fino.** Es una preferencia total, la más fuerte posible. Podría estar sobrevalorada porque la palanca de otro color es una novedad sin ningún conocimiento previo. Con un tipo de palanca visto antes pero distinto sería menos claro. No se probó.
 - **Regresión.** Apagado, no cambia ningún caso.
 
 ## La jerarquía alrededor de la comida (caso 35)
@@ -1596,7 +1596,7 @@ El caso E21 con lo que hay: un cazador agresivo con carroñeo previo (3 rondas c
 - **La memoria importa** (8 de 10): en las dos últimas rondas la presa que recuerda recibe 0,0 golpes frente a 1,0 de una presa nueva. Una presa nueva también recibe menos al final (de 2,0 a 1,0), así que parte del descenso es del cazador.
 - **No huye antes** (4 de 10): la latencia de la primera huida va de 46 s a 38 s con la misma presa, sin una tendencia clara. Recibe menos golpes sin huir antes.
 - **Hay caza, aunque poca** (5 de 10 semillas con 5 golpes o más en las ocho rondas): el cazador espera 36 s de cada 90 aunque la presa esté a la vista, y se acerca una vez por ronda de mediana.
-- **Lo que queda:** por qué espera tanto el cazador con una presa sana a la vista, cuando la utilidad de empujarla es la más alta. Queda por mirar (fatiga de combate, y que el reinicio de cada ronda lo suelta de lo que hacía).
+- **Por qué espera el cazador** (diagnosticado el 10-nov-2026, sin cambiar nada). Tras las primeras embestidas, `descansar` vale 0,45 y `empujar` 0,31, con una fatiga de combate de 0,10 a 0,15 que suma al descanso. Son las pausas de la fatiga de combate diseñada en los casos 24 y 26 (persistencia con pausas y sin frenesí), no un fallo. Los 36 s de espera de cada 90 son esas pausas. No se cambió ningún peso.
 
 ## Interfaz: añadir razas simples desde la sala
 

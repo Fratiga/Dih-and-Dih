@@ -247,6 +247,12 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   cr.modelo.verAccion("empujar:palanca", 3, 1);
   afirma(Criatura.desde(JSON.parse(JSON.stringify(cr.estado())), 1).modelo?.cuenta("empujar:palanca") !== undefined && Criatura.desde(JSON.parse(JSON.stringify(cr.estado())), 1).modelo !== null, "la criatura guarda y restaura su modelo de las otras");
   afirma(new Criatura(1, "A", genomaNuevo(1), 300, 1).modelo === null, "por defecto no hay modelo (apagado)");
+  // Lo que se sabe por evidencia cuenta como saber propio: refuerza la confianza propia de una asociacion
+  const mem = cr.mem;
+  const asoc = mem.aprender("empujar", [0.1, 0.7, 0.7, 0.5, 0.3, 0, 0.2, 0, 0, 0.5], 0.5, [0, 0, 0.2, 0, 0, 0], "palanca", "palanca", 0, undefined, 1, false);
+  const propiaAntes = asoc.nProp ?? 0;
+  mem.reforzar(asoc, [0, 0, 0, 0, 0, 0], [true, true, true, true, true, true], 1, 5, true);
+  afirma((asoc.nProp ?? 0) === propiaAntes + 1 && asoc.res[2] < 0.2, "reforzar con saber propio sube la confianza propia y lleva el resultado hacia lo aprendido (aquí, nada)");
 }
 
 // 2. Determinismo y semilla
