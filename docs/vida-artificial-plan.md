@@ -1797,6 +1797,10 @@ Criterios, fijados ahora, por semilla (un 80 %, caso informativo).
 
 Si algún criterio resulta mal planteado, se corrige a la vista y se anota como cambio hecho después de ver datos. No se espera que todos se cumplan. Lo que se quiere saber es si los medios se usan, y si lo que la criatura hace con ellos cambia con la experiencia.
 
+### Interfaz de las barreras y el transporte
+
+En la sala de pruebas la bandeja trae la **reja** y el **muro** (la reja fija es solo del laboratorio), y en el pie hay dos interruptores, **Transporte** y **Aprender de choques**, apagados por defecto, que valen para toda la sala y para las crías. La partida usa ya 4 entradas ampliables en la red (la regresión con y sin ellas da lo mismo: 173 comprobaciones en los dos casos). Falta dibujar lo que se lleva a cuestas con la postura de la criatura, y que la ficha diga qué lleva.
+
 ### Resultados de los casos 41 y 42 (11-nov-2026)
 
 Primera ejecución, 10 semillas, criterios sin cambiar. **Ninguno de los dos casos aprueba, y la causa es la misma en los dos. Lo disponible funciona y lo aprendido no se llega a ver, porque la criatura nunca prueba lo que habría que aprender.**

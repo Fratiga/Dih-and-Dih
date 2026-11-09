@@ -26,6 +26,8 @@ export interface ConfigSim {
   mortalidad?: Mortalidad;
   secuelas?: boolean;
   extincion?: boolean;
+  transporte?: boolean;
+  aprendeBloqueos?: boolean;
   ancho?: number;
 }
 
@@ -42,6 +44,8 @@ export interface EstadoSim {
   mortalidad?: Mortalidad;
   secuelas?: boolean;
   extincion?: boolean;
+  transporte?: boolean;
+  aprendeBloqueos?: boolean;
   legado?: Legado[];
   embarazos?: { madre: number; padre: number; nace: number; genomaPadre: Genoma }[];
   proxNombre?: number;
@@ -86,6 +90,10 @@ export class Simulacion {
   secuelas = false;
   /** Si el miedo aprendido a alguien baja con el contacto seguro (apagado por defecto). Es lo que permite rehabilitar a una criatura maltratada. */
   extincion = false;
+  /** Si las criaturas de la sala pueden recoger objetos y llevarlos a cuestas (apagado por defecto). */
+  transporte = false;
+  /** Si un intento cortado por una barrera deja un recuerdo de que eso, ahi, no se consigue (apagado por defecto). */
+  aprendeBloqueos = false;
   legado: Legado[] = [];
   /** Embarazos en curso: quien gesta, el otro progenitor y cuando nacen. */
   embarazos: { madre: number; padre: number; nace: number; genomaPadre: Genoma }[] = [];
@@ -101,12 +109,16 @@ export class Simulacion {
     this.protegida = this.mortalidad === "protegida";
     this.secuelas = cfg.secuelas ?? false;
     this.extincion = cfg.extincion ?? false;
+    this.transporte = cfg.transporte ?? false;
+    this.aprendeBloqueos = cfg.aprendeBloqueos ?? false;
     for (const o of cfg.objetos) this.mundo.agregar(o.tipo, o.x, { ...(o.activo === false ? { activo: false } : {}), ...(o.porciones !== undefined ? { porciones: o.porciones } : {}) });
     cfg.criaturas.forEach((cc, i) => {
       const c = new Criatura(i + 1, cc.nombre ?? NOMBRES[i % NOMBRES.length], JSON.parse(JSON.stringify(cc.genoma)), cc.x, cfg.semilla);
       c.mortalidad = this.mortalidad;
       c.permiteSecuelas = this.secuelas;
       c.extincion = this.extincion;
+      c.puedeCargar = this.transporte;
+      c.aprendeBloqueos = this.aprendeBloqueos;
       this.criaturas.push(c);
     });
     this.proxComedero = this.comedero ? this.comedero.cada * 0.3 : 0;
@@ -208,6 +220,21 @@ export class Simulacion {
     for (const c of this.criaturas) c.extincion = b;
   }
 
+  /** Activa o apaga el transporte (cargar y soltar) para toda la sala. Al apagarlo, lo que llevaban se cae. */
+  fijarTransporte(b: boolean): void {
+    this.transporte = b;
+    for (const c of this.criaturas) {
+      c.puedeCargar = b;
+      if (!b && c.lleva !== null) { this.mundo.soltar(c.lleva); c.lleva = null; }
+    }
+  }
+
+  /** Activa o apaga que los intentos cortados por una barrera se recuerden, para toda la sala. */
+  fijarBloqueos(b: boolean): void {
+    this.aprendeBloqueos = b;
+    for (const c of this.criaturas) c.aprendeBloqueos = b;
+  }
+
   nacer(a: Criatura, b: Criatura, k = 0): Criatura {
     const id = Math.max(0, ...this.criaturas.map((c) => c.id)) + 1;
     const g = cruzar(a.genoma, b.genoma, k === 0 ? mezclar(this.semilla, id, Math.floor(this.t)) : mezclar(this.semilla, id, Math.floor(this.t), k));
@@ -216,6 +243,8 @@ export class Simulacion {
     hijo.mortalidad = this.mortalidad;
     hijo.permiteSecuelas = this.secuelas;
     hijo.extincion = this.extincion;
+    hijo.puedeCargar = this.transporte;
+    hijo.aprendeBloqueos = this.aprendeBloqueos;
     hijo.capRegistro = a.capRegistro;
     hijo.padres = [a.id, b.id];
     hijo.generacion = Math.max(a.generacion, b.generacion) + 1;
@@ -270,13 +299,13 @@ export class Simulacion {
     return JSON.parse(
       JSON.stringify({
         v: 1, semilla: this.semilla, t: this.t, mundo: this.mundo.estado(), criaturas: this.criaturas.map((c) => c.estado()), azar: this.azar.s,
-        comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, secuelas: this.secuelas, extincion: this.extincion, legado: this.legado, embarazos: this.embarazos,
+        comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, secuelas: this.secuelas, extincion: this.extincion, transporte: this.transporte, aprendeBloqueos: this.aprendeBloqueos, legado: this.legado, embarazos: this.embarazos,
       }),
     ) as EstadoSim;
   }
 
   static restaurar(e: EstadoSim): Simulacion {
-    const s = new Simulacion({ semilla: e.semilla, objetos: [], criaturas: [], comedero: e.comedero, protegida: e.protegida, mortalidad: e.mortalidad, secuelas: e.secuelas, extincion: e.extincion });
+    const s = new Simulacion({ semilla: e.semilla, objetos: [], criaturas: [], comedero: e.comedero, protegida: e.protegida, mortalidad: e.mortalidad, secuelas: e.secuelas, extincion: e.extincion, transporte: e.transporte, aprendeBloqueos: e.aprendeBloqueos });
     s.legado = JSON.parse(JSON.stringify(e.legado ?? []));
     s.embarazos = JSON.parse(JSON.stringify(e.embarazos ?? []));
     s.t = e.t;

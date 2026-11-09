@@ -27,6 +27,8 @@ export class Juego {
   private ultimoGuardado = 0;
 
   constructor(g: Guardado | null) {
+    // Entradas ampliables de la red para los verbos de las capacidades nuevas (con ellas, ninguna criatura que no las use cambia: comprobado en la regresion)
+    AJ.entradasExtra = Math.max(AJ.entradasExtra, 4);
     if (g) {
       this.sim = Simulacion.restaurar(g.sim);
       this.ajustes = g.ajustes;
@@ -143,6 +145,22 @@ export class Juego {
     this.emit("extincion", this.sim.extincion);
     this.guardar(true);
     return this.sim.extincion;
+  }
+
+  /** Activa o apaga el transporte (cargar y soltar) para toda la sala. */
+  alternarTransporte(): boolean {
+    this.sim.fijarTransporte(!this.sim.transporte);
+    this.emit("transporte", this.sim.transporte);
+    this.guardar(true);
+    return this.sim.transporte;
+  }
+
+  /** Activa o apaga que los intentos cortados por una barrera se recuerden. */
+  alternarBloqueos(): boolean {
+    this.sim.fijarBloqueos(!this.sim.aprendeBloqueos);
+    this.emit("bloqueos", this.sim.aprendeBloqueos);
+    this.guardar(true);
+    return this.sim.aprendeBloqueos;
   }
 
   /** Cambia entre mortalidad protegida, recuperable y permanente. */

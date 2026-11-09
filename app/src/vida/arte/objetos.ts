@@ -136,6 +136,32 @@ function placa(activa: boolean): Sprite {
   return { cv, ax: 0.5, ay: 0.82 };
 }
 
+/** Una reja: marco de metal con barrotes verticales. Se ve que se puede romper por los remaches y la pintura gastada. */
+function reja(): Sprite {
+  const [cv, c] = lienzo(110, 250);
+  c.fillStyle = "rgba(0,0,0,0.3)"; c.beginPath(); c.ellipse(55, 238, 44, 7, 0, 0, Math.PI * 2); c.fill();
+  c.fillStyle = PAL.metalOsc; c.beginPath(); c.roundRect(8, 222, 94, 16, 4); c.fill(); contorno(c, 2.5);
+  c.fillStyle = PAL.metal; c.beginPath(); c.roundRect(14, 20, 82, 12, 3); c.fill(); contorno(c, 2.5);
+  for (let i = 0; i < 5; i++) { const x = 20 + i * 17; c.fillStyle = PAL.metalLuz; c.beginPath(); c.roundRect(x, 30, 9, 194, 3); c.fill(); contorno(c, 2); }
+  c.fillStyle = PAL.metalOsc; c.beginPath(); c.roundRect(14, 120, 82, 8, 2); c.fill(); contorno(c, 2);
+  for (const x of [22, 88]) { c.fillStyle = PAL.metal; c.beginPath(); c.arc(x, 26, 3.5, 0, Math.PI * 2); c.fill(); }
+  return { cv, ax: 0.5, ay: 0.95 };
+}
+
+/** Un muro de piedra: no se rompe. */
+function muro(): Sprite {
+  const [cv, c] = lienzo(130, 250);
+  c.fillStyle = "rgba(0,0,0,0.3)"; c.beginPath(); c.ellipse(65, 238, 54, 7, 0, 0, Math.PI * 2); c.fill();
+  c.fillStyle = "#6e7480"; c.beginPath(); c.roundRect(20, 24, 90, 212, 4); c.fill(); contorno(c, 3);
+  c.strokeStyle = "rgba(20,24,30,0.55)"; c.lineWidth = 2;
+  for (let y = 24 + 30; y < 236; y += 30) { c.beginPath(); c.moveTo(20, y); c.lineTo(110, y); c.stroke(); }
+  for (let f = 0; f < 7; f++) {
+    const y0 = 24 + f * 30, y1 = Math.min(236, y0 + 30);
+    for (const x of f % 2 ? [42, 86] : [64]) { c.beginPath(); c.moveTo(x, y0); c.lineTo(x, y1); c.stroke(); }
+  }
+  return { cv, ax: 0.5, ay: 0.95 };
+}
+
 function foco(color: "rojo" | "azul"): Sprite {
   const [cv, c] = lienzo(150, 330);
   c.fillStyle = "rgba(0,0,0,0.3)"; c.beginPath(); c.ellipse(75, 318, 56, 8, 0, 0, Math.PI * 2); c.fill();
@@ -166,6 +192,10 @@ export function crearObjetos(): Record<string, Sprite> {
     granulo: granulo(),
     placa_on: placa(true),
     placa_off: placa(false),
+    placa_inocua: placa(true),
+    reja: reja(),
+    reja_fija: reja(),
+    muro: muro(),
     foco_rojo: foco("rojo"),
     foco_rojo_b: foco("rojo"),
     foco_azul: foco("azul"),

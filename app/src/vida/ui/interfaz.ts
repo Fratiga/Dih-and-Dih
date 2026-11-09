@@ -19,6 +19,8 @@ const BANDEJA: { tipo: string; nombre: string; ayuda: string }[] = [
   { tipo: "palanca", nombre: "Palanca", ayuda: "Palanca|Al tocarla suelta un gránulo de comida poco después." },
   { tipo: "palanca_rota", nombre: "Palanca rota", ayuda: "Palanca rota|Se mueve y suena, pero no suelta nada." },
   { tipo: "placa", nombre: "Placa", ayuda: "Placa roja|Da descargas a quien se pone encima." },
+  { tipo: "reja", nombre: "Reja", ayuda: "Reja|Cierra el paso. Se rompe a empujones, y quien tiene hambre y ve comida al otro lado puede acabar probándolo." },
+  { tipo: "muro", nombre: "Muro", ayuda: "Muro|Cierra el paso y no se rompe." },
   { tipo: "foco_rojo", nombre: "Foco rojo", ayuda: "Foco rojo|Da una descarga al tocarlo." },
   { tipo: "foco_rojo_b", nombre: "Foco rojo 2", ayuda: "Foco rojo grande|Parecido al rojo, pero no hace nada." },
   { tipo: "foco_azul", nombre: "Foco azul", ayuda: "Foco azul|No hace nada." },
@@ -213,7 +215,23 @@ export class Interfaz {
     const botonRaza = (rutina: "hostil" | "amistosa", texto: string, tip: string): HTMLElement => boton(texto, () => { const e = j.agregarRazaSimple(rutina); if (e) aviso(this.raiz, e, 2400); }, { clase: "va-toggle", tip });
     const hostil = botonRaza("hostil", "+ Hostil", "Raza simple hostil|Añade una criatura de regla fija que pega sin parar a la que tenga más cerca. No aprende ni cambia. Sirve de agresora para probar secuelas y rehabilitación.");
     const amistosa = botonRaza("amistosa", "+ Amistosa", "Raza simple amistosa|Añade una criatura de regla fija que se acerca a la más cercana y se queda a su lado. No aprende ni cambia. Sirve de cuidadora o de compañía.");
-    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero, toggleMort, toggleSec, toggleExt, hostil, amistosa);
+    const toggleTrans = boton("", () => { j.alternarTransporte(); }, { clase: "va-toggle", tip: "Transporte|Si está activo, las criaturas pueden recoger lo que se mueve y llevarlo a cuestas (más despacio cuanto más pesa) y soltarlo. Nadie les dice para qué sirve." });
+    const pintarTrans = (): void => {
+      toggleTrans.replaceChildren(`Transporte: ${j.sim.transporte ? "sí" : "no"}`);
+      toggleTrans.classList.toggle("activa", j.sim.transporte);
+    };
+    pintarTrans();
+    j.on("transporte", pintarTrans);
+    j.on("simNueva", pintarTrans);
+    const toggleBloq = boton("", () => { j.alternarBloqueos(); }, { clase: "va-toggle", tip: "Aprender de los choques|Si está activo, cuando una barrera le corta el paso hacia algo, la criatura recuerda que ahí, con eso, no se consigue nada, y deja de insistir. Apagado, solo se frustra un poco y lo vuelve a intentar." });
+    const pintarBloq = (): void => {
+      toggleBloq.replaceChildren(`Aprender de choques: ${j.sim.aprendeBloqueos ? "sí" : "no"}`);
+      toggleBloq.classList.toggle("activa", j.sim.aprendeBloqueos);
+    };
+    pintarBloq();
+    j.on("bloqueos", pintarBloq);
+    j.on("simNueva", pintarBloq);
+    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero, toggleMort, toggleSec, toggleExt, toggleTrans, toggleBloq, hostil, amistosa);
     pie.prepend(cab);
     this.pie = pie;
 
