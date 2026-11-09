@@ -1808,7 +1808,7 @@ Primera ejecución, 10 semillas, criterios sin cambiar. **Ninguno de los dos cas
 **Caso 41, transporte.** Criterios: 0 de 10 (carga en la placa peligrosa), 0 de 10 (come fuera de la placa), 7 de 10 (menos tiempo sobre la placa que sin transporte) y 10 de 10 (no carga todas).
 - **Disponible:** sí, comprobado en el bloque 1j.
 - **Usada espontáneamente:** sí, pero no donde se había planteado. Sin peligro (condición C, placa inocua) carga la fruta 3,1 veces de media en 900 s (1 a 7 en las diez semillas), y sin placa (D) 4,1 (1 a 8), sin que nadie se lo indique. Con la placa peligrosa (A) **no carga nunca** (0 en las diez semillas).
-- **Por qué.** En A y en B (sin transporte) la criatura pisa la placa una vez, en el primer minuto (de 0,5 a 1,5 s), recibe la descarga y **no vuelve a acercarse a la fruta en los 900 s**, con el hambre subiendo. El miedo aprendido al trayecto hasta la placa pesa más que el hambre. En el diseño actual, el hambre extrema solo rebaja el peligro de comer algo que sienta mal (último recurso), no el de cruzar un sitio que se sabe peligroso. No hay nada que probar y por eso no hay nada que aprender.
+- **Por qué.** En A y en B (sin transporte) la criatura pisa la placa una vez, en el primer minuto (de 0,5 a 1,5 s), recibe la descarga y **no vuelve a acercarse a la fruta en los 900 s**, con el hambre subiendo. El miedo aprendido al trayecto hasta la placa pesa más que el hambre (explicación incompleta, corregida en la sección de los casos 41b y 43). En el diseño actual, el hambre extrema solo rebaja el peligro de comer algo que sienta mal (último recurso), no el de cruzar un sitio que se sabe peligroso. No hay nada que probar y por eso no hay nada que aprender.
 - **Aprendida:** no se puede juzgar. El 0,55 de comidas fuera de la placa que sale en C (placa inocua, mediana de la segunda mitad) es la referencia de que, sin motivo, comer lejos o encima sale a partes iguales.
 - Lo que falta para que el caso pueda dar respuesta es un mecanismo, no un peso. Una criatura muy hambrienta tiene que poder cruzar lo que sabe que duele. Queda como paso siguiente, con interruptor y criterios propios.
 
@@ -1874,6 +1874,17 @@ Los casos que no aprobaron se conservan como están, con sus resultados.
   4. Con V al menos 3: L come al menos lo que V, y F come como mucho la mitad que V (la gravedad importa).
 - **Caso 41b.** El caso 41 sin tocar nada, con el interruptor encendido en todos los brazos. Mismos cuatro criterios.
 - Si no sale, se cuenta tal cual.
+
+### Resultados de los casos 41b y 43, y un fallo del protocolo (11-nov-2026)
+
+Primera ejecución con el interruptor `hambreArriesga`, 10 semillas, criterios sin cambiar.
+
+- **Caso 41b.** Igual que el 41, 0 de 10 en carga y 0 de 10 en comer fuera de la placa, 4 de 10 en el criterio de tiempo. La criatura sigue sin comer la fruta de la placa. Pasa un poco más de tiempo en ella (1,9 s de mediana en la primera mitad, frente a 0,6 sin el interruptor) y no come.
+- **Caso 43.** K come 0 bocados (10 de 10 en el criterio 1) y **V también 0** (0 de 10 en el criterio 2). L, con la placa leve, come 4 o 5 bocados en todas las semillas. M y F, 0. Los criterios 3 y 4 salen 10 de 10 y 0 de 10, y **el 3 no vale como evidencia**, porque 0 es como mucho la mitad de 0. Con la placa de siempre, el interruptor no hace que la valiente vuelva.
+- **Diagnóstico (`tests/diag-riesgo.ts`).** Tras el primer contacto, el daño esperado de ir a por la fruta es 0,46 y el interruptor lo rebaja, pero lo que espera conseguir al probar la fruta es una saciedad de **0,10**. **La criatura nunca ha comido fruta en esos casos**: empieza con hambre, la placa está desde el principio y solo conoce la fruta por el olor. Con 0,10 de ganancia esperada, ni rebajar el daño al 30 % basta. Es un fallo del protocolo de los casos 41 y 43, no del hambre ni del miedo.
+- **Corrección del diagnóstico del caso 41.** Lo que escribí arriba (que el miedo al trayecto vence al hambre) **no estaba demostrado**. La explicación completa incluye que la criatura no sabía que la fruta alimenta. Esa parte queda como lo que se vio, pero la conclusión de que el miedo pesa más que el hambre extrema solo se puede sacar con una criatura que haya comido fruta antes.
+
+**Corrección de protocolo, hecha después de ver datos y fijada antes de la siguiente ejecución.** Se añaden los casos 41c, 41d y 43b, que repiten los 41, 41b y 43 con 150 s de vida previa comiendo fruta en suelo seguro (x = 300, con fruta nueva a los 10 s de comerse) antes de que aparezcan la placa y la fruta de la prueba. Los 900 s de la prueba se cuentan después. Se descartan los bocados anteriores. **Criterios sin cambiar** respecto a los de los casos 41 y 43. El 41c lleva el interruptor apagado, el 41d encendido y el 43b es el 43 con la previa. Los casos 41, 41b y 43 se conservan tal cual.
 
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 

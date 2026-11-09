@@ -3664,7 +3664,23 @@ export const caso40: Caso = {
 
 /* ---------------------------------------------------------------------------------------------------------------- */
 
-function ejecutar41(semilla: number, arriesga: boolean): ResSemilla {
+/** Antes del experimento, la criatura vive `PREVIA` s comiendo fruta en suelo seguro (x = 300), para que sepa que la fruta alimenta. Sin ella (los casos 41 y 41b), solo la conoce por el olor. */
+const PREVIA = 150;
+function previaDeFruta(s: Simulacion): void {
+  let sin = -1;
+  s.mundo.agregar("fruta", 300);
+  const g = (q: Simulacion) => {
+    const hay = q.mundo.objetos.some((o) => o.tipo === "fruta");
+    if (hay) sin = -1; else if (sin < 0) sin = q.t; else if (q.t - sin >= 10) { q.mundo.agregar("fruta", 300); sin = -1; }
+  };
+  s.ganchos.push(g);
+  s.avanzar(PREVIA);
+  s.ganchos.splice(s.ganchos.indexOf(g), 1);
+  for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+  s.criaturas[0].x = 400; s.criaturas[0].accion = null; s.criaturas[0].nec[0] = 0.75;
+}
+
+function ejecutar41(semilla: number, arriesga: boolean, previa = false): ResSemilla {
     const DUR = 900;
     const MITAD = DUR / 2;
     const PLACA = 900;
@@ -3679,6 +3695,8 @@ function ejecutar41(semilla: number, arriesga: boolean): ResSemilla {
         c.hambreArriesga = arriesga;
         c.nec[0] = 0.75;
         c.capRegistro = 50000;
+        if (previa) previaDeFruta(s);
+        const T0 = s.t;
         if (cond !== "D") s.mundo.agregar(cond === "C" ? "placa_inocua" : "placa", PLACA);
         s.mundo.agregar("fruta", PLACA);
         let frutas = 1, sinFruta = -1, cargas = 0, cargas1 = 0, previa: number | null = null;
@@ -3686,7 +3704,7 @@ function ejecutar41(semilla: number, arriesga: boolean): ResSemilla {
         const xs: number[] = [];
         s.ganchos.push(() => {
           xs.push(c.x);
-          const mitad = s.t < MITAD ? 0 : 1;
+          const mitad = s.t - T0 < MITAD ? 0 : 1;
           if (cond !== "D" && Math.abs(c.x - PLACA) <= 75) seg[mitad] += AJ.dt;
           if (c.lleva !== null && previa === null) { cargas++; if (mitad === 0) cargas1++; }
           previa = c.lleva;
@@ -3698,9 +3716,9 @@ function ejecutar41(semilla: number, arriesga: boolean): ResSemilla {
         s.avanzar(DUR);
         const dentro = [0, 0], fuera = [0, 0];
         for (const r of c.registro) {
-          if (r.kind !== "impacto" || r.v !== "probar" || (r.res?.[0] ?? 0) <= 0.1) continue;
-          const x = xs[Math.min(xs.length - 1, Math.max(0, Math.floor(r.t / AJ.dt) - 1))];
-          (Math.abs(x - PLACA) <= 75 ? dentro : fuera)[r.t < MITAD ? 0 : 1]++;
+          if (r.kind !== "impacto" || r.v !== "probar" || (r.res?.[0] ?? 0) <= 0.1 || r.t < T0) continue;
+          const x = xs[Math.min(xs.length - 1, Math.max(0, Math.floor((r.t - T0) / AJ.dt) - 1))];
+          (Math.abs(x - PLACA) <= 75 ? dentro : fuera)[r.t - T0 < MITAD ? 0 : 1]++;
         }
         const prop2 = dentro[1] + fuera[1] > 0 ? fuera[1] / (dentro[1] + fuera[1]) : 0;
         return { cargas, cargas1, frutas, seg, dentro, fuera, prop2, comidas2: dentro[1] + fuera[1] };
@@ -3739,12 +3757,31 @@ export const caso41b: Caso = {
   ejecutar: (semilla) => ejecutar41(semilla, true),
 };
 
+export const caso41c: Caso = {
+  id: "41c",
+  titulo: "Transporte: comida donde hace daño, con la criatura ya habituada a la fruta",
+  hipotesis: "El caso 41 con una corrección de protocolo hecha después de ver datos (ver el plan): antes de empezar, la criatura vive 150 s comiendo fruta en suelo seguro, porque el diagnóstico del caso 43 mostró que en el caso 41 nunca había comido fruta y solo la conocía por el olor (esperaba 0,10 de saciedad). Mismos criterios, interruptor `hambreArriesga` apagado.",
+  minimo: 0.8,
+  ejecutar: (semilla) => ejecutar41(semilla, false, true),
+};
+
+export const caso41d: Caso = {
+  id: "41d",
+  titulo: "Transporte: comida donde hace daño, habituada a la fruta y con el hambre compitiendo con el miedo",
+  hipotesis: "El caso 41c con el interruptor `hambreArriesga` encendido. Mismos criterios.",
+  minimo: 0.8,
+  ejecutar: (semilla) => ejecutar41(semilla, true, true),
+};
+
 export const caso43: Caso = {
   id: "43",
   titulo: "Hambre contra peligro conocido",
   hipotesis: "Con el interruptor `hambreArriesga`, el hambre compite con el miedo a un peligro ya conocido, sin apagarlo: una criatura valiente y hambrienta vuelve a por la fruta que está sobre una placa que duele, una miedosa casi no, con una placa leve va más que con la de siempre y con una fuerte mucho menos. Criterios fijados antes de ejecutar (ver la adenda del plan).",
   minimo: 0.8,
-  ejecutar(semilla) {
+  ejecutar: (semilla) => ejecutar43(semilla, false),
+};
+
+function ejecutar43(semilla: number, previa: boolean): ResSemilla {
     const DUR = 900;
     const PLACA = 900;
     type Brazo = "K" | "V" | "M" | "L" | "F";
@@ -3756,6 +3793,8 @@ export const caso43: Caso = {
       c.rasgos[R.miedo] = miedo; c.base[R.miedo] = miedo;
       c.nec[0] = 0.75;
       c.capRegistro = 50000;
+      if (previa) previaDeFruta(s);
+      const T0 = s.t;
       s.mundo.agregar(brazo === "L" ? "placa_leve" : brazo === "F" ? "placa_fuerte" : "placa", PLACA);
       s.mundo.agregar("fruta", PLACA);
       let sinFruta = -1, seg = 0;
@@ -3767,7 +3806,7 @@ export const caso43: Caso = {
         else if (s.t - sinFruta >= 25) { s.mundo.agregar("fruta", PLACA); sinFruta = -1; }
       });
       s.avanzar(DUR);
-      const bocados = c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "fruta" && (r.res?.[0] ?? 0) > 0.1).length;
+      const bocados = c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "fruta" && (r.res?.[0] ?? 0) > 0.1 && r.t >= T0).length;
       return { bocados, seg };
     };
     const K = correr("K"), V = correr("V"), M = correr("M"), L = correr("L"), F = correr("F");
@@ -3780,7 +3819,14 @@ export const caso43: Caso = {
       bocadosK: K.bocados, bocadosV: V.bocados, bocadosM: M.bocados, bocadosL: L.bocados, bocadosF: F.bocados,
       segPlacaK: K.seg, segPlacaV: V.seg, segPlacaM: M.seg, segPlacaL: L.seg, segPlacaF: F.seg,
     }, null, DUR);
-  },
+}
+
+export const caso43b: Caso = {
+  id: "43b",
+  titulo: "Hambre contra peligro conocido, con la criatura ya habituada a la fruta",
+  hipotesis: "El caso 43 con la corrección de protocolo del caso 41c (150 s previos comiendo fruta en suelo seguro). Mismos criterios.",
+  minimo: 0.8,
+  ejecutar: (semilla) => ejecutar43(semilla, true),
 };
 
 /* ---------------------------------------------------------------------------------------------------------------- */
@@ -3871,5 +3917,5 @@ export const caso42b: Caso = {
   ejecutar: (semilla) => ejecutar42(semilla, true),
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso41, caso41b, caso43, caso42, caso42b, caso14];
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso41, caso41b, caso41c, caso41d, caso43, caso43b, caso42, caso42b, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];
