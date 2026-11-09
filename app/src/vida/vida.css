@@ -250,3 +250,27 @@ button { font: inherit; color: inherit; }
 .va-toggle.activa .va-interruptor::after { transform: translateX(12px); background: var(--cian); }
 
 .va-toggle.alerta { color: var(--coral); border-color: #7a3a36; }
+
+/* ---------- Mapa del complejo ---------- */
+.va-mapa { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); padding: 8px 12px 12px; background: var(--panel); border: 1px solid var(--fil); border-radius: 4px; z-index: 5; }
+.va-mapa .va-sec { margin: 0 0 8px; }
+.va-mapa-lienzo { position: relative; }
+.va-mapa-lineas { position: absolute; left: 0; top: 0; pointer-events: none; }
+.va-mapa-lineas line { stroke: var(--fil-2); stroke-width: 2; }
+.va-sala { position: absolute; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 4px 6px; background: var(--panel-2); border: 1px solid var(--fil-2); border-left: 3px solid var(--tipo, var(--fil-2)); border-radius: 3px; color: var(--hueso-2); cursor: pointer; text-align: left; font: inherit; }
+.va-sala b { font-family: var(--titulo); font-weight: 600; font-size: 11px; letter-spacing: 0.04em; }
+.va-sala em { position: absolute; right: 6px; bottom: 4px; font-style: normal; font-size: 10px; color: var(--apagado); }
+.va-sala.activa { border-color: var(--cian); color: var(--hueso); background: #12303a; }
+.va-sala-puntos { display: flex; gap: 4px; flex-wrap: wrap; }
+.va-sala-punto { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.5); }
+.va-sala-punto.sel { outline: 2px solid var(--hueso); outline-offset: 1px; }
+.va-sala.t-principal { --tipo: #9db3b4; }
+.va-sala.t-comedor { --tipo: var(--ambar); }
+.va-sala.t-habitat { --tipo: var(--verde); }
+.va-sala.t-obstaculos { --tipo: var(--coral); }
+.va-sala.t-acuatica { --tipo: var(--cian); }
+.va-sala.t-elevada { --tipo: var(--violeta); }
+.va-sala.t-observacion { --tipo: #d8dde0; }
+.observando .va-mapa { opacity: 0.35; }
+.observando .va-mapa:hover { opacity: 1; }
+@media (max-width: 1000px) { .va-mapa { top: auto; bottom: 160px; } }

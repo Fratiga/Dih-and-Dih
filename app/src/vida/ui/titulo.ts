@@ -8,7 +8,7 @@ import { abrirLaboratorio } from "./labDev.ts";
 export interface OpcionesTitulo {
   hayGuardado: boolean;
   /** Entra al juego. `nuevo` descarta lo guardado. Puede tardar (simula el tiempo fuera de linea). */
-  entrar(nuevo: boolean, alAvance: (txt: string) => void): Promise<void>;
+  entrar(nuevo: boolean, alAvance: (txt: string) => void, complejo?: boolean): Promise<void>;
 }
 
 export function pantallaTitulo(raiz: HTMLElement, o: OpcionesTitulo): void {
@@ -30,10 +30,10 @@ export function pantallaTitulo(raiz: HTMLElement, o: OpcionesTitulo): void {
     await esperar(1050);
     puertas.remove();
   };
-  const empezar = async (b: HTMLButtonElement, nuevo: boolean): Promise<void> => {
+  const empezar = async (b: HTMLButtonElement, nuevo: boolean, complejo = false): Promise<void> => {
     sonido.iniciar();
     const texto = b.textContent ?? "";
-    await o.entrar(nuevo, (x) => { b.textContent = x; });
+    await o.entrar(nuevo, (x) => { b.textContent = x; }, complejo);
     b.textContent = texto;
     await pasar();
   };
@@ -55,6 +55,18 @@ export function pantallaTitulo(raiz: HTMLElement, o: OpcionesTitulo): void {
   } else {
     menu.append(boton("Empezar el ensayo", (b) => empezar(b, true), { clase: "va-btn-lleno" }));
   }
+  let segura = false;
+  menu.append(boton("Laboratorio libre (complejo)", (b) => {
+    if (o.hayGuardado && !segura) {
+      segura = true;
+      b.textContent = "¿Seguro? Se borra el ensayo actual";
+      b.classList.add("va-confirma");
+      window.setTimeout(() => { segura = false; b.textContent = "Laboratorio libre (complejo)"; b.classList.remove("va-confirma"); }, 4000);
+      return;
+    }
+    borrarGuardado();
+    return empezar(b, true, true);
+  }));
   menu.append(boton("Laboratorio de pruebas", () => { sonido.iniciar(); abrirLaboratorio(raiz); }));
   menu.append(boton("Volver a los minijuegos", () => { window.location.href = "../../minijuegos.html"; }, { silencioso: true }));
 

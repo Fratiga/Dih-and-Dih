@@ -1933,6 +1933,15 @@ Una ejecución, 10 semillas, criterios sin cambiar. Aprueban los cinco criterios
 - **Criterio 5, mal planteado.** Una criatura que ha encontrado comida abundante en la otra sala **no tiene motivo para volver**: se queda allí (entra una vez de mediana y casi nunca sale: 0 salidas de mediana). Pedirle ida y vuelta mide algo que el caso no provoca. Se deja como está y no cuenta como evidencia. Para que vuelva haría falta una razón (compañía, sueño en un sitio propio, comida en las dos salas por turnos, escasez en la de al lado), y eso es otro caso.
 - **Lo que no se ha comprobado.** Que lo aprendido en una sala no se mezcle con otra se probó solo con la equivalencia de una sala y con las pruebas de unidad (sitios y avistamientos separados). Falta un caso donde la misma cosa dé resultados distintos en dos salas (peligro en una y no en la otra).
 
+### Complejo de salas, interfaz y laboratorio libre (11-nov-2026)
+
+- **Laboratorio libre.** En la pantalla de título, «Laboratorio libre (complejo)» crea un complejo de siete salas con las medidas y las conexiones decididas: habitación principal (4000, capacidad 8), comedor (2400, con su dispensador), hábitat natural (3200), zona de obstáculos (2400, con dos rejas), zona acuática (3200), zona elevada (2400) y observación (1600, capacidad 4). Conexiones: la principal con comedor, hábitat, obstáculos y observación, y entre ellas hábitat con acuática, acuática con elevada y elevada con obstáculos. Dos criaturas gemelas empiezan en la principal. Las partidas de siempre y las cámaras no cambian.
+- **Una sala se dibuja a la vez.** Las más anchas que la pantalla repiten el fondo, la cámara de panorama acompaña a la criatura elegida, y cada tipo de sala tiñe el fondo de un color para reconocerla. El agua, la altura y el hábitat **todavía no tienen reglas propias**: son salas con su color y sus objetos.
+- **Mapa del complejo.** Un panel con las salas como cajas, sus conexiones, un punto por criatura (elegida con anillo) y la ocupación de cada una. Una caja lleva a esa sala y un punto elige a esa criatura. La ficha dice en qué sala está. Si se sigue de cerca a una criatura (Seguir o Cerca) y cruza una puerta, la vista pasa con ella.
+- **Capacidad por sala** (en lugar de 4 en total) para criar y para añadir razas simples.
+- **Pendiente de la interfaz.** El mapa tapa parte de la sala y debería poder plegarse. Las puertas aún no se dibujan en la sala (hay que verlas, y que se abran y se cierren). No hay animación de cruzar, ni transición entre salas, ni el seguimiento suave que cruza la puerta con la cámara.
+- **Casos 25 a 40.** Se hicieron todos en una sola sala de 1600 unidades, donde dos criaturas están en contacto el 39 % del tiempo (y cuatro, el 42 %). Quedan **marcados como resultados de un entorno congestionado**. No se invalidan ni se cambian.
+
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 
 Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:

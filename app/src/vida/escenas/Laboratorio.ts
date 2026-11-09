@@ -15,6 +15,8 @@ import { ESCALA, MUNDO_H, MUNDO_W, SUELO_Y, px, unidades } from "../arte/medidas
 import { Juego } from "../juego.ts";
 
 const PIES = SUELO_Y + 12;
+/** El color con el que se tiñe el fondo de cada tipo de sala, para reconocerlas de un vistazo (blanco no cambia nada). */
+const TINTE_SALA: Record<string, number> = { principal: 0xffffff, comedor: 0xffe2b8, habitat: 0xc4f0c8, obstaculos: 0xffd2a8, acuatica: 0xa8dcff, elevada: 0xd8c8ff, observacion: 0xd8dde0 };
 const DT = AJ.dt;
 
 interface SprCriatura {
@@ -73,6 +75,11 @@ export class Laboratorio extends Phaser.Scene {
   private desplazamiento = { x: 0, y: 0 };
   private raton = { x: 0, y: 0, enSala: false };
   private centro = { x: MUNDO_W / 2, y: MUNDO_H / 2 };
+  /** Lo ancho que es la sala que se dibuja, en pixeles (la de siempre mide MUNDO_W; las mas anchas repiten el fondo). */
+  private mundoW = MUNDO_W;
+  private fondos: Phaser.GameObjects.TileSprite[] = [];
+  private salaPintada = 0;
+  private salaSeleccionadaAntes = 0;
   private arrastre: { id: number | null; tipo: string; ghost: Phaser.GameObjects.Image | null } | null = null;
   private tiempoReal = 0;
   private cuadro = 0;
@@ -107,9 +114,12 @@ export class Laboratorio extends Phaser.Scene {
     ax.strokeStyle = "rgba(70,217,232,0.25)"; ax.lineWidth = 8; ax.beginPath(); ax.ellipse(128, 32, 124, 26, 0, 0, Math.PI * 2); ax.stroke();
     t.addCanvas("v:aro", ar);
 
-    this.add.image(0, 0, "v:pared").setOrigin(0, 0).setDepth(0);
-    this.add.image(0, SUELO_Y, "v:suelo").setOrigin(0, 0).setDepth(10);
-    this.add.image(0, 0, "v:frente").setOrigin(0, 0).setDepth(100);
+    const alto = (k: string): number => (this.textures.get(k).getSourceImage() as HTMLCanvasElement).height;
+    this.fondos = [
+      this.add.tileSprite(0, 0, MUNDO_W, alto("v:pared"), "v:pared").setOrigin(0, 0).setDepth(0),
+      this.add.tileSprite(0, SUELO_Y, MUNDO_W, alto("v:suelo"), "v:suelo").setOrigin(0, 0).setDepth(10),
+      this.add.tileSprite(0, 0, MUNDO_W, alto("v:frente"), "v:frente").setOrigin(0, 0).setDepth(100),
+    ];
     this.noche = this.add.rectangle(0, 0, MUNDO_W, MUNDO_H, 0x03101c, 0).setOrigin(0, 0).setDepth(150);
 
     // Luces: suman encima (mezcla aditiva)
@@ -147,6 +157,8 @@ export class Laboratorio extends Phaser.Scene {
 
     // Criaturas
     for (const c of this.juego.sim.criaturas) this.crearCriatura(c);
+    this.salaPintada = this.juego.salaVista;
+    this.cambiarSala();
     this.input.mouse?.disableContextMenu();
     this.input.on("pointerdown", (p: Phaser.Input.Pointer) => this.alPulsar(p));
     this.input.on("pointermove", (p: Phaser.Input.Pointer) => this.alMover(p));
@@ -228,7 +240,27 @@ export class Laboratorio extends Phaser.Scene {
   /* ---------- Camara ---------- */
   private zoomPanorama(): number {
     const { width: w, height: h } = this.scale;
-    return Math.max(w / MUNDO_W, h / MUNDO_H);
+    return Math.max(w / Math.min(this.mundoW, MUNDO_W), h / MUNDO_H);
+  }
+
+  /** Se pasa a dibujar otra sala: su ancho, su color y sus objetos (los sprites de la anterior se quitan). */
+  private cambiarSala(): void {
+    const j = this.juego;
+    this.salaPintada = j.salaVista;
+    const sala = j.salaActual;
+    this.mundoW = Math.round(sala.mundo.ancho * ESCALA + 2 * 40);
+    for (const f of this.fondos) { f.setSize(this.mundoW, f.height); f.setTint(TINTE_SALA[sala.tipo] ?? 0xffffff); }
+    this.noche?.setSize(this.mundoW, MUNDO_H);
+    for (const [, s] of this.objs) { s.img.destroy(); s.sombra.destroy(); s.extra.forEach((q) => q.destroy()); }
+    this.objs.clear(); this.prevO.clear();
+    for (const c of j.sim.criaturas) this.prevC.set(c.id, c.x);
+    this.desplazamiento.x = 0; this.desplazamiento.y = 0;
+    const s = this.crit.get(j.criatura.id);
+    this.centro.x = s && j.criatura.sala === j.salaVista ? s.x : this.mundoW / 2;
+  }
+
+  private mostrarCriatura(s: SprCriatura, ver: boolean): void {
+    s.img.setVisible(ver); s.sombra.setVisible(ver); s.etiqueta.setVisible(ver); s.aro.setVisible(ver); s.burbuja.setVisible(ver);
   }
 
   private zoomObjetivo(): number {
@@ -244,24 +276,26 @@ export class Laboratorio extends Phaser.Scene {
     const zObj = this.zoomObjetivo();
     this.zoomActual += (zObj - this.zoomActual) * k;
     cam.setZoom(this.zoomActual);
-    let tx = MUNDO_W / 2;
+    let tx = this.mundoW / 2;
     let ty = MUNDO_H / 2;
     const base = this.zoomPanorama();
     if (this.enTitulo) {
-      tx = MUNDO_W / 2 + Math.sin(this.tiempoReal * 0.07) * 700;
+      tx = this.mundoW / 2 + Math.sin(this.tiempoReal * 0.07) * 700;
       ty = SUELO_Y - 340;
     } else if (this.juego.ajustes.camara === "panorama") {
       ty = (MUNDO_H / 2);
       // Si sobra alto, se muestra mas suelo que techo
       const alto = cam.height / this.zoomActual;
       ty = Math.min(MUNDO_H - alto / 2, Math.max(alto / 2, SUELO_Y - alto * 0.62));
+      // En una sala mas ancha que la pantalla, el panorama acompana a la criatura elegida
+      if (this.mundoW > MUNDO_W) { const s = this.crit.get(this.juego.criatura.id); if (s && this.juego.criatura.sala === this.salaPintada) tx = s.x; }
     } else {
       const c = this.juego.criatura;
       const s = this.crit.get(c.id);
       tx = s ? s.x : px(c.x);
       ty = SUELO_Y - (this.juego.ajustes.camara === "cercano" ? 215 : 255);
     }
-    if (this.juego.ajustes.camara === "panorama") { this.desplazamiento.x = 0; this.desplazamiento.y = 0; }
+    if (this.juego.ajustes.camara === "panorama" && this.mundoW <= MUNDO_W) { this.desplazamiento.x = 0; this.desplazamiento.y = 0; }
     tx += this.desplazamiento.x; ty += this.desplazamiento.y;
     const c0 = this.centro;
     const kc = this.juego.ajustes.camara === "seguir" || this.juego.ajustes.camara === "cercano" ? 1 - Math.exp(-dt * 2.2) : 1 - Math.exp(-dt * 3);
@@ -271,7 +305,7 @@ export class Laboratorio extends Phaser.Scene {
     this.margen += (this.juego.margenInferior - this.margen) * k;
     const desp = this.margen / (2 * this.zoomActual);
     const mw = cam.width / this.zoomActual / 2, mh = cam.height / this.zoomActual / 2;
-    const cx = Math.min(MUNDO_W - mw, Math.max(mw, c0.x));
+    const cx = Math.min(this.mundoW - mw, Math.max(mw, c0.x));
     const cy = Math.min(MUNDO_H - mh + desp, Math.max(mh, c0.y + desp));
     cam.centerOn(cx, cy);
     void base;
@@ -321,7 +355,7 @@ export class Laboratorio extends Phaser.Scene {
   }
 
   private actualizarObjetos(alpha: number, dt: number): void {
-    const mundo = this.juego.sim.mundo;
+    const mundo = this.juego.mundoVisto;
     const vivos = new Set<number>();
     for (const o of mundo.objetos) {
       vivos.add(o.id);
@@ -374,7 +408,7 @@ export class Laboratorio extends Phaser.Scene {
         const parpadeo = 0.5 + 0.5 * Math.sin(this.tiempoReal * 16) * Math.sin(this.tiempoReal * 5.3);
         e[0].setPosition(x, y - 14).setAlpha(o.activo ? 0.25 + 0.35 * parpadeo : 0);
         if (o.activo) {
-          for (const c of this.juego.sim.criaturas) {
+          for (const c of this.juego.criaturasVistas) {
             if (Math.abs(c.x - o.x) <= (def.peligro?.ancho ?? 0) / 2) {
               s.chispa -= dt;
               if (s.chispa <= 0) { s.chispa = 0.09; this.chispas?.explode(4, px(c.x) + (Math.random() - 0.5) * 100, PIES - 10); this.cameras.main.shake(60, 0.0016); }
@@ -411,6 +445,10 @@ export class Laboratorio extends Phaser.Scene {
     const j = this.juego;
     const vel = j.pausado ? 0 : j.ajustes.velocidad;
     const sim = j.sim;
+    // Si la criatura elegida cruza una puerta y se la sigue de cerca, la vista pasa a su sala
+    const selSala = j.criatura.sala;
+    if (selSala !== this.salaSeleccionadaAntes) { this.salaSeleccionadaAntes = selSala; if (j.ajustes.camara !== "panorama" && selSala !== j.salaVista) j.verSala(selSala); }
+    if (this.salaPintada !== j.salaVista) this.cambiarSala();
     this.acc += dtR * vel;
     let n = 0;
     while (this.acc >= DT && n < 160) {
@@ -427,7 +465,10 @@ export class Laboratorio extends Phaser.Scene {
     this.actualizarObjetos(alpha, dtR);
     for (const c of sim.criaturas) {
       if (!this.crit.has(c.id)) this.crearCriatura(c);
-      this.pintar(c, alpha, dtAnim, dtR);
+      const aqui = c.sala === this.salaPintada;
+      this.mostrarCriatura(this.crit.get(c.id)!, aqui);
+      if (aqui) this.pintar(c, alpha, dtAnim, dtR);
+      else this.prevC.set(c.id, c.x);
     }
     this.ambiente(dtR);
     this.autoguardado += dtR;
@@ -437,7 +478,7 @@ export class Laboratorio extends Phaser.Scene {
   /** Posiciones justo antes del ultimo paso: sirven para suavizar el movimiento entre pasos de la simulacion. */
   private instantanea(): void {
     for (const c of this.juego.sim.criaturas) this.prevC.set(c.id, c.x);
-    for (const o of this.juego.sim.mundo.objetos) this.prevO.set(o.id, { x: o.x, z: o.z, vz: o.vz });
+    for (const o of this.juego.mundoVisto.objetos) this.prevO.set(o.id, { x: o.x, z: o.z, vz: o.vz });
   }
 
   private pintar(c: Criatura, alpha: number, dtAnim: number, dtR: number): void {
@@ -468,8 +509,8 @@ export class Laboratorio extends Phaser.Scene {
     let tx: number | null = null;
     let ty = 0;
     if (a && a.obj >= 0) {
-      if (a.esCriatura) { const o = this.juego.sim.criaturas.find((q) => 1000 + q.id === a.obj); if (o) tx = o.x; }
-      else { const o = this.juego.sim.mundo.obj(a.obj); tx = o ? o.x : a.dest; ty = 0.5; }
+      if (a.esCriatura) { const o = this.juego.criaturasVistas.find((q) => 1000 + q.id === a.obj); if (o) tx = o.x; }
+      else { const o = this.juego.mundoVisto.obj(a.obj); tx = o ? o.x : a.dest; ty = 0.5; }
     } else if (a && (a.v === "explorar" || a.v === "evitar")) { tx = a.dest; ty = 0; }
     if (tx === null) return null;
     const dx = (tx - c.x) * c.dir;
@@ -603,7 +644,7 @@ export class Laboratorio extends Phaser.Scene {
   }
 
   private criaturaEn(wx: number, wy: number): number | null {
-    for (const c of this.juego.sim.criaturas) {
+    for (const c of this.juego.criaturasVistas) {
       const s = this.crit.get(c.id);
       if (!s) continue;
       if (Math.abs(wx - s.x) < 120 && wy > PIES - 380 && wy < PIES + 30) return c.id;

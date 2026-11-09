@@ -3,6 +3,7 @@
 
 import type { Criatura } from "../nucleo/criatura.ts";
 import { CATALOGO } from "../nucleo/catalogo.ts";
+import { AJ } from "../nucleo/ajustes.ts";
 import { DIA, E, N, RASGOS } from "../nucleo/tipos.ts";
 import { sonido } from "../audio/audio.ts";
 import { icono, crearObjetos } from "../arte/objetos.ts";
@@ -76,6 +77,10 @@ export class Interfaz {
   private clavesMem = "";
   private objetos = crearObjetos();
   private temporizador = 0;
+  /** El mapa del complejo (solo si hay mas de una sala) y sus cajas por sala. */
+  private mapaEl: HTMLElement | null = null;
+  private mapaCajas = new Map<number, { caja: HTMLElement; puntos: HTMLElement; cuenta: HTMLElement }>();
+  private mapaTitulo: HTMLElement | null = null;
   private tick = 0;
 
   constructor(raiz: HTMLElement, juego: Juego, escena: Laboratorio) {
@@ -243,6 +248,8 @@ export class Interfaz {
       return b;
     };
     const pequena = window.innerWidth < 1500;
+    this.mapaEl = this.montarMapa();
+    if (this.mapaEl) this.raiz.append(this.mapaEl);
     this.raiz.append(barra, this.ficha, this.panelMem, lengueta("izq", "Ficha", this.ficha, false), lengueta("der", "Memoria", this.panelMem, pequena), pie, this.subtitulo);
 
     // Teclas
@@ -259,6 +266,69 @@ export class Interfaz {
     this.refrescarControles();
     this.refrescar();
     this.temporizador = window.setInterval(() => this.refrescar(), 250);
+  }
+
+  /** El mapa del complejo: las salas como cajas con sus conexiones y un punto por criatura. Una caja lleva a esa sala, un punto elige a esa criatura. */
+  private montarMapa(): HTMLElement | null {
+    const j = this.juego;
+    const salas = j.sim.salas;
+    this.mapaCajas.clear();
+    if (salas.length < 2) return null;
+    const W = 112, H = 50, G = 14;
+    const col = (c: number): number => c * (W + G);
+    const caja = (s: (typeof salas)[number]): { x: number; y: number; w: number } => ({ x: col(s.mapa?.c ?? 0), y: (s.mapa?.f ?? 0) * (H + G), w: (s.mapa?.w ?? 1) * W + ((s.mapa?.w ?? 1) - 1) * G });
+    const cols = Math.max(...salas.map((s) => (s.mapa?.c ?? 0) + (s.mapa?.w ?? 1)));
+    const filas = Math.max(...salas.map((s) => (s.mapa?.f ?? 0) + 1));
+    const ancho = cols * W + (cols - 1) * G, alto = filas * H + (filas - 1) * G;
+    const lienzo = h("div", { clase: "va-mapa-lienzo", style: `width:${ancho}px;height:${alto}px` });
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("width", String(ancho)); svg.setAttribute("height", String(alto)); svg.setAttribute("class", "va-mapa-lineas");
+    const hechas = new Set<string>();
+    for (const s of salas) for (const o of s.mundo.objetos) {
+      if (o.tipo !== "puerta" || !o.destino) continue;
+      const clave = [s.id, o.destino.sala].sort().join("-");
+      if (hechas.has(clave)) continue;
+      hechas.add(clave);
+      const a = caja(s), b = caja(salas[o.destino.sala]);
+      const l = document.createElementNS(ns, "line");
+      l.setAttribute("x1", String(a.x + a.w / 2)); l.setAttribute("y1", String(a.y + H / 2)); l.setAttribute("x2", String(b.x + b.w / 2)); l.setAttribute("y2", String(b.y + H / 2));
+      svg.append(l);
+    }
+    lienzo.append(svg);
+    for (const s of salas) {
+      const p = caja(s);
+      const puntos = h("span", { clase: "va-sala-puntos" });
+      const cuenta = h("em", {});
+      const b = h("button", { type: "button", clase: `va-sala t-${s.tipo}`, style: `left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${H}px`, "data-tip": `${s.nombre}|Ir a esta sala.` }, h("b", {}, s.nombre), puntos, cuenta);
+      b.addEventListener("click", (e) => { if ((e.target as HTMLElement).closest(".va-sala-punto")) return; sonido.clic(); j.verSala(s.id); this.refrescar(); });
+      this.mapaCajas.set(s.id, { caja: b, puntos, cuenta });
+      lienzo.append(b);
+    }
+    this.mapaTitulo = h("h3", { clase: "va-sec" }, "Complejo");
+    return h("aside", { clase: "va-mapa" }, this.mapaTitulo, lienzo);
+  }
+
+  private refrescarMapa(): void {
+    if (!this.mapaEl) return;
+    const j = this.juego;
+    for (const s of j.sim.salas) {
+      const m = this.mapaCajas.get(s.id);
+      if (!m) continue;
+      m.caja.classList.toggle("activa", s.id === j.salaVista);
+      const aqui = j.sim.criaturas.filter((c) => c.sala === s.id && c.vivo);
+      m.cuenta.textContent = `${aqui.length}/${s.capacidad ?? AJ.maxCriaturasSala}`;
+      const clave = aqui.map((c) => `${c.id}${c.id === j.seleccion ? "*" : ""}`).join(",");
+      if (m.puntos.dataset.clave !== clave) {
+        m.puntos.dataset.clave = clave;
+        m.puntos.replaceChildren(...aqui.map((c) => {
+          const p = h("i", { clase: `va-sala-punto${c.id === j.seleccion ? " sel" : ""}`, style: `background:hsl(${Math.round(c.huella * 360)},68%,58%)`, "data-tip": `${c.nombre}|Elegir a esta criatura.` });
+          p.addEventListener("click", () => { sonido.clic(); j.seleccionar(c.id); this.refrescar(); });
+          return p;
+        }));
+      }
+    }
+    if (this.mapaTitulo) this.mapaTitulo.textContent = `Complejo · ${j.salaActual.nombre}`;
   }
 
   desmontar(): void {
@@ -384,6 +454,7 @@ export class Interfaz {
     const hora = rel.fraccion * 24;
     this.relojLuna.classList.toggle("noche", hora >= 20 || hora < 6);
     this.tick++;
+    this.refrescarMapa();
 
     // Selector de criatura
     if (this.selector.childElementCount !== j.sim.criaturas.length) {
@@ -398,7 +469,7 @@ export class Interfaz {
     this.nombre.textContent = c.nombre;
     const esp = c.genoma.especializacion;
     const estilo = esp ? [esp.craneo > 0.5 ? "embestida" : "", esp.mandibula > 0.5 ? "mordida" : "", esp.garras > 0.5 ? "garras" : "", esp.agilidad > 0.5 ? "persecución" : "", esp.recursos > 0.7 ? "defiende recursos" : "", esp.depredador > 0.7 ? "caza" : "", esp.territorial > 0.5 ? "territorial" : ""].filter(Boolean).join(", ") : "";
-    this.edad.textContent = `Día ${Math.floor(c.edad / DIA) + 1} de vida${c.rutina ? ` · raza simple ${c.rutina === "hostil" ? "hostil" : "amistosa"}` : ""}${estilo ? ` · combate: ${estilo}` : ""}${this.llevaTexto(c)}`;
+    this.edad.textContent = `Día ${Math.floor(c.edad / DIA) + 1} de vida${c.rutina ? ` · raza simple ${c.rutina === "hostil" ? "hostil" : "amistosa"}` : ""}${estilo ? ` · combate: ${estilo}` : ""}${this.juego.sim.salas.length > 1 ? ` · en ${this.juego.sim.salas[c.sala]?.nombre ?? "la sala"}` : ""}${this.llevaTexto(c)}`;
     this.estado.textContent = this.fraseEstado(c);
     const sec = c.secuelas ?? [];
     this.cabSecuelas.hidden = this.secuelasEl.hidden = sec.length === 0;
@@ -432,7 +503,7 @@ export class Interfaz {
   /** Describe en una frase lo que la criatura esta haciendo, con lo que necesita. */
   /** Lo que lleva a cuestas, para la ficha (vacio si no lleva nada). */
   private llevaTexto(c: Criatura): string {
-    const o = c.lleva !== null ? this.juego.sim.mundo.obj(c.lleva) : undefined;
+    const o = c.lleva !== null ? this.juego.sim.salas[c.sala]?.mundo.obj(c.lleva) : undefined;
     const def = o ? CATALOGO[o.tipo] : undefined;
     return def ? ` · lleva ${def.gen === "f" ? "la" : "el"} ${def.nombre}` : "";
   }

@@ -6,7 +6,7 @@ import { Interfaz } from "./ui/interfaz.ts";
 import { pantallaTitulo } from "./ui/titulo.ts";
 import { aviso, boton, esperar, h, iniciarAyudas, respirar } from "./ui/base.ts";
 import { AJ } from "./nucleo/ajustes.ts";
-import { cargarGuardado, simulacionNueva } from "./guardado.ts";
+import { cargarGuardado, complejoNuevo, simulacionNueva } from "./guardado.ts";
 import { sonido } from "./audio/audio.ts";
 import type { ResumenFueraDeLinea } from "./nucleo/simulacion.ts";
 
@@ -104,8 +104,8 @@ async function arrancar(): Promise<void> {
 
   pantallaTitulo(ui, {
     hayGuardado: !!guardado,
-    async entrar(nuevo, alAvance) {
-      if (nuevo) juego.reemplazarSim(simulacionNueva());
+    async entrar(nuevo, alAvance, complejo) {
+      if (nuevo) juego.reemplazarSim(complejo ? complejoNuevo() : simulacionNueva());
       else if (guardado) {
         const real = Math.max(0, (Date.now() - guardado.ultima) / 1000);
         if (real > 20) {

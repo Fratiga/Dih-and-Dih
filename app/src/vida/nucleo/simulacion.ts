@@ -47,7 +47,7 @@ export interface EstadoSim {
   transporte?: boolean;
   aprendeBloqueos?: boolean;
   /** Las salas de despues de la primera (cada una con su mundo). Sin ellas es una camara de una sala. */
-  salasExtra?: { nombre: string; tipo: string; mundo: EstadoMundo }[];
+  salasExtra?: { nombre: string; tipo: string; mundo: EstadoMundo; capacidad?: number; comedero?: { cada: number; max: number; tipo: string }; proxComedero?: number; mapa?: { c: number; f: number; w?: number } }[];
   legado?: Legado[];
   embarazos?: { madre: number; padre: number; nace: number; genomaPadre: Genoma }[];
   proxNombre?: number;
@@ -83,6 +83,13 @@ export interface Sala {
   nombre: string;
   tipo: string;
   mundo: Mundo;
+  /** Cuantas criaturas vivas caben (por defecto `AJ.maxCriaturasSala`). */
+  capacidad?: number;
+  /** Un dispensador propio de la sala (la primera usa el de la simulacion). */
+  comedero?: { cada: number; max: number; tipo: string };
+  proxComedero?: number;
+  /** Donde se dibuja en el mapa del complejo (columna, fila y cuantas columnas ocupa). */
+  mapa?: { c: number; f: number; w?: number };
 }
 
 export class Simulacion {
@@ -151,6 +158,7 @@ export class Simulacion {
       const danos = mundo.paso(dt, cs.filter((c) => c.vivo));
       for (const d of danos) this.criatura(d.criatura)?.sufrirContinuo(d.cant / dt, dt, d.causa);
       if (k === 0) this.alimentar();
+      else if (sala.comedero) this.alimentarSala(sala);
       const env = {
         mundo, criaturas: cs, t: this.t,
         embarazar: (madre: Criatura, padre: Criatura) => { madre.gestando = true; this.embarazos.push({ madre: madre.id, padre: padre.id, nace: this.t + AJ.gestacion, genomaPadre: JSON.parse(JSON.stringify(padre.genoma)) }); },
@@ -186,7 +194,7 @@ export class Simulacion {
       madre.gestando = false;
       madre.impulso = 0;
       const padre = this.criatura(e.padre);
-      const hueco = AJ.maxCriaturasSala - this.criaturas.filter((c) => c.vivo).length;
+      const hueco = (this.salas[madre.sala]?.capacidad ?? AJ.maxCriaturasSala) - this.criaturas.filter((c) => c.vivo && c.sala === madre.sala).length;
       // Si el padre ya no esta, nace con su genoma guardado
       const nacidos = padre ? this.parir(madre, padre, hueco) : this.parirCon(madre, e.genomaPadre, e.padre, hueco);
       madre.mem.anotar(this.t, `parto:${Math.floor(this.t)}`, nacidos.length === 1 ? "Tuvo una cría." : nacidos.length ? `Tuvo ${nacidos.length} crías.` : "No había sitio para sus crías.", 0.6);
@@ -317,6 +325,19 @@ export class Simulacion {
     return hijo;
   }
 
+  /** El dispensador de una sala de las de despues de la primera. */
+  private alimentarSala(sala: Sala): void {
+    const cm = sala.comedero;
+    if (!cm || this.t < (sala.proxComedero ?? 0)) return;
+    sala.proxComedero = this.t + cm.cada;
+    const hay = sala.mundo.objetos.filter((o) => CATALOGO[o.tipo].nutri > 0.3 && CATALOGO[o.tipo].porciones > 0).length;
+    if (hay >= cm.max) return;
+    const x = this.azar.entre(120, sala.mundo.ancho - 120);
+    if (sala.mundo.objetos.some((o) => CATALOGO[o.tipo].peligro && o.activo && Math.abs(o.x - x) < CATALOGO[o.tipo].peligro!.ancho / 2 + 30)) return;
+    sala.mundo.agregar(cm.tipo, x, { z: 560, vz: 0 });
+    sala.mundo.sonar(x, 0.1);
+  }
+
   private alimentar(): void {
     const cm = this.comedero;
     if (!cm || cm.activo === false || this.t < this.proxComedero) return;
@@ -363,7 +384,7 @@ export class Simulacion {
   serializar(): EstadoSim {
     return JSON.parse(
       JSON.stringify({
-        v: 1, semilla: this.semilla, t: this.t, mundo: this.mundo.estado(), ...(this.salas.length > 1 ? { salasExtra: this.salas.slice(1).map((s) => ({ nombre: s.nombre, tipo: s.tipo, mundo: s.mundo.estado() })) } : {}), criaturas: this.criaturas.map((c) => c.estado()), azar: this.azar.s,
+        v: 1, semilla: this.semilla, t: this.t, mundo: this.mundo.estado(), ...(this.salas.length > 1 ? { salasExtra: this.salas.slice(1).map((s) => ({ nombre: s.nombre, tipo: s.tipo, mundo: s.mundo.estado(), ...(s.capacidad ? { capacidad: s.capacidad } : {}), ...(s.comedero ? { comedero: s.comedero, proxComedero: s.proxComedero } : {}), ...(s.mapa ? { mapa: s.mapa } : {}) })) } : {}), criaturas: this.criaturas.map((c) => c.estado()), azar: this.azar.s,
         comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, secuelas: this.secuelas, extincion: this.extincion, transporte: this.transporte, aprendeBloqueos: this.aprendeBloqueos, legado: this.legado, embarazos: this.embarazos,
       }),
     ) as EstadoSim;
@@ -375,7 +396,7 @@ export class Simulacion {
     s.embarazos = JSON.parse(JSON.stringify(e.embarazos ?? []));
     s.t = e.t;
     s.mundo.restaurar(e.mundo);
-    for (const x of e.salasExtra ?? []) { const k = s.agregarSala(x.nombre, x.tipo, x.mundo.ancho); s.salas[k].mundo.restaurar(x.mundo); }
+    for (const x of e.salasExtra ?? []) { const k = s.agregarSala(x.nombre, x.tipo, x.mundo.ancho); s.salas[k].mundo.restaurar(x.mundo); Object.assign(s.salas[k], { capacidad: x.capacidad, comedero: x.comedero, proxComedero: x.proxComedero, mapa: x.mapa }); }
     s.criaturas = e.criaturas.map((c) => {
       const k = Criatura.desde(c, e.semilla);
       k.mortalidad = s.mortalidad;
