@@ -1,13 +1,17 @@
 /* =============================================================================
    CONCURSO — Programa: solo la escena al aire, a pantalla completa. Es la
    ventana que se comparte por Discord. Recibe todo de la cabina por
-   BroadcastChannel y no tiene ningún control propio (Espacio y Retroceso se
-   reenvían a la cabina, por si el anfitrión la tiene en primer plano).
+   BroadcastChannel. Los clics y las teclas (Espacio, Retroceso, flechas) se
+   reenvían a la cabina, así el anfitrión puede jugar desde esta ventana.
 ============================================================================= */
 (function () {
   const raiz = document.getElementById("programa");
   const aviso = document.getElementById("programaAviso");
-  const escenario = new CZ.Escenario(raiz, { modo: "programa" });
+  // Los clics en botones, celdas, cartas y temporizadores se mandan a la cabina, que es la que decide
+  const escenario = new CZ.Escenario(raiz, {
+    modo: "programa",
+    alClic: (el, sub, ev) => CZ.canal.enviar({ tipo: "clic", escena: escenario.escenaId, el: el.id, sub, alt: ev.altKey })
+  });
   let anterior = null;     // { escena, paso, puntos: Map }
 
   function aplicar(msg) {
@@ -56,7 +60,7 @@
     }
     if (e.key === "f" || e.key === "F") pantallaCompleta();
   });
-  raiz.addEventListener("dblclick", pantallaCompleta);
+  raiz.addEventListener("dblclick", ev => { if (!ev.target.closest(".cz-el")) pantallaCompleta(); });
   function pantallaCompleta() {
     if (document.fullscreenElement) document.exitFullscreen();
     else document.documentElement.requestFullscreen().catch(() => {});

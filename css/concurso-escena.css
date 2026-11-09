@@ -108,9 +108,9 @@
 .cz-invisible { opacity: 0 !important; pointer-events: none; }
 .cz-modo-editor .cz-invisible { opacity: .32 !important; pointer-events: auto; outline: 4px dashed rgba(255, 255, 255, .7); outline-offset: 4px; }
 .cz-modo-mini * { pointer-events: none !important; }
-.cz-modo-monitor .cz-enlace, .cz-modo-monitor .cz-el[data-tipo="rejilla"], .cz-modo-monitor .cz-el[data-tipo="carta"],
-.cz-modo-monitor .cz-el[data-tipo="matriz"] .cz-matriz-celda, .cz-modo-monitor .cz-el[data-tipo="temporizador"] { cursor: pointer; }
-.cz-modo-monitor .cz-enlace:hover > * { filter: brightness(1.08); }
+.cz-modo-monitor, .cz-modo-programa { user-select: none; -webkit-user-select: none; }
+:is(.cz-modo-monitor, .cz-modo-programa) :is(.cz-enlace, .cz-el[data-tipo="rejilla"], .cz-el[data-tipo="carta"], .cz-el[data-tipo="temporizador"], .cz-matriz-celda) { cursor: pointer; }
+:is(.cz-modo-monitor, .cz-modo-programa) .cz-enlace:hover > * { filter: brightness(1.08); }
 
 /* Transiciones entre escenas */
 .cz-tr-barrido { animation: czBarrido .62s cubic-bezier(.75, 0, .2, 1) both; }
@@ -404,7 +404,7 @@
 .cz-matriz-celda.cz-usada > img, .cz-matriz-celda.cz-usada > .cz-matriz-num { filter: grayscale(1) brightness(.6); opacity: .45; }
 .cz-matriz-ganador { position: absolute; height: 74cqh; }
 .cz-matriz-x { position: absolute; font: 110cqh var(--cz-f-titulo); color: var(--cz-mal); line-height: 1; -webkit-text-stroke: .04em var(--cz-contorno); paint-order: stroke fill; }
-.cz-modo-monitor .cz-matriz-celda:not(.cz-usada):hover { transform: scale(1.04); }
+:is(.cz-modo-monitor, .cz-modo-programa) .cz-matriz-celda:not(.cz-usada):hover { transform: scale(1.04); }
 [data-tema="camara"] .cz-matriz-celda { background: repeating-conic-gradient(#1b1b1f 0 25%, #26262b 0 50%) 0 0 / 40cqh 40cqh; border-color: #555; }
 [data-tema="camara"] .cz-matriz-num { color: var(--cz-acento); -webkit-text-stroke: 0; }
 

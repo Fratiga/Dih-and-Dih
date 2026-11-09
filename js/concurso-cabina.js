@@ -83,6 +83,10 @@
   CZ.canal.escuchar(msg => {
     if (!msg) return;
     if (msg.tipo === "pedir") enviar();
+    if (msg.tipo === "clic" && msg.escena === C.p.vivo.escena) {
+      const e = CZ.escena(C.p, msg.escena), el = e && e.elementos.find(x => x.id === msg.el);
+      if (el) clicAlAire(el, msg.sub, { altKey: !!msg.alt });
+    }
     if (msg.tipo === "tecla") {
       if (msg.tecla === " " || msg.tecla === "ArrowRight") pasoSiguiente();
       else pasoAnterior();
