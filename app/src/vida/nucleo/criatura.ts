@@ -170,6 +170,7 @@ export interface EstadoCriatura {
   defiende?: boolean;
   puedeCargar?: boolean;
   aprendeBloqueos?: boolean;
+  hambreArriesga?: boolean;
   lleva?: number | null;
   hogar?: number | null;
   modelo?: EstadoModeloAjeno | null;
@@ -272,6 +273,8 @@ export class Criatura {
   puedeCargar = false;
   /** Opcional (etapa 1 de las barreras): un intento de llegar a algo que una barrera ha cortado deja un recuerdo de que ahi, con eso, no se consigue nada. Apagado, el choque solo frustra un poco. */
   aprendeBloqueos = false;
+  /** Opcional: el hambre compite con el miedo a un peligro ya conocido. Con hambre, poco miedo de caracter y sin susto del momento, el dano esperado pesa menos. Apagado, el peso del dano es el de siempre. */
+  hambreArriesga = false;
   /** Lo que lleva a cuestas ahora (el identificador del objeto), si algo. */
   lleva: number | null = null;
   /** Segundos seguidos que lleva empujando contra una barrera sin poder pasar (lo pone la simulacion). */
@@ -850,6 +853,12 @@ export class Criatura {
   /** Lo que cuesta mantener ese cuerpo: mas hambre. */
   factorMetabolismoEsp(): number { const e = this.genoma.especializacion; return e ? 1 + 0.1 * e.craneo + 0.12 * e.mandibula + 0.08 * e.garras + 0.12 * e.agilidad : 1; }
 
+  /** De 0 a 1: cuanto empuja el hambre a arriesgarse. Crece desde un hambre de 0,55, y la rebajan el miedo de caracter y el susto del momento. 0 si esta apagado. */
+  apetitoRiesgo(): number {
+    if (!this.hambreArriesga) return 0;
+    return acota((this.nec[N.hambre] - 0.55) / 0.45) * (0.3 + 0.7 * (1 - this.rasgos[R.miedo])) * (1 - this.emo[E.miedo]);
+  }
+
   /** Cuanto peso puede llevar a cuestas: lo que aguanta su fuerza (con las secuelas de debilidad, menos). */
   capacidadCarga(): number { return 0.5 + 0.7 * this.genoma.fuerza * this.factorFuerza(); }
   /** Cuanto la frena lo que lleva a cuestas: 1 sin carga, y hasta 1 menos `frenoCarga` con una carga igual a lo que aguanta. */
@@ -1316,7 +1325,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, defiende: this.defiende, puedeCargar: this.puedeCargar, aprendeBloqueos: this.aprendeBloqueos, lleva: this.lleva, hogar: this.hogar, modelo: this.modelo ? this.modelo.estado() : null, extincion: this.extincion, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, defiende: this.defiende, puedeCargar: this.puedeCargar, aprendeBloqueos: this.aprendeBloqueos, hambreArriesga: this.hambreArriesga, lleva: this.lleva, hogar: this.hogar, modelo: this.modelo ? this.modelo.estado() : null, extincion: this.extincion, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -1362,6 +1371,7 @@ export class Criatura {
     c.defiende = e.defiende ?? false;
     c.puedeCargar = e.puedeCargar ?? false;
     c.aprendeBloqueos = e.aprendeBloqueos ?? false;
+    c.hambreArriesga = e.hambreArriesga ?? false;
     c.lleva = e.lleva ?? null;
     c.hogar = e.hogar ?? null;
     c.modelo = e.modelo ? ModeloAjeno.desde(e.modelo) : null;

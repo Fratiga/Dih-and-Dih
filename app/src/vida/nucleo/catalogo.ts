@@ -57,7 +57,9 @@ export const CATALOGO: Record<string, TipoObjeto> = {
   reja: { id: "reja", nombre: "reja", gen: "f", f: [0.05, 0.85, 0.4, 0.3, 0.15, 0, 0.05], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.12, barrera: { ancho: 14, resistencia: 1 } },
   reja_fija: { id: "reja_fija", nombre: "reja", gen: "f", f: [0.05, 0.85, 0.4, 0.3, 0.15, 0, 0.05], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.12, barrera: { ancho: 14, resistencia: 0 } },
   muro: { id: "muro", nombre: "muro", gen: "m", f: [0.1, 0.95, 0.15, 0.5, 0.05, 0, 0], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, barrera: { ancho: 18, resistencia: 0 } },
-  /* Solo para el laboratorio: la placa roja con el mismo aspecto y sin descarga. */
+  /* Solo para el laboratorio: la placa roja con el mismo aspecto, con una descarga mas leve y mas fuerte, y sin ella. */
+  placa_leve: { id: "placa_leve", nombre: "placa roja", gen: "f", f: [0.05, 0.9, 0.9, 0.95, 0, 0, 0.6], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, peligro: { ratio: 0.06, ancho: 150 } },
+  placa_fuerte: { id: "placa_fuerte", nombre: "placa roja", gen: "f", f: [0.05, 0.9, 0.9, 0.95, 0, 0, 0.6], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, peligro: { ratio: 0.9, ancho: 150 } },
   placa_inocua: { id: "placa_inocua", nombre: "placa roja", gen: "f", f: [0.05, 0.9, 0.9, 0.95, 0, 0, 0.6], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0 },
   foco_rojo_b: { id: "foco_rojo_b", nombre: "foco rojo grande", gen: "m", f: [0.7, 0.45, 0.9, 0.9, 0.05, 0, 0.3], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, descarga: 0 },
 };

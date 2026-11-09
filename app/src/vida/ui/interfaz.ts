@@ -398,7 +398,7 @@ export class Interfaz {
     this.nombre.textContent = c.nombre;
     const esp = c.genoma.especializacion;
     const estilo = esp ? [esp.craneo > 0.5 ? "embestida" : "", esp.mandibula > 0.5 ? "mordida" : "", esp.garras > 0.5 ? "garras" : "", esp.agilidad > 0.5 ? "persecución" : "", esp.recursos > 0.7 ? "defiende recursos" : "", esp.depredador > 0.7 ? "caza" : "", esp.territorial > 0.5 ? "territorial" : ""].filter(Boolean).join(", ") : "";
-    this.edad.textContent = `Día ${Math.floor(c.edad / DIA) + 1} de vida${c.rutina ? ` · raza simple ${c.rutina === "hostil" ? "hostil" : "amistosa"}` : ""}${estilo ? ` · combate: ${estilo}` : ""}`;
+    this.edad.textContent = `Día ${Math.floor(c.edad / DIA) + 1} de vida${c.rutina ? ` · raza simple ${c.rutina === "hostil" ? "hostil" : "amistosa"}` : ""}${estilo ? ` · combate: ${estilo}` : ""}${this.llevaTexto(c)}`;
     this.estado.textContent = this.fraseEstado(c);
     const sec = c.secuelas ?? [];
     this.cabSecuelas.hidden = this.secuelasEl.hidden = sec.length === 0;
@@ -430,6 +430,13 @@ export class Interfaz {
   }
 
   /** Describe en una frase lo que la criatura esta haciendo, con lo que necesita. */
+  /** Lo que lleva a cuestas, para la ficha (vacio si no lleva nada). */
+  private llevaTexto(c: Criatura): string {
+    const o = c.lleva !== null ? this.juego.sim.mundo.obj(c.lleva) : undefined;
+    const def = o ? CATALOGO[o.tipo] : undefined;
+    return def ? ` · lleva ${def.gen === "f" ? "la" : "el"} ${def.nombre}` : "";
+  }
+
   private fraseEstado(c: Criatura): string {
     if (!c.vivo) return `Murió ${c.causa || "de causas naturales"}.`;
     if (c.incap >= 0) return "Está en el suelo, sin fuerzas. Una caricia puede reanimarla.";

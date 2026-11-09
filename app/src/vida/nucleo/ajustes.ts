@@ -122,6 +122,9 @@ export const AJ = {
   pesoDefensa: 0.8,
   /* Barreras y transporte (opcional). Segundos seguidos empujando contra una barrera tras los que una criatura desiste de lo que iba a hacer, y cuanto frena el peso de lo que lleva
      a cuestas (con una carga igual a lo que aguanta, va un 35 % mas lenta). */
+  /** Hambre contra peligro conocido (opcional): lo que una criatura con hambre, valiente y sin miedo del momento puede rebajar el peso de un dano esperado (0,7: como mucho un 70 %).
+      No lo anula: el peligro grave sigue pesando mas que lo que ofrece la comida. */
+  margenRiesgo: 0.7,
   tiempoBloqueo: 1.5,
   frenoCarga: 0.35,
   distanciaDefensa: 250,

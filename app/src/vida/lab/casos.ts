@@ -3664,12 +3664,7 @@ export const caso40: Caso = {
 
 /* ---------------------------------------------------------------------------------------------------------------- */
 
-export const caso41: Caso = {
-  id: "41",
-  titulo: "Transporte: comida donde hace daño",
-  hipotesis: "Con el transporte encendido, una criatura sola con hambre y una fruta sobre una placa que da descargas puede, sin que nadie se lo indique, recoger la fruta y comerla fuera de la placa, y hacerlo más con la experiencia porque la placa duele. Se separa lo disponible (comprobado aparte, bloque 1j de los tests), lo usado espontáneamente (cargar al menos una vez) y lo aprendido (comer fuera de la placa en la segunda mitad, más que con una placa inocua, y menos tiempo sobre la placa que sin transporte). Criterios fijados antes de ejecutar (ver el plan).",
-  minimo: 0.8,
-  ejecutar(semilla) {
+function ejecutar41(semilla: number, arriesga: boolean): ResSemilla {
     const DUR = 900;
     const MITAD = DUR / 2;
     const PLACA = 900;
@@ -3681,6 +3676,7 @@ export const caso41: Caso = {
         const s = nuevaSim({ semilla: mezclar(semilla, 411), objetos: [], criaturas: [{ genoma: genomaDe(semilla, 411), x: 400 }], comedero: null, mortalidad: "protegida" });
         const c = s.criaturas[0];
         c.puedeCargar = cond !== "B";
+        c.hambreArriesga = arriesga;
         c.nec[0] = 0.75;
         c.capRegistro = 50000;
         if (cond !== "D") s.mundo.agregar(cond === "C" ? "placa_inocua" : "placa", PLACA);
@@ -3725,6 +3721,65 @@ export const caso41: Caso = {
     } finally {
       AJ.entradasExtra = previo;
     }
+}
+
+export const caso41: Caso = {
+  id: "41",
+  titulo: "Transporte: comida donde hace daño",
+  hipotesis: "Con el transporte encendido, una criatura sola con hambre y una fruta sobre una placa que da descargas puede, sin que nadie se lo indique, recoger la fruta y comerla fuera de la placa, y hacerlo más con la experiencia porque la placa duele. Se separa lo disponible (comprobado aparte, bloque 1j de los tests), lo usado espontáneamente (cargar al menos una vez) y lo aprendido (comer fuera de la placa en la segunda mitad, más que con una placa inocua, y menos tiempo sobre la placa que sin transporte). Criterios fijados antes de ejecutar (ver el plan).",
+  minimo: 0.8,
+  ejecutar: (semilla) => ejecutar41(semilla, false),
+};
+
+export const caso41b: Caso = {
+  id: "41b",
+  titulo: "Transporte: comida donde hace daño, con el hambre compitiendo con el miedo",
+  hipotesis: "El mismo experimento del caso 41 con el interruptor `hambreArriesga` encendido en la criatura. Se espera que la criatura con hambre acabe acercándose a la fruta de la placa, que a veces la recoja y la coma fuera, y que lo haga más si la placa duele. Los criterios son los del caso 41, fijados antes (ver la adenda del plan).",
+  minimo: 0.8,
+  ejecutar: (semilla) => ejecutar41(semilla, true),
+};
+
+export const caso43: Caso = {
+  id: "43",
+  titulo: "Hambre contra peligro conocido",
+  hipotesis: "Con el interruptor `hambreArriesga`, el hambre compite con el miedo a un peligro ya conocido, sin apagarlo: una criatura valiente y hambrienta vuelve a por la fruta que está sobre una placa que duele, una miedosa casi no, con una placa leve va más que con la de siempre y con una fuerte mucho menos. Criterios fijados antes de ejecutar (ver la adenda del plan).",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const DUR = 900;
+    const PLACA = 900;
+    type Brazo = "K" | "V" | "M" | "L" | "F";
+    const correr = (brazo: Brazo) => {
+      const s = nuevaSim({ semilla: mezclar(semilla, 431), objetos: [], criaturas: [{ genoma: genomaDe(semilla, 431), x: 400 }], comedero: null, mortalidad: "protegida" });
+      const c = s.criaturas[0];
+      c.hambreArriesga = brazo !== "K";
+      const miedo = brazo === "M" ? 0.85 : 0.15;
+      c.rasgos[R.miedo] = miedo; c.base[R.miedo] = miedo;
+      c.nec[0] = 0.75;
+      c.capRegistro = 50000;
+      s.mundo.agregar(brazo === "L" ? "placa_leve" : brazo === "F" ? "placa_fuerte" : "placa", PLACA);
+      s.mundo.agregar("fruta", PLACA);
+      let sinFruta = -1, seg = 0;
+      s.ganchos.push(() => {
+        if (Math.abs(c.x - PLACA) <= 75) seg += AJ.dt;
+        const hay = s.mundo.objetos.some((o) => o.tipo === "fruta" && Math.abs(o.x - PLACA) < 60);
+        if (hay) sinFruta = -1;
+        else if (sinFruta < 0) sinFruta = s.t;
+        else if (s.t - sinFruta >= 25) { s.mundo.agregar("fruta", PLACA); sinFruta = -1; }
+      });
+      s.avanzar(DUR);
+      const bocados = c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "fruta" && (r.res?.[0] ?? 0) > 0.1).length;
+      return { bocados, seg };
+    };
+    const K = correr("K"), V = correr("V"), M = correr("M"), L = correr("L"), F = correr("F");
+    return resultado(semilla, {
+      "sin el interruptor no vuelve a la placa (como mucho 1 bocado)": K.bocados <= 1,
+      "con el interruptor, la valiente vuelve a por la fruta (al menos 3 bocados y 2 más que sin él)": V.bocados >= 3 && V.bocados >= K.bocados + 2,
+      "el carácter importa: la miedosa come como mucho la mitad que la valiente": M.bocados <= 0.5 * V.bocados,
+      "la gravedad importa: con la placa leve come al menos lo que con la de siempre y con la fuerte como mucho la mitad": V.bocados >= 3 && L.bocados >= V.bocados && F.bocados <= 0.5 * V.bocados,
+    }, {
+      bocadosK: K.bocados, bocadosV: V.bocados, bocadosM: M.bocados, bocadosL: L.bocados, bocadosF: F.bocados,
+      segPlacaK: K.seg, segPlacaV: V.seg, segPlacaM: M.seg, segPlacaL: L.seg, segPlacaF: F.seg,
+    }, null, DUR);
   },
 };
 
@@ -3816,5 +3871,5 @@ export const caso42b: Caso = {
   ejecutar: (semilla) => ejecutar42(semilla, true),
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso41, caso42, caso42b, caso14];
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso41, caso41b, caso43, caso42, caso42b, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

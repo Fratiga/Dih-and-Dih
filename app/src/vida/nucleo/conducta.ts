@@ -171,7 +171,8 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
   const act = c.accion;
   const persistir = 0.05 + 0.25 * ras[R.persistencia];
 
-  const pesoDano = AJ.pesoDano * (1 + 0.9 * ras[R.miedo]) * (1 + miedoRaz * 0.6) * (1 - 0.45 * hambre);
+  const riesgo = 1 - AJ.margenRiesgo * c.apetitoRiesgo();
+  const pesoDano = AJ.pesoDano * (1 + 0.9 * ras[R.miedo]) * (1 + miedoRaz * 0.6) * (1 - 0.45 * hambre) * riesgo;
   const utilidad = (res: Res, dist: number, conf: number, esCriatura: boolean): number => {
     let u = 0;
     u += res[C.sacia] * AJ.pesoSacia * Math.max(0.03, hambre - 0.12);
@@ -311,7 +312,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     const amenaza = Math.max(P.res[C.dano], P.res[C.susto] * 0.8) * P.conf * (ultimoRecurso > 0 && comestible(p) ? 1 - ultimoRecurso : 1);
     if (amenaza > 0.12 && !p.recordado) {
       const cerca = acota(1 - (p.dist - 40) / 320, 0.08, 1);
-      let u = amenaza * (1.1 + miedoRaz + ras[R.miedo]) * cerca * (1 - 0.3 * hambre);
+      let u = amenaza * (1.1 + miedoRaz + ras[R.miedo]) * cerca * (1 - 0.3 * hambre) * riesgo;
       if (act && act.v === "evitar" && act.obj === p.id) u += persistir;
       cand.push({ v: "evitar", p, dest: 0, u, cambia: true, espera: resCero() });
     }

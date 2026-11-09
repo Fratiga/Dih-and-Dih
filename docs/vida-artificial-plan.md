@@ -1848,6 +1848,33 @@ Una ejecución, 10 semillas, criterios sin cambiar. No aprueba como caso (0 de 1
 - **Criterio 5 mal planteado.** La comparación de empujones de la segunda mitad entre A (12 de mediana) y B (19,5) sale a favor de B, pero B repone la reja más veces (8 episodios frente a 5) porque la rompe antes de que se acabe nada, y cuenta más rejas. No es evidencia de que empuje por costumbre. Se deja como está (no se cambia después de ver los datos) y se anota que haría falta medir los empujones por reja presentada. Queda pendiente.
 - **Lo que falta.** Un episodio más corto (el actual dura hasta 150 s y la criatura tarda unos 80) o una sala con más reposiciones, para que haya suficientes episodios completos y la pregunta de si tarda menos con la práctica tenga respuesta. Esa duración se puede ajustar en una ronda posterior con su propia adenda.
 
+### Estado de las capacidades físicas (11-nov-2026)
+
+| Capacidad | Estado actual |
+|---|---|
+| Transporte (W1) | Implementado y comprobado. Uso espontáneo sin peligro. Bajo peligro, ver el caso 41b |
+| Barreras (W3) | Implementadas. Uso espontáneo con `aprendeBloqueos` (caso 42b) |
+| Aprendizaje de bloqueos | Recuerda el intento cortado y cambia lo que hace. Que mejore con la práctica no está demostrado |
+| Hambre contra peligro conocido | Opcional, ver la adenda de abajo |
+| Puertas y mecanismos (placa de peso, palanca) | Pendiente |
+| Cooperación y observación con barreras | Pendiente |
+| Lo que se lleva a cuestas, en la interfaz | La ficha dice qué lleva y el objeto va con la criatura, por encima del suelo |
+| Planes corporales (bípedo, nadador, volador) | No iniciados |
+
+Los casos que no aprobaron se conservan como están, con sus resultados.
+
+### Adenda fijada antes de ejecutar los casos 43 y 41b (11-nov-2026)
+
+- **Mecanismo.** Un interruptor por criatura, `hambreArriesga` (apagado por defecto). El hambre **compite** con el miedo y no lo apaga. Con hambre desde 0,55, el peso de cualquier daño esperado (el de la acción y el del trayecto) y el de alejarse de lo que se sabe que duele se multiplican por 1 menos 0,7 por el apetito de riesgo. El apetito de riesgo es el hambre por encima de 0,55 (de 0 a 1), por 0,3 más 0,7 de valentía de caracter (1 menos su miedo), por 1 menos el miedo del momento. Una criatura sin hambre, o muy miedosa, o asustada, casi no cambia. Un peligro grave sigue pesando más que lo que ofrece la comida, porque el factor nunca baja del 30 %.
+- **Caso 43, hambre contra peligro.** Una criatura sola, transporte apagado, hambre inicial 0,75, 900 s, la placa de siempre con la fruta encima (la que reaparece a los 25 s) y cinco brazos. **K.** Control, interruptor apagado, miedo de caracter 0,15. **V.** Interruptor encendido, miedo 0,15. **M.** Encendido, miedo 0,85. **L.** Encendido, miedo 0,15, placa leve (0,06 de daño por segundo). **F.** Encendido, miedo 0,15, placa fuerte (0,9 por segundo). La placa de siempre da 0,3.
+- **Criterios del caso 43, por semilla** (un 80 %, caso informativo, medido en bocados de la fruta de la placa).
+  1. K come como mucho 1 bocado (repite lo del caso 41: no vuelve a la placa).
+  2. V come al menos 3 bocados y al menos 2 más que K.
+  3. M come como mucho la mitad que V (el carácter importa).
+  4. Con V al menos 3: L come al menos lo que V, y F come como mucho la mitad que V (la gravedad importa).
+- **Caso 41b.** El caso 41 sin tocar nada, con el interruptor encendido en todos los brazos. Mismos cuatro criterios.
+- Si no sale, se cuenta tal cual.
+
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 
 Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:

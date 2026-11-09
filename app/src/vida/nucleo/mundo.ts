@@ -131,7 +131,7 @@ export class Mundo {
       const c = criaturas.find((q) => q.id === o.llevadoPor);
       if (!c || !c.vivo) { o.llevadoPor = undefined; o.vx = 0; continue; }
       o.x = Math.max(20, Math.min(this.ancho - 20, c.x + c.dir * 24));
-      o.z = 26;
+      o.z = 40;
       o.vx = 0;
       o.vz = 0;
     }
