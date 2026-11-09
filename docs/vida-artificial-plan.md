@@ -1656,6 +1656,52 @@ Seis estilos y una criatura sin especializar, cada uno en cuatro situaciones: di
 - **Heredar y seleccionar:** comprobar que una línea criada para cazar acaba con más mandíbula y que una criada para pelear por recursos acaba con más cráneo. Pide cría manual durante varias generaciones y un caso aparte.
 - **Postura, acecho y camuflaje** (el estilo «acechar» de la tabla) no están.
 
+## Defensa de recursos, territorialidad y selección: criterios fijados antes de ejecutar
+
+Escritos el 11-nov-2026, antes de implementar y de ejecutar ningún caso de esta serie (38, 39 y 40). Si un criterio resulta mal planteado, se corrige a la vista y se anota como cambio hecho después de ver datos, como en los casos anteriores. No se busca que el caso 37 apruebe globalmente.
+
+### Tres conductas distintas con las acciones que ya existen
+
+- **Apropiación:** una hambrienta empuja a quien está comiendo para quedarse con la comida. Ya existe (`pesoDisputa`, ruta `recursos`).
+- **Defensa:** quien está comiendo empuja a otra que se acerca a su comida. Es nueva y usa solo `empujar` sobre una criatura. Ruta heredable `defensa` (opcional, por omisión igual a `recursos` en los genomas especializados que no la traigan). No es una reacción automática: suma a la utilidad de empujar, que compite con comer, huir y esperar, y se decide con el sorteo de siempre.
+  - Pesa más con hambre, con más agresividad y con menos miedo, con ventaja de tamaño, y tras haber sido robada o golpeada por esa misma criatura (agravio). Pesa menos con vínculo. Intensidad base `pesoDefensa`, igual a `pesoDisputa` por simetría (la defensa y la apropiación valen lo mismo), no ajustada a ningún resultado.
+- **Territorialidad:** ahuyentar a una desconocida de su sitio habitual, también sin hambre ni comida. Ya existe, con un peso (1,2) sin justificar.
+
+### Caso 38, defensa de recursos: criterios (seis réplicas por condición, mediana por semilla)
+
+Una criatura ocupante comiendo, y otra, sin especializar y con hambre, que llega a su comida. Se cuentan los empujones del ocupante a la que llega (defensa) y los de la que llega al ocupante (apropiación).
+
+1. Defiende más hambrienta que saciada (al menos 1 empujón más de mediana).
+2. Defiende menos a una criatura a la que quiere (vínculo de 0,8): como mucho la mitad que sin vínculo.
+3. Defiende menos frente a una más grande y más frente a una más pequeña, que la base.
+4. Defiende más tras haber sido robada o golpeada por esa criatura (agravio previo).
+5. La personalidad pesa: más con agresividad alta que con la base, y menos con miedo alto.
+6. No es automática: en la condición base, ni todas las réplicas defienden ni ninguna (entre el 20 % y el 90 %).
+7. Las rutas se separan: un genoma con defensa alta y recursos bajo defiende más que uno con recursos alto y defensa baja, y este se apropia más de la comida de otra que aquel.
+
+### Caso 39, territorialidad: medida y calibración
+
+Se mide con una grilla de pesos (0,3; 0,6; 1,2; 2,0) en cinco situaciones, con la criatura territorial saciada y en su sitio habitual (600 s antes de que llegue nadie), y una intrusa quieta o que se mueve a mano: (T1) desconocida sin comida, (T2) desconocida junto a un alimento propio (informativo, la defensa de la comida es otra ruta), (T3) conocida frente a desconocida (la conocida con vínculo de 0,8), (T4) dentro frente a fuera del territorio (a 150 y a 500 del sitio habitual), (T5) una intrusa que se retira del territorio a los 30 s.
+
+Criterios de coherencia con lo descrito en el diseño («ahuyentar intrusos, también sin hambre»), fijados antes de ver ningún resultado, en 100 s:
+
+- **C1** hay respuesta: al menos 1 ataque de mediana a la desconocida sin comida.
+- **C2** ahuyenta y no machaca: como mucho 6 ataques de mediana en 100 s.
+- **C3** tolera a la conocida: como mucho la mitad de ataques que a la desconocida.
+- **C4** no actúa fuera de su territorio: como mucho 1 ataque de mediana fuera, y como mucho una cuarta parte de los de dentro.
+- **C5** para cuando el intruso se va: como mucho 1 ataque de mediana en los 30 s siguientes a que salga del territorio.
+
+**Regla de elección, fijada antes:** `pesoTerritorial` pasa a ser el menor peso de la grilla que cumple C1 a C5. Si ninguno los cumple, no se cambia y se explica por qué.
+
+### Caso 40, herencia y selección
+
+Una línea con ocho criaturas por generación y seis generaciones. Cada generación se mide una prueba de rendimiento y se cruzan las tres mejores (cruces al azar con reposición) para dar las ocho siguientes. La población inicial tiene rasgos del cuerpo y rutas al azar entre 0 y 0,6. Tres líneas: seleccionada por rendimiento depredador (daño a una presa sana en 120 s), seleccionada por disputas de recursos (parte de una fruta compartida con un rival, 300 s) y una de control sin selección (las tres elegidas al azar). Se repiten en 10 semillas y se compara con el control.
+
+1. **Depredador:** la mandíbula media de la línea depredadora sube al menos 0,15 entre la primera y la última generación, y al menos 0,10 más que la del control.
+2. **Disputas:** la línea de recursos sube al menos 0,10 más que el control en el cráneo o en la ruta de recursos o de defensa (los rasgos que deberían ayudar).
+3. **No se hereda lo vivido:** las crías de padres que han vivido y aprendido nacen sin asociaciones ni rasgos desarrollados (sin memoria y con los rasgos en su predisposición), y solo traen genes.
+4. **Especificidad:** la mandíbula de la línea de recursos no sube tanto como la de la depredadora (como mucho la mitad).
+
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 
 Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:
