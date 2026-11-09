@@ -1915,6 +1915,24 @@ Arquitectura en `docs/vida-artificial-complejo.md`. Esta es la primera parte con
   5. En A entra en la otra sala al menos 2 veces, y no más que sus salidas más una (vuelve a cruzar y no se queda atrapada).
 - Si algún criterio resulta mal planteado, se corrige a la vista y se anota.
 
+### Resultados del caso 44 (11-nov-2026)
+
+Una ejecución, 10 semillas, criterios sin cambiar. Aprueban los cinco criterios a la vez 3 de 10 semillas.
+
+| Criterio | Semillas |
+|---|---|
+| Puerta cerrada, no entra nunca | 10/10 |
+| Usada espontáneamente (cruza al menos una vez) | 7/10 |
+| Come al menos 2 bocados en la otra sala | 7/10 |
+| Por la comida (0,15 más de tiempo en la otra sala que cuando está vacía) | 6/10 |
+| Vuelve a cruzar (al menos 2 entradas y no más que sus salidas más una) | 3/10 |
+
+- **Disponible.** Sí. Con la puerta cerrada no entra nunca, y con la abierta cruza sola.
+- **Usada espontáneamente.** En 7 de 10 semillas cruza sin que nadie se lo diga, y la primera entrada llega a los 51 s de mediana (de 0 a 179 s). No percibe nada de la otra sala, así que descubre la puerta por curiosidad, como el resto de objetos. En 3 semillas no cruza en 900 s.
+- **Por la comida.** Con la fruta en la otra sala pasa allí el 66 % del tiempo de mediana (media 0,51) y come 4 bocados de mediana. Con la otra sala vacía, entra en una de cada dos semillas y pasa allí casi nada (mediana 0). Cruza más cuando hay comida, no por costumbre.
+- **Criterio 5, mal planteado.** Una criatura que ha encontrado comida abundante en la otra sala **no tiene motivo para volver**: se queda allí (entra una vez de mediana y casi nunca sale: 0 salidas de mediana). Pedirle ida y vuelta mide algo que el caso no provoca. Se deja como está y no cuenta como evidencia. Para que vuelva haría falta una razón (compañía, sueño en un sitio propio, comida en las dos salas por turnos, escasez en la de al lado), y eso es otro caso.
+- **Lo que no se ha comprobado.** Que lo aprendido en una sala no se mezcle con otra se probó solo con la equivalencia de una sala y con las pruebas de unidad (sitios y avistamientos separados). Falta un caso donde la misma cosa dé resultados distintos en dos salas (peligro en una y no en la otra).
+
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 
 Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:
