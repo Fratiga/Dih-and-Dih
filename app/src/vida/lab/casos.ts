@@ -3009,5 +3009,89 @@ export const caso33: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso34: Caso = {
+  id: "34",
+  titulo: "El extraño",
+  hipotesis: "Tres criaturas que llevan un rato conviviendo reciben a una desconocida. No tienen una regla para esto: cada una decide con lo que es y lo que ha vivido. Se espera que reaccionen distinto a una desconocida que a una conocida que vuelve, y que no reaccionen todas igual entre sí. La hostilidad no es automática: las agresivas atacan más que las demás, pero no hay un umbral limpio (también empuja a la desconocida la curiosidad por lo nuevo). Es una prueba abierta: no se fija qué hace cada una, solo se mide.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 5;
+    const CONVIVENCIA = 900;
+    const VISITA = 200;
+    type Brazo = "desconocida" | "conocida que vuelve";
+    const genomas = [genomaDe(semilla, 341), genomaDe(semilla, 342), genomaDe(semilla, 343)];
+    const gVisita = genomaDe(semilla, 344);
+    const probar = (brazo: Brazo, k: number) => {
+      const conocida = brazo === "conocida que vuelve";
+      const s = nuevaSim({ semilla: mezclar(semilla, 345, k), objetos: [{ tipo: "pelota", x: 600 }], criaturas: genomas.map((g, i) => ({ genoma: clonarGenoma(g), x: 400 + i * 150 })), comedero: { cada: 100, max: 3, tipo: "fruta" } });
+      for (const c of s.criaturas) { c.reconocePorRasgos = true; c.agresion = true; c.capRegistro = 50000; }
+      s.avanzar(CONVIVENCIA);
+      // Quien llega: una desconocida con su propio genoma, o una de las tres que se fue 200 s y vuelve (entonces las que quedan son dos)
+      let visita: Criatura;
+      let residentes: Criatura[];
+      if (conocida) {
+        visita = s.criaturas[2];
+        residentes = s.criaturas.slice(0, 2);
+        s.criaturas = residentes.slice();
+        s.avanzar(200);
+        visita.accion = null; visita.x = 1100;
+        s.criaturas.push(visita);
+      } else {
+        residentes = s.criaturas.slice();
+        visita = new Criatura(4, "Visita", clonarGenoma(gVisita), 1000, mezclar(semilla, 346, k));
+        visita.reconocePorRasgos = true; visita.agresion = true; visita.capRegistro = 5000;
+        visita.x = 1100;
+        s.criaturas.push(visita);
+      }
+      const t0 = s.t;
+      const regs0 = residentes.map((c) => c.registro.length);
+      s.avanzar(VISITA);
+      const filas = residentes.map((c, i) => {
+        const reg = c.registro.slice(regs0[i]);
+        const sobreVisita = (v: string): { t: number }[] => reg.filter((r) => r.kind === "inicio" && r.v === v && r.obj === 1000 + visita.id);
+        const acerca = sobreVisita("acercarse"), evita = sobreVisita("evitar"), ataca = sobreVisita("empujar");
+        const clase = ataca.length ? "ataca" : evita.length >= 2 && !acerca.length ? "evita" : acerca.length && acerca[0].t - t0 < 60 ? "se acerca" : "indiferente";
+        return { acercamientos: acerca.length, evitaciones: evita.length, ataques: ataca.length, tAcerca: acerca.length ? acerca[0].t - t0 : VISITA, clase, agres: c.rasgos[R.agresividad], curioso: c.rasgos[R.curiosidad] - c.rasgos[R.miedo] };
+      });
+      return {
+        acerca: media(filas.map((f) => f.acercamientos)), evita: media(filas.map((f) => f.evitaciones)), ataques: filas.reduce((n, f) => n + f.ataques, 0),
+        clases: new Set(filas.map((f) => f.clase)).size, ataquesDePacificas: filas.filter((f) => f.agres < 0.5).reduce((n, f) => n + f.ataques, 0),
+        tAcerca: media(filas.map((f) => f.tAcerca)), filas,
+      };
+    };
+    const brazos: Brazo[] = ["desconocida", "conocida que vuelve"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const [DE, CO] = brazos;
+    const todas = r[DE].flatMap((x) => x.filas);
+    const agr = todas.filter((f) => f.agres >= 0.5), otr = todas.filter((f) => f.agres < 0.5);
+    const tasa = (g: typeof todas): number => (g.length ? g.filter((f) => f.ataques > 0).length / g.length : 0);
+    // Correlacion entre lo curiosa (curiosidad menos miedo) y lo que se acerca menos lo que evita, con las tres residentes de esta semilla y sus replicas
+    const xs = todas.map((f) => f.curioso), ys = todas.map((f) => f.acercamientos - f.evitaciones);
+    const mx = media(xs), my = media(ys);
+    const cov = media(xs.map((x, i) => (x - mx) * (ys[i] - my)));
+    const sx = Math.sqrt(media(xs.map((x) => (x - mx) ** 2))), sy = Math.sqrt(media(ys.map((y) => (y - my) ** 2)));
+    const correlacion = sx > 0 && sy > 0 ? cov / (sx * sy) : 0;
+    return resultado(semilla, {
+      "reconoce la novedad: reacciona distinto a una desconocida que a una conocida que vuelve (se acerca o evita al menos 1 vez más de mediana en alguno de los dos sentidos)": Math.abs(med(DE, (x) => x.acerca) - med(CO, (x) => x.acerca)) >= 1 || Math.abs(med(DE, (x) => x.evita) - med(CO, (x) => x.evita)) >= 1,
+      "no reaccionan todas igual: ante la desconocida hay al menos dos tipos de reacción distintos entre las tres, en la mitad de las réplicas o más": r[DE].filter((x) => x.clases >= 2).length >= REP / 2,
+      "la hostilidad depende del carácter: las criaturas con agresividad de 0,5 o más atacan a la desconocida en una proporción mayor que las demás (si hay de las dos clases)": !(agr.length && otr.length) || tasa(agr) > tasa(otr),
+    }, {
+      acercamientosDesconocida: med(DE, (x) => x.acerca), acercamientosConocida: med(CO, (x) => x.acerca),
+      evitacionesDesconocida: med(DE, (x) => x.evita), evitacionesConocida: med(CO, (x) => x.evita),
+      ataquesDesconocida: med(DE, (x) => x.ataques), ataquesConocida: med(CO, (x) => x.ataques),
+      segundosHastaAcercarseDesconocida: med(DE, (x) => x.tAcerca), segundosHastaAcercarseConocida: med(CO, (x) => x.tAcerca),
+      tiposDeReaccionDesconocida: med(DE, (x) => x.clases), tiposDeReaccionConocida: med(CO, (x) => x.clases),
+      correlacionCaracterYAcercarse: correlacion,
+      agresividadMinimaDeQuienAtaca: Math.min(9, ...todas.filter((f) => f.clase === "ataca").map((f) => f.agres)), agresividadMaximaDeQuienNoAtaca: Math.max(0, ...todas.filter((f) => f.clase !== "ataca").map((f) => f.agres)),
+      proporcionQueAtacaConAgresividadAlta: tasa(agr), proporcionQueAtacaConAgresividadBaja: tasa(otr), residentesAgresivos: agr.length, residentesNoAgresivos: otr.length,
+      agresividadMediaDeQuienAtaca: media(todas.filter((f) => f.clase === "ataca").map((f) => f.agres)),
+      residentesSeAcercan: todas.filter((f) => f.clase === "se acerca").length, residentesEvitan: todas.filter((f) => f.clase === "evita").length, residentesAtacan: todas.filter((f) => f.clase === "ataca").length, residentesIndiferentes: todas.filter((f) => f.clase === "indiferente").length,
+    }, null, CONVIVENCIA + 200 + VISITA);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

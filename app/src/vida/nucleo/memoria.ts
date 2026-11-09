@@ -165,6 +165,16 @@ export class Memoria {
     return nuevo;
   }
 
+  /** Mezcla un resultado en una asociacion que ya existe, sin buscar la mas parecida (con los mismos pesos que `aprender`). Sirve para que lo aprendido de un objeto alcance a todo
+      lo que se sabe hacer con el, aunque su aspecto de ese momento (quieto, en movimiento) no se parezca al de cada asociacion. */
+  reforzar(p: Proto, res: Res, canales: boolean[], alfaExtra: number, t: number): void {
+    const alfa = Math.min(1, Math.max(1 / (p.n + 1), AJ.alfaMin * this.plast) * alfaExtra);
+    for (let k = 0; k < NC; k++) if (canales[k]) p.res[k] += alfa * (res[k] - p.res[k]);
+    p.n++;
+    p.fuerza = Math.min(1.5, Math.max(p.fuerza, 0.6) + 0.35);
+    p.t = t;
+  }
+
   /** Olvido gradual: lo que no se usa se difumina. Lo muy importante (dolor, comida) dura mas. */
   olvidar(dt: number): void {
     for (const p of this.protos) {

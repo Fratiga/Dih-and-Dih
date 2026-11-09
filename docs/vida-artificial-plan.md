@@ -1467,7 +1467,9 @@ Sale de una captura del juego, con «La pelota le asusta» (2 y 34 veces) junto 
 
 - **Qué pasa.** El susto del botón *Asustar* se aprende sobre **lo último que hizo** (el último impacto en los 6 s anteriores) y sobre ese verbo. Si lo último fue tocar la pelota, queda «tocar la pelota le asusta» y «empujar la pelota» sigue siendo divertida. Se comprobó en el laboratorio: con un susto justo después de empujar, deja de empujar la pelota por completo (0 empujes en 6 de 6 semillas, frente a 8 a 20 sin susto). Con el susto después de tocar, sigue empujando igual que el control (8 a 19 empujes).
 - **Y por qué parecía una contradicción.** La frase de la lista era «La pelota le asusta» para cualquier verbo, sin decir cuál. Ahora dice el verbo («Tocar la pelota le asusta»).
-- **Lo que queda abierto.** Que el miedo aprendido sobre un objeto se aplique a todo lo que hace con él, y no solo al verbo con el que se aprendió, es un cambio de la decisión que movería los casos ya medidos. No se ha hecho. La alternativa limitada es que *Asustar* también asuste el resto de los verbos con ese objeto; afectaría a los casos 22 y 23b, que usan el botón para entrenar aversiones. Queda como decisión.
+- **Resuelto el 9-nov-2026.** *Asustar* y *Premiar* ahora valen para el objeto y no solo para el verbo: el susto o el premio se mezcla también en todas las asociaciones que tiene con ese objeto (probar, empujar, tocar), aunque su aspecto de ese momento no se parezca al de cada una (`Memoria.reforzar`), y si no tiene ninguna con algún verbo, se crea. Comprobado en `tests/vida.test.ts` (bloque 1g): con un susto justo después de tocar la pelota, empuja como mucho el 35 % de lo que empuja sin susto, y premiar vuelve agradable también el probarla y el empujarla. Los casos 22, 23 y 23b, que usan los botones, dan exactamente lo mismo que antes (5, 3 y 4 de 10 semillas, con los mismos criterios).
+- **Una trampa que apareció al hacerlo.** Con el mismo peso que en el verbo directo el susto frena del todo, y con un peso menor (0,8 y un susto de 0,45) se queda en 0,11 y no cambia nada. Con la asociación de «empujar» de más de 130 observaciones, lo que se mezcla pesa muy poco si no se refuerza con el mismo peso.
+- **Premiar también baja el aburrimiento** (y la soledad) de la criatura, así que tras un premio juega menos, no más. Es el comportamiento que ya tenía, y conviene que lo sepa quien enseña.
 
 ### Sustancias que cambian la fisiología (diseño, sin implementar)
 
@@ -1488,6 +1490,50 @@ Lo único que habría que decidir, más adelante y no ahora, es si esos planos t
 
 - **Hecho:** sección «Secuelas» en la ficha, interruptor en el pie, cicatrices en el dibujo y el retrato, el texto de los sustos con su verbo.
 - **Pendiente de interfaz:** una etiqueta de «raza simple» en la ficha y la posibilidad de colocar hostil y amistosa desde la bandeja de objetos; un interruptor de la extinción (hoy solo se enciende en el laboratorio); la escena con profundidad y la cámara más lejana; y mostrar la historia de una criatura como narración, sin cifras.
+
+## El extraño (caso 34)
+
+Es el caso 15 del documento de diseño. Tres criaturas llevan 900 s conviviendo (todas con la agresión encendida, para que la hostilidad sea posible) y reciben a una desconocida, o a una de ellas que se fue 200 s y vuelve. Cinco réplicas por semilla, 10 semillas, 200 s de visita. No hay ninguna regla para recibir a alguien: cada una decide con lo que es y lo que ha vivido.
+
+- **Aprueba 9 de 10 semillas** con tres criterios: reacciona distinto a la desconocida que a la conocida (10 de 10), no reaccionan todas igual (10 de 10) y las agresivas atacan en mayor proporción que las demás (9 de 10, pero ver el límite).
+- **Evitan a la desconocida:** 7,7 evitaciones de mediana por réplica entre las tres, frente a 2,0 con la conocida que vuelve. Se acercan poco a ninguna (0,67 y 0,5 acercamientos), y casi ninguna llega a acercarse en 200 s (hasta 162 s de mediana). La desconocida recibe empujones (0,5 de mediana) y la conocida ninguno.
+- **Reacciones, con las 15 observaciones de cada semilla (tres residentes por cinco réplicas):** de mediana por semilla, 7 evitan, 4 atacan, 3 son indiferentes y 1 se acerca.
+- **El carácter explica poco:** la correlación entre lo curiosa que es (curiosidad menos miedo) y lo que se acerca menos lo que evita sale en 0,21 de mediana por semilla (de menos 0,12 a 0,53).
+- **La hostilidad no tiene un umbral limpio.** Entre quienes atacan hay criaturas con agresividad de 0,27 a 0,58 de media, y entre quienes no, algunas con 0,63 a 0,70. Hay dos causas: la agresividad empuja a partir de 0,4, pero empujar a una desconocida también lo empuja la curiosidad por lo nuevo. Una criatura poco agresiva puede empujar a la desconocida para probarla, y eso se ve como un ataque.
+- **Un criterio que se cambió.** La primera versión pedía que ninguna con agresividad por debajo de 0,5 atacara. No era una regla del modelo (la agresión suma desde 0,4) y falló en 8 de 10 semillas. Se sustituyó por una comparación entre las agresivas (0,5 o más) y las demás.
+- **Límite del criterio actual.** Solo 4 de las 10 semillas tienen residentes de las dos clases a la vez. En las otras 6 el criterio se da por cumplido sin poder comparar, y en una de las 4 las agresivas atacan menos que las demás (0 frente a 0,4). El criterio es débil y no hay que leerlo como una confirmación.
+
+## Ideas para seguir: casos, y qué podrían hacer o pensar jugadores y criaturas
+
+Recomendaciones de casos que se pueden hacer con lo que ya hay (o casi), de lo que previsiblemente harán los jugadores, y de lo que las criaturas podrían llegar a «pensar» (representar) con la maquinaria actual.
+
+**Casos nuevos recomendados**
+
+1. **Orfandad (crianza frente a herencia).** Una cría nace y la cría una madre hostil o una amistosa (razas simples). ¿Qué carácter desarrolla, y se parece a lo heredado o a lo vivido? Une reproducción, razas simples y el caso 13 (en el laboratorio, los gemelos criados por separado).
+2. **El cuidador que se va (apego y duelo).** Una criatura apegada a una amistosa que desaparece: soledad, búsqueda, y qué hace si vuelve. Mide si el apego deja huella más allá del rato.
+3. **Quién se atreve primero.** Un objeto peligroso nuevo (la placa roja) ante un grupo. ¿La valiente lo prueba y las demás aprenden a evitarlo viéndola sufrir (el contagio del susto ya existe) o van a probarlo igual? Es transmisión social del miedo, sin modelo de las otras.
+4. **Defensa real.** Una criatura con vínculo se interpone cuando la hostil ataca a otra. Extiende los casos 08 y 08b con golpes de verdad.
+5. **Dos cuidadores que se contradicen.** Uno premia lo que otro asusta. ¿Qué aprende? Es la situación de un espacio compartido con varios propietarios, y es probable que sea la más común.
+6. **Premio tarde.** Un premio a los 10 o 20 s de lo que hizo no se le asocia (la ventana es de 6 s para el botón y de 9 s para el crédito). Sirve para saber cuánto se puede esperar al enseñar, y para que la interfaz lo diga.
+7. **El grupo frente a una hostil.** Varias criaturas con la hostil suelta: ¿se juntan, huyen, se reparten? Es parte del colapso del hábitat (17).
+8. **La criatura que se vuelve hostil por imitación.** Convive con la hostil sin recibir golpes. ¿Imita a quien pega? Necesita observar resultados, y es un buen caso para después de la etapa 0 del modelo de las otras.
+
+**Qué podrían hacer los jugadores (y conviene tener previsto)**
+
+- **Criaderos con eugenesia suave**: criar a las que tienen un rasgo, bajar la fertilidad de las demás con la comida, ver generaciones. Se hace con lo que hay más la sustancia de menor fertilidad.
+- **Escuelas**: una criatura experta con novatas. Hoy solo hay facilitación (07b), así que no deben esperar que aprendan el resultado.
+- **Centinelas y guardianes**: entrenar a una para que se quede en una zona (caso 9). Falta la recompensa por zona.
+- **Rehabilitar y revender**: recoger criaturas dañadas, rehabilitarlas e intercambiarlas. Hace falta que el historial y las secuelas viajen con la criatura y se vean, para que quien la recibe sepa qué lleva.
+- **Abusos que hay que prever**: repetir *Asustar* hasta dejar a una criatura inservible en un espacio compartido, soltar hostiles en un espacio ajeno, intercambiar criaturas con secuelas ocultas. Las reglas por espacio ya decididas (libres, admitidos, privados) cubren parte; falta decidir si hay un límite de golpes del botón y una reputación visible del criador.
+- **Comprobar los límites**: probar cuánto aguanta una criatura. Pide el panel de Admin con sus condiciones.
+
+**Qué podrían «pensar» las criaturas con lo que ya existe** (lo que su memoria puede llegar a contener, no una intención)
+
+- «Ese me pega» (miedo aprendido a un individuo, ya) y «ese ya no me hace daño» (la extinción, si está encendida).
+- «Esto me asusta» aplicado a todo lo que se hace con un objeto (desde hoy).
+- «Con él me siento bien» (apego, vínculo), «sin ella estoy solo» (soledad), «mi compañero atiende a otra» (celos) y «ella tiene comida y yo no» (envidia).
+- «Esa es nueva» (reconocimiento de lo desconocido, caso 34) y «ese lleva cuernos y me pegó uno con cuernos» (manías por el aspecto, caso 22).
+- **Lo que aún no pueden pensar:** «si hago esto, él hará aquello» (modelo de las otras), «antes me dolía y ahora no» como cambio de estado propio, «esto me hace daño más tarde» (consecuencias diferidas), ni nada que pida varios pasos.
 
 ## Celos y envidia (diseño aprobado; implementados los dos)
 

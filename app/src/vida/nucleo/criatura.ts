@@ -41,6 +41,9 @@ export interface Secuela {
   efecto: string;
 }
 
+/** Lo que puede hacer con un objeto (no con otra criatura). */
+const VERBOS_SOBRE_OBJETOS: readonly Verbo[] = ["probar", "empujar", "tocar"];
+
 export interface Accion {
   v: Verbo;
   obj: number;
@@ -922,6 +925,8 @@ export class Criatura {
     this.mem.aprender(ult.v, ult.f, ult.lug, res, ult.tipo, ult.nombre, env.t, [false, false, true, true, false], 1.6);
     const a = articulo(ult.tipo, ult.nombre);
     this.mem.anotar(env.t, `premio:${ult.v}:${ult.tipo}`, `Recibió una caricia justo después de ${this.verboPasado(ult.v)} ${a.el ? a.el + " " : ""}${a.nombre}.`, 0.6);
+    // Igual que el susto: el objeto se le vuelve agradable, y lo demas que puede hacer con el tambien
+    if (CATALOGO[ult.tipo]) this.extenderAlObjeto(ult, res, [false, false, true, true, false], env.t);
   }
 
   /** Un premio justo despues de recibir dano de otra criatura: el afecto por ella crece, el dano deja de impedirlo y su aspecto se asocia menos con peligro. */
@@ -1182,7 +1187,20 @@ export class Criatura {
       this.mem.aprender(ult.v, ult.f, ult.lug, res, ult.tipo, ult.nombre, env.t, [false, true, false, false, true], 1.6);
       const a = articulo(ult.tipo, ult.nombre);
       this.mem.anotar(env.t, `susto:${ult.v}:${ult.tipo}`, `Se llevó un susto justo después de ${this.verboPasado(ult.v)} ${a.el ? a.el + " " : ""}${a.nombre}.`, -0.6);
+      // El susto es del objeto y no solo de lo que acababa de hacer con el: se asocia igual con lo demas que puede hacer con el
+      if (CATALOGO[ult.tipo]) this.extenderAlObjeto(ult, res, [false, true, false, false, true], env.t);
     } else this.mem.anotar(env.t, "susto:aire", "Se llevó un susto sin saber de dónde.", -0.4);
+  }
+
+  /** Lo que se le ensena con un susto o un premio sobre un objeto vale para todo lo que sabe hacer con el, no solo para lo ultimo: se mezcla en todas sus asociaciones con ese
+      objeto (probar, empujar, tocar), y si no tiene ninguna con algun verbo, se crea. */
+  private extenderAlObjeto(ult: { v: Verbo; f: number[]; lug: number; tipo: string; nombre: string }, res: Res, canales: boolean[], t: number): void {
+    for (const v of VERBOS_SOBRE_OBJETOS) {
+      if (v === ult.v) continue;
+      const suyas = this.mem.protos.filter((p) => p.v === v && p.tipo === ult.tipo);
+      if (suyas.length) for (const p of suyas) this.mem.reforzar(p, res, canales, 1.6, t);
+      else this.mem.aprender(v, ult.f, ult.lug, res, ult.tipo, ult.nombre, t, canales, 1.6);
+    }
   }
 
   private verboPasado(v: Verbo): string {

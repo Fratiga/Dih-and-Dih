@@ -25,6 +25,7 @@ export interface ConfigSim {
   protegida?: boolean;
   mortalidad?: Mortalidad;
   secuelas?: boolean;
+  extincion?: boolean;
   ancho?: number;
 }
 
@@ -40,6 +41,7 @@ export interface EstadoSim {
   protegida: boolean;
   mortalidad?: Mortalidad;
   secuelas?: boolean;
+  extincion?: boolean;
   legado?: Legado[];
   embarazos?: { madre: number; padre: number; nace: number; genomaPadre: Genoma }[];
   proxNombre?: number;
@@ -82,6 +84,8 @@ export class Simulacion {
   mortalidad: Mortalidad;
   /** Si los golpes graves o repetidos dejan secuelas fisicas en las criaturas de la sala (apagado por defecto). */
   secuelas = false;
+  /** Si el miedo aprendido a alguien baja con el contacto seguro (apagado por defecto). Es lo que permite rehabilitar a una criatura maltratada. */
+  extincion = false;
   legado: Legado[] = [];
   /** Embarazos en curso: quien gesta, el otro progenitor y cuando nacen. */
   embarazos: { madre: number; padre: number; nace: number; genomaPadre: Genoma }[] = [];
@@ -96,11 +100,13 @@ export class Simulacion {
     this.mortalidad = cfg.mortalidad ?? (cfg.protegida === false ? "permanente" : "protegida");
     this.protegida = this.mortalidad === "protegida";
     this.secuelas = cfg.secuelas ?? false;
+    this.extincion = cfg.extincion ?? false;
     for (const o of cfg.objetos) this.mundo.agregar(o.tipo, o.x, { ...(o.activo === false ? { activo: false } : {}), ...(o.porciones !== undefined ? { porciones: o.porciones } : {}) });
     cfg.criaturas.forEach((cc, i) => {
       const c = new Criatura(i + 1, cc.nombre ?? NOMBRES[i % NOMBRES.length], JSON.parse(JSON.stringify(cc.genoma)), cc.x, cfg.semilla);
       c.mortalidad = this.mortalidad;
       c.permiteSecuelas = this.secuelas;
+      c.extincion = this.extincion;
       this.criaturas.push(c);
     });
     this.proxComedero = this.comedero ? this.comedero.cada * 0.3 : 0;
@@ -185,6 +191,12 @@ export class Simulacion {
     for (const c of this.criaturas) c.permiteSecuelas = b;
   }
 
+  /** Activa o apaga la extincion del miedo aprendido para toda la sala. */
+  fijarExtincion(b: boolean): void {
+    this.extincion = b;
+    for (const c of this.criaturas) c.extincion = b;
+  }
+
   nacer(a: Criatura, b: Criatura, k = 0): Criatura {
     const id = Math.max(0, ...this.criaturas.map((c) => c.id)) + 1;
     const g = cruzar(a.genoma, b.genoma, k === 0 ? mezclar(this.semilla, id, Math.floor(this.t)) : mezclar(this.semilla, id, Math.floor(this.t), k));
@@ -192,6 +204,7 @@ export class Simulacion {
     const hijo = new Criatura(id, NOMBRES[(id - 1) % NOMBRES.length], g, x, this.semilla);
     hijo.mortalidad = this.mortalidad;
     hijo.permiteSecuelas = this.secuelas;
+    hijo.extincion = this.extincion;
     hijo.capRegistro = a.capRegistro;
     hijo.padres = [a.id, b.id];
     hijo.generacion = Math.max(a.generacion, b.generacion) + 1;
@@ -246,13 +259,13 @@ export class Simulacion {
     return JSON.parse(
       JSON.stringify({
         v: 1, semilla: this.semilla, t: this.t, mundo: this.mundo.estado(), criaturas: this.criaturas.map((c) => c.estado()), azar: this.azar.s,
-        comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, secuelas: this.secuelas, legado: this.legado, embarazos: this.embarazos,
+        comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, secuelas: this.secuelas, extincion: this.extincion, legado: this.legado, embarazos: this.embarazos,
       }),
     ) as EstadoSim;
   }
 
   static restaurar(e: EstadoSim): Simulacion {
-    const s = new Simulacion({ semilla: e.semilla, objetos: [], criaturas: [], comedero: e.comedero, protegida: e.protegida, mortalidad: e.mortalidad, secuelas: e.secuelas });
+    const s = new Simulacion({ semilla: e.semilla, objetos: [], criaturas: [], comedero: e.comedero, protegida: e.protegida, mortalidad: e.mortalidad, secuelas: e.secuelas, extincion: e.extincion });
     s.legado = JSON.parse(JSON.stringify(e.legado ?? []));
     s.embarazos = JSON.parse(JSON.stringify(e.embarazos ?? []));
     s.t = e.t;

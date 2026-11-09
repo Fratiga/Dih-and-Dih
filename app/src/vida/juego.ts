@@ -135,6 +135,14 @@ export class Juego {
     return this.sim.secuelas;
   }
 
+  /** Activa o apaga la recuperacion de los miedos aprendidos (el contacto seguro con quien se teme los va bajando). */
+  alternarExtincion(): boolean {
+    this.sim.fijarExtincion(!this.sim.extincion);
+    this.emit("extincion", this.sim.extincion);
+    this.guardar(true);
+    return this.sim.extincion;
+  }
+
   /** Cambia entre mortalidad protegida, recuperable y permanente. */
   alternarMortalidad(): string {
     const i = MORTALIDADES.indexOf(this.sim.mortalidad);

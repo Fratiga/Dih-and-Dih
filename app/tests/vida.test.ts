@@ -188,6 +188,39 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   afirma(sin.despues > 0.9 * sin.antes, "sin la extinción casi no baja (solo el olvido de horas)");
 }
 
+// 1g. Asustar y premiar actuan sobre el objeto y no solo sobre el verbo: si se la asusta justo despues de tocar la pelota, deja de empujarla tambien
+{
+  const empujes = (c: Criatura, t0: number, t1: number): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "pelota" && r.t >= t0 && r.t < t1).length;
+  let control = 0, asustada = 0, semillasConSusto = 0;
+  for (const semilla of [41, 43, 44, 45, 46]) {
+    const correr = (susto: boolean) => {
+      const s = nuevaSim({ semilla, objetos: [{ tipo: "pelota", x: 600 }], criaturas: [{ genoma: genomaNuevo(semilla), x: 400 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+      const c = s.criaturas[0];
+      s.avanzar(900);
+      let ultimo = -1, veces = 0;
+      s.ganchos.push(() => {
+        const r = [...c.registro].reverse().find((x) => x.kind === "impacto" && x.v === "tocar" && x.tipo === "pelota");
+        if (susto && r && r.t !== ultimo && s.t - r.t < 1 && veces === 0) { ultimo = r.t; veces++; c.asustar({ mundo: s.mundo, criaturas: s.criaturas, t: s.t }); }
+      });
+      s.avanzar(300);
+      s.ganchos.length = 0;
+      const t1 = s.t;
+      s.avanzar(300);
+      return { n: empujes(c, t1, s.t), veces };
+    };
+    const a = correr(false), b = correr(true);
+    if (b.veces > 0) { semillasConSusto++; control += a.n; asustada += b.n; }
+  }
+  afirma(semillasConSusto >= 3 && control >= 20, "(hay al menos 3 criaturas a las que se pudo asustar justo después de tocar la pelota, y sin susto la empujan decenas de veces)");
+  afirma(asustada <= 0.35 * control, "si se la asusta justo después de tocar la pelota, deja de empujarla también (el susto es del objeto)");
+  const c2 = nuevaSim({ semilla: 41, objetos: [{ tipo: "pelota", x: 600 }], criaturas: [{ genoma: genomaNuevo(41), x: 400 }], comedero: null }).criaturas[0];
+  c2.mem.aprender("tocar", [0.9, 0.4, 0.5, 0.4, 0.5, 0.2, 0, 0.5, 0, 0.5], 0.4, [0, 0, 0.3, 0, 0], "pelota", "pelota", 0, undefined, 1);
+  c2.registrar({ t: 5, kind: "impacto", v: "tocar", tipo: "pelota", obj: 1, res: [0, 0, 0.3, 0, 0] });
+  c2.trazas.push({ v: "tocar", tipo: "pelota", f: [0.9, 0.4, 0.5, 0.4, 0.5, 0.2, 0, 0.5, 0, 0.5], nombre: "pelota", t: 5 } as never);
+  c2.recompensar({ mundo: nuevaSim({ semilla: 1, objetos: [], criaturas: [], comedero: null }).mundo, criaturas: [c2], t: 6 });
+  afirma(c2.mem.protos.some((p) => p.v === "probar" && p.tipo === "pelota" && p.res[2] > 0.1) && c2.mem.protos.some((p) => p.v === "empujar" && p.tipo === "pelota" && p.res[2] > 0.1), "premiar tras tocar la pelota la vuelve agradable también para probarla y empujarla");
+}
+
 // 2. Determinismo y semilla
 {
   const a = new Simulacion(cfg(11));

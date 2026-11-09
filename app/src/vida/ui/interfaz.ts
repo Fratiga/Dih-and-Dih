@@ -201,8 +201,16 @@ export class Interfaz {
     pintarSec();
     j.on("secuelas", pintarSec);
     j.on("simNueva", pintarSec);
+    const toggleExt = boton("", () => { j.alternarExtincion(); }, { clase: "va-toggle", tip: "Superar miedos|Si está activa, el miedo aprendido a alguien baja poco a poco cuando lo tiene cerca y no le pasa nada malo, más deprisa con compañía. Permite rehabilitar a una criatura maltratada." });
+    const pintarExt = (): void => {
+      toggleExt.replaceChildren(`Superar miedos: ${j.sim.extincion ? "sí" : "no"}`);
+      toggleExt.classList.toggle("activa", j.sim.extincion);
+    };
+    pintarExt();
+    j.on("extincion", pintarExt);
+    j.on("simNueva", pintarExt);
     j.on("nacimiento", (id) => { aviso(this.raiz, `Ha nacido ${this.juego.sim.criatura(id as number)?.nombre ?? "una cría"}.`, 2200); this.clavesMem = ""; });
-    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero, toggleMort, toggleSec);
+    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero, toggleMort, toggleSec, toggleExt);
     pie.prepend(cab);
     this.pie = pie;
 
@@ -367,7 +375,7 @@ export class Interfaz {
     this.selector.querySelectorAll<HTMLElement>("button").forEach((b) => b.classList.toggle("activa", Number(b.dataset.id) === c.id));
 
     this.nombre.textContent = c.nombre;
-    this.edad.textContent = `Día ${Math.floor(c.edad / DIA) + 1} de vida`;
+    this.edad.textContent = `Día ${Math.floor(c.edad / DIA) + 1} de vida${c.rutina ? ` · raza simple ${c.rutina === "hostil" ? "hostil" : "amistosa"}` : ""}`;
     this.estado.textContent = this.fraseEstado(c);
     const sec = c.secuelas ?? [];
     this.cabSecuelas.hidden = this.secuelasEl.hidden = sec.length === 0;
