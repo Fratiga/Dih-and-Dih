@@ -34,6 +34,8 @@ export interface TipoObjeto {
   caduca?: number;
   /** Algo solido que cierra el paso a las criaturas. `ancho` es la mitad de su grosor y `resistencia` lo que aguanta de empujones antes de romperse (0: no se rompe). */
   barrera?: { ancho: number; resistencia: number };
+  /** Una puerta a otra sala del complejo (su destino esta en el objeto). Cerrada es una barrera; abierta se puede cruzar. */
+  puerta?: boolean;
 }
 
 export const CATALOGO: Record<string, TipoObjeto> = {
@@ -57,6 +59,7 @@ export const CATALOGO: Record<string, TipoObjeto> = {
   reja: { id: "reja", nombre: "reja", gen: "f", f: [0.05, 0.85, 0.4, 0.3, 0.15, 0, 0.05], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.12, barrera: { ancho: 14, resistencia: 1 } },
   reja_fija: { id: "reja_fija", nombre: "reja", gen: "f", f: [0.05, 0.85, 0.4, 0.3, 0.15, 0, 0.05], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.12, barrera: { ancho: 14, resistencia: 0 } },
   muro: { id: "muro", nombre: "muro", gen: "m", f: [0.1, 0.95, 0.15, 0.5, 0.05, 0, 0], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, barrera: { ancho: 18, resistencia: 0 } },
+  puerta: { id: "puerta", nombre: "puerta", gen: "f", f: [0.15, 0.88, 0.3, 0.55, 0.15, 0.1, 0], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, puerta: true },
   /* Solo para el laboratorio: la placa roja con el mismo aspecto, con una descarga mas leve y mas fuerte, y sin ella. */
   placa_leve: { id: "placa_leve", nombre: "placa roja", gen: "f", f: [0.05, 0.9, 0.9, 0.95, 0, 0, 0.6], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, peligro: { ratio: 0.06, ancho: 150 } },
   placa_fuerte: { id: "placa_fuerte", nombre: "placa roja", gen: "f", f: [0.05, 0.9, 0.9, 0.95, 0, 0, 0.6], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, peligro: { ratio: 0.9, ancho: 150 } },

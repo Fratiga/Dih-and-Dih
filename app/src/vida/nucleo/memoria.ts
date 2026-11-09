@@ -35,6 +35,8 @@ export interface Avistamiento {
   f: number[];
   x: number;
   t: number;
+  /** La sala donde se vio (solo si no es la primera). */
+  sala?: number;
 }
 
 export interface Episodio {
@@ -75,6 +77,8 @@ export interface EstadoMemoria {
 }
 
 export const BINES = 16;
+/** Salas de las que se guardan visitas por separado (cada una con sus BINES casillas). */
+export const MAX_SALAS = 16;
 
 export function semejanza(a: number[], b: number[], m: number[]): number {
   let s = 0;
@@ -102,7 +106,7 @@ export class Memoria {
   acciones: Record<string, number> = {};
   cerca: Record<string, number> = {};
   vinculos: Vinculo[] = [];
-  visitas: number[] = new Array(BINES).fill(0);
+  visitas: number[] = new Array(BINES * MAX_SALAS).fill(0);
   total = 0;
   /** Duracion de los recuerdos (viene del genoma). */
   dur: number;
@@ -189,10 +193,10 @@ export class Memoria {
 
   /* --- Avistamientos --- */
 
-  ver(id: number, tipo: string, nombre: string, f: number[], x: number, t: number): void {
+  ver(id: number, tipo: string, nombre: string, f: number[], x: number, t: number, sala = 0): void {
     const a = this.avist.find((q) => q.id === id);
-    if (a) { a.x = x; a.t = t; a.f = f.slice(); return; }
-    this.avist.push({ id, tipo, nombre, f: f.slice(), x, t });
+    if (a) { a.x = x; a.t = t; a.f = f.slice(); if (sala) a.sala = sala; else delete a.sala; return; }
+    this.avist.push({ id, tipo, nombre, f: f.slice(), x, t, ...(sala ? { sala } : {}) });
     if (this.avist.length > 14) {
       this.avist.sort((p, q) => q.t - p.t);
       this.avist.length = 14;
@@ -298,7 +302,7 @@ export class Memoria {
     this.acciones = c.acciones;
     this.cerca = c.cerca;
     this.vinculos = c.vinculos;
-    this.visitas = c.visitas;
+    this.visitas = c.visitas.concat(new Array(Math.max(0, BINES * MAX_SALAS - c.visitas.length)).fill(0));
     this.total = c.total;
   }
 }

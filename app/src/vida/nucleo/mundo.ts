@@ -29,6 +29,9 @@ export interface Objeto {
   salud?: number;
   /** Quien lo lleva encima (solo con el transporte). */
   llevadoPor?: number;
+  /** Si es una puerta, a donde lleva (la sala y la posicion de la puerta de enfrente) y si esta cerrada. */
+  destino?: { sala: number; x: number };
+  cerrada?: boolean;
 }
 
 export interface Sonido {
@@ -81,8 +84,9 @@ export class Mundo {
   apariciones: Aparicion[] = [];
   azar: Azar;
 
-  constructor(semilla: number, ancho = AJ.ancho) {
+  constructor(semilla: number, ancho = AJ.ancho, idInicial = 1) {
     this.ancho = ancho;
+    this.sig = idInicial;
     this.azar = new Azar(semilla);
   }
 
@@ -93,6 +97,11 @@ export class Mundo {
     if (def.barrera && def.barrera.resistencia > 0 && ob.salud === undefined) ob.salud = def.barrera.resistencia;
     this.objetos.push(ob);
     return ob;
+  }
+
+  /** Recibe un objeto que viene de otra sala (con su identificador, que es unico en todo el complejo). */
+  acoger(o: Objeto): void {
+    this.objetos.push(o);
   }
 
   quitar(id: number): void {
@@ -109,7 +118,8 @@ export class Mundo {
     if (x0 === x1) return null;
     let mejor: number | null = null;
     for (const o of this.objetos) {
-      const b = CATALOGO[o.tipo].barrera;
+      const def = CATALOGO[o.tipo];
+      const b = def.barrera ?? (def.puerta && o.cerrada ? { ancho: 12, resistencia: 0 } : undefined);
       if (!b) continue;
       const izq = o.x - b.ancho - margen, der = o.x + b.ancho + margen;
       let p: number | null = null;
@@ -121,7 +131,7 @@ export class Mundo {
   }
 
   hayBarreras(): boolean {
-    return this.objetos.some((o) => !!CATALOGO[o.tipo].barrera);
+    return this.objetos.some((o) => !!CATALOGO[o.tipo].barrera || !!CATALOGO[o.tipo].puerta);
   }
 
   /** Lo que lleva cada criatura va con ella (delante, a media altura). Si quien lo lleva ya no esta o no esta viva, se cae donde estaba. */

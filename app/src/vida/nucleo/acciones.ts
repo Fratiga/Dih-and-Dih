@@ -14,7 +14,7 @@ const SOLO_ALIVIO = [false, false, false, false, false, true];
 /** Segundos desde que empieza una accion durante los que se mira si la angustia de la otra baja. */
 const VENTANA_ALIVIO = 5;
 
-const DURACION = { probar: 1.4, empujar: 0.8, tocar: 0.9, cargar: 0.9, soltar: 0.6 } as const;
+const DURACION = { probar: 1.4, empujar: 0.8, tocar: 0.9, cargar: 0.9, soltar: 0.6, cruzar: 0.6 } as const;
 const IMPACTO = 0.4;
 
 export function iniciar(c: Criatura, cand: Cand, env: Entorno): Accion {
@@ -74,7 +74,7 @@ function notarAlivio(c: Criatura, a: Accion, env: Entorno): void {
   const alivio = aVista && otro ? acota((((aj.ini - featuresCriatura(otro, true)[IDX.sonido]) / Math.max(aj.ini, 0.3)) * VENTANA_ALIVIO) / Math.min(trans, VENTANA_ALIVIO)) : 0;
   const res = resCero();
   res[C.alivio] = alivio;
-  c.mem.aprender(`ante:${a.v}`, aj.f, c.x / env.mundo.ancho, res, "criatura", aj.nombre, env.t, SOLO_ALIVIO);
+  c.mem.aprender(`ante:${a.v}`, aj.f, c.lugar(c.x, env.mundo.ancho), res, "criatura", aj.nombre, env.t, SOLO_ALIVIO);
 }
 
 /** Lo que le pasa a una criatura tras un rechazo segun como reacciona: 0 enfado, 1 miedo, 2 indiferencia, 3 alegria. */
@@ -233,7 +233,7 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
     if (c.bloqueo > AJ.tiempoBloqueo) { c.bloqueo = 0; c.mem.contar("bloqueada:barrera"); c.aprenderBloqueo(a, env); terminar(c, a, env, true); return; }
     let pos = a.dest;
     let objetivo: Objeto | undefined;
-    if (a.v === "probar" || a.v === "empujar" || a.v === "tocar" || a.v === "cargar" || a.v === "soltar") {
+    if (a.v === "probar" || a.v === "empujar" || a.v === "tocar" || a.v === "cargar" || a.v === "soltar" || a.v === "cruzar") {
       objetivo = env.mundo.obj(a.obj);
       if (!objetivo && !a.recordado) { terminar(c, a, env, true); return; }
       if (objetivo) pos = objetivo.x;
@@ -258,7 +258,7 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
         if (o) a.ajeno.ini = featuresCriatura(o, true)[IDX.sonido];
       }
       if (a.v === "explorar") {
-        const bin = Math.min(15, Math.floor((c.x / ancho) * 16));
+        const bin = c.sala * 16 + Math.min(15, Math.floor((c.x / ancho) * 16));
         // Ver un sitio poco visto entretiene un poco
         c.nec[N.aburrimiento] = acota(c.nec[N.aburrimiento] - 0.08 * acota(1 - c.mem.visitas[bin] / 3));
         c.mem.visitas[bin] += 1;
@@ -282,9 +282,9 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
   }
 
   // fase "hacer"
-  const dur = a.v === "probar" || a.v === "empujar" || a.v === "tocar" || a.v === "cargar" || a.v === "soltar" ? DURACION[a.v] : a.dur;
+  const dur = a.v === "probar" || a.v === "empujar" || a.v === "tocar" || a.v === "cargar" || a.v === "soltar" || a.v === "cruzar" ? DURACION[a.v] : a.dur;
   const t = env.t - a.tf;
-  if (a.v === "probar" || a.v === "empujar" || a.v === "tocar" || a.v === "cargar" || a.v === "soltar") {
+  if (a.v === "probar" || a.v === "empujar" || a.v === "tocar" || a.v === "cargar" || a.v === "soltar" || a.v === "cruzar") {
     const ob = env.mundo.obj(a.obj);
     if (!a.hecho) {
       if (!ob || Math.abs(ob.x - c.x) > AJ.alcance * 2) { a.fase = "ir"; if (!ob) terminar(c, a, env, true); return; }
@@ -310,9 +310,13 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
           const ok = c.lleva === a.obj;
           if (ok) { env.mundo.soltar(a.obj); c.lleva = null; }
           r = { res: resCero(), efecto: ok };
+        } else if (a.v === "cruzar") {
+          r = { res: resCero(), efecto: !ob.cerrada && !!ob.destino };
         } else r = env.mundo.interactuar(a.v, a.obj, c.x, g.fuerza);
         a.hecho = true;
         c.experimentar(a, r.res, r.efecto, env);
+        // Cruzar: primero se anota lo vivido en esta sala, y despues se pasa a la otra
+        if (a.v === "cruzar" && r.efecto) { env.cruzarSala?.(c, ob); terminar(c, a, env); return; }
       }
     }
     if (t >= dur) terminar(c, a, env);

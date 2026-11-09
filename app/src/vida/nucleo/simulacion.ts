@@ -8,7 +8,7 @@ import { CATALOGO } from "./catalogo.ts";
 import { Criatura, type EstadoCriatura } from "./criatura.ts";
 import { cruzar, type Genoma } from "./genoma.ts";
 import type { Mortalidad } from "./tipos.ts";
-import { Mundo, type EstadoMundo } from "./mundo.ts";
+import { Mundo, type EstadoMundo, type Objeto } from "./mundo.ts";
 
 export interface ConfigCriatura {
   genoma: Genoma;
@@ -46,6 +46,8 @@ export interface EstadoSim {
   extincion?: boolean;
   transporte?: boolean;
   aprendeBloqueos?: boolean;
+  /** Las salas de despues de la primera (cada una con su mundo). Sin ellas es una camara de una sala. */
+  salasExtra?: { nombre: string; tipo: string; mundo: EstadoMundo }[];
   legado?: Legado[];
   embarazos?: { madre: number; padre: number; nace: number; genomaPadre: Genoma }[];
   proxNombre?: number;
@@ -75,10 +77,20 @@ export interface ResumenFueraDeLinea {
 
 const NOMBRES = ["Brisa", "Nube", "Pipa", "Mota", "Gelo", "Tito", "Lúa", "Quino"];
 
+/** Una sala del complejo: un mundo (una linea con objetos) con un nombre y un tipo. La sala 0 es el mundo de siempre. */
+export interface Sala {
+  id: number;
+  nombre: string;
+  tipo: string;
+  mundo: Mundo;
+}
+
 export class Simulacion {
   semilla: number;
   t = 0;
   mundo: Mundo;
+  /** Las salas del complejo. La primera comparte el mundo de `mundo`. Una camara experimental tiene una sola. */
+  salas: Sala[] = [];
   criaturas: Criatura[] = [];
   azar: Azar;
   /** `activo: false` lo apaga (la criatura solo come lo que el jugador ponga). */
@@ -104,6 +116,7 @@ export class Simulacion {
     this.semilla = cfg.semilla;
     this.mundo = new Mundo(mezclar(cfg.semilla, 1), cfg.ancho ?? AJ.ancho);
     this.azar = new Azar(mezclar(cfg.semilla, 2));
+    this.salas = [{ id: 0, nombre: "Sala", tipo: "camara", mundo: this.mundo }];
     this.comedero = cfg.comedero ?? null;
     this.mortalidad = cfg.mortalidad ?? (cfg.protegida === false ? "permanente" : "protegida");
     this.protegida = this.mortalidad === "protegida";
@@ -130,25 +143,33 @@ export class Simulacion {
 
   paso(dt = AJ.dt): void {
     this.t += dt;
-    const danos = this.mundo.paso(dt, this.criaturas.filter((c) => c.vivo));
-    for (const d of danos) this.criatura(d.criatura)?.sufrirContinuo(d.cant / dt, dt, d.causa);
-    this.alimentar();
-    const env = {
-      mundo: this.mundo, criaturas: this.criaturas, t: this.t,
-      embarazar: (madre: Criatura, padre: Criatura) => { madre.gestando = true; this.embarazos.push({ madre: madre.id, padre: padre.id, nace: this.t + AJ.gestacion, genomaPadre: JSON.parse(JSON.stringify(padre.genoma)) }); },
-    };
-    const antes = this.mundo.hayBarreras() ? this.criaturas.map((c) => c.x) : null;
-    for (const c of this.criaturas) c.paso(env, dt);
-    // Las barreras paran a quien intenta cruzarlas (la criatura queda junto a ella) y cuenta los segundos que lleva empujando contra una
-    if (antes) {
-      this.criaturas.forEach((c, i) => {
-        const p = this.mundo.cruce(antes[i], c.x, 12);
-        if (p !== null) { c.x = p; c.vx = 0; c.bloqueo += dt; } else c.bloqueo = 0;
-      });
-    }
-    // Lo que se lleva a cuestas va con quien lo lleva
-    this.mundo.llevar(this.criaturas);
-    for (const c of this.criaturas) if (c.lleva !== null && this.mundo.obj(c.lleva)?.llevadoPor !== c.id) c.lleva = null;
+    // Cada criatura se mueve en su sala: ve los objetos y las criaturas de la suya y de ninguna otra. Los grupos se fijan antes, para que quien cruce una puerta no se mueva dos veces
+    const grupos = this.salas.map((_, k) => this.criaturas.filter((c) => c.sala === k));
+    this.salas.forEach((sala, k) => {
+      const mundo = sala.mundo;
+      const cs = grupos[k];
+      const danos = mundo.paso(dt, cs.filter((c) => c.vivo));
+      for (const d of danos) this.criatura(d.criatura)?.sufrirContinuo(d.cant / dt, dt, d.causa);
+      if (k === 0) this.alimentar();
+      const env = {
+        mundo, criaturas: cs, t: this.t,
+        embarazar: (madre: Criatura, padre: Criatura) => { madre.gestando = true; this.embarazos.push({ madre: madre.id, padre: padre.id, nace: this.t + AJ.gestacion, genomaPadre: JSON.parse(JSON.stringify(padre.genoma)) }); },
+        cruzarSala: (c: Criatura, puerta: Objeto) => this.cruzarSala(c, puerta),
+      };
+      const antes = mundo.hayBarreras() ? cs.map((c) => c.x) : null;
+      for (const c of cs) c.paso(env, dt);
+      // Las barreras paran a quien intenta cruzarlas (la criatura queda junto a ella) y cuenta los segundos que lleva empujando contra una
+      if (antes) {
+        cs.forEach((c, i) => {
+          if (c.sala !== k) return;
+          const p = mundo.cruce(antes[i], c.x, 12);
+          if (p !== null) { c.x = p; c.vx = 0; c.bloqueo += dt; } else c.bloqueo = 0;
+        });
+      }
+      // Lo que se lleva a cuestas va con quien lo lleva
+      mundo.llevar(cs);
+      for (const c of cs) if (c.sala === k && c.lleva !== null && mundo.obj(c.lleva)?.llevadoPor !== c.id) c.lleva = null;
+    });
     this.partos();
     for (const c of this.criaturas) if (!c.vivo && !this.legado.some((l) => l.id === c.id)) this.registrarLegado(c);
     for (const g of this.ganchos) g(this);
@@ -184,6 +205,48 @@ export class Simulacion {
       genoma: JSON.parse(JSON.stringify(c.genoma)), rasgos: c.rasgos.slice(), base: c.base.slice(),
       episodios: c.mem.episodios.slice().sort((a, b) => Math.abs(b.val) - Math.abs(a.val)).slice(0, 4).map((e) => e.texto), hijos: 0, padres: c.padres.slice(), generacion: c.generacion,
     });
+  }
+
+  /** Anade una sala al complejo, vacia, y devuelve su numero. Los identificadores de sus objetos no chocan con los de las demas. */
+  agregarSala(nombre: string, tipo: string, ancho = AJ.ancho): number {
+    const id = this.salas.length;
+    this.salas.push({ id, nombre, tipo, mundo: new Mundo(mezclar(this.semilla, 1, id), ancho, 100000 * id + 1) });
+    return id;
+  }
+
+  /** Une dos salas con una puerta en cada una (la de una lleva a la otra). Devuelve las dos puertas. */
+  conectar(a: number, xa: number, b: number, xb: number, cerrada = false): [Objeto, Objeto] {
+    const pa = this.salas[a].mundo.agregar("puerta", xa, { destino: { sala: b, x: xb }, cerrada });
+    const pb = this.salas[b].mundo.agregar("puerta", xb, { destino: { sala: a, x: xa }, cerrada });
+    return [pa, pb];
+  }
+
+  /** Abre o cierra una puerta y la de enfrente. */
+  fijarPuerta(sala: number, id: number, cerrada: boolean): void {
+    const p = this.salas[sala]?.mundo.obj(id);
+    if (!p?.destino) return;
+    p.cerrada = cerrada;
+    const q = this.salas[p.destino.sala]?.mundo.objetos.find((o) => o.tipo === "puerta" && o.destino?.sala === sala && Math.abs(o.destino.x - p.x) < 1);
+    if (q) q.cerrada = cerrada;
+  }
+
+  /** Pasa a una criatura por una puerta a la otra sala, junto a la puerta de enfrente (y con lo que lleve a cuestas). Devuelve si lo ha hecho. */
+  cruzarSala(c: Criatura, puerta: Objeto): boolean {
+    const d = puerta.destino;
+    const destino = d ? this.salas[d.sala] : undefined;
+    if (!d || !destino || puerta.cerrada) return false;
+    const origen = this.salas[c.sala].mundo;
+    const objeto = c.lleva !== null ? origen.obj(c.lleva) : undefined;
+    if (objeto) { origen.quitar(objeto.id); destino.mundo.acoger(objeto); }
+    c.sala = d.sala;
+    c.anchoSala = destino.mundo.ancho;
+    c.x = Math.max(40, Math.min(destino.mundo.ancho - 40, d.x + (d.x < destino.mundo.ancho / 2 ? 70 : -70)));
+    c.vx = 0;
+    c.dir = d.x < destino.mundo.ancho / 2 ? 1 : -1;
+    c.accion = null;
+    c.hogar = null;
+    c.percibidos = [];
+    return true;
   }
 
   /** Cambia lo que pasa cuando la salud llega a cero, para toda la sala. */
@@ -238,8 +301,10 @@ export class Simulacion {
   nacer(a: Criatura, b: Criatura, k = 0): Criatura {
     const id = Math.max(0, ...this.criaturas.map((c) => c.id)) + 1;
     const g = cruzar(a.genoma, b.genoma, k === 0 ? mezclar(this.semilla, id, Math.floor(this.t)) : mezclar(this.semilla, id, Math.floor(this.t), k));
-    const x = Math.max(40, Math.min(this.mundo.ancho - 40, (a.x + b.x) / 2));
+    const x = Math.max(40, Math.min(this.salas[a.sala].mundo.ancho - 40, (a.x + b.x) / 2));
     const hijo = new Criatura(id, NOMBRES[(id - 1) % NOMBRES.length], g, x, this.semilla);
+    hijo.sala = a.sala;
+    hijo.anchoSala = this.salas[a.sala].mundo.ancho;
     hijo.mortalidad = this.mortalidad;
     hijo.permiteSecuelas = this.secuelas;
     hijo.extincion = this.extincion;
@@ -298,7 +363,7 @@ export class Simulacion {
   serializar(): EstadoSim {
     return JSON.parse(
       JSON.stringify({
-        v: 1, semilla: this.semilla, t: this.t, mundo: this.mundo.estado(), criaturas: this.criaturas.map((c) => c.estado()), azar: this.azar.s,
+        v: 1, semilla: this.semilla, t: this.t, mundo: this.mundo.estado(), ...(this.salas.length > 1 ? { salasExtra: this.salas.slice(1).map((s) => ({ nombre: s.nombre, tipo: s.tipo, mundo: s.mundo.estado() })) } : {}), criaturas: this.criaturas.map((c) => c.estado()), azar: this.azar.s,
         comedero: this.comedero, proxComedero: this.proxComedero, protegida: this.protegida, mortalidad: this.mortalidad, secuelas: this.secuelas, extincion: this.extincion, transporte: this.transporte, aprendeBloqueos: this.aprendeBloqueos, legado: this.legado, embarazos: this.embarazos,
       }),
     ) as EstadoSim;
@@ -310,6 +375,7 @@ export class Simulacion {
     s.embarazos = JSON.parse(JSON.stringify(e.embarazos ?? []));
     s.t = e.t;
     s.mundo.restaurar(e.mundo);
+    for (const x of e.salasExtra ?? []) { const k = s.agregarSala(x.nombre, x.tipo, x.mundo.ancho); s.salas[k].mundo.restaurar(x.mundo); }
     s.criaturas = e.criaturas.map((c) => {
       const k = Criatura.desde(c, e.semilla);
       k.mortalidad = s.mortalidad;

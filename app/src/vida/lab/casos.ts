@@ -3917,5 +3917,70 @@ export const caso42b: Caso = {
   ejecutar: (semilla) => ejecutar42(semilla, true),
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso41, caso41b, caso41c, caso41d, caso43, caso43b, caso42, caso42b, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso44: Caso = {
+  id: "44",
+  titulo: "Complejo: la comida está en la sala de al lado",
+  hipotesis: "Dos salas unidas por una puerta. Una criatura hambrienta que ya sabe que la fruta alimenta, en una sala sin comida, puede cruzar la puerta sin que nadie se lo diga, comer en la otra sala y volver a cruzar cuando vuelve a tener hambre. Se comprueba contra una puerta cerrada (no puede cruzar) y contra una sala vecina vacía (cruzar por la comida y no por costumbre). Criterios fijados antes de ejecutar (ver el plan).",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const DUR = 900;
+    const previo = AJ.entradasExtra;
+    AJ.entradasExtra = Math.max(previo, 4);
+    try {
+      type Cond = "A" | "B" | "C";
+      const correr = (cond: Cond) => {
+        const s = nuevaSim({ semilla: mezclar(semilla, 441), objetos: [], criaturas: [{ genoma: genomaDe(semilla, 441), x: 400 }], comedero: null, mortalidad: "protegida" });
+        const c = s.criaturas[0];
+        c.capRegistro = 50000;
+        const k = s.agregarSala("Comedor", "comedor", 1600);
+        s.conectar(0, 1400, k, 200, cond === "B");
+        // Antes de empezar, 150 s comiendo fruta en la sala 0, para que sepa que alimenta
+        let sin = -1;
+        s.mundo.agregar("fruta", 300);
+        const previa = (q: Simulacion) => { const hay = q.mundo.objetos.some((o) => o.tipo === "fruta"); if (hay) sin = -1; else if (sin < 0) sin = q.t; else if (q.t - sin >= 10) { q.mundo.agregar("fruta", 300); sin = -1; } };
+        s.ganchos.push(previa);
+        c.nec[0] = 0.75;
+        s.avanzar(150);
+        s.ganchos.splice(s.ganchos.indexOf(previa), 1);
+        for (const o of [...s.mundo.objetos]) if (o.tipo === "fruta") s.mundo.quitar(o.id);
+        c.sala = 0; c.anchoSala = s.mundo.ancho; c.x = 400; c.accion = null; c.nec[0] = 0.75;
+        const T0 = s.t;
+        // La comida de la prueba: en la sala 1 (A y B), y en la sala 0 con la sala 1 vacia (C)
+        const sala1 = s.salas[k].mundo;
+        const lugarComida = cond === "C" ? s.mundo : sala1;
+        const xComida = cond === "C" ? 300 : 900;
+        lugarComida.agregar("fruta", xComida);
+        let sinF = -1, entradas = 0, previaSala = c.sala, tPrimera = -1, segSala1 = 0, haciaFuera = 0;
+        s.ganchos.push(() => {
+          if (c.sala !== previaSala) { if (c.sala === k) { entradas++; if (tPrimera < 0) tPrimera = s.t - T0; } else haciaFuera++; previaSala = c.sala; }
+          if (c.sala === k) segSala1 += AJ.dt;
+          const hay = lugarComida.objetos.some((o) => o.tipo === "fruta");
+          if (hay) sinF = -1;
+          else if (sinF < 0) sinF = s.t;
+          else if (s.t - sinF >= 30) { lugarComida.agregar("fruta", xComida); sinF = -1; }
+        });
+        s.avanzar(DUR);
+        const bocados = c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "fruta" && (r.res?.[0] ?? 0) > 0.1 && r.t >= T0);
+        return { entradas, haciaFuera, tPrimera, fraccionSala1: segSala1 / DUR, bocados: bocados.length, salaFinal: c.sala };
+      };
+      const A = correr("A"), B = correr("B"), Cc = correr("C");
+      return resultado(semilla, {
+        "puerta cerrada: no entra nunca en la otra sala": B.entradas === 0 && B.fraccionSala1 === 0,
+        "usada espontáneamente: con la puerta abierta cruza a la otra sala al menos una vez": A.entradas >= 1,
+        "llega a la comida: come al menos 2 bocados de la fruta de la otra sala": A.bocados >= 2,
+        "por la comida: pasa en la otra sala al menos 0,15 más del tiempo que cuando esa sala está vacía": A.fraccionSala1 >= Cc.fraccionSala1 + 0.15,
+        "vuelve a cruzar: entra en la otra sala al menos 2 veces (y no más que sus salidas más una)": A.entradas >= 2 && A.entradas <= A.haciaFuera + 1,
+      }, {
+        entradasA: A.entradas, salidasA: A.haciaFuera, primeraEntradaA: A.tPrimera, fraccionSala1A: A.fraccionSala1, bocadosA: A.bocados,
+        entradasB: B.entradas, bocadosB: B.bocados, entradasC: Cc.entradas, fraccionSala1C: Cc.fraccionSala1, bocadosC: Cc.bocados,
+      }, null, DUR);
+    } finally {
+      AJ.entradasExtra = previo;
+    }
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso41, caso41b, caso41c, caso41d, caso43, caso43b, caso44, caso42, caso42b, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

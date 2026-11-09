@@ -9,7 +9,9 @@ import { C, NC_RED as NC, RASGOS } from "../src/vida/nucleo/tipos.ts";
 import { featuresCriatura } from "../src/vida/nucleo/conducta.ts";
 import { ModeloAjeno } from "../src/vida/nucleo/modeloajeno.ts";
 import { CASOS, CASOS_OBLIGATORIOS } from "../src/vida/lab/casos.ts";
-import { actor, calentada, ejecutarCaso, impactos, nuevaSim, tablaInforme } from "../src/vida/lab/laboratorio.ts";
+import { actor, calentada, ejecutarCaso, genomaDe, impactos, nuevaSim, tablaInforme } from "../src/vida/lab/laboratorio.ts";
+import { mezclar } from "../src/vida/nucleo/azar.ts";
+import { createHash } from "node:crypto";
 
 let fallos = 0, ok = 0;
 const afirma = (c: boolean, m: string) => { if (c) ok++; else { fallos++; console.log("FALLA:", m); } };
@@ -333,6 +335,50 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   conT.puedeCargar = true; conT.lleva = 7;
   const rest = Criatura.desde(JSON.parse(JSON.stringify(conT.estado())), 21);
   afirma(rest.puedeCargar && rest.lleva === 7, "el transporte y lo que lleva se guardan y se restauran");
+}
+
+// 1k. Complejo de salas: una sala sola es exactamente lo de siempre, y varias salas tienen su propia vida
+{
+  // Huella de una simulacion entera (3 criaturas, 3 semillas, 1500 s). Se calculo con el codigo anterior al complejo y con el posterior, y salio igual. Si un cambio intencionado altera la conducta,
+  // este valor se actualiza a proposito (y se anota por que).
+  const partes: string[] = [];
+  for (const sem of [1, 2, 3]) {
+    const s = nuevaSim({ semilla: mezclar(sem, 5), objetos: [{ tipo: "pelota", x: 700 }, { tipo: "palanca", x: 1000 }, { tipo: "placa", x: 300 }], criaturas: [0, 1, 2].map((i) => ({ genoma: genomaDe(sem, 50 + i), x: 300 + i * 400 })), comedero: { cada: 50, max: 2, tipo: "fruta" } });
+    for (const c of s.criaturas) { c.agresion = true; c.reconocePorRasgos = true; }
+    s.avanzar(1500);
+    partes.push(JSON.stringify(s.criaturas.map((c) => [c.registro, c.x, c.nec, c.emo, c.mem.protos.length, c.mem.episodios.length, c.rasgos, c.salud])), JSON.stringify(s.mundo.objetos.map((o) => [o.tipo, o.x, o.porciones])));
+  }
+  afirma(createHash("sha256").update(partes.join("|")).digest("hex") === "cfd52703e5a9db2e9bc154df64c62be648eb7bfc1565007534bbfdc658e63d81", "una camara de una sola sala se comporta exactamente como antes del complejo (huella de 3 simulaciones de 1500 s)");
+
+  const s = nuevaSim({ semilla: 81, objetos: [{ tipo: "fruta", x: 500 }], criaturas: [{ genoma: genomaNuevo(1), x: 300 }], comedero: null });
+  const k = s.agregarSala("Comedor", "comedor", 2400);
+  const [pa, pb] = s.conectar(0, 1400, k, 200);
+  s.salas[k].mundo.agregar("fruta", 900);
+  afirma(s.salas.length === 2 && s.salas[k].mundo.ancho === 2400 && s.mundo === s.salas[0].mundo, "se anade una sala con su propio ancho, y la primera sigue siendo el mundo de siempre");
+  afirma(pa.id < 100000 && pb.id > 100000 && s.salas[k].mundo.objetos.every((o) => o.id > 100000), "los identificadores de objetos de cada sala no chocan");
+  afirma(pa.destino?.sala === k && pb.destino?.sala === 0 && pb.destino?.x === 1400 && !pa.cerrada, "las dos puertas se apuntan entre si y empiezan abiertas");
+  const c = s.criaturas[0];
+  afirma(c.lugar(400, 1600) === 0.25 && (() => { c.sala = 1; const v = c.lugar(400, 1600); c.sala = 0; return v === 2.25; })(), "el sitio de la memoria es x / ancho en la primera sala y queda separado en las demas");
+  // Puerta cerrada: es una barrera y no se cruza. Abierta, se cruza y la criatura queda junto a la de enfrente
+  s.fijarPuerta(0, pa.id, true);
+  afirma(s.mundo.cruce(1300, 1500, 12) !== null && s.salas[k].mundo.obj(pb.id)?.cerrada === true, "cerrar una puerta cierra tambien la de enfrente y la convierte en barrera");
+  afirma(s.cruzarSala(c, pa) === false && c.sala === 0, "una puerta cerrada no se cruza");
+  s.fijarPuerta(0, pa.id, false);
+  afirma(s.mundo.cruce(1300, 1500, 12) === null, "abierta, la puerta deja de ser barrera");
+  c.lleva = 1; s.mundo.cargar(1, c.id, 5);
+  afirma(s.cruzarSala(c, pa) === true && c.sala === k && c.x === 270 && c.lleva === 1 && s.salas[k].mundo.obj(1)?.llevadoPor === c.id && !s.mundo.obj(1), "al cruzar queda junto a la puerta de enfrente y se lleva lo que carga");
+  s.avanzar(2);
+  afirma(s.salas[k].mundo.obj(1) !== undefined && s.salas[k].mundo.obj(1)?.llevadoPor === c.id, "tras cruzar, el objeto que lleva sigue con ella en la sala nueva");
+  // Lo que se vio en otra sala no se percibe como si estuviera aqui
+  const d = s.criaturas[0];
+  d.mem.ver(77, "fruta", "fruta azul", [0.75, 0.35, 0.45, 0.15, 0.35, 0.75, 0, 0, 0, 0], 270, 0, 0);
+  s.avanzar(1);
+  afirma(!d.percibidos.some((p) => p.id === 77), "un avistamiento de otra sala no aparece como percibido en esta");
+  // Guardar y restaurar un complejo
+  const g = Simulacion.restaurar(JSON.parse(JSON.stringify(s.serializar())));
+  afirma(g.salas.length === 2 && g.salas[k].mundo.ancho === 2400 && g.criaturas[0].sala === k && g.salas[k].mundo.obj(pb.id)?.destino?.sala === 0, "un complejo se guarda y se restaura con sus salas, sus puertas y la sala de cada criatura");
+  const v1 = JSON.parse(JSON.stringify(nuevaSim({ semilla: 82, objetos: [], criaturas: [{ genoma: genomaNuevo(1), x: 300 }], comedero: null }).serializar()));
+  afirma(v1.salasExtra === undefined && Simulacion.restaurar(v1).salas.length === 1, "un guardado de una sola sala sigue siendo el de siempre");
 }
 
 // 2. Determinismo y semilla

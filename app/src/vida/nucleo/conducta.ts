@@ -108,6 +108,7 @@ export function percibir(c: Criatura, env: Entorno): Percepto[] {
   }
   // Lo que recuerda y ahora no ve
   for (const a of c.mem.avist) {
+    if ((a.sala ?? 0) !== c.sala) continue;
     if (out.some((p) => p.id === a.id)) continue;
     if (env.t - a.t < 2) continue;
     const dist = Math.abs(a.x - c.x);
@@ -122,12 +123,12 @@ export function valorDeProbar(c: Criatura, f: number[], env: Entorno): number {
   return esperar(c, { id: -1, nombre: "", tipo: "", esCriatura: false, x: c.x, dist: 0, f, m: M_TODO, cerca: true, recordado: false }, "probar", env)[C.sacia];
 }
 
-const lugarBin = (x: number, ancho: number) => Math.min(BINES - 1, Math.floor((x / ancho) * BINES));
+const lugarBin = (c: Criatura, x: number, ancho: number) => c.sala * BINES + Math.min(BINES - 1, Math.floor((x / ancho) * BINES));
 
 /** Lo que espera la criatura que resulte de hacer `v` con lo percibido `p`. Mezcla lo recordado y lo que predice la red. */
 function esperar(c: Criatura, p: Percepto, v: Verbo, env: Entorno): Res {
   const ancho = env.mundo.ancho;
-  const lug = p.x / ancho;
+  const lug = c.lugar(p.x, ancho);
   const A = c.mem.predecir(v, p.f, p.m, lug);
   const entrada = c.entrada(p.f, v, p.x, ancho);
   const red = c.red.predecir(entrada);
@@ -151,7 +152,7 @@ function peligroDelTrayecto(c: Criatura, desde: number, hasta: number, ancho: nu
   let peor = 0;
   for (let i = 1; i <= 4; i++) {
     const x = desde + ((hasta - desde) * i) / 4;
-    const L = c.mem.predecir("lugar", [], [], x / ancho);
+    const L = c.mem.predecir("lugar", [], [], c.lugar(x, ancho));
     peor = Math.max(peor, L.res[C.dano] * L.conf);
   }
   return peor;
@@ -203,14 +204,18 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
   const angustiadas = c.estadosAjenos ? ps.filter((p) => p.esCriatura && !p.recordado && p.f[IDX.sonido] > ANGUSTIA_VISIBLE) : [];
   const pesoAlivio = (id: number): number => AJ.pesoAlivio * (0.15 + (c.mem.vinculos.find((q) => q.id === id)?.afecto ?? 0));
   const alivioEsperado = (verbo: string, p: Percepto): number => {
-    const Q = c.mem.predecir(`ante:${verbo}`, p.f, p.m, p.x / ancho);
+    const Q = c.mem.predecir(`ante:${verbo}`, p.f, p.m, c.lugar(p.x, ancho));
     return Q.res[C.alivio] * Q.conf;
   };
-  const comestible = (p: Percepto): boolean => !p.esCriatura && c.mem.predecir("probar", p.f, p.m, p.x / ancho).res[C.sacia] > 0.05;
+  const comestible = (p: Percepto): boolean => !p.esCriatura && c.mem.predecir("probar", p.f, p.m, c.lugar(p.x, ancho)).res[C.sacia] > 0.05;
   for (const p of ps) {
     let verbos: readonly Verbo[];
     if (p.esCriatura) verbos = c.agresion ? ["acercarse", "empujar"] : ["acercarse"];
-    else if (!c.puedeCargar) verbos = ["probar", "empujar", "tocar"];
+    else if (CATALOGO[p.tipo]?.puerta) {
+      // Una puerta abierta se cruza (la criatura lo descubre como cualquier otra cosa); cerrada, solo se puede empujar o tocar
+      const ob = env.mundo.obj(p.id);
+      verbos = ob && !ob.cerrada && !p.recordado ? ["cruzar"] : ["empujar", "tocar"];
+    } else if (!c.puedeCargar) verbos = ["probar", "empujar", "tocar"];
     else {
       // Con el transporte: lo que lleva otra no se toca, lo que lleva ella solo se come o se suelta, y lo que se puede mover se puede intentar recoger (si pesa demasiado, lo averigua intentandolo)
       const ob = env.mundo.obj(p.id);
@@ -221,7 +226,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     }
     for (const v of verbos) {
       if (!VERBOS_OBJETO.includes(v)) continue;
-      const A = c.mem.predecir(v, p.f, p.m, p.x / ancho);
+      const A = c.mem.predecir(v, p.f, p.m, c.lugar(p.x, ancho));
       const res = esperar(c, p, v, env);
       if (!p.esCriatura) res[C.diversion] *= 1 - AJ.habituacionMax * c.cansancioDe(p.id);
       if (ultimoRecurso > 0 && v === "probar" && comestible(p)) res[C.dano] *= 1 - ultimoRecurso;
@@ -308,7 +313,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       cand.push({ v, p, dest: p.x, u, cambia: true, espera: res });
     }
     // Alejarse de lo que sabe que hace dano
-    const P = c.mem.predecir("presencia", p.f, p.m, p.x / ancho);
+    const P = c.mem.predecir("presencia", p.f, p.m, c.lugar(p.x, ancho));
     const amenaza = Math.max(P.res[C.dano], P.res[C.susto] * 0.8) * P.conf * (ultimoRecurso > 0 && comestible(p) ? 1 - ultimoRecurso : 1);
     if (amenaza > 0.12 && !p.recordado) {
       const cerca = acota(1 - (p.dist - 40) / 320, 0.08, 1);
@@ -332,9 +337,9 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
     let mu = -9;
     for (let i = 0; i < 4; i++) {
       const x = c.azar.entre(60, ancho - 60);
-      const bin = lugarBin(x, ancho);
+      const bin = lugarBin(c, x, ancho);
       const nov = acota(1 - c.mem.visitas[bin] / 3);
-      const L = c.mem.predecir("lugar", [], [], x / ancho);
+      const L = c.mem.predecir("lugar", [], [], c.lugar(x, ancho));
       let amen = L.res[C.dano] * L.conf;
       for (const p of ps) if (!p.recordado && Math.abs(p.x - x) < 110) {
         const P = c.mem.predecir("presencia", p.f, p.m, 0);

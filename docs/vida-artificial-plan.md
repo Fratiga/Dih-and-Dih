@@ -1897,6 +1897,24 @@ Con 150 s previos comiendo fruta en suelo seguro, 10 semillas, criterios sin cam
 - **No se toca el margen para que salga.** Si el diseño quiere que una criatura muy hambrienta acepte un peligro como el de la placa de siempre, hay que decidirlo (y qué daño se considera aceptable, o si basta que lo haga solo cuando no hay otra comida), no subir 0,7 hasta que apruebe. Queda anotado como decisión pendiente.
 - Como el transporte bajo peligro no llega a ejercitarse en ninguna variante, **el caso 41 queda sin respuesta**. Se retoma cuando exista un entorno donde el peligro sea menos absoluto (por ejemplo, una zona de obstáculos con recorridos).
 
+## Complejo de salas, primer paso (11-nov-2026)
+
+Arquitectura en `docs/vida-artificial-complejo.md`. Esta es la primera parte construida, antes de dibujar nada.
+
+**Qué existe.** Una `Simulacion` tiene una lista de salas (`salas`). La primera es el mundo de siempre (`mundo`), y se pueden añadir más (`agregarSala`) y unirlas con puertas (`conectar`). Cada sala es un `Mundo` con su ancho y sus objetos, y sus identificadores de objeto no chocan con los de las demás. Cada criatura tiene una sala y percibe y decide solo con lo de la suya. Una **puerta** es un objeto con un destino. Cerrada es una barrera, y abierta se puede cruzar con un verbo nuevo, **cruzar** (entrada ampliable `NI + 2`), que la criatura descubre como cualquier otro. Cruzar la deja junto a la puerta de enfrente y se lleva lo que cargue. La memoria separa los sitios por sala (el sitio de la memoria pasa de `x / ancho` a `2 × sala + x / ancho`, que en la primera sala es exactamente lo mismo), y también las visitas de explorar y los avistamientos recordados. El guardado añade las salas extra de forma opcional, así que los guardados antiguos se abren igual.
+
+**Equivalencia, demostrada.** Una huella (hash) de tres simulaciones de 1500 s con tres criaturas, calculada con el código anterior al complejo y con el posterior, **salió idéntica**. Está fijada en `tests/vida.test.ts` (bloque 1k) junto a las comprobaciones de las salas, las puertas, el cruce con carga, los avistamientos de otra sala y el guardado de un complejo. La regresión pasa entera.
+
+**Caso 44, la comida está en la sala de al lado.** Criterios fijados antes de ejecutar.
+- Dos salas de 1600 unidas por una puerta (x = 1400 en la primera, x = 200 en la segunda). Una criatura con hambre 0,75, que antes ha vivido 150 s comiendo fruta en la primera sala (para que sepa que alimenta). 900 s. La fruta de la prueba está en la segunda sala (x = 900), con otra nueva a los 30 s de comerse. Tres brazos. **A.** Puerta abierta. **B.** Puerta cerrada. **C.** Puerta abierta, la segunda sala vacía y la fruta en la primera (x = 300).
+- Criterios, por semilla (un 80 %, caso informativo).
+  1. En B no entra nunca en la otra sala (barrera real).
+  2. En A cruza a la otra sala al menos una vez, sin que nadie se lo diga (usada espontáneamente).
+  3. En A come al menos 2 bocados de la fruta de la otra sala.
+  4. En A pasa en la otra sala al menos 0,15 más del tiempo que en C (cruza por la comida y no por costumbre).
+  5. En A entra en la otra sala al menos 2 veces, y no más que sus salidas más una (vuelve a cruzar y no se queda atrapada).
+- Si algún criterio resulta mal planteado, se corrige a la vista y se anota.
+
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 
 Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:

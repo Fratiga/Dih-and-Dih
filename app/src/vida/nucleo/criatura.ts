@@ -20,6 +20,8 @@ export interface Entorno {
   t: number;
   /** Lo pone la simulacion: registra que una pareja ha aceptado reproducirse. */
   embarazar?: (madre: Criatura, padre: Criatura) => void;
+  /** Lo pone la simulacion: pasa a la criatura por una puerta a otra sala. Devuelve si lo ha hecho. */
+  cruzarSala?: (c: Criatura, puerta: Objeto) => boolean;
 }
 
 /** Raza simple: una criatura que decide con una regla fija en lugar de con su cerebro. No aprende, sus rasgos no cambian y su conducta es la misma en cualquier situacion.
@@ -168,6 +170,7 @@ export interface EstadoCriatura {
   celosEstado: Celo[];
   rutina?: Rutina | null;
   defiende?: boolean;
+  sala?: number;
   puedeCargar?: boolean;
   aprendeBloqueos?: boolean;
   hambreArriesga?: boolean;
@@ -269,6 +272,10 @@ export class Criatura {
   rutina: Rutina | null = null;
   /** Opcional: defiende la comida que esta comiendo aunque no tenga especializacion (con su agresividad como impulso). Apagado, no lo hace. */
   defiende = false;
+  /** La sala del complejo donde esta (0 es la primera, y la unica en las camaras de siempre). */
+  sala = 0;
+  /** El ancho de la sala donde esta (lo pone `paso`). */
+  anchoSala = AJ.ancho;
   /** Opcional: puede recoger objetos y llevarlos a cuestas (verbos cargar y soltar). Apagado, esos verbos no existen para ella. */
   puedeCargar = false;
   /** Opcional (etapa 1 de las barreras): un intento de llegar a algo que una barrera ha cortado deja un recuerdo de que ahi, con eso, no se consigue nada. Apagado, el choque solo frustra un poco. */
@@ -375,6 +382,7 @@ export class Criatura {
 
   paso(env: Entorno, dt: number): void {
     this.t = env.t;
+    this.anchoSala = env.mundo.ancho;
     this.edad += dt;
     if (!this.vivo) return;
     this.necesidades(env, dt);
@@ -560,7 +568,7 @@ export class Criatura {
     m.total += dt;
     for (const p of this.percibidos) {
       if (p.recordado) continue;
-      if (!p.esCriatura) m.ver(p.id, p.tipo, p.nombre, p.f, p.x, env.t);
+      if (!p.esCriatura) m.ver(p.id, p.tipo, p.nombre, p.f, p.x, env.t, this.sala);
       if (p.m[0] > 0 && !p.esCriatura) {
         if (!(`visto:${p.tipo}` in m.acciones)) {
           m.acciones[`visto:${p.tipo}`] = 1;
@@ -580,11 +588,12 @@ export class Criatura {
     }
     // Si llega donde recordaba algo y no esta, lo olvida
     for (const a of [...m.avist]) {
+      if ((a.sala ?? 0) !== this.sala) continue;
       if (Math.abs(a.x - this.x) < 70 && !this.percibidos.some((p) => p.id === a.id && !p.recordado)) m.olvidarAvistamiento(a.id);
       else if (env.t - a.t > 1500) m.olvidarAvistamiento(a.id);
     }
     // Lugares visitados
-    const bin = Math.min(15, Math.floor((this.x / env.mundo.ancho) * 16));
+    const bin = this.sala * 16 + Math.min(15, Math.floor((this.x / env.mundo.ancho) * 16));
     m.visitas[bin] += dt * 0.1;
   }
 
@@ -672,7 +681,7 @@ export class Criatura {
     // Pasarlo bien con alguien cerca cuenta tambien como compania
     if (res[C.diversion] > 0.1 && env.criaturas.some((o) => o !== this && o.vivo && Math.abs(o.x - this.x) < 300)) res[C.compania] = Math.max(res[C.compania], 0.25);
     const ancho = env.mundo.ancho;
-    const lug = this.x / ancho;
+    const lug = this.lugar(this.x, ancho);
     const entrada = this.entrada(acc.f, acc.v, this.x, ancho);
     const inmediatos = acc.v === "probar" ? undefined : CANALES_SIN_SACIA;
     m.aprender(acc.v, acc.f, lug, res, acc.tipo, acc.nombre, env.t, inmediatos);
@@ -747,7 +756,7 @@ export class Criatura {
       if (this.aprendeObservando && o.ultimoComer && o.ultimoComer.t > this.vistoComer && env.t - o.ultimoComer.t < 3 && Math.abs(o.x - this.x) <= AJ.vista * this.genoma.vista * 1.3) {
         const q = o.ultimoComer;
         this.vistoComer = q.t;
-        this.mem.aprender("probar", q.f, q.x / env.mundo.ancho, [0.8 * AJ.pesoVicario, 0, 0, 0, 0, 0], q.tipo, q.nombre, env.t, [true, false, false, false, false, false], 1, false);
+        this.mem.aprender("probar", q.f, this.lugar(q.x, env.mundo.ancho), [0.8 * AJ.pesoVicario, 0, 0, 0, 0, 0], q.tipo, q.nombre, env.t, [true, false, false, false, false, false], 1, false);
       }
       // Lo que ve hacer a otra: si pega a alguien que no es ella, queda con fama de pegar
       if (this.gustos && o.ultimoGolpe && o.ultimoGolpe.contra !== this.id && o.ultimoGolpe.t > (this.reputacion[1000 + o.id]?.t ?? -1) && env.t - o.ultimoGolpe.t < 2 && Math.abs(o.x - this.x) <= AJ.vista * this.genoma.vista * 1.3) {
@@ -772,7 +781,7 @@ export class Criatura {
       this.emo[E.curiosidad] = acota(this.emo[E.curiosidad] + 0.12 * realce);
       this.emo[E.excitacion] = acota(this.emo[E.excitacion] + 0.1 * realce);
       const def = CATALOGO[ob.tipo];
-      this.mem.aprender(u.v, featuresObjeto(ob), ob.x / env.mundo.ancho, [0, 0, def.efecto * 0.5 * realce, 0.1 * realce, 0], ob.tipo, def.nombre, env.t, [false, false, true, true, false], 0.5, false);
+      this.mem.aprender(u.v, featuresObjeto(ob), this.lugar(ob.x, env.mundo.ancho), [0, 0, def.efecto * 0.5 * realce, 0.1 * realce, 0], ob.tipo, def.nombre, env.t, [false, false, true, true, false], 0.5, false);
       if (realce > 0.3) this.forzar = true;
       // Si ha visto lo bastante para saber que eso no da nada, lo sabe de verdad: cuenta como conocimiento propio y deja de ser una novedad que explorar
       if (this.modelo && realce === 0) this.saberQueNoSirve(ob, env);
@@ -803,7 +812,7 @@ export class Criatura {
       const u = o.ultimoImpacto;
       if (env.t < u.t || env.t - u.t > 6 || Math.abs(o.x - this.x) > AJ.vista * this.genoma.vista * 1.3) continue;
       const def = CATALOGO[origen.tipo];
-      this.mem.aprender(u.v, featuresObjeto(origen), origen.x / env.mundo.ancho, [0.85 * valor * AJ.pesoVicario, 0, 0, 0, 0, 0], origen.tipo, def.nombre, env.t, [true, false, false, false, false, false], 1, false);
+      this.mem.aprender(u.v, featuresObjeto(origen), this.lugar(origen.x, env.mundo.ancho), [0.85 * valor * AJ.pesoVicario, 0, 0, 0, 0, 0], origen.tipo, def.nombre, env.t, [true, false, false, false, false, false], 1, false);
     }
   }
 
@@ -852,6 +861,10 @@ export class Criatura {
   factorGolpeEsp(): number { const e = this.genoma.especializacion; return e ? 1 + 0.35 * e.craneo + 0.45 * e.mandibula + 0.3 * e.garras - 0.15 * e.agilidad : 1; }
   /** Lo que cuesta mantener ese cuerpo: mas hambre. */
   factorMetabolismoEsp(): number { const e = this.genoma.especializacion; return e ? 1 + 0.1 * e.craneo + 0.12 * e.mandibula + 0.08 * e.garras + 0.12 * e.agilidad : 1; }
+
+  /** El sitio para la memoria: la posicion relativa a su sala, separada de la de las demas salas (cada una ocupa 2 unidades de la escala del sitio, asi que ningun
+      parecido de sitio mezcla salas distintas). En la primera sala es exactamente `x / ancho`. */
+  lugar(x: number, ancho: number): number { return this.sala * 2 + x / ancho; }
 
   /** De 0 a 1: cuanto empuja el hambre a arriesgarse. Crece desde un hambre de 0,55, y la rebajan el miedo de caracter y el susto del momento. 0 si esta apagado. */
   apetitoRiesgo(): number {
@@ -925,7 +938,7 @@ export class Criatura {
     this.desarrollar(R.curiosidad, -0.05 * nivel);
     this.desarrollar(R.sensibilidad, 0.004 * nivel);
     const m = this.mem;
-    const lug = this.x / AJ.ancho;
+    const lug = this.lugar(this.x, this.sala === 0 ? AJ.ancho : this.anchoSala);
     m.aprender("lugar", [], lug, [0, nivel, 0, 0, 0], "", "", this.t, [false, true, false, false, false], 0.9);
     // Lo que tocaba cuenta mucho; lo muy llamativo que habia cerca (luz, ruido) cuenta algo
     const causado = this.percibidos.find((p) => p.id === causa);
@@ -1019,7 +1032,7 @@ export class Criatura {
     this.valorarAspecto(id, 1.5 * nivel);
     this.agravios[id].n *= 0.4;
     if (p) {
-      this.mem.aprender("acercarse", p.f, this.x / env.mundo.ancho, [0, 0, 0, nivel * 0.8, 0], "criatura", p.nombre, env.t, [false, false, false, true, false], 1.6);
+      this.mem.aprender("acercarse", p.f, this.lugar(this.x, env.mundo.ancho), [0, 0, 0, nivel * 0.8, 0], "criatura", p.nombre, env.t, [false, false, false, true, false], 1.6);
       const pres = this.mem.protos.find((q) => q.v === "presencia" && semejanza(p.f, q.f, p.m) > 0.8);
       if (pres) { pres.res[C.dano] *= 0.75; pres.res[C.susto] *= 0.75; }
     }
@@ -1272,7 +1285,7 @@ export class Criatura {
     if (!this.aprendeBloqueos || this.rutina || a.esCriatura || a.obj < 0 || !VERBOS_SOBRE_OBJETOS.includes(a.v) && a.v !== "cargar") return;
     const ob = env.mundo.obj(a.obj);
     if (!ob) return;
-    this.mem.aprender(a.v, featuresObjeto(ob), ob.x / env.mundo.ancho, resCero(), ob.tipo, CATALOGO[ob.tipo].nombre, env.t, a.v === "probar" ? undefined : CANALES_SIN_SACIA);
+    this.mem.aprender(a.v, featuresObjeto(ob), this.lugar(ob.x, env.mundo.ancho), resCero(), ob.tipo, CATALOGO[ob.tipo].nombre, env.t, a.v === "probar" ? undefined : CANALES_SIN_SACIA);
     const clave = `${a.v}:${a.tipo}`;
     this.fallos[clave] = (this.fallos[clave] ?? 0) + 1;
   }
@@ -1285,7 +1298,7 @@ export class Criatura {
     for (const v of VERBOS_SOBRE_OBJETOS) {
       const suyas = this.mem.protos.filter((p) => p.v === v && p.tipo === ob.tipo);
       if (suyas.length) for (const p of suyas) this.mem.reforzar(p, resCero(), todos, 1, env.t, true);
-      else this.mem.aprender(v, featuresObjeto(ob), ob.x / env.mundo.ancho, resCero(), ob.tipo, def.nombre, env.t, todos, 1, true);
+      else this.mem.aprender(v, featuresObjeto(ob), this.lugar(ob.x, env.mundo.ancho), resCero(), ob.tipo, def.nombre, env.t, todos, 1, true);
     }
   }
 
@@ -1312,7 +1325,7 @@ export class Criatura {
       const tr = [...this.trazas].reverse().find((q) => q.v === r.v && q.tipo === r.tipo);
       const av = this.mem.avist.find((q) => q.id === r.obj);
       const f = tr?.f ?? av?.f ?? this.percibidos.find((p) => p.id === r.obj)?.f;
-      if (f) return { v: r.v, f, lug: this.x / env.mundo.ancho, tipo: r.tipo, nombre: tr?.nombre ?? av?.nombre ?? r.tipo };
+      if (f) return { v: r.v, f, lug: this.lugar(this.x, env.mundo.ancho), tipo: r.tipo, nombre: tr?.nombre ?? av?.nombre ?? r.tipo };
     }
     return null;
   }
@@ -1325,7 +1338,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, defiende: this.defiende, puedeCargar: this.puedeCargar, aprendeBloqueos: this.aprendeBloqueos, hambreArriesga: this.hambreArriesga, lleva: this.lleva, hogar: this.hogar, modelo: this.modelo ? this.modelo.estado() : null, extincion: this.extincion, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, defiende: this.defiende, ...(this.sala ? { sala: this.sala } : {}), puedeCargar: this.puedeCargar, aprendeBloqueos: this.aprendeBloqueos, hambreArriesga: this.hambreArriesga, lleva: this.lleva, hogar: this.hogar, modelo: this.modelo ? this.modelo.estado() : null, extincion: this.extincion, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -1369,6 +1382,7 @@ export class Criatura {
     c.celos = e.celos ?? false;
     c.rutina = e.rutina ?? null;
     c.defiende = e.defiende ?? false;
+    c.sala = e.sala ?? 0;
     c.puedeCargar = e.puedeCargar ?? false;
     c.aprendeBloqueos = e.aprendeBloqueos ?? false;
     c.hambreArriesga = e.hambreArriesga ?? false;
