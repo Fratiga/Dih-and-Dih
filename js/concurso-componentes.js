@@ -36,6 +36,7 @@
 
   /* Número que cuenta hasta su valor nuevo y tiembla si baja. */
   function contar(nodo, valor) {
+    if (nodo.isContentEditable) return;   // el anfitrión lo está escribiendo
     const antes = nodo.dataset.v === undefined ? valor : Number(nodo.dataset.v);
     nodo.dataset.v = valor;
     if (antes === valor) { nodo.textContent = valor; return; }

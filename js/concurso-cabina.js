@@ -87,6 +87,10 @@
       const e = CZ.escena(C.p, msg.escena), el = e && e.elementos.find(x => x.id === msg.el);
       if (el) clicAlAire(el, msg.sub, { altKey: !!msg.alt, shiftKey: !!msg.shift, derecho: !!msg.derecho });
     }
+    if (msg.tipo === "puntos") {
+      const j = CZ.jugador(C.p, msg.jugador);
+      if (j && Number.isFinite(msg.valor)) sumar(j, msg.valor - j.puntos);
+    }
     if (msg.tipo === "tecla") {
       if (msg.tecla === " " || msg.tecla === "ArrowRight") pasoSiguiente();
       else pasoAnterior();
@@ -502,10 +506,13 @@
 
   function clicAlAire(el, sub, ev) {
     const J = C.p.juego;
-    // Marcadores y podio: clic suma 1, clic derecho resta 1; con Mayús, de 5 en 5
-    const delta = (ev.derecho ? -1 : 1) * (ev.shiftKey ? 5 : 1);
-    if (el.tipo === "marcador") { sumar(CZ.jugador(C.p, el.props.jugadorId), delta); return; }
-    if (el.tipo === "podio") { if (sub) sumar(CZ.jugador(C.p, sub), delta); return; }
+    // Marcadores y podio: clic sobre el número para escribir los puntos
+    if (el.tipo === "marcador" || el.tipo === "podio") {
+      const num = CZ.numeroDePuntos(el, ev.objetivo);
+      const j = num && CZ.jugador(C.p, num.jugador);
+      if (j && num.nodo) CZ.editarNumero(num.nodo, v => sumar(j, v - j.puntos));
+      return;
+    }
     if (ev.derecho) return;
     if (el.tipo === "rejilla" && sub != null) {
       const i = Number(sub);
@@ -755,7 +762,7 @@
     const ranking = CZ.ranking(C.p);
     cont.innerHTML = `
       <div class="cz-jug-cab"><h3 class="cz-lado-tit">Jugadores</h3><button type="button" class="cz-btn-mini" data-j-accion="nuevo">Añadir jugador</button></div>
-      <p class="cz-ayuda">Teclas 1 a ${Math.min(9, C.p.jugadores.length)} para elegir, + y − para sumar o restar 1, * y _ para 5. Lo que ganas en la matriz se marca con el jugador elegido.</p>
+      <p class="cz-ayuda">Teclas 1 a ${Math.min(9, C.p.jugadores.length)} para elegir, + y − para sumar o restar 1, * y _ para 5. También puedes escribir los puntos en su casilla o hacer clic en el número de un marcador o del podio al aire. Lo que ganas en la matriz se marca con el jugador elegido.</p>
       <div class="cz-jug-lista">${C.p.jugadores.map((j, i) => {
         const pos = ranking.indexOf(j) + 1;
         return `<div class="cz-jug${C.jugSel === j.id ? " cz-jug-sel" : ""}" data-jug="${j.id}" style="--cz-jc:${esc(j.color)}">
@@ -763,7 +770,7 @@
             <span class="cz-jug-tecla">${i + 1}</span>
             <span class="cz-jug-av"></span>
             <span class="cz-jug-nom">${esc(j.nombre)}<small>${pos}.º${j.estados.length ? " · " + j.estados.map(s => esc(s.texto)).join(", ") : ""}</small></span>
-            <span class="cz-jug-pts" title="Doble clic para escribir el número">${j.puntos}</span>
+            <input type="number" class="cz-jug-pts" data-pts value="${j.puntos}" title="Escribe los puntos y pulsa Enter">
           </div>
           <div class="cz-jug-botones">
             ${[-5, -1, 1, 5].map(d => `<button type="button" data-delta="${d}" class="${d > 0 ? "mas" : "menos"}">${d > 0 ? "+" + d : "−" + Math.abs(d)}</button>`).join("")}
@@ -831,15 +838,17 @@
       debounce("jug", () => { pintarEditor(); pintarAire(); }, 250);
     });
     cont.addEventListener("change", ev => { if (ev.target.dataset.jf) pintarJugadores(); });
-    cont.addEventListener("dblclick", ev => {
-      const pts = ev.target.closest(".cz-jug-pts");
-      if (!pts) return;
-      const j = CZ.jugador(C.p, pts.closest("[data-jug]").dataset.jug);
-      pedir(`Puntos de ${j.nombre}`, String(j.puntos)).then(v => { if (v != null && !isNaN(Number(v))) sumar(j, Number(v) - j.puntos); });
+    // Los puntos se escriben directamente en la casilla; se guardan al pulsar Enter o al salir de ella
+    cont.addEventListener("change", ev => {
+      const t = ev.target;
+      if (t.dataset.pts === undefined) return;
+      const j = CZ.jugador(C.p, t.closest("[data-jug]").dataset.jug), v = parseInt(t.value, 10);
+      if (j && !isNaN(v)) sumar(j, v - j.puntos); else if (j) t.value = j.puntos;
     });
+    cont.addEventListener("keydown", ev => { if (ev.target.dataset.pts !== undefined && ev.key === "Enter") ev.target.blur(); });
     cont.addEventListener("click", async ev => {
       const b = ev.target.closest("button"), fila = ev.target.closest("[data-jug]");
-      if (!b && fila && ev.target.closest(".cz-jug-fila")) { C.jugSel = C.jugSel === fila.dataset.jug ? "" : fila.dataset.jug; pintarJugadores(); return; }
+      if (!b && fila && ev.target.tagName !== "INPUT" && ev.target.closest(".cz-jug-fila")) { C.jugSel = C.jugSel === fila.dataset.jug ? "" : fila.dataset.jug; pintarJugadores(); return; }
       if (!b) return;
       const j = fila && CZ.jugador(C.p, fila.dataset.jug);
       if (b.dataset.jAccion === "nuevo") { cambio(() => { C.p.jugadores.push(CZ.nuevoJugador(C.p.jugadores.length)); }, { partes: "jugadores" }); return; }

@@ -136,6 +136,8 @@
 @keyframes czGirar { from { opacity: 0; transform: rotate(-200deg) scale(.2); } to { opacity: 1; transform: none; } }
 @keyframes czSello { from { opacity: 0; transform: scale(2.2) rotate(-8deg); } to { opacity: 1; transform: none; } }
 
+.cz-editando-num { outline: .06em dashed currentColor; outline-offset: .08em; cursor: text; caret-color: currentColor; }
+:is(.cz-modo-monitor, .cz-modo-programa) :is(.cz-marcador-n, .cz-podio-n) { cursor: text; }
 .cz-sube { animation: czBote .5s ease; }
 .cz-baja { animation: czTiembla .5s ease; }
 @keyframes czBote { 40% { transform: scale(1.1); } }

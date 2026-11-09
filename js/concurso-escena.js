@@ -24,6 +24,48 @@
     return { visibles, reveladas, volteos, celdas };
   };
 
+  /* Convierte un número del escenario (marcador o podio) en un campo para escribir encima.
+     Enter o salir del campo lo guarda; Escape lo deja como estaba. */
+  CZ.editarNumero = function (nodo, alTerminar) {
+    if (!nodo || nodo.isContentEditable) return;
+    const antes = nodo.textContent;
+    nodo.contentEditable = "true";
+    nodo.classList.add("cz-editando-num");
+    nodo.focus();
+    document.getSelection().selectAllChildren(nodo);
+    let hecho = false;
+    const fin = ok => {
+      if (hecho) return;
+      hecho = true;
+      nodo.contentEditable = "false";
+      nodo.classList.remove("cz-editando-num");
+      const v = parseInt(nodo.textContent.replace(/[^0-9-]/g, ""), 10);
+      if (!ok || isNaN(v)) { nodo.textContent = antes; return; }
+      nodo.textContent = v;
+      nodo.dataset.v = v;
+      if (String(v) !== antes) alTerminar(v);
+    };
+    nodo.addEventListener("keydown", e => {
+      e.stopPropagation();
+      if (e.key === "Enter") { e.preventDefault(); fin(true); nodo.blur(); }
+      else if (e.key === "Escape") { fin(false); nodo.blur(); }
+    });
+    nodo.addEventListener("blur", () => fin(true), { once: true });
+  };
+  /* El número que hay que editar según dónde se hizo clic: el del marcador o el de la tarjeta del podio. */
+  CZ.numeroDePuntos = function (el, objetivo) {
+    if (!objetivo) return null;
+    if (el.tipo === "marcador") {
+      const n = objetivo.closest(".cz-el");
+      return n ? { nodo: n.querySelector(".cz-marcador-n"), jugador: el.props.jugadorId } : null;
+    }
+    if (el.tipo === "podio") {
+      const c = objetivo.closest(".cz-podio-carta");
+      return c ? { nodo: c.querySelector(".cz-podio-n"), jugador: c.dataset.j } : null;
+    }
+    return null;
+  };
+
   /* Escala del lienzo que contiene a un nodo (para animaciones medidas en píxeles de pantalla). */
   CZ.escalaDe = nodo => { const l = nodo.closest(".cz-lienzo"); return l ? l._escala || 1 : 1; };
 
@@ -66,7 +108,7 @@
           if (!el || nodo.classList.contains("cz-invisible")) return;
           if (derecho) ev.preventDefault();
           const sub = ev.target.closest("[data-celda]");
-          this.op.alClic(el, sub ? sub.dataset.celda : null, { altKey: ev.altKey, shiftKey: ev.shiftKey, derecho });
+          this.op.alClic(el, sub ? sub.dataset.celda : null, { altKey: ev.altKey, shiftKey: ev.shiftKey, derecho, objetivo: ev.target });
         };
         this.lienzo.addEventListener("click", ev => atender(ev, false));
         this.lienzo.addEventListener("contextmenu", ev => atender(ev, true));

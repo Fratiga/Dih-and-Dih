@@ -10,7 +10,12 @@
   // Los clics en botones, celdas, cartas y temporizadores se mandan a la cabina, que es la que decide
   const escenario = new CZ.Escenario(raiz, {
     modo: "programa",
-    alClic: (el, sub, ev) => CZ.canal.enviar({ tipo: "clic", escena: escenario.escenaId, el: el.id, sub, alt: ev.altKey, shift: ev.shiftKey, derecho: ev.derecho })
+    alClic: (el, sub, ev) => {
+      // Los puntos de marcadores y podio se escriben encima del número
+      const num = CZ.numeroDePuntos(el, ev.objetivo);
+      if (num && num.nodo) { CZ.editarNumero(num.nodo, v => CZ.canal.enviar({ tipo: "puntos", jugador: num.jugador, valor: v })); return; }
+      CZ.canal.enviar({ tipo: "clic", escena: escenario.escenaId, el: el.id, sub, alt: ev.altKey, shift: ev.shiftKey, derecho: ev.derecho });
+    }
   });
   let anterior = null;     // { escena, paso, puntos: Map }
 
@@ -54,6 +59,7 @@
   }, 600);
 
   document.addEventListener("keydown", e => {
+    if (e.target.isContentEditable) return;
     if (e.key === " " || e.key === "Backspace" || e.key === "ArrowRight" || e.key === "ArrowLeft") {
       e.preventDefault();
       CZ.canal.enviar({ tipo: "tecla", tecla: e.key });

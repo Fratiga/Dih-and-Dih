@@ -209,7 +209,14 @@ body.cz-cabina {
 .cz-jug-av .cz-avatar { width: 100%; height: 100%; border-width: 3px; box-shadow: none; }
 .cz-jug-nom { flex: 1; display: flex; flex-direction: column; font-weight: 800; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .cz-jug-nom small { font-weight: 600; color: var(--c-suave); overflow: hidden; text-overflow: ellipsis; }
-.cz-jug-pts { font: 30px var(--c-f-marca); color: #fff; font-variant-numeric: tabular-nums; min-width: 2ch; text-align: right; }
+.cz-cabina input.cz-jug-pts {
+  width: 3.4em; padding: 0 4px !important; text-align: right;
+  font: 30px var(--c-f-marca) !important; color: #fff; font-variant-numeric: tabular-nums;
+  background: transparent; border: 1px solid transparent; border-radius: 7px; -moz-appearance: textfield;
+}
+.cz-cabina input.cz-jug-pts:hover { border-color: var(--c-borde2); }
+.cz-cabina input.cz-jug-pts:focus { border-color: var(--c-edita); background: #0f1115; }
+.cz-jug-pts::-webkit-outer-spin-button, .cz-jug-pts::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .cz-jug-botones { display: flex; gap: 4px; margin-top: 8px; }
 .cz-jug-botones button { flex: 1; border-radius: 7px; border: 1px solid var(--c-borde2); background: #0f1115; padding: 5px 0; cursor: pointer; font-weight: 900; }
 .cz-jug-botones .mas { color: var(--c-verde); }
