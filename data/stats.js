@@ -1454,7 +1454,7 @@ window.STATS = [
       "Salvaciones: FUE +10, CON +9. Percepción pasiva 11. Competencia +3. +10 al impacto y CD 17 en sus habilidades.",
       "Resistencia al daño necrótico. Inmunidad al daño eléctrico y de veneno, y a los estados envenenado y asustado. Visión en la oscuridad 60 pies.",
       "Tiene una acción y una acción adicional por turno. No usa dos veces en el mismo turno una habilidad con recarga.",
-      "Empieza la escena sin despertar. Despierta cuando el Ensamblaje llega a 6 (ver la escena). Cada Cable de la mesa que los jugadores corten antes de que despierte le quita un rasgo: el primero Arranque, el segundo la onda y 50 PV de Reanimación eléctrica, el tercero Batería de dolor.",
+      "Empieza la escena sin despertar. Despierta cuando el Ensamblaje llega a 6 (ver la escena). Cada Cable del tanque que los jugadores corten antes de que despierte le quita un rasgo: el primero Arranque, el segundo la onda y 50 PV de Reanimación eléctrica, el tercero Batería de dolor.",
       "Despierta sin memoria y sin saber dónde está. Su primer turno ataca a lo más cercano que se mueva."
     ],
     habilidades: [
@@ -1469,7 +1469,7 @@ window.STATS = [
       { nombre: "Reanimación eléctrica (Pasiva, 1/combate)", descripcion: "Cuando queda a 0 PV no cae. Libera una onda y las criaturas a 15 pies hacen una salvación de Fuerza CD 17 o tienen velocidad 0 hasta el final de su siguiente turno. Al final de esa ronda se levanta con 100 PV y suelta una descarga de 20 pies: Constitución CD 17 o 4d8 eléctrico y quedan Aturdidas hasta el final de su siguiente turno (si superan, la mitad y sin aturdir). No funciona si la Bobina madre está destruida." },
       { nombre: "Sobrecarga (Pasiva)", descripcion: "Mientras le queden la mitad de sus PV o menos, la Uña eléctrica hace 1d8 eléctrico adicional y la Descarga de dolor solo pide 3 cargas." }
     ],
-    estrategia: "Despierta confundido y dispara a lo que se mueve, sin distinguir a nadie. Después se coloca en un punto con vista a todo el cuarto y se queda quieto para que Dedos en ráfaga llegue a 4 uñas. Usa la Descarga de dolor en cuanto tiene cargas, sobre todo si tres o más jugadores están a la vista. Abre el Aura de sufrimiento cuando el grupo se le acerca a pegarle, porque se hace daño a sí mismo y eso alimenta su Batería. Contra él funciona el daño repartido en el tiempo antes que un solo golpe grande: las cargas se acumulan con lo que pierde. Cortar los Cables de la mesa antes de que despierte y destruir la Bobina madre le quitan sus mejores trucos. Con 4 jugadores de nivel 6 más Darian y Torvrena empieza con estos PV. Si el grupo es menor, quítale 40 PV por cada miembro que falte."
+    estrategia: "Despierta confundido y dispara a lo que se mueve, sin distinguir a nadie. Después se coloca en un punto con vista a todo el cuarto y se queda quieto para que Dedos en ráfaga llegue a 4 uñas. Usa la Descarga de dolor en cuanto tiene cargas, sobre todo si tres o más jugadores están a la vista. Abre el Aura de sufrimiento cuando el grupo se le acerca a pegarle, porque se hace daño a sí mismo y eso alimenta su Batería. Contra él funciona el daño repartido en el tiempo antes que un solo golpe grande: las cargas se acumulan con lo que pierde. Cortar los Cables del tanque antes de que despierte y destruir la Bobina madre le quitan sus mejores trucos. Con 4 jugadores de nivel 6 más Darian y Torvrena empieza con estos PV. Si el grupo es menor, quítale 40 PV por cada miembro que falte."
   },
   {
     id: "doctor-ayudante",
@@ -1484,11 +1484,11 @@ window.STATS = [
     stats: { fue: 8, des: 14, con: 12, int: 16, sab: 12, car: 10 },
     notas: [
       "Salvaciones: INT +5, SAB +3. Habilidades: Medicina +5, Arcanos +5. Percepción pasiva 11. Competencia +3.",
-      "En la escena de Viktor hay dos. No se mueven de la mesa mientras Viktor esté sin despertar.",
+      "En la escena de Viktor hay dos. No se mueven de la consola del tanque mientras Viktor esté sin despertar.",
       "Tiene una acción y una acción adicional por turno."
     ],
     habilidades: [
-      { nombre: "Conectar (Acción)", descripcion: "Si está a 5 pies de la mesa o de la Bobina madre, suma 1 al Ensamblaje. Si no lo hace en su turno, el Ensamblaje no sube por él." },
+      { nombre: "Conectar (Acción)", descripcion: "Si está a 5 pies de la consola del tanque o de la Bobina madre, suma 1 al Ensamblaje. Si no lo hace en su turno, el Ensamblaje no sube por él." },
       { nombre: "Estabilizar (Acción adicional)", descripcion: "Mientras Viktor esté sin despertar, le devuelve 15 PV si estaban por debajo de su máximo. Cuando ya despertó, lo toca a 5 pies y le da 5 PV temporales." },
       { nombre: "Escalpelo (Acción)", descripcion: "+5 al impacto, alcance 5 pies, un objetivo. Daño: 1d6+3 cortante." },
       { nombre: "¡Está vivo! ¡Fuera! (Reacción)", descripcion: "Cuando Viktor despierta o cuando queda a 15 PV o menos, se mueve hasta su velocidad hacia la salida sin provocar ataques de oportunidad y deja de ser un objetivo para el resto del combate." }
