@@ -85,7 +85,7 @@
     if (msg.tipo === "pedir") enviar();
     if (msg.tipo === "clic" && msg.escena === C.p.vivo.escena) {
       const e = CZ.escena(C.p, msg.escena), el = e && e.elementos.find(x => x.id === msg.el);
-      if (el) clicAlAire(el, msg.sub, { altKey: !!msg.alt });
+      if (el) clicAlAire(el, msg.sub, { altKey: !!msg.alt, shiftKey: !!msg.shift, derecho: !!msg.derecho });
     }
     if (msg.tipo === "tecla") {
       if (msg.tecla === " " || msg.tecla === "ArrowRight") pasoSiguiente();
@@ -502,6 +502,11 @@
 
   function clicAlAire(el, sub, ev) {
     const J = C.p.juego;
+    // Marcadores y podio: clic suma 1, clic derecho resta 1; con Mayús, de 5 en 5
+    const delta = (ev.derecho ? -1 : 1) * (ev.shiftKey ? 5 : 1);
+    if (el.tipo === "marcador") { sumar(CZ.jugador(C.p, el.props.jugadorId), delta); return; }
+    if (el.tipo === "podio") { if (sub) sumar(CZ.jugador(C.p, sub), delta); return; }
+    if (ev.derecho) return;
     if (el.tipo === "rejilla" && sub != null) {
       const i = Number(sub);
       cambio(() => { const l = J.volteadas[el.id] = (J.volteadas[el.id] || []).slice(); const k = l.indexOf(i); if (k >= 0) l.splice(k, 1); else l.push(i); }, { partes: "aire", evento: "volteo" });
@@ -526,6 +531,7 @@
       return;
     }
     if (el.enlace) alAire(el.enlace);
+    else if (el.tipo === "boton") aviso("Este botón no lleva a ninguna escena. Elígela en Propiedades, en «Al pulsarlo al aire, ir a».", true);
   }
 
   /* ---------------------------------------------------------------- escenas */

@@ -58,14 +58,18 @@
       this.ro = new ResizeObserver(() => this.ajustar());
       this.ro.observe(contenedor);
       if (this.op.alClic) {
-        this.lienzo.addEventListener("click", ev => {
+        // Clic normal y clic derecho (el derecho resta en marcadores y podio)
+        const atender = (ev, derecho) => {
           const nodo = ev.target.closest(".cz-el");
           if (!nodo || !this.ultimo) return;
           const el = this.ultimo.escena.elementos.find(x => x.id === nodo.dataset.id);
           if (!el || nodo.classList.contains("cz-invisible")) return;
+          if (derecho) ev.preventDefault();
           const sub = ev.target.closest("[data-celda]");
-          this.op.alClic(el, sub ? sub.dataset.celda : null, ev);
-        });
+          this.op.alClic(el, sub ? sub.dataset.celda : null, { altKey: ev.altKey, shiftKey: ev.shiftKey, derecho });
+        };
+        this.lienzo.addEventListener("click", ev => atender(ev, false));
+        this.lienzo.addEventListener("contextmenu", ev => atender(ev, true));
       }
     }
 

@@ -10,7 +10,7 @@
   // Los clics en botones, celdas, cartas y temporizadores se mandan a la cabina, que es la que decide
   const escenario = new CZ.Escenario(raiz, {
     modo: "programa",
-    alClic: (el, sub, ev) => CZ.canal.enviar({ tipo: "clic", escena: escenario.escenaId, el: el.id, sub, alt: ev.altKey })
+    alClic: (el, sub, ev) => CZ.canal.enviar({ tipo: "clic", escena: escenario.escenaId, el: el.id, sub, alt: ev.altKey, shift: ev.shiftKey, derecho: ev.derecho })
   });
   let anterior = null;     // { escena, paso, puntos: Map }
 

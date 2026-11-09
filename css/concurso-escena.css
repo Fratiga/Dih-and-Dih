@@ -109,7 +109,7 @@
 .cz-modo-editor .cz-invisible { opacity: .32 !important; pointer-events: auto; outline: 4px dashed rgba(255, 255, 255, .7); outline-offset: 4px; }
 .cz-modo-mini * { pointer-events: none !important; }
 .cz-modo-monitor, .cz-modo-programa { user-select: none; -webkit-user-select: none; }
-:is(.cz-modo-monitor, .cz-modo-programa) :is(.cz-enlace, .cz-el[data-tipo="rejilla"], .cz-el[data-tipo="carta"], .cz-el[data-tipo="temporizador"], .cz-matriz-celda) { cursor: pointer; }
+:is(.cz-modo-monitor, .cz-modo-programa) :is(.cz-enlace, .cz-el[data-tipo="rejilla"], .cz-el[data-tipo="carta"], .cz-el[data-tipo="temporizador"], .cz-el[data-tipo="marcador"], .cz-matriz-celda, .cz-podio-carta) { cursor: pointer; }
 :is(.cz-modo-monitor, .cz-modo-programa) .cz-enlace:hover > * { filter: brightness(1.08); }
 
 /* Transiciones entre escenas */

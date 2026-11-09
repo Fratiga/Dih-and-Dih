@@ -409,6 +409,7 @@
   function cartaPodio(j, i) {
     const c = div("cz-podio-carta" + (i === 0 && j.puntos > 0 ? " cz-primero" : ""));
     c.dataset.j = j.id;
+    c.dataset.celda = j.id;
     c.dataset.firma = firmaJugador(j);
     c.style.setProperty("--cz-jc", j.color);
     c.appendChild(avatar(j, "cz-podio-a"));
