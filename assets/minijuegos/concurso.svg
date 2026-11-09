@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 150" role="img" aria-hidden="true">
+<rect width="320" height="150" fill="#ddb07a"/>
+<g stroke="#a8784a" stroke-opacity=".35" stroke-width="2"><path d="M64 0V150M128 0V150M192 0V150M256 0V150"/></g>
+<g stroke="#3a2a1c" stroke-width="3">
+<rect x="18" y="22" width="58" height="22" rx="6" fill="#e8453c"/><rect x="18" y="50" width="58" height="22" rx="6" fill="#f5b82e"/><rect x="18" y="78" width="58" height="22" rx="6" fill="#6cc04a"/><rect x="18" y="106" width="58" height="22" rx="6" fill="#3d8de0"/>
+<g fill="#f39a94"><rect x="82" y="22" width="30" height="22" rx="6"/><rect x="118" y="22" width="30" height="22" rx="6"/></g>
+<g fill="#fad98b"><rect x="82" y="50" width="30" height="22" rx="6"/><rect x="118" y="50" width="30" height="22" rx="6"/></g>
+<g fill="#b4e09f"><rect x="82" y="78" width="30" height="22" rx="6"/><rect x="118" y="78" width="30" height="22" rx="6"/></g>
+<g fill="#9cc6f0"><rect x="82" y="106" width="30" height="22" rx="6"/><rect x="118" y="106" width="30" height="22" rx="6"/></g>
+</g>
+<g font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="13" fill="#fff" stroke="#3a2a1c" stroke-width="2.5" paint-order="stroke" text-anchor="middle">
+<text x="97" y="38">1</text><text x="133" y="38">2</text><text x="97" y="66">1</text><text x="133" y="66">2</text><text x="97" y="94">1</text><text x="133" y="94">2</text><text x="97" y="122">1</text><text x="133" y="122">2</text>
+</g>
+<rect x="170" y="18" width="132" height="92" rx="10" fill="#fff8ec" stroke="#3a2a1c" stroke-width="4"/>
+<text x="236" y="84" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="58" fill="#3a2a1c" text-anchor="middle">?</text>
+<circle cx="262" cy="46" r="20" fill="none" stroke="#e03131" stroke-width="5"/>
+<g stroke="#3a2a1c" stroke-width="3"><rect x="172" y="118" width="58" height="22" rx="7" fill="#e8453c"/><rect x="244" y="118" width="58" height="22" rx="7" fill="#3d8de0"/></g>
+<g font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#fff8ec" stroke="#3a2a1c" stroke-width="2.5" paint-order="stroke" text-anchor="middle"><text x="201" y="135">7</text><text x="273" y="135">4</text></g>
+</svg>
