@@ -45,6 +45,8 @@ export interface Vista {
   animo: string;
   /** Las secuelas fisicas de la criatura (marcas que se ven en su cuerpo y una cojera al andar). */
   marcas: { tipo: string; zona: string; gravedad: number }[];
+  /** Si es una raza simple, para darle una marca de color (hostil rojizo, amistosa verdosa) sin tocar su genoma. */
+  rutina: string | null;
 }
 
 export const lienzoCriatura = { w: 700, h: 600, ox: 320, oy: 530, res: 1.1 };
@@ -66,6 +68,7 @@ export function nuevaVista(semilla: number): Vista {
     animo: "#46d9e8",
     crece: 1,
     marcas: [],
+    rutina: null,
   };
 }
 
@@ -75,6 +78,7 @@ const acota = (x: number, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
 export function actualizarVista(v: Vista, c: Criatura, dt: number, mira: [number, number] | null): void {
   v.t += dt;
   v.marcas = c.secuelas;
+  v.rutina = c.rutina;
   const e = c.emo;
   const miedo = e[E.miedo], exc = e[E.excitacion], frus = e[E.frustracion], cur = e[E.curiosidad], ape = e[E.apego];
   const a = c.accion;
@@ -196,12 +200,14 @@ interface Colores {
   collar: string;
 }
 
-function colores(g: Genoma, huella: number): Colores {
-  const h = g.cuerpo.tono;
+function colores(g: Genoma, huella: number, rutina: string | null = null): Colores {
+  // Las razas simples llevan una marca de color propia (solo en el dibujo): la hostil, rojiza y mas viva; la amistosa, verdosa
+  const h = rutina === "hostil" ? 8 : rutina === "amistosa" ? 125 : g.cuerpo.tono;
+  const sat = rutina === "hostil" ? 38 : 24;
   return {
-    piel: `hsl(${h}, 24%, 74%)`,
-    pielClara: `hsl(${h}, 20%, 86%)`,
-    pielOsc: `hsl(${h}, 26%, 58%)`,
+    piel: `hsl(${h}, ${sat}%, 74%)`,
+    pielClara: `hsl(${h}, ${Math.max(20, sat - 4)}%, 86%)`,
+    pielOsc: `hsl(${h}, ${sat + 2}%, 58%)`,
     lejos: `hsl(${h}, 24%, 44%)`,
     linea: `hsl(${h}, 40%, 12%)`,
     luz: `hsl(${(h + 150) % 360}, 90%, 72%)`,
@@ -232,7 +238,7 @@ function miembro(c: CanvasRenderingContext2D, pts: [number, number][], anchos: n
 }
 
 /** Una zarpa blanda: tres deditos cortos y redondeados con una almohadilla, en vez de dedos largos. */
-function mano(c: CanvasRenderingContext2D, x: number, y: number, dir: number, largo: number, col: Colores, rizo: number): void {
+function mano(c: CanvasRenderingContext2D, x: number, y: number, dir: number, largo: number, col: Colores, rizo: number, garras = 0): void {
   c.lineCap = "round";
   for (let i = -1; i <= 1; i++) {
     const a = dir + i * 0.4 + rizo * 0.2;
@@ -240,6 +246,13 @@ function mano(c: CanvasRenderingContext2D, x: number, y: number, dir: number, la
     const ey = y + Math.sin(a) * largo * (i === 0 ? 1 : 0.85) + 2;
     c.strokeStyle = col.linea; c.lineWidth = 13; c.beginPath(); c.moveTo(x, y); c.lineTo(ex, ey); c.stroke();
     c.strokeStyle = col.pielOsc; c.lineWidth = 8.5; c.beginPath(); c.moveTo(x, y); c.lineTo(ex, ey); c.stroke();
+    // Garras: una uña curva y palida en la punta de cada dedo
+    if (garras > 0.05) {
+      const largoGarra = 6 + 14 * garras;
+      const gx = ex + Math.cos(a + 0.25) * largoGarra, gy = ey + Math.sin(a + 0.25) * largoGarra + 3;
+      c.strokeStyle = col.linea; c.lineWidth = 7; c.beginPath(); c.moveTo(ex, ey); c.quadraticCurveTo(ex + Math.cos(a) * largoGarra * 0.7, ey + Math.sin(a) * largoGarra * 0.5, gx, gy); c.stroke();
+      c.strokeStyle = "#f3e9dc"; c.lineWidth = 3.5; c.beginPath(); c.moveTo(ex, ey); c.quadraticCurveTo(ex + Math.cos(a) * largoGarra * 0.7, ey + Math.sin(a) * largoGarra * 0.5, gx, gy); c.stroke();
+    }
   }
   c.fillStyle = col.pielOsc; c.beginPath(); c.arc(x, y, 8, 0, Math.PI * 2); c.fill();
 }
@@ -309,9 +322,11 @@ export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: numbe
   const p = v.pose;
   c.save();
   const cu = cuerpoDe(g);
+  const esp = g.especializacion;
+  const craneo = esp?.craneo ?? 0, mandibula = esp?.mandibula ?? 0;
   c.translate(hx, hy);
   c.rotate(inclina);
-  c.scale(cu.tamanoCabeza, cu.tamanoCabeza);
+  c.scale(cu.tamanoCabeza * (1 + 0.12 * craneo), cu.tamanoCabeza * (1 + 0.12 * craneo));
   // Orejas caidas: la de atras mas oscura (la cercana se dibuja despues, por delante del craneo)
   const aten = p.orejas * (0.6 + 0.4 * cu.caidaOrejas) - (1 - cu.caidaOrejas) * 0.3;
   const lo = 66 + g.cuerpo.orejas * 34;
@@ -322,6 +337,23 @@ export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: numbe
   c.fillStyle = gr;
   c.beginPath(); c.moveTo(-44, 0); c.bezierCurveTo(-46, -46, 8, -58, 38, -30); c.bezierCurveTo(70, -20, 78, 12, 52, 28); c.bezierCurveTo(30, 44, -40, 44, -44, 0); c.fill();
   c.strokeStyle = col.linea; c.lineWidth = 3; c.stroke();
+  // Cuernos (el gen ya se hereda y cambia como las demas ven a la criatura): dos, curvos hacia atras, mas grandes cuanto mas cornamenta
+  if (cu.cuernos > 0.05) {
+    const h = 0.45 + 0.9 * cu.cuernos;
+    const cuerno = (bx: number, by: number, dx: number, atras: number): void => {
+      c.beginPath();
+      c.moveTo(bx - 7, by + 6);
+      c.bezierCurveTo(bx - 10 - atras * 10, by - 26 * h, bx - 14 - atras * 20, by - 54 * h, bx - 6 - atras * 26 + dx, by - 74 * h);
+      c.bezierCurveTo(bx + 4 - atras * 6, by - 46 * h, bx + 8, by - 22 * h, bx + 7, by + 6);
+      c.closePath();
+      c.fillStyle = col.pielClara; c.fill();
+      c.strokeStyle = col.linea; c.lineWidth = 3; c.stroke();
+      c.strokeStyle = col.pielOsc; c.lineWidth = 1.6;
+      for (let k = 1; k <= 3; k++) { c.beginPath(); c.moveTo(bx - 6 - atras * 3 * k, by - 14 * h * k); c.lineTo(bx + 5 - atras * 2 * k, by - 14 * h * k - 3); c.stroke(); }
+    };
+    cuerno(-30, -40, -4, 1);
+    cuerno(2, -50, 0, 1);
+  }
   // Nariz y boca
   c.fillStyle = col.linea; c.beginPath(); c.ellipse(66, 2, 5, 4, 0, 0, Math.PI * 2); c.fill();
   const abre = p.boca * 16;
@@ -344,6 +376,21 @@ export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: numbe
     c.strokeStyle = "#f0d9c8"; c.lineWidth = 2.5; c.beginPath(); c.moveTo(2, -36); c.lineTo(32, 12); c.stroke();
     c.restore();
   }
+  // Cresta del craneo robusto, sobre el ojo
+  if (craneo > 0.05) {
+    c.save(); c.lineCap = "round";
+    c.strokeStyle = col.linea; c.lineWidth = 9 + 12 * craneo; c.beginPath(); c.moveTo(-6, -32); c.quadraticCurveTo(14, -46 - 4 * craneo, 42, -30); c.stroke();
+    c.strokeStyle = col.pielOsc; c.lineWidth = 5 + 11 * craneo; c.beginPath(); c.moveTo(-6, -32); c.quadraticCurveTo(14, -46 - 4 * craneo, 42, -30); c.stroke();
+    c.restore();
+  }
+  // Colmillos de la mandibula potente
+  if (mandibula > 0.05) {
+    c.save();
+    const l = 7 + 9 * mandibula;
+    c.fillStyle = "#f6f1e7"; c.strokeStyle = col.linea; c.lineWidth = 1.6;
+    for (const [fx, fy] of [[40, 19], [51, 22], [61, 18]] as [number, number][]) { c.beginPath(); c.moveTo(fx - 3.5, fy); c.lineTo(fx + 3.5, fy); c.lineTo(fx, fy + l); c.closePath(); c.fill(); c.stroke(); }
+    c.restore();
+  }
   // Mejillas luminosas
   c.fillStyle = col.luz2; c.globalAlpha = 0.18 + 0.2 * p.sonrisa; c.beginPath(); c.ellipse(34, 18, 12, 6, 0, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
   oreja(c, -22, -32, aten + 0.1, lo, col, v.t, 0, false);
@@ -359,7 +406,7 @@ export function dibujarCabeza(c: CanvasRenderingContext2D, hx: number, hy: numbe
 
 /** El cuerpo entero, con los pies en (0, 0). */
 export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, huella: number): void {
-  const col = colores(g, huella);
+  const col = colores(g, huella, v.rutina);
   const p = v.pose;
   const t = v.t;
   const durmiendo = p.dormido;
@@ -377,7 +424,11 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
   const caderaY = cyC + 28 - p.agacha * 10;
   const hombroY = cyC + 22 - p.agacha * 8;
   const cu = cuerpoDe(g);
-  const largoA = 86 * cu.longitudPata, largoB = 90 * cu.longitudPata;
+  const esp = g.especializacion;
+  const agil = esp?.agilidad ?? 0, craneoE = esp?.craneo ?? 0, garrasE = esp?.garras ?? 0;
+  // Un cuerpo para correr tiene las patas mas largas y finas; uno para embestir, mas robustas
+  const largoA = 86 * cu.longitudPata * (1 + 0.12 * agil), largoB = 90 * cu.longitudPata * (1 + 0.12 * agil);
+  const grosorE = 1 + 0.12 * craneoE - 0.1 * agil;
   const paso = pasoDe(v.vel);
   const corre = v.vel > 4;
   const lift = corre ? 18 + Math.min(26, v.vel * 0.1) : 0;
@@ -412,7 +463,7 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
 
   const dibujarPata = (q: (typeof patas)[number]): void => {
     const rel = q.cerca ? col.pielOsc : col.lejos;
-    miembro(c, q.pts, q.delantera ? [28 * cu.grosorPata, 19 * cu.grosorPata] : [34 * cu.grosorPata, 20 * cu.grosorPata], rel, col.linea);
+    miembro(c, q.pts, q.delantera ? [28 * cu.grosorPata * grosorE, 19 * cu.grosorPata * grosorE] : [34 * cu.grosorPata * grosorE, 20 * cu.grosorPata * grosorE], rel, col.linea);
     // Cicatriz y vendaje en la pata herida
     if (coja && q.cerca && q.delantera === (coja.zona === "pata delantera")) {
       const [kx, ky] = q.pts[1];
@@ -422,8 +473,8 @@ export function dibujarCuerpo(c: CanvasRenderingContext2D, v: Vista, g: Genoma, 
       c.restore();
     }
     const [fx, fy] = q.pts[2];
-    if (q.delantera) mano(c, fx, fy, q.cerca && p.alcance > 0.2 ? 0.1 : 1.2, 17, col, Math.sin(t * 2 + (q.cerca ? 1 : 0)) * 0.3);
-    else mano(c, fx, fy, 0.2, 15, col, 0);
+    if (q.delantera) mano(c, fx, fy, q.cerca && p.alcance > 0.2 ? 0.1 : 1.2, 17, col, Math.sin(t * 2 + (q.cerca ? 1 : 0)) * 0.3, garrasE);
+    else mano(c, fx, fy, 0.2, 15, col, 0, garrasE * 0.6);
   };
 
   // Cola: una cadena de segmentos que se mueve con las emociones
@@ -573,7 +624,7 @@ export function pintarRetrato(cv: HTMLCanvasElement, v: Vista, g: Genoma, huella
   const s = cv.width / 230;
   c.scale(s, s);
   c.translate(92, 130);
-  const col = colores(g, huella);
+  const col = colores(g, huella, v.rutina);
   // El cuello y el collar asoman por debajo
   c.strokeStyle = col.linea; c.lineWidth = 46; c.beginPath(); c.moveTo(-30, 120); c.lineTo(-6, 36); c.stroke();
   c.strokeStyle = col.piel; c.lineWidth = 38; c.beginPath(); c.moveTo(-30, 120); c.lineTo(-6, 36); c.stroke();

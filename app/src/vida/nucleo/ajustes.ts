@@ -116,6 +116,9 @@ export const AJ = {
       hace falta antes, y cuanto mas rapido baja con buena compania (se multiplica por 1 mas el doble del afecto por quien tiene cerca). */
   tasaExtincion: 0.0015,
   pausaExtincion: 20,
+  /** Rutas de agresion (opcional): cuanto empuja a ahuyentar a un desconocido en su territorio una criatura territorial, y el radio de su territorio alrededor de su sitio habitual. */
+  pesoTerritorial: 1.2,
+  radioTerritorio: 260,
   umbralSecuela: 2.0,
   maxSecuelas: 4,
   limiteCojera: 0.35,

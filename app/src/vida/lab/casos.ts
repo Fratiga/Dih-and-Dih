@@ -4,7 +4,7 @@
 
 import { AJ } from "../nucleo/ajustes.ts";
 import { C, DIA, E, R, type Verbo } from "../nucleo/tipos.ts";
-import { clonarGenoma, cruzar, sexoDe, type Genoma } from "../nucleo/genoma.ts";
+import { clonarGenoma, cruzar, especializar, sexoDe, type Genoma, type TipoEspecializacion } from "../nucleo/genoma.ts";
 import { CATALOGO } from "../nucleo/catalogo.ts";
 import { Azar, mezclar } from "../nucleo/azar.ts";
 import { semejanza } from "../nucleo/memoria.ts";
@@ -3324,5 +3324,92 @@ export const caso36: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso37: Caso = {
+  id: "37",
+  titulo: "Especialización de combate: rutas y cuerpo",
+  hipotesis: "La agresión no es una sola estadística. Seis estilos (embestidor, mordedor, desgarrador, corredor, guardián de recursos, territorial) y una criatura sin especializar se enfrentan a las mismas cuatro situaciones: disputar comida con un rival, cazar a una presa, un intruso cuando no hay hambre, y estar sin comer. Se espera que cada estilo gane en lo suyo y no en lo demás, que ese cuerpo cueste (más hambre), y que solo la ruta territorial ataque a un intruso sin hambre. Es una prueba abierta: se mide, no se garantiza cada resultado.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 4;
+    type Tipo = "sin especializar" | TipoEspecializacion;
+    const TIPOS: Tipo[] = ["sin especializar", "embestidor", "mordedor", "desgarrador", "corredor", "guardian de recursos", "territorial"];
+    const gBase = clonarGenoma(genomaDe(semilla, 371));
+    gBase.rasgos[R.agresividad] = 0.5;
+    const gRival = clonarGenoma(genomaDe(semilla, 372));
+    gRival.rasgos[R.agresividad] = 0.5;
+    const gPresa = genomaDe(semilla, 373);
+    const gIntruso = genomaDe(semilla, 374);
+    const genomaDe_ = (t: Tipo): Genoma => (t === "sin especializar" ? clonarGenoma(gBase) : especializar(gBase, t));
+    const bocados = (c: Criatura, t0: number, t1: number): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "fruta" && (r.res?.[0] ?? 0) > 0.05 && r.t >= t0 && r.t < t1).length;
+    const golpes = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+    const probar = (tipo: Tipo, k: number) => {
+      // 1. Disputa de comida con un rival sin especializar: hambrientos los dos, una fruta cada 25 s
+      const s1 = nuevaSim({ semilla: mezclar(semilla, 375, k), objetos: [], criaturas: [{ genoma: genomaDe_(tipo), x: 400 }, { genoma: clonarGenoma(gRival), x: 700 }], comedero: { cada: 25, max: 1, tipo: "fruta" }, mortalidad: "protegida" });
+      const [S1, R1] = s1.criaturas;
+      for (const c of s1.criaturas) { c.agresion = true; c.conflictoComida = true; c.reconocePorRasgos = true; c.capRegistro = 100000; c.nec[0] = 0.8; }
+      s1.avanzar(400);
+      const bS = bocados(S1, 0, 400), bR = bocados(R1, 0, 400);
+      const reparto = bS + bR > 0 ? bS / (bS + bR) : 0.5;
+      const empujesDisputa = golpes(S1);
+      // 2. Caza: carroñeo previo (sabe que la carne alimenta) y una presa sana libre a la vista
+      const s2 = nuevaSim({ semilla: mezclar(semilla, 376, k), objetos: [], criaturas: [{ genoma: genomaDe_(tipo), x: 500 }], comedero: null, mortalidad: "protegida" });
+      const S2 = s2.criaturas[0];
+      S2.agresion = true; S2.conflictoComida = true; S2.reconocePorRasgos = true; S2.capRegistro = 100000; S2.edad = DIA;
+      for (let i = 0; i < 3; i++) { for (const o of [...s2.mundo.objetos]) s2.mundo.quitar(o.id); s2.mundo.agregar("cadaver", 1000, { porciones: 6 }); S2.x = 500; S2.accion = null; S2.nec[0] = 0.7; s2.avanzar(90); }
+      for (const o of [...s2.mundo.objetos]) s2.mundo.quitar(o.id);
+      const P = new Criatura(10, "Presa", clonarGenoma(gPresa), 1000, mezclar(semilla, 377, k));
+      P.agresion = true; P.reconocePorRasgos = true; P.capRegistro = 50000; P.rasgos[R.agresividad] = 0.1; P.base[R.agresividad] = 0.1; P.salud = 0.6;
+      s2.criaturas = [S2, P];
+      S2.x = 400; S2.accion = null; S2.nec[0] = 0.7; S2.emo.fill(0);
+      P.x = 650; P.accion = null;
+      let saludMin = P.salud;
+      const g0 = golpes(S2);
+      s2.ganchos.push(() => { saludMin = Math.min(saludMin, P.salud); });
+      s2.avanzar(180);
+      const golpesCaza = golpes(S2) - g0;
+      const dano = 0.6 - saludMin;
+      // 3. Intruso con la criatura saciada, en su sitio habitual: ¿lo ahuyenta sin hambre?
+      const s3 = nuevaSim({ semilla: mezclar(semilla, 378, k), objetos: [], criaturas: [{ genoma: genomaDe_(tipo), x: 600 }], comedero: null, mortalidad: "protegida" });
+      const S3 = s3.criaturas[0];
+      S3.agresion = true; S3.reconocePorRasgos = true; S3.capRegistro = 100000;
+      s3.ganchos.push(() => { S3.nec[0] = 0.05; });
+      s3.avanzar(600);
+      const N = new Criatura(11, "Intruso", clonarGenoma(gIntruso), 1000, mezclar(semilla, 379, k));
+      N.agresion = true; N.capRegistro = 50000; N.x = 800; N.nec[0] = 0.05;
+      s3.ganchos.push(() => { N.nec[0] = 0.05; });
+      s3.criaturas.push(N);
+      const r0 = S3.registro.length;
+      s3.avanzar(200);
+      const ataquesAlIntruso = S3.registro.slice(r0).filter((r) => r.kind === "inicio" && r.v === "empujar" && r.obj === 1000 + N.id).length;
+      // 4. El coste de ese cuerpo: cuanta hambre acumula en 300 s sin comer
+      const s4 = nuevaSim({ semilla: mezclar(semilla, 380, k), objetos: [], criaturas: [{ genoma: genomaDe_(tipo), x: 600 }], comedero: null, mortalidad: "protegida" });
+      s4.criaturas[0].nec[0] = 0.1;
+      s4.avanzar(300);
+      const hambre = s4.criaturas[0].nec[0];
+      return { reparto, empujesDisputa, golpesCaza, dano, ataquesAlIntruso, hambre, danoPorGolpe: golpesCaza > 0 ? dano / golpesCaza : 0 };
+    };
+    const r = Object.fromEntries(TIPOS.map((t) => [t, Array.from({ length: REP }, (_, k) => probar(t, k))])) as Record<Tipo, ReturnType<typeof probar>[]>;
+    const med = (t: Tipo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[t].map(f));
+    const B: Tipo = "sin especializar";
+    const especializados = TIPOS.filter((t) => t !== B);
+    const metricas: Record<string, number> = {};
+    for (const t of TIPOS) {
+      const e = t.replace(/ /g, "_");
+      metricas[`reparto_${e}`] = med(t, (x) => x.reparto); metricas[`golpesCaza_${e}`] = med(t, (x) => x.golpesCaza); metricas[`dano_${e}`] = med(t, (x) => x.dano);
+      metricas[`ataquesIntruso_${e}`] = med(t, (x) => x.ataquesAlIntruso); metricas[`hambre300s_${e}`] = med(t, (x) => x.hambre); metricas[`empujesDisputa_${e}`] = med(t, (x) => x.empujesDisputa);
+    }
+    return resultado(semilla, {
+      "el cuerpo cuesta: sin comer 300 s, todos los especializados acaban con más hambre que la que no lo está": especializados.every((t) => med(t, (x) => x.hambre) > med(B, (x) => x.hambre)),
+      "defender recursos: el guardián de recursos y el embestidor se llevan una parte de la comida mayor que la que no está especializada": med("guardian de recursos", (x) => x.reparto) > med(B, (x) => x.reparto) && med("embestidor", (x) => x.reparto) > med(B, (x) => x.reparto),
+      "cazar: el mordedor y el desgarrador hacen más daño a la presa que la que no está especializada": med("mordedor", (x) => x.dano) > med(B, (x) => x.dano) && med("desgarrador", (x) => x.dano) > med(B, (x) => x.dano),
+      "el corredor alcanza a la presa (golpea tanto como la no especializada) pero cada golpe daña menos": med("corredor", (x) => x.golpesCaza) >= med(B, (x) => x.golpesCaza) && med("corredor", (x) => x.danoPorGolpe) < med(B, (x) => x.danoPorGolpe),
+      "la ruta territorial ahuyenta más al intruso sin hambre: ataca al menos el doble de veces que la que no está especializada (que también lo empuja alguna vez por curiosidad, como se vio en el caso 34)": med("territorial", (x) => x.ataquesAlIntruso) >= 2 * Math.max(1, med(B, (x) => x.ataquesAlIntruso)),
+      "las rutas no son una sola estadística: el guardián de recursos disputa más la comida que el mordedor, y el mordedor hace más daño a la presa que el guardián": med("guardian de recursos", (x) => x.empujesDisputa) > med("mordedor", (x) => x.empujesDisputa) && med("mordedor", (x) => x.dano) > med("guardian de recursos", (x) => x.dano),
+    }, metricas, null, 400 + 270 + 800 + 300);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

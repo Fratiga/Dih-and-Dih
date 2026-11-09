@@ -221,7 +221,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
       if (p.ocupada && v === "probar") u -= AJ.penaOcupada;
       // Disputa: la que tiene hambre y ve a otra comiendo empuja mas, segun su caracter. Y quien acaba de ser golpeada responde (o huye por el miedo).
       if (c.agresion && p.esCriatura && v === "empujar") {
-        if (ps.some((q) => !q.esCriatura && q.ocupante === p.id - 1000 && q.dist < 400)) u += AJ.pesoDisputa * hambre * Math.max(0, ras[R.agresividad] - 0.3);
+        if (ps.some((q) => !q.esCriatura && q.ocupante === p.id - 1000 && q.dist < 400)) u += AJ.pesoDisputa * hambre * Math.max(0, c.rutaRecursos() - 0.3);
         if (c.represalia && p.id === 1000 + c.represalia.contra && env.t - c.represalia.t < 10) u += AJ.pesoRepresalia * ras[R.agresividad] * emo[E.frustracion];
       }
       // Cansada de pelear, empujar a otra apetece menos (la fatiga se va con el tiempo, no es olvido). Con interes depredador activo frena mucho menos:
@@ -239,7 +239,7 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
         if (sabeCarne > 0.05) {
           const debil = acota(p.f[IDX.sonido] + (p.f[IDX.movimiento] < 0.05 ? 0.4 : 0) + (c.genoma.cuerpo.tamano * 0.5 - p.f[IDX.tamano]) / 0.2);
           const paga = A.res[C.sacia] * A.conf;
-          const interes = AJ.pesoPresa * hambre * sabeCarne * debil * (0.1 + 0.9 * Math.min(1, paga * 3));
+          const interes = AJ.pesoPresa * hambre * sabeCarne * debil * (0.1 + 0.9 * Math.min(1, paga * 3)) * c.factorDepredador();
           u += interes;
           if (interes > 0.05) frenoFatiga = 0.2;
         }
@@ -253,6 +253,10 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
         }
       }
       if (c.agresion && p.esCriatura && v === "empujar") u -= AJ.pesoFatiga * c.fatiga * frenoFatiga;
+      // Ruta territorial: ahuyenta a quien no conoce dentro de su territorio, tenga hambre o no (solo con especializacion)
+      if (c.agresion && p.esCriatura && !p.recordado && v === "empujar" && c.rutaTerritorial() > 0 && c.hogar !== null && Math.abs(p.x - c.hogar) < AJ.radioTerritorio && Math.abs(c.x - c.hogar) < AJ.radioTerritorio) {
+        u += AJ.pesoTerritorial * c.rutaTerritorial() * Math.max(0, 1 - 2 * afectoDe(c, p)) * (1 - emo[E.miedo]);
+      }
       // Celos: busca a su vinculo, juega (con lo que no es comida) y explora menos mientras dura, y solo si ademas es agresiva y esta enfadada puede empujar a la tercera
       if (c.celos && c.celosEstado.length) {
         // El hambre manda: cuanto mas hambre, menos pesa el deseo de estar con su vinculo (los celos no pueden dominar a una necesidad basica)

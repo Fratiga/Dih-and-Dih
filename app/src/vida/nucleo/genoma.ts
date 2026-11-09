@@ -2,7 +2,7 @@
    y las mismas predisposiciones. Lo que despues las separa es lo que vivan. (La reproduccion y la mutacion llegan en una fase posterior.) */
 
 import { Azar, mezclar } from "./azar.ts";
-import { RASGOS } from "./tipos.ts";
+import { R, RASGOS } from "./tipos.ts";
 
 export interface Cuerpo {
   /** Tono de la piel, 0 a 360. */
@@ -35,6 +35,39 @@ export function cuerpoDe(g: Genoma): CuerpoCompleto {
 /** El sexo sale del genoma sin gastar azar nuevo (asi no cambia nada de lo ya medido): sobre la mitad de las criaturas son de cada uno. */
 export const sexoDe = (g: Genoma): 0 | 1 => (mezclar(g.semillaCerebro, 7) & 1) as 0 | 1;
 
+/** Especializacion de combate (opcional: un genoma sin ella es el de siempre y todo lo que depende de ella vale exactamente lo de antes).
+    La agresion no es una sola estadistica. Hay tres rutas heredables, cada una con su impulso (de 0 a 1), y cuatro rasgos del cuerpo para pelear, cada uno con un coste.
+    Rutas: `recursos` (defender comida o sitio: empujar, embestir), `depredador` (ver a otras como comida) y `territorial` (ahuyentar intrusos, tambien sin hambre).
+    Cuerpo: `craneo` (embestir: mas golpe, mas peso), `mandibula` (cazar a mordidas), `garras` (sujetar y desgarrar) y `agilidad` (perseguir: mas velocidad, menos golpe). */
+export interface Especializacion {
+  recursos: number;
+  depredador: number;
+  territorial: number;
+  craneo: number;
+  mandibula: number;
+  garras: number;
+  agilidad: number;
+}
+
+export type TipoEspecializacion = "embestidor" | "mordedor" | "desgarrador" | "corredor" | "guardian de recursos" | "territorial";
+
+/** Una especializacion de ejemplo para cada estilo (los valores no usados quedan en su neutro). */
+export const ESPECIALIZACIONES: Record<TipoEspecializacion, Especializacion> = {
+  "embestidor": { recursos: 0.8, depredador: 0.4, territorial: 0, craneo: 0.9, mandibula: 0, garras: 0, agilidad: 0 },
+  "mordedor": { recursos: 0.3, depredador: 0.9, territorial: 0, craneo: 0, mandibula: 0.9, garras: 0, agilidad: 0 },
+  "desgarrador": { recursos: 0.3, depredador: 0.8, territorial: 0, craneo: 0, mandibula: 0, garras: 0.9, agilidad: 0 },
+  "corredor": { recursos: 0.3, depredador: 0.7, territorial: 0, craneo: 0, mandibula: 0, garras: 0, agilidad: 0.9 },
+  "guardian de recursos": { recursos: 0.9, depredador: 0.2, territorial: 0, craneo: 0.4, mandibula: 0, garras: 0, agilidad: 0 },
+  "territorial": { recursos: 0.4, depredador: 0.2, territorial: 0.9, craneo: 0.3, mandibula: 0, garras: 0, agilidad: 0 },
+};
+
+/** Una copia del genoma con esa especializacion (o con la que se de). */
+export function especializar(g: Genoma, e: TipoEspecializacion | Especializacion): Genoma {
+  const c = JSON.parse(JSON.stringify(g)) as Genoma;
+  c.especializacion = typeof e === "string" ? { ...ESPECIALIZACIONES[e] } : { ...e };
+  return c;
+}
+
 export interface Genoma {
   linaje: string;
   /** Predisposicion de cada rasgo de personalidad, de 0 a 1, en el orden de RASGOS. */
@@ -53,6 +86,8 @@ export interface Genoma {
   /** Atraccion innata por lo que huele bien. Es lo unico que la criatura sabe de comida al nacer. */
   priorOlor: number;
   cuerpo: Cuerpo;
+  /** Opcional (ver `Especializacion`). */
+  especializacion?: Especializacion;
 }
 
 export function genomaNuevo(semilla: number, linaje = "L"): Genoma {
@@ -90,6 +125,17 @@ function gen(r: Azar, a: number, b: number, lo: number, hi: number, mut = 0.04):
   return limita(v, lo, hi);
 }
 
+/** La especializacion del hijo. Un padre sin ella cuenta como una criatura de siempre: ruta de recursos igual a su agresividad, depredador medio, nada de territorial ni de cuerpo.
+    Con su propio azar, para no mover el de los demas genes. Si ninguno de los dos tiene, no sale (no hay mutacion desde cero). */
+function cruzarEspecializacion(a: Genoma, b: Genoma, semilla: number): Especializacion | undefined {
+  if (!a.especializacion && !b.especializacion) return undefined;
+  const base = (g: Genoma): Especializacion => g.especializacion ?? { recursos: g.rasgos[R.agresividad], depredador: 0.5, territorial: 0, craneo: 0, mandibula: 0, garras: 0, agilidad: 0 };
+  const ea = base(a), eb = base(b);
+  const r = new Azar(mezclar(semilla, 43));
+  const k = (x: keyof Especializacion): number => gen(r, ea[x], eb[x], 0, 1, 0.12);
+  return { recursos: k("recursos"), depredador: k("depredador"), territorial: k("territorial"), craneo: k("craneo"), mandibula: k("mandibula"), garras: k("garras"), agilidad: k("agilidad") };
+}
+
 /** El hijo de dos genomas: hereda predisposiciones (no recuerdos: eso lo vive cada uno), con mutaciones pequenas.
     Ningun gen sale de su rango, asi que las generaciones no se vuelven simplemente mas fuertes. */
 export function cruzar(a: Genoma, b: Genoma, semilla: number): Genoma {
@@ -124,5 +170,6 @@ export function cruzar(a: Genoma, b: Genoma, semilla: number): Genoma {
       // Con su propio azar, para no mover el de los demas genes. Si ninguno de los dos tiene, no sale (no hay mutacion desde cero)
       cuernos: ca.cuernos === 0 && cb.cuernos === 0 ? 0 : gen(new Azar(mezclar(semilla, 41)), ca.cuernos, cb.cuernos, 0, 1, 0.15),
     },
+    ...(a.especializacion || b.especializacion ? { especializacion: cruzarEspecializacion(a, b, semilla) } : {}),
   };
 }

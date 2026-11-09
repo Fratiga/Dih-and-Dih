@@ -378,7 +378,9 @@ export class Interfaz {
     this.selector.querySelectorAll<HTMLElement>("button").forEach((b) => b.classList.toggle("activa", Number(b.dataset.id) === c.id));
 
     this.nombre.textContent = c.nombre;
-    this.edad.textContent = `Día ${Math.floor(c.edad / DIA) + 1} de vida${c.rutina ? ` · raza simple ${c.rutina === "hostil" ? "hostil" : "amistosa"}` : ""}`;
+    const esp = c.genoma.especializacion;
+    const estilo = esp ? [esp.craneo > 0.5 ? "embestida" : "", esp.mandibula > 0.5 ? "mordida" : "", esp.garras > 0.5 ? "garras" : "", esp.agilidad > 0.5 ? "persecución" : "", esp.recursos > 0.7 ? "defiende recursos" : "", esp.depredador > 0.7 ? "caza" : "", esp.territorial > 0.5 ? "territorial" : ""].filter(Boolean).join(", ") : "";
+    this.edad.textContent = `Día ${Math.floor(c.edad / DIA) + 1} de vida${c.rutina ? ` · raza simple ${c.rutina === "hostil" ? "hostil" : "amistosa"}` : ""}${estilo ? ` · combate: ${estilo}` : ""}`;
     this.estado.textContent = this.fraseEstado(c);
     const sec = c.secuelas ?? [];
     this.cabSecuelas.hidden = this.secuelasEl.hidden = sec.length === 0;

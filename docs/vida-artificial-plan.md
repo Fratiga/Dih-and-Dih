@@ -1317,7 +1317,7 @@ La solución es una **red con entradas ampliables**: las entradas nuevas van al 
 2. **Probar lo que no necesita nada nuevo:** el extraño (15), la jerarquía con tres o cuatro (E24) y el acechador con presas que recuerdan (E21). Sirve para ver qué sale de verdad antes de construir.
 3. **K1, etapa 0** (el caso 07d del modelo de las otras): decide si el módulo hace falta.
 4. **W1 transporte y W3 barreras**, con un caso mínimo cada una (por ejemplo «lleva una fruta a su sitio» y «queda atrapada tras una puerta que se cierra»). Son mecánicas del mundo y se pueden hacer sin cognición nueva.
-5. **K7 especialización física**, que ya estaba prevista y desbloquea 4 casos.
+5. **K7 especialización física: empezada** (caso 37): cuerpo con coste, tres rutas de agresión y se ve en la criatura. Falta la defensa de la comida propia, calibrar la ruta territorial, heredar y seleccionar, y el acecho.
 6. **Optimizar la percepción social** (comparar solo vecinas) y subir el límite de criaturas por sala, necesario para ecología y jerarquía.
 7. **W2 altura, K3 comunicación, K2 planificación** (los tres necesitan lo anterior), y después K4 transmisión.
 8. **Biología larga** (W6, K5, K6, W7): al final, porque exigen escalas de tiempo y de espacio mayores.
@@ -1601,6 +1601,77 @@ El caso E21 con lo que hay: un cazador agresivo con carroñeo previo (3 rondas c
 ## Interfaz: añadir razas simples desde la sala
 
 En el pie de la sala hay dos botones, «+ Hostil» y «+ Amistosa», que añaden una raza simple en un sitio al azar de la sala (si caben, hasta cuatro criaturas vivas). La ficha dice «raza simple hostil» o «amistosa», y el selector la lista como a las demás. Comprobado en el navegador: de dos criaturas pasa a cuatro, el selector se actualiza y tras 60 s la hostil ya ha golpeado a una de las normales. Pendiente: dibujarlas distintas, y elegir dónde colocarlas arrastrándolas.
+
+## Rutas de agresión y especialización de combate (caso 37)
+
+La agresión no debe ser una sola estadística. Hasta ahora lo era: el rasgo `agresividad` movía casi todo (pelear por comida, cazar, reaccionar a un extraño). Se separa en **tres rutas heredables** y **cuatro rasgos del cuerpo**, todo **opcional**: un genoma sin `especializacion` es el de siempre y todo lo que depende de ella vale exactamente lo de antes (la ruta de recursos es su agresividad, el interés de cazar vale 1, no hay ruta territorial y los factores del cuerpo valen 1). La regresión rápida da lo mismo (154 comprobaciones con las nuevas, 0 fallos, mismos casos).
+
+### Qué se añadió
+
+- **Rutas** (impulsos de 0 a 1):
+  - `recursos`: empuja a quien come a por la comida (sustituye a la agresividad en la disputa por comida).
+  - `depredador`: escala el interés de cazar (de 0,25 a 1,75 veces, con 0,5 igual a lo de siempre).
+  - `territorial`: ahuyenta a quien no conoce dentro de su territorio (radio de 260 alrededor de su sitio habitual, una media lenta de dónde está), tenga hambre o no. Solo existe si tiene la especialización.
+- **Cuerpo** (con su coste):
+
+| Rasgo | Estilo | Qué da | Qué cuesta |
+|---|---|---|---|
+| `craneo` | embestir | hasta un 35 % más de golpe | un 12 % más lento, un 10 % más de hambre |
+| `mandibula` | cazar a mordidas | hasta un 45 % más de golpe | un 12 % más de hambre |
+| `garras` | sujetar y desgarrar | hasta un 30 % más de golpe | un 8 % más de hambre |
+| `agilidad` | perseguir | hasta un 30 % más de velocidad | un 15 % menos de golpe, un 12 % más de hambre |
+
+- **Se hereda** (`cruzar`) con su propio azar y mutaciones pequeñas, dentro de 0 a 1. Si ninguno de los padres tiene, el hijo tampoco: no sale de la nada. Un padre sin ella cuenta como una criatura de siempre (ruta de recursos igual a su agresividad, depredador medio, nada de territorial ni de cuerpo).
+- **Seis estilos de ejemplo** (`especializar(genoma, tipo)`): embestidor, mordedor, desgarrador, corredor, guardián de recursos y territorial.
+- **Se ve en la criatura.** Cuernos (el gen ya existía y se heredaba, pero no se dibujaban), colmillos para la mandíbula, garras en las manos, cresta sobre el ojo y cabeza mayor para el cráneo, y patas más largas y finas para la agilidad o más robustas para el cráneo. Las razas simples llevan una marca de color propia (la hostil rojiza, la amistosa verdosa), solo en el dibujo y sin tocar el genoma. La ficha dice el estilo («combate: embestida, defiende recursos»). Comprobado en el navegador: los dos cuernos de una embestidora, los colmillos de una mordedora y el color de la hostil.
+- **Comprobado** (bloque 1i, 8 comprobaciones): sin especialización todos los factores valen exactamente 1, un embestidor pega más y es más lento y gasta más, un corredor es más rápido y pega menos, un mordedor caza más y pega más, las seis de ejemplo están en rango, el hijo no sale de la nada, hereda dentro de rango y de forma determinista, y se guarda y restaura.
+- **Un rasgo que ya existía y no se usa.** El genoma tiene un rasgo de personalidad `territorialidad` que ningún código lee. La ruta territorial nueva es independiente de él.
+
+### Resultados del caso 37
+
+Seis estilos y una criatura sin especializar, cada uno en cuatro situaciones: disputar una fruta con un rival sin especializar (400 s), cazar a una presa sana a la vista (180 s tras carroñeo previo), un intruso con ella saciada en su sitio habitual (200 s), y 300 s sin comer. Cuatro réplicas por semilla, 10 semillas. Medianas:
+
+| Estilo | Parte de la comida | Empujones en la disputa | Golpes a la presa | Daño a la presa | Ataques al intruso | Hambre tras 300 s sin comer |
+|---|---|---|---|---|---|---|
+| Sin especializar | 0,50 | 0,0 | 2,0 | 0,150 | 1,0 | 0,560 |
+| Embestidor | 0,53 | 0,5 | 1,5 | 0,140 | 1,0 | 0,600 |
+| Mordedor | 0,50 | 0,0 | **4,5** | **0,500** | 1,0 | 0,610 |
+| Desgarrador | 0,50 | 0,0 | 4,0 | 0,415 | 1,0 | 0,590 |
+| Corredor | 0,50 | 0,0 | 4,0 | 0,285 | 1,0 | 0,610 |
+| Guardián de recursos | 0,50 | 0,5 | 1,0 | 0,120 | 1,0 | 0,580 |
+| Territorial | **0,67** | **3,5** | **10,0** | 0,520 | **2,5** | 0,570 |
+
+- **El cuerpo cuesta** (10 de 10 semillas): todos los especializados acaban con más hambre.
+- **Cazar mejora con el cuerpo** (10 de 10): mordedor y desgarrador hacen casi el triple de daño a la presa que la que no está especializada. El corredor la alcanza (4,0 golpes frente a 2,0) con menos daño por golpe (9 de 10).
+- **La ruta territorial ataca más al intruso sin hambre** (9 de 10): 2,5 ataques frente a 1,0. La que no está especializada también lo empuja una vez, por curiosidad, como ya se vio en el caso 34. El criterio original decía que la no especializada no atacaba (0), y estaba mal planteado porque el caso 34 ya lo contradecía. Se cambió a «al menos el doble» después de ver los datos.
+- **Defender recursos casi no cambia el reparto** (3 de 10): todos se llevan 0,50 (el embestidor 0,53) y hay pocas disputas (0 a 0,5 empujones). La ruta pesa en una disputa que casi no ocurre porque los dos rivales comen a la vez. Y el nombre engaña: lo que hace es empujar a quien come para quitarle la comida (ataque), no defender la propia. La defensa de la comida propia (cuando otra se acerca) no está modelada.
+- **La territorial desborda a las demás.** Gana más comida (0,67), empuja 3,5 veces en la disputa y golpea 10 veces a la presa (con un interés depredador bajo, 0,2). Dentro de su territorio ataca a cualquier desconocida, sea cual sea la situación. `pesoTerritorial` (1,2) nunca se calibró y puede ser demasiado fuerte.
+- **«Las rutas no son una sola estadística»** (1 de 10): el criterio que lo compara (el guardián disputa más que el mordedor, y el mordedor daña más a la presa que el guardián) falla porque las disputas son muy escasas y con medianas de 0 hay empates. El lado de la caza sí se cumple (0,50 de daño frente a 0,12).
+- **Resultado:** 0 de 10 semillas aprueban el conjunto (informativo). Lo que está probado es el cuerpo y la ruta territorial. La ruta de recursos no.
+
+### Lo que falta de esto
+
+- **Defensa de la comida propia** y una disputa real entre iguales (hoy las disputas son raras). Sin ello la ruta de recursos no se puede juzgar.
+- **Calibrar la ruta territorial** con un objetivo razonado (por ejemplo, que sus ataques a un intruso se parezcan a los de una disputa), sin ajustarla hasta que un caso salga.
+- **Heredar y seleccionar:** comprobar que una línea criada para cazar acaba con más mandíbula y que una criada para pelear por recursos acaba con más cráneo. Pide cría manual durante varias generaciones y un caso aparte.
+- **Postura, acecho y camuflaje** (el estilo «acechar» de la tabla) no están.
+
+## Planes corporales y medios (bípedos, nadadores, voladores)
+
+Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:
+
+1. **Un cuerpo y su dibujo.** Hoy todas son cuadrúpedas con cuatro patas articuladas. Un plan bípedo, de aletas o con alas pide un esqueleto y una animación propios, y parámetros (equilibrio, alcance de las manos, empuje).
+2. **Un medio donde se ejerza.** El mundo es una línea con suelo. Nadar pide zonas de agua (una zona con otra física y otros recursos) y volar pide altura con efecto, que es la altura de suelo, estante y alto ya aprobada. Sin medio, una aleta o un ala son solo adorno.
+3. **Verbos y costes propios.** Nadar, aletear, agarrar con las manos. Pueden ser entradas ampliables de la red (ya existe el mecanismo), con costes (energía, vulnerabilidad fuera de su medio) para que no sean mejoras gratis.
+
+**Propuesta por pasos**, cada uno con su demostración conductual sin guion:
+
+- **Bípeda** (la más barata): un `plan` corporal en el genoma. Libera las manos, lo que vale sobre todo cuando haya transporte (W1): una bípeda lleva objetos con las manos y una cuadrúpeda con la boca o no los lleva. Coste: menos velocidad y más caídas. Demostración: lleva más objetos a una zona en el mismo tiempo.
+- **Voladora:** necesita antes la altura con efecto (W2). Con ella, el estante y lo alto son accesibles sin cajas. Demostración: llega a comida en alto que las demás no alcanzan, y el coste es que gasta más energía y no puede llevar peso.
+- **Nadadora:** necesita antes zonas de agua (W7, varias zonas con recursos distintos). Demostración: accede a un recurso en el agua que otras no alcanzan y se mueve más deprisa en ella, pero más despacio fuera.
+- **Lo que no se hará:** cambiar de plan en vida (eso es la metamorfosis, E33). El plan se hereda.
+
+**Orden:** primero transporte, altura y zonas de agua (los medios), y después los planes que los aprovechan. Un plan sin medio no demuestra nada.
 
 ## Celos y envidia (diseño aprobado; implementados los dos)
 

@@ -1,7 +1,7 @@
 import { Azar } from "../src/vida/nucleo/azar.ts";
 import { Red, insertarColumnas } from "../src/vida/nucleo/red.ts";
 import { Simulacion } from "../src/vida/nucleo/simulacion.ts";
-import { genomaNuevo, clonarGenoma, cruzar, sexoDe } from "../src/vida/nucleo/genoma.ts";
+import { genomaNuevo, clonarGenoma, cruzar, sexoDe, especializar, ESPECIALIZACIONES } from "../src/vida/nucleo/genoma.ts";
 import { AJ } from "../src/vida/nucleo/ajustes.ts";
 import { Memoria, semejanza } from "../src/vida/nucleo/memoria.ts";
 import { Criatura, NI } from "../src/vida/nucleo/criatura.ts";
@@ -253,6 +253,24 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   const propiaAntes = asoc.nProp ?? 0;
   mem.reforzar(asoc, [0, 0, 0, 0, 0, 0], [true, true, true, true, true, true], 1, 5, true);
   afirma((asoc.nProp ?? 0) === propiaAntes + 1 && asoc.res[2] < 0.2, "reforzar con saber propio sube la confianza propia y lleva el resultado hacia lo aprendido (aquí, nada)");
+}
+
+// 1i. Especializacion de combate: opcional, y sin ella todo vale lo de siempre
+{
+  const normal = new Criatura(1, "N", genomaNuevo(21), 300, 21);
+  afirma(normal.factorVelocidadEsp() === 1 && normal.factorGolpeEsp() === 1 && normal.factorMetabolismoEsp() === 1 && normal.factorDepredador() === 1 && normal.rutaTerritorial() === 0 && normal.rutaRecursos() === normal.rasgos[2], "sin especialización todos los factores valen exactamente 1, la ruta de recursos es su agresividad y no hay ruta territorial");
+  const emb = new Criatura(2, "E", especializar(genomaNuevo(21), "embestidor"), 300, 21);
+  afirma(emb.factorGolpeEsp() > 1.3 && emb.factorVelocidadEsp() < 1 && emb.factorMetabolismoEsp() > 1, "un embestidor pega más, es más lento y gasta más");
+  const cor = new Criatura(3, "C", especializar(genomaNuevo(21), "corredor"), 300, 21);
+  afirma(cor.factorVelocidadEsp() > 1.2 && cor.factorGolpeEsp() < 1 && cor.factorMetabolismoEsp() > 1, "un corredor es más rápido, pega menos y gasta más");
+  const mor = new Criatura(4, "M", especializar(genomaNuevo(21), "mordedor"), 300, 21);
+  afirma(mor.factorDepredador() > 1.4 && mor.factorGolpeEsp() > 1.3, "un mordedor tiene más interés en cazar y pega más");
+  afirma(Object.keys(ESPECIALIZACIONES).length === 6 && Object.values(ESPECIALIZACIONES).every((e) => Object.values(e).every((v) => v >= 0 && v <= 1)), "las seis especializaciones de ejemplo tienen valores entre 0 y 1");
+  const g1 = genomaNuevo(31), g2 = genomaNuevo(32);
+  afirma(cruzar(g1, g2, 5).especializacion === undefined, "si ninguno de los padres tiene especialización, el hijo tampoco (no sale de la nada)");
+  const hijo = cruzar(especializar(g1, "mordedor"), g2, 5);
+  afirma(!!hijo.especializacion && Object.values(hijo.especializacion).every((v) => v >= 0 && v <= 1) && JSON.stringify(cruzar(especializar(g1, "mordedor"), g2, 5)) === JSON.stringify(hijo), "con un padre especializado el hijo hereda (con mutaciones pequeñas), dentro de rango y de forma determinista");
+  afirma(Criatura.desde(JSON.parse(JSON.stringify(emb.estado())), 21).genoma.especializacion?.craneo === 0.9, "la especialización se guarda y se restaura");
 }
 
 // 2. Determinismo y semilla
