@@ -3680,7 +3680,7 @@ function previaDeFruta(s: Simulacion): void {
   s.criaturas[0].x = 400; s.criaturas[0].accion = null; s.criaturas[0].nec[0] = 0.75;
 }
 
-function ejecutar41(semilla: number, arriesga: boolean, previa = false): ResSemilla {
+function ejecutar41(semilla: number, arriesga: boolean, habituada = false): ResSemilla {
     const DUR = 900;
     const MITAD = DUR / 2;
     const PLACA = 900;
@@ -3695,7 +3695,7 @@ function ejecutar41(semilla: number, arriesga: boolean, previa = false): ResSemi
         c.hambreArriesga = arriesga;
         c.nec[0] = 0.75;
         c.capRegistro = 50000;
-        if (previa) previaDeFruta(s);
+        if (habituada) previaDeFruta(s);
         const T0 = s.t;
         if (cond !== "D") s.mundo.agregar(cond === "C" ? "placa_inocua" : "placa", PLACA);
         s.mundo.agregar("fruta", PLACA);

@@ -1886,6 +1886,17 @@ Primera ejecución con el interruptor `hambreArriesga`, 10 semillas, criterios s
 
 **Corrección de protocolo, hecha después de ver datos y fijada antes de la siguiente ejecución.** Se añaden los casos 41c, 41d y 43b, que repiten los 41, 41b y 43 con 150 s de vida previa comiendo fruta en suelo seguro (x = 300, con fruta nueva a los 10 s de comerse) antes de que aparezcan la placa y la fruta de la prueba. Los 900 s de la prueba se cuentan después. Se descartan los bocados anteriores. **Criterios sin cambiar** respecto a los de los casos 41 y 43. El 41c lleva el interruptor apagado, el 41d encendido y el 43b es el 43 con la previa. Los casos 41, 41b y 43 se conservan tal cual.
 
+### Resultados de los casos 41c, 41d y 43b (11-nov-2026)
+
+Con 150 s previos comiendo fruta en suelo seguro, 10 semillas, criterios sin cambiar. Ninguno aprueba.
+
+- **Caso 41c (sin el interruptor).** La criatura no carga la fruta de la placa (0 de 10), no come fuera de ella (0 de 10), y no vuelve a la placa (0 bocados), así que el criterio de tiempo sobre la placa se cumple en 10 de 10 por no ir. Con la placa inocua (C) carga 1,8 veces de media y come fuera de la placa el 85 % de las veces en la segunda mitad (mediana), es decir, el transporte se usa solo cuando no hay peligro.
+- **Caso 41d (con `hambreArriesga`).** Igual: 0 cargas y 0 bocados en la placa peligrosa. Pasa más tiempo sobre ella en los primeros 450 s (3,9 s de mediana frente a 1,3) y no come.
+- **Caso 43b.** K 0 bocados, **V 0 (media 0,1)**, M 0, F 0 y **L, con la placa leve, 3 o 4 en las diez semillas**. Con la placa de siempre (0,3 por segundo) la valiente pasa más tiempo sobre ella (9,3 s frente a 2,3 sin el interruptor) y no llega a comer. Con la leve (0,06) sí come.
+- **Lo que se puede decir.** Con el mecanismo actual el hambre sí compite con el miedo, y la respuesta depende de la gravedad (placa leve sí, normal y fuerte no), pero **el margen de 0,7 no basta para que una criatura habituada a la fruta vuelva a una placa de 0,3 por segundo**. El criterio 2 del caso 43 no se cumple y el 4 tampoco (L come, pero V no). El carácter, que el criterio 3 daba por cumplido sin demostrarlo, se ve en los segundos sobre la placa (valiente 9,3 s, miedosa 2,4 s), que apuntan en la dirección esperada.
+- **No se toca el margen para que salga.** Si el diseño quiere que una criatura muy hambrienta acepte un peligro como el de la placa de siempre, hay que decidirlo (y qué daño se considera aceptable, o si basta que lo haga solo cuando no hay otra comida), no subir 0,7 hasta que apruebe. Queda anotado como decisión pendiente.
+- Como el transporte bajo peligro no llega a ejercitarse en ninguna variante, **el caso 41 queda sin respuesta**. Se retoma cuando exista un entorno donde el peligro sea menos absoluto (por ejemplo, una zona de obstáculos con recorridos).
+
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 
 Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:
