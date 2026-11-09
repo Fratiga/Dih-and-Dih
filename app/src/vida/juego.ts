@@ -2,7 +2,9 @@
    criatura seleccionada) y ofrece las herramientas (soltar objetos, premiar, asustar). */
 
 import type Phaser from "phaser";
-import type { Criatura } from "./nucleo/criatura.ts";
+import { Criatura, type Rutina } from "./nucleo/criatura.ts";
+import { genomaNuevo } from "./nucleo/genoma.ts";
+import { mezclar } from "./nucleo/azar.ts";
 import { Simulacion } from "./nucleo/simulacion.ts";
 import { AJ } from "./nucleo/ajustes.ts";
 import { AJUSTES_INICIALES, guardarLocal, simulacionNueva, type AjustesVida, type Guardado } from "./guardado.ts";
@@ -166,6 +168,23 @@ export class Juego {
     const camada = this.sim.parir(a, b, hueco);
     for (const h of camada) this.emit("nacimiento", h.id);
     this.seleccionar(camada[0].id);
+    this.guardar(true);
+    return null;
+  }
+
+  /** Pone en la sala una raza simple (hostil o amistosa): una criatura de regla fija, que no aprende ni cambia. Devuelve un texto si no se puede. */
+  agregarRazaSimple(rutina: Rutina): string | null {
+    if (this.sim.criaturas.filter((c) => c.vivo).length >= 4) return "La sala está llena: caben cuatro criaturas vivas.";
+    const id = Math.max(0, ...this.sim.criaturas.map((c) => c.id)) + 1;
+    const x = 120 + (mezclar(this.sim.semilla, 8800, id, Math.floor(this.sim.t)) % 1000) / 1000 * (this.sim.mundo.ancho - 240);
+    const c = new Criatura(id, rutina === "hostil" ? "Hostil" : "Amistosa", genomaNuevo(mezclar(this.sim.semilla, 8801, id)), x, this.sim.semilla);
+    c.rutina = rutina;
+    c.mortalidad = this.sim.mortalidad;
+    c.permiteSecuelas = this.sim.secuelas;
+    c.extincion = this.sim.extincion;
+    c.capRegistro = this.sim.criaturas[0]?.capRegistro ?? 300;
+    this.sim.criaturas.push(c);
+    this.emit("agregada", c.id);
     this.guardar(true);
     return null;
   }

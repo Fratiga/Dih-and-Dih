@@ -44,6 +44,9 @@ export const CATALOGO: Record<string, TipoObjeto> = {
   bola_fija: { id: "bola_fija", nombre: "bola atornillada", gen: "f", f: [0.95, 0.45, 0.6, 0.5, 0.65, 0.05, 0], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0 },
   palanca: { id: "palanca", nombre: "palanca", gen: "f", f: [0.1, 0.7, 0.7, 0.55, 0.3, 0, 0.2], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.3, maquina: { retardo: 1.5, produce: "granulo", enfria: 6, distancia: 80 } },
   palanca_rota: { id: "palanca_rota", nombre: "palanca", gen: "f", f: [0.1, 0.7, 0.7, 0.55, 0.3, 0, 0.2], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.3 },
+  /* Solo para el laboratorio (no estan en la bandeja): la misma palanca con otro color, una que funciona y otra estropeada, para que una criatura pueda distinguirlas por el aspecto. */
+  palanca2: { id: "palanca2", nombre: "palanca", gen: "f", f: [0.1, 0.7, 0.7, 0.15, 0.8, 0, 0.2], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.3, maquina: { retardo: 1.5, produce: "granulo", enfria: 6, distancia: 80 } },
+  palanca2_rota: { id: "palanca2_rota", nombre: "palanca", gen: "f", f: [0.1, 0.7, 0.7, 0.15, 0.8, 0, 0.2], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.3 },
   granulo: { id: "granulo", nombre: "gránulo", gen: "m", f: [0.5, 0.2, 0.3, 0.6, 0.3, 0.55, 0], masa: 0.4, nutri: 0.4, toxico: 0, porciones: 1, efecto: 0.05, caduca: 240 },
   placa: { id: "placa", nombre: "placa roja", gen: "f", f: [0.05, 0.9, 0.9, 0.95, 0, 0, 0.6], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, peligro: { ratio: 0.3, ancho: 150 } },
   foco_rojo: { id: "foco_rojo", nombre: "foco rojo", gen: "m", f: [0.8, 0.3, 0.95, 0.95, 0, 0, 0.3], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, descarga: 0.5 },

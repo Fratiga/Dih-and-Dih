@@ -210,7 +210,10 @@ export class Interfaz {
     j.on("extincion", pintarExt);
     j.on("simNueva", pintarExt);
     j.on("nacimiento", (id) => { aviso(this.raiz, `Ha nacido ${this.juego.sim.criatura(id as number)?.nombre ?? "una cría"}.`, 2200); this.clavesMem = ""; });
-    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero, toggleMort, toggleSec, toggleExt);
+    const botonRaza = (rutina: "hostil" | "amistosa", texto: string, tip: string): HTMLElement => boton(texto, () => { const e = j.agregarRazaSimple(rutina); if (e) aviso(this.raiz, e, 2400); }, { clase: "va-toggle", tip });
+    const hostil = botonRaza("hostil", "+ Hostil", "Raza simple hostil|Añade una criatura de regla fija que pega sin parar a la que tenga más cerca. No aprende ni cambia. Sirve de agresora para probar secuelas y rehabilitación.");
+    const amistosa = botonRaza("amistosa", "+ Amistosa", "Raza simple amistosa|Añade una criatura de regla fija que se acerca a la más cercana y se queda a su lado. No aprende ni cambia. Sirve de cuidadora o de compañía.");
+    const cab = h("div", { clase: "va-pie-cab" }, lenguetaPie, toggleComedero, toggleMort, toggleSec, toggleExt, hostil, amistosa);
     pie.prepend(cab);
     this.pie = pie;
 

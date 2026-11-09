@@ -3093,5 +3093,232 @@ export const caso34: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso07d: Caso = {
+  id: "07d",
+  titulo: "Lo que se aprende al ver: el resultado o solo el estímulo",
+  hipotesis: "Etapa 0 del modelo de las otras. El 07c no podía separar si quien mira aprende lo que consigue la otra o solo se fija más en lo que ella toca. Aquí hay dos palancas de distinto color (para poder distinguirlas), una buena y una estropeada, y la observadora solo ve a la experta con una. Si aprende el resultado, quien vio pulsar la buena va a la de ese color, y quien vio pulsar la estropeada, que no dio nada, va a la otra, que es la buena. Si solo hay realce del estímulo, cada una va a la palanca que vio pulsar, sea cual sea el resultado. Es una prueba abierta: se mide qué hace.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 12;
+    const gE = genomaDe(semilla, 701);
+    const gO = genomaDe(semilla, 702);
+    const X = nuevaSim({ semilla, objetos: [{ tipo: "palanca", x: 800 }], criaturas: [{ genoma: gE, x: 300 }], comedero: null });
+    X.criaturas[0].nec[0] = 0.5;
+    X.avanzar(1200);
+    const estadoExperta = X.criaturas[0].estado();
+    type Brazo = "ve pulsar la buena" | "ve pulsar la estropeada" | "ve la palanca quieta" | "ve pulsar la buena, sin el modo";
+    /** 400 s inmovilizada viendo a la experta (o la palanca quieta) y luego 120 s suelta, sola, con hambre 0,5, entre dos palancas de distinto color (cambian de lado en cada replica).
+        Quien ve pulsar la buena o las quietas se encuentra la buena de ese color y la estropeada del otro; quien ve pulsar la estropeada se encuentra esa estropeada y la buena del otro color. */
+    const prueba = (brazo: Brazo, k: number): { buena: number } => {
+      const vioEstropeada = brazo === "ve pulsar la estropeada";
+      const objetos = vioEstropeada ? [{ tipo: "palanca_rota", x: 800 }] : [{ tipo: "palanca", x: 800 }];
+      const s = nuevaSim({ semilla: mezclar(semilla, 703, k), objetos, criaturas: [{ genoma: gO, x: 560 }], comedero: null });
+      const obs = s.criaturas[0];
+      obs.nec[0] = 0.5;
+      obs.aprendeObservando = brazo !== "ve pulsar la buena, sin el modo";
+      obs.atrapada = true;
+      const conExperta = brazo !== "ve la palanca quieta";
+      if (conExperta) {
+        const e = Criatura.desde({ ...estadoExperta, id: 2, x: 700, accion: null }, mezclar(semilla, 704, k));
+        e.azar.s = mezclar(semilla, 705, k);
+        e.reiniciarReloj();
+        e.capRegistro = 100000;
+        e.nec[0] = 0.55;
+        s.criaturas.push(e);
+      }
+      s.avanzar(400);
+      const pulsaciones = conExperta ? s.criaturas[1].registro.filter((r) => r.kind === "impacto" && (r.tipo === "palanca" || r.tipo === "palanca_rota") && (r.v === "empujar" || r.v === "tocar")).length : 0;
+      if (conExperta) s.criaturas.splice(1, 1);
+      for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+      const izq = k % 2 === 0;
+      const [buena, mala] = vioEstropeada ? ["palanca2", "palanca_rota"] : ["palanca", "palanca2_rota"];
+      s.mundo.agregar(buena, izq ? 250 : 750);
+      s.mundo.agregar(mala, izq ? 750 : 250);
+      obs.nec[0] = 0.5;
+      obs.accion = null;
+      obs.atrapada = false;
+      obs.x = 500;
+      const t0 = s.t;
+      let primero = "";
+      s.ganchos.push(() => {
+        if (primero) return;
+        if (manip(obs, buena, t0) > 0) primero = "buena";
+        else if (manip(obs, mala, t0) > 0) primero = "mala";
+      });
+      s.avanzar(120);
+      return { buena: primero === "buena" ? 1 : primero === "mala" ? 0 : 0.5, pulsaciones } as { buena: number };
+    };
+    const brazos: Brazo[] = ["ve pulsar la buena", "ve pulsar la estropeada", "ve la palanca quieta", "ve pulsar la buena, sin el modo"];
+    const p: Record<string, { buena: number }> = {};
+    for (const b of brazos) {
+      const r = Array.from({ length: REP }, (_, k) => prueba(b, k));
+      p[b] = { buena: media(r.map((x) => x.buena)) };
+    }
+    const [A, B, C, D] = brazos;
+    // Con la palanca quieta se mide la preferencia de base por el color: va a la buena (del color 1) frente a la estropeada del color 2. Para quien vio la estropeada del color 1,
+    // lo que hubiera hecho sin experiencia es el reves: ir a la buena del color 2 es 1 menos eso.
+    const baseA = p[C].buena, baseB = 1 - p[C].buena;
+    return resultado(semilla, {
+      "ve el resultado: quien vio a la experta pulsar la palanca buena va primero a la buena más que quien vio la palanca quieta (+0,2) y en 2 de cada 3 veces o más": p[A].buena >= 0.65 && p[A].buena > baseA + 0.2,
+      "no es solo estímulo: quien vio a la experta pulsar la estropeada (y no salir nada) va a la buena del otro color más de lo que iría sin experiencia (+0,1), en lugar de a la que vio pulsar": p[B].buena > baseB + 0.1,
+      "sin el modo de observación no aprende: ver pulsar la buena no la hace ir más a la buena que quien vio la palanca quieta (a lo sumo +0,1)": p[D].buena <= baseA + 0.1,
+    }, {
+      buenaVioPulsarLaBuena: p[A].buena, buenaVioPulsarLaEstropeada: p[B].buena, buenaVioLaPalancaQuieta: p[C].buena, buenaSinElModo: p[D].buena,
+      lineaDeBaseParaLaEstropeada: baseB,
+    }, null, 520);
+  },
+};
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso35: Caso = {
+  id: "35",
+  titulo: "La jerarquía alrededor de la comida (cuatro criaturas)",
+  hipotesis: "Cuatro criaturas hambrientas y un solo punto de comida que se repone poco a poco. Con la agresión y el conflicto por comida encendidos, se espera que el reparto no sea parejo, que ese orden se mantenga entre la primera y la segunda mitad, que se apoye en quién empuja, y que si desaparece quien más comía, otra ocupe su sitio. Sin agresión (control) no debe haber orden por empujones. Es el caso E24 con cuatro: se mide, no se fija quién domina.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 5;
+    const MITAD = 750;
+    type Brazo = "con agresion" | "sin agresion";
+    const gs = [genomaDe(semilla, 351), genomaDe(semilla, 352), genomaDe(semilla, 353), genomaDe(semilla, 354)];
+    const bocados = (c: Criatura, t0: number, t1: number): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "fruta" && (r.res?.[0] ?? 0) > 0.05 && r.t >= t0 && r.t < t1).length;
+    const empujes = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "empujar" && r.tipo === "criatura").length;
+    /** Correlacion de rangos de Spearman entre dos listas (con empates por rango medio). */
+    const rangos = (v: number[]): number[] => v.map((x) => v.filter((y) => y < x).length + (v.filter((y) => y === x).length - 1) / 2);
+    const spearman = (a: number[], b: number[]): number => {
+      const ra = rangos(a), rb = rangos(b);
+      const ma = media(ra), mb = media(rb);
+      const cov = media(ra.map((x, i) => (x - ma) * (rb[i] - mb)));
+      const sa = Math.sqrt(media(ra.map((x) => (x - ma) ** 2))), sb = Math.sqrt(media(rb.map((x) => (x - mb) ** 2)));
+      return sa > 0 && sb > 0 ? cov / (sa * sb) : 0;
+    };
+    const probar = (brazo: Brazo, k: number) => {
+      const agresion = brazo === "con agresion";
+      const s = nuevaSim({ semilla: mezclar(semilla, 355, k), objetos: [], criaturas: gs.map((g, i) => ({ genoma: clonarGenoma(g), x: 300 + i * 120 })), comedero: { cada: 25, max: 1, tipo: "fruta" } });
+      for (const c of s.criaturas) { c.agresion = agresion; c.conflictoComida = agresion; c.reconocePorRasgos = true; c.capRegistro = 100000; c.nec[0] = 0.8; }
+      const todas = s.criaturas.slice();
+      s.avanzar(MITAD);
+      const comio1 = todas.map((c) => bocados(c, 0, MITAD));
+      // A mitad, se retira a la que mas ha comido (si hay una clara) y se ve si otra ocupa su sitio
+      const lider = comio1.indexOf(Math.max(...comio1));
+      s.criaturas = todas.filter((_, i) => i !== lider);
+      s.avanzar(MITAD);
+      const comio2 = todas.map((c) => bocados(c, MITAD, 2 * MITAD));
+      const total1 = comio1.reduce((a, b) => a + b, 0), total2 = comio2.reduce((a, b) => a + b, 0);
+      // Para ver si el orden se mantiene se compara la primera mitad con la segunda de las tres que siguen, sin la lider
+      const resto = todas.map((_, i) => i).filter((i) => i !== lider);
+      const orden = spearman(resto.map((i) => comio1[i]), resto.map((i) => comio2[i]));
+      const comeMas = Math.max(...comio1), comeMenos = Math.min(...comio1);
+      const empuja = todas.map(empujes);
+      const heredero = Math.max(...resto.map((i) => comio2[i])) / Math.max(1, total2);
+      return { desigualdad: comeMas / Math.max(1, comeMenos), orden, relacionEmpujes: spearman(empuja, comio1), empujesTotal: empuja.reduce((a, b) => a + b, 0), total1, total2, heredero, comeLider: comeMas / Math.max(1, total1) };
+    };
+    const brazos: Brazo[] = ["con agresion", "sin agresion"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const [CA, SA] = brazos;
+    return resultado(semilla, {
+      "hay reparto desigual: con agresión la que más come se lleva al menos 1,5 veces lo de la que menos (mediana), y se come (10 bocados o más entre las cuatro)": med(CA, (x) => x.desigualdad) >= 1.5 && med(CA, (x) => x.total1) >= 10,
+      "se apoya en los empujones: con agresión hay empujones entre ellas (3 o más en los 1500 s) y quien más empuja come más (correlación de rangos positiva)": med(CA, (x) => x.empujesTotal) >= 3 && med(CA, (x) => x.relacionEmpujes) > 0,
+      "el control no tiene empujones: sin agresión no hay ninguno": r[SA].every((x) => x.empujesTotal === 0),
+      "el orden se mantiene: entre las tres que quedan, quien más comía antes de retirar a la líder sigue comiendo más después (correlación de rangos de 0,2 o más, mediana)": med(CA, (x) => x.orden) >= 0.2,
+      "otra ocupa el sitio: tras retirar a la líder, la que más come se lleva al menos un tercio de lo que se come (mediana)": med(CA, (x) => x.heredero) >= 0.34,
+    }, {
+      desigualdadConAgresion: med(CA, (x) => x.desigualdad), desigualdadSinAgresion: med(SA, (x) => x.desigualdad),
+      bocadosPrimeraMitadConAgresion: med(CA, (x) => x.total1), bocadosPrimeraMitadSinAgresion: med(SA, (x) => x.total1), bocadosSegundaMitadConAgresion: med(CA, (x) => x.total2),
+      empujesConAgresion: med(CA, (x) => x.empujesTotal), correlacionEmpujesYComida: med(CA, (x) => x.relacionEmpujes),
+      correlacionDelOrdenTrasRetirarALaLider: med(CA, (x) => x.orden), correlacionDelOrdenSinAgresion: med(SA, (x) => x.orden),
+      fraccionQueSeLlevaLaLider: med(CA, (x) => x.comeLider), fraccionQueSeLlevaLaHeredera: med(CA, (x) => x.heredero),
+    }, null, 2 * MITAD);
+  },
+};
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso36: Caso = {
+  id: "36",
+  titulo: "El acechador y las presas que recuerdan",
+  hipotesis: "El caso 26 usaba una presa nueva en cada ronda, y por eso no se podía ver si huir importa. Aquí la presa es siempre la misma, libre para huir y con memoria. Se espera que quien sufre rondas de caza aprenda a huir antes o a recibir menos golpes que una presa nueva cada vez, y se mide si el cazador cambia lo que hace (esperar, acercarse, empujar). No se le dice que se esconda ni que espere: se mide qué sale. Es el caso E21 con lo que hay hoy: no hay escondites ni rodeos, solo los verbos de siempre.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 5;
+    const RONDAS = 8;
+    const POR_RONDA = 90;
+    type Brazo = "la misma presa" | "una presa nueva cada ronda";
+    const gH = clonarGenoma(genomaDe(semilla, 361));
+    gH.rasgos[R.agresividad] = 0.9;
+    const gP = genomaDe(semilla, 362);
+    const probar = (brazo: Brazo, k: number) => {
+      const misma = brazo === "la misma presa";
+      const s = nuevaSim({ semilla: mezclar(semilla, 363, k), objetos: [], criaturas: [{ genoma: clonarGenoma(gH), x: 500 }], comedero: null, mortalidad: "protegida" });
+      const H = s.criaturas[0];
+      H.agresion = true; H.conflictoComida = true; H.reconocePorRasgos = true; H.capRegistro = 200000; H.edad = DIA;
+      // Aprendizaje previo: tres rondas a solas con un cadaver (el cazador sabe que la carne alimenta)
+      for (let i = 0; i < 3; i++) {
+        for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+        s.mundo.agregar("cadaver", 1000, { porciones: 6 });
+        H.x = 500; H.accion = null; H.nec[0] = 0.7;
+        s.avanzar(POR_RONDA);
+      }
+      for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+      const nuevaPresa = (n: number): Criatura => {
+        const p = new Criatura(10 + n, `Presa ${n}`, clonarGenoma(gP), 1000, mezclar(semilla, 364, k, n));
+        p.agresion = true; p.reconocePorRasgos = true; p.capRegistro = 50000; p.salud = 0.6; p.rasgos[R.agresividad] = 0.1; p.base[R.agresividad] = 0.1;
+        return p;
+      };
+      let presa = nuevaPresa(0);
+      const rondas: { golpes: number; huida: number; distHuida: number; espera: number; acerca: number }[] = [];
+      for (let r = 0; r < RONDAS; r++) {
+        if (!misma || r === 0) presa = nuevaPresa(r);
+        s.criaturas = [H, presa];
+        H.x = 400; H.accion = null; H.nec[0] = 0.7; H.emo.fill(0);
+        presa.x = 900; presa.accion = null; presa.emo.fill(0); presa.nec[0] = 0.3; presa.salud = 0.6;
+        const t0 = s.t;
+        const regH = H.registro.length, regP = presa.registro.length;
+        let distHuida = 0, huida = POR_RONDA, espera = 0;
+        s.ganchos.push(() => {
+          if (s.t < t0 || s.t >= t0 + POR_RONDA) return;
+          if (huida === POR_RONDA) {
+            const ev = presa.registro.slice(regP).find((x) => x.kind === "inicio" && x.v === "evitar" && x.obj === 1000 + H.id);
+            if (ev) { huida = ev.t - t0; distHuida = Math.abs(H.x - presa.x); }
+          }
+          if (H.accion?.v === "descansar" && Math.abs(H.x - presa.x) < 500) espera += 0.25;
+        });
+        s.avanzar(POR_RONDA);
+        s.ganchos.length = 0;
+        const golpes = H.registro.slice(regH).filter((x) => x.kind === "impacto" && x.v === "empujar" && x.tipo === "criatura").length;
+        const acerca = H.registro.slice(regH).filter((x) => x.kind === "inicio" && x.v === "acercarse" && x.obj === 1000 + presa.id).length;
+        rondas.push({ golpes, huida, distHuida, espera, acerca });
+      }
+      const primeras = rondas.slice(0, 2), ultimas = rondas.slice(-2);
+      const m = (a: typeof rondas, f: (x: (typeof rondas)[number]) => number): number => media(a.map(f));
+      return {
+        golpesPrimeras: m(primeras, (x) => x.golpes), golpesUltimas: m(ultimas, (x) => x.golpes),
+        huidaPrimeras: m(primeras, (x) => x.huida), huidaUltimas: m(ultimas, (x) => x.huida),
+        esperaPrimeras: m(primeras, (x) => x.espera), esperaUltimas: m(ultimas, (x) => x.espera),
+        acercaPrimeras: m(primeras, (x) => x.acerca), acercaUltimas: m(ultimas, (x) => x.acerca),
+        golpesTotal: rondas.reduce((n, x) => n + x.golpes, 0),
+      };
+    };
+    const brazos: Brazo[] = ["la misma presa", "una presa nueva cada ronda"];
+    const r = Object.fromEntries(brazos.map((b) => [b, Array.from({ length: REP }, (_, k) => probar(b, k))])) as Record<Brazo, ReturnType<typeof probar>[]>;
+    const med = (b: Brazo, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[b].map(f));
+    const [M, N] = brazos;
+    return resultado(semilla, {
+      "hay caza: el cazador golpea a la presa (5 golpes o más en las ocho rondas, de mediana, con la misma presa)": med(M, (x) => x.golpesTotal) >= 5,
+      "la presa que recuerda aprende: en las dos últimas rondas recibe menos golpes que en las dos primeras (con la misma presa)": med(M, (x) => x.golpesUltimas) < med(M, (x) => x.golpesPrimeras),
+      "y huye antes: tarda menos en echar a huir en las dos últimas rondas que en las dos primeras": med(M, (x) => x.huidaUltimas) < med(M, (x) => x.huidaPrimeras),
+      "la memoria importa: en las dos últimas rondas la presa que recuerda recibe menos golpes que una presa nueva": med(M, (x) => x.golpesUltimas) < med(N, (x) => x.golpesUltimas),
+    }, {
+      golpesPrimerasMisma: med(M, (x) => x.golpesPrimeras), golpesUltimasMisma: med(M, (x) => x.golpesUltimas), golpesPrimerasNueva: med(N, (x) => x.golpesPrimeras), golpesUltimasNueva: med(N, (x) => x.golpesUltimas),
+      huidaPrimerasMisma: med(M, (x) => x.huidaPrimeras), huidaUltimasMisma: med(M, (x) => x.huidaUltimas), huidaPrimerasNueva: med(N, (x) => x.huidaPrimeras), huidaUltimasNueva: med(N, (x) => x.huidaUltimas),
+      esperaDelCazadorPrimeras: med(M, (x) => x.esperaPrimeras), esperaDelCazadorUltimas: med(M, (x) => x.esperaUltimas),
+      acercamientosDelCazadorPrimeras: med(M, (x) => x.acercaPrimeras), acercamientosDelCazadorUltimas: med(M, (x) => x.acercaUltimas),
+    }, null, 3 * POR_RONDA + RONDAS * POR_RONDA);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

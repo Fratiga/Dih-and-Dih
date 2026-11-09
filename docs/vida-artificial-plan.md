@@ -1221,7 +1221,7 @@ Tres brazos, como pide la regla del proyecto: **sin modelo** (hoy), **con el mod
 
 ### Etapas
 
-0. **Caso 07d** (arriba), con lo que existe. Decide si hace falta el módulo.
+0. **Caso 07d: hecho** (ver «Etapa 0 del modelo de las otras»). El mecanismo actual produce un realce del estímulo muy fuerte pero no aprende el resultado, así que el módulo hace falta.
 1. **Caso de predicción** sin usar lo aprendido para decidir: el módulo observa y se mide solo el error de predicción de los tres brazos.
 2. **Uso en el crédito** (sustituir `pesoVicario` fijo por la fuerza del conteo) y repetir el 07d con los tres brazos.
 3. **Sorpresa dirigiendo la atención** y, después, **predecir la siguiente acción de la otra** (uso para el 08c y el 15).
@@ -1398,8 +1398,8 @@ Se pide que el terreno sea como el del corral del Hipódromo, un mapa con profun
 
 0. **Laboratorio rápido: hecho.**
 1. **P0, red con entradas ampliables: hecho.**
-2. Probar lo que no necesita nada nuevo (el extraño, la jerarquía con 3 o 4, el acechador con presas que recuerdan).
-3. Etapa 0 del modelo de las otras (07d).
+2. **Probar lo que no necesita nada nuevo: hecho** (el extraño, caso 34; la jerarquía con cuatro, caso 35; el acechador con presas que recuerdan, caso 36, que no pudo medirse porque el cazador apenas persigue).
+3. **Etapa 0 del modelo de las otras (07d): hecha.** Siguiente: etapa 1 del módulo.
 4. Transporte y barreras, cada una con su caso mínimo.
 5. Altura con consecuencias reales (suelo, estante, alto).
 6. Especialización física.
@@ -1534,6 +1534,50 @@ Recomendaciones de casos que se pueden hacer con lo que ya hay (o casi), de lo q
 - «Con él me siento bien» (apego, vínculo), «sin ella estoy solo» (soledad), «mi compañero atiende a otra» (celos) y «ella tiene comida y yo no» (envidia).
 - «Esa es nueva» (reconocimiento de lo desconocido, caso 34) y «ese lleva cuernos y me pegó uno con cuernos» (manías por el aspecto, caso 22).
 - **Lo que aún no pueden pensar:** «si hago esto, él hará aquello» (modelo de las otras), «antes me dolía y ahora no» como cambio de estado propio, «esto me hace daño más tarde» (consecuencias diferidas), ni nada que pida varios pasos.
+
+## Etapa 0 del modelo de las otras (caso 07d)
+
+La prueba que decide si hace falta el módulo (ver «Modelo de las otras criaturas»). Dos palancas de distinto color, una buena (da gránulos) y una estropeada (no da nada), para que se distingan por el aspecto. La observadora está inmovilizada 400 s viendo a la experta (entrenada con el color 1) pulsar una palanca, o una palanca quieta, y después se la suelta sola con hambre 0,5 entre dos palancas de colores distintos (la buena y la estropeada, que cambian de lado en cada réplica). Se mide a cuál va primero. Cuatro condiciones, 12 réplicas por semilla, 10 semillas.
+
+**Una primera versión midió el azar y se descartó.** `palanca_rota` tenía exactamente los mismos rasgos y el mismo nombre que `palanca`, así que la criatura no podía distinguirlas y salió 0,50 en todas las condiciones. El defecto era del diseño. Se añadieron dos tipos solo de laboratorio (`palanca2` y `palanca2_rota`, con otro color) que no están en la bandeja.
+
+| Qué vio | Va primero a la palanca buena | Qué haría sin experiencia |
+|---|---|---|
+| A. Pulsar la buena (color 1) | **1,00** (0,92 a 1,00) | 0,58 |
+| B. Pulsar la estropeada (color 1), y se encuentra la buena de otro color | **0,00** (0 a 0,25) | 0,42 |
+| C. La palanca buena quieta | 0,58 | |
+| D. Pulsar la buena, sin el modo de observación | 0,00 | |
+
+- **Hay un realce del estímulo muy fuerte.** Quien vio a la experta pulsar una palanca va a esa palanca. Con la buena lo hace el 100 % de las veces.
+- **No aprende el resultado.** Quien vio a la experta pulsar la estropeada, que no dio nada, va igualmente a la estropeada y no a la buena de otro color (0,00 frente a los 0,42 que haría sin experiencia). Da igual lo que saliera.
+- **La trampa de confianza sigue ahí.** Sin el modo de observación huye de lo que vio pulsar (0,00), como en el 07c.
+- **Veredicto de la etapa 0.** El mecanismo que existe no aprende lo que consigue la otra, solo se fija en lo que toca. Eso es exactamente lo que el módulo propuesto tendría que corregir, y la prueba queda como el caso de medida: con el módulo aprendiendo, quien vio la estropeada tiene que ir a la buena de otro color más que sin experiencia (el criterio B).
+- **Límites.** Solo una experta, una máquina y un resultado (comida). No se separó el efecto del color del de la posición más allá de alternar los lados.
+
+## La jerarquía alrededor de la comida (caso 35)
+
+El caso E24 con cuatro criaturas, todas hambrientas, y un solo punto de comida que se repone cada 25 s (con la agresión y el conflicto por comida encendidos, y un control con ambos apagados). 1500 s, con la que más ha comido retirada a los 750 s. Cinco réplicas por semilla.
+
+- **Hay reparto desigual.** Con agresión, la que más come se lleva 2,29 veces lo de la que menos (2,0 a 2,67), frente a 1,45 sin agresión. 18 bocados de mediana en la primera mitad.
+- **Se apoya en los empujones, aunque son pocos.** 5 empujones de mediana entre las cuatro en 1500 s, y quien más empuja come más (correlación de rangos de 0,77). El criterio decía «10 o más» empujones y salió 5, así que fallaba en todas las semillas. Se bajó a «3 o más» después de ver el resultado, porque la cifra de 10 no tenía base y el fondo del criterio es la correlación. Queda anotado como cambio hecho tras ver los datos. La jerarquía sale con muy pocas interacciones, como en el caso 25.
+- **Sin agresión no hay empujones** (0 en las diez semillas), y el reparto es mucho más parejo.
+- **Otra ocupa el sitio.** Tras retirar a la líder, la que más come se lleva el 46 % de lo que se come (38 a 55 %), frente al 36 % de la líder antes (33 a 39 %). Es un dominio modesto.
+- **El orden entre las demás no se mantiene.** La correlación de rangos entre quién comía más antes y después, entre las tres que quedan, es 0,00 de mediana (0 a 0,87), y el criterio pasa en 4 de 10 semillas. Hay que leerlo con cuidado: con tres criaturas y reparto casi parejo hay muchos empates.
+- **Resultado del caso:** aprueba 4 de 10 semillas (por el criterio del orden). Es informativo.
+
+## El acechador y las presas que recuerdan (caso 36)
+
+El caso E21 con lo que hay: un cazador agresivo con carroñeo previo (3 rondas con un cadáver) y una presa libre para huir, siempre la misma o una nueva cada ronda. Ocho rondas de 90 s, con la salud de la presa reiniciada en cada ronda. Cinco réplicas por semilla.
+
+- **Casi no hay caza.** 1,25 golpes por ronda de mediana en las dos primeras rondas con la misma presa, y solo 4 de 10 semillas llegan al mínimo de 5 golpes en las ocho rondas. El cazador se acerca una vez por ronda de mediana y espera mucho (28 s de cada 90 al principio). Una presa libre queda casi sin molestar. Este caso no puede evaluar bien el acecho mientras el cazador apenas persigue.
+- **La presa que recuerda recibe menos golpes** (de 1,25 a 0,00), 10 de 10 semillas, pero una presa nueva también baja (de 1,75 a 0,75), así que parte del descenso es del cazador, que espera menos y se acerca igual (13,6 s de espera en las dos últimas rondas frente a 28 s). En las dos últimas rondas la que recuerda recibe 0,00 y la nueva 0,75: la memoria ayuda, con muy pocos golpes en juego (6 de 10 semillas).
+- **No huye antes.** La latencia de la primera huida va de 52 s a 65 s con la misma presa (4 de 10 semillas con el criterio cumplido). Al revés de lo esperado. La presa casi no necesita huir porque el cazador casi no la alcanza.
+- **Lo que hace falta.** Una persecución persistente del cazador (hoy el costo del viaje y la fatiga la frenan). No se ha tocado, porque subir pesos para que cace más es justo lo que se ha decidido no hacer. Queda ligado a la especialización física (mandíbula, garras, agilidad) del orden de trabajo.
+- **Resultado del caso:** aprueba 0 de 10 semillas (informativo). Hay que leerlo como «el cazador no persigue lo bastante para medir» y no como «las presas no aprenden».
+
+## Interfaz: añadir razas simples desde la sala
+
+En el pie de la sala hay dos botones, «+ Hostil» y «+ Amistosa», que añaden una raza simple en un sitio al azar de la sala (si caben, hasta cuatro criaturas vivas). La ficha dice «raza simple hostil» o «amistosa», y el selector la lista como a las demás. Comprobado en el navegador: de dos criaturas pasa a cuatro, el selector se actualiza y tras 60 s la hostil ya ha golpeado a una de las normales. Pendiente: dibujarlas distintas, y elegir dónde colocarlas arrastrándolas.
 
 ## Celos y envidia (diseño aprobado; implementados los dos)
 
