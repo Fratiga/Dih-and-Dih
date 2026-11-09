@@ -1712,6 +1712,91 @@ Tras la primera ejecución de los casos 38 a 40 (resultados en la sección sigui
 - **Caso 40: poca potencia.** Una medición por genoma, ocho criaturas y seis generaciones dejan la selección ahogada por el azar. Se sube la potencia sin cambiar ningún criterio: el rendimiento de cada genoma es la media de tres mediciones, y son ocho generaciones.
 - **Caso 39: sin cambios.** La regla de elección ya estaba fijada, y su resultado se explica en la sección siguiente.
 
+### Segunda adenda fijada antes de ejecutar el caso 40 ampliado (11-nov-2026)
+
+Con más potencia (tres mediciones, ocho generaciones) la línea depredadora no sube la mandíbula (baja 0,08) pero sí la ruta `depredador` y la agilidad. Para distinguir un fallo de la tubería de herencia de un rendimiento que no «ve» la mandíbula, se añaden dos líneas y dos criterios, fijados ahora:
+
+- **Línea de control positivo:** seleccionada directamente por la mandíbula (el rendimiento es su propio valor de mandíbula, sin simular nada). **Criterio 5:** sube al menos 0,25 más que el control. Si no, la herencia o la selección no funcionan y el resto del caso no se puede interpretar.
+- **Línea depredadora sobre presa inmóvil y robusta** (salud 1,0, inmóvil: aquí el daño por golpe es lo que cuenta). **Criterio 6:** la mandíbula sube al menos 0,15 más que el control. Es solo mandíbula, para no tomar el máximo de varios rasgos.
+- **Un criterio mal planteado, que se deja como está y se señala.** El criterio 2 (línea de recursos) toma el mayor de tres diferencias (cráneo, recursos, defensa), lo que favorece al ruido: pasa en 9 de 10 semillas sin que ningún rasgo suba de forma coherente. No se cambia, para no tocar un criterio fijado, pero **no se lee como evidencia**.
+
+### Resultados de los casos 38, 39 y 40 (11-nov-2026)
+
+Se ejecutaron con 10 semillas y los criterios de arriba, más las dos adendas. Ninguno de los tres aprueba como caso. Lo que sí dicen:
+
+**Caso 39, territorialidad.** Grilla de pesos 0,3, 0,6, 1,2 y 2,0, con cuatro réplicas por situación y semilla. Los criterios C1 a C5 se cumplen a la vez en 0 de 10 semillas con 0,3 y con 0,6 (C4 falla en las diez), en 6 de 10 con 1,2 y en 5 de 10 con 2,0. Ninguno llega a las 8 semillas que pedía la regla, así que **`pesoTerritorial` se queda en 1,2**, sin cambiar. Medianas con 1,2: 5 empujones en 100 s a un desconocido sin comida, 5 a uno junto a un alimento propio, 0 a una conocida, 1 fuera del territorio y 0 tras salir. El defecto de medida está en C4 (fuera del territorio como mucho 1 y como mucho la cuarta parte de lo de dentro). Fuera del territorio hay siempre alrededor de un empujón con cualquier peso, incluso con 0,3. Es el empuje de una agresiva con la curiosidad y la agresividad de siempre (`pesoAgresion`), que no depende de la ruta territorial. Con 1,2 fallan C2 (más de 6 empujones a un desconocido) en 2 semillas y C4 en 3, y con 2,0 falla C2 en 4. Elegir un peso distinto para que C4 salga habría sido ajustar para aprobar. Lo que se puede decir es que la ruta territorial distingue a una conocida (0 empujones con cualquier peso) y a quien se retira (0 tras salir), y que su intensidad crece con el peso sin tope claro (de 2 a 5,5 empujones de 0,3 a 2,0).
+
+**Caso 38, defensa de la comida propia.** Medida como probabilidad de empujar a quien se acerca (12 réplicas por condición). Con la regla fijada ahora, el mayor peso con la defensa de la base entre 0,20 y 0,90 en la mediana es **0,8** (base 0,88; con 1,6 era 0,92 y con 0,4 bajaba a 0,75). `pesoDefensa` pasa de 1,6 a 0,8. Con 0,8 los criterios se cumplen en 5, 7, 6, 1, 8, 5 y 6 de 10 semillas (hambre, vínculo, tamaño, agravio previo, personalidad, no automática, rutas), y ninguna semilla los cumple todos. Medianas con 0,8 (probabilidad de defender). Base 0,88. Saciada 0,67. Con vínculo 0,42. Llega una más grande 0,58 y una más pequeña 0,96. Agresiva 1,0 y miedosa 0,62. Con agravio previo 0,88, igual que la base, de modo que **el agravio no influye** (1 de 10 semillas). El factor de agravio que puse en la fórmula es demasiado débil para verse. Si es una decisión de diseño que quien fue robada defienda más, hay que subirlo. No se hizo para no tocar el criterio después de ver los datos.
+
+Un diagnóstico que no era criterio. Con una ocupante sin ruta de defensa (recursos 0, defensa 0) empuja de todos modos en el 67 % de las réplicas (media 0,68 frente a 0,84 con la ruta de la base). La medida cuenta cualquier empujón a la que se acerca, también el de la agresividad de siempre. **La defensa propiamente dicha explica unos 16 a 20 puntos de probabilidad**, no el 88 %. Los efectos de vínculo, tamaño y personalidad se ven sobre ese fondo, y por eso los márgenes de los criterios 1 y 7 salen justos. Las rutas se separan en parte (la ocupante con defensa alta y recursos bajos defiende con 0,92 frente a 0,79 en la situación contraria, y el criterio 7 se cumple en 6 de 10 semillas).
+
+**Caso 40, herencia y selección.** Con tres mediciones por criatura y ocho generaciones de ocho criaturas.
+- **La herencia y la selección funcionan.** La línea elegida directamente por su mandíbula sube 0,46 de mediana, y sube en 10 de 10 semillas (control positivo, criterio 5 de la segunda adenda, que se cumple 10 de 10).
+- **Las crías no heredan lo vivido** (10 de 10): nacen sin asociaciones, con los rasgos en su predisposición y con los genes de la especialización.
+- **La mandíbula no sube bajo selección por caza.** Con presa que huye baja 0,08 de mediana (sube en 1 de 10 semillas) y con la presa inmóvil y robusta baja 0,03 (sube en 4 de 10), con un control que se queda en 0,01. Lo que sí sube con la caza es la ruta `depredador` (+0,11 de mediana, 8 de 10 semillas) y la agilidad (+0,12, 7 de 10). El criterio de la línea depredadora no se cumple (0 de 10) ni tampoco el de la presa robusta (2 de 10).
+- **Por qué.** Con un diagnóstico aparte (`tests/diag-mandibula.ts`, 12 mediciones por genoma) la medida de rendimiento sí ve la mandíbula, pero poco. Con mandíbula 0 el daño medio a la presa en 120 s es 0,30 y con 0,9 es 0,41 (con la presa robusta, 0,27 y 0,39). La dispersión entre réplicas es muy grande (de 0 a 0,52, porque a veces el cazador no caza). Para distinguir dos genomas con una diferencia de 0,04 harían falta decenas de mediciones, no tres. Con la presa sana se añade un tope de la medida (la salud mínima de una criatura protegida deja el daño en 0,52, que la mitad de las réplicas con mandíbula alta alcanzan). Es un problema de potencia de la medida, no de la herencia. El efecto de la mandíbula sobre el éxito de la caza existe y es moderado (entre un 30 y un 50 % más de daño con la mandíbula al máximo), pero el éxito depende sobre todo de cuántos golpes se dan, y eso lo manda la ruta `depredador`.
+- **Criterio 2 mal planteado, no es evidencia.** La línea de recursos «sube» en el criterio (9 de 10 y 8 de 10 en las dos últimas ejecuciones) porque toma el mayor de tres diferencias con ruido. Los tres rasgos por separado salen cerca de cero (cráneo +0,01, recursos 0,00, defensa −0,03 de mediana frente al control). No hay una respuesta coherente de la línea de recursos.
+- La deriva entre generaciones con tres padres de ocho es grande (el control se mueve de −0,3 a +0,4 por rasgo), así que un efecto menor de 0,15 no se ve sin más réplicas.
+
+**Caso 37.** No aprueba globalmente, como se aceptó. Los casos 38 a 40 no cambian eso.
+
+**Cambios en el código por estos casos.** Solo `pesoDefensa` (1,6 a 0,8, por la regla). Regresión rápida sin cambios (154 comprobaciones, mismos casos obligatorios).
+
+## Transporte (W1) y barreras (W3), primeros medios del mundo
+
+Escrito el 11-nov-2026, antes de ejecutar los casos 41 y 42. Es el primer paso de los medios que los planes corporales (bípedo, nadador, volador) necesitarán para tener utilidad real. **Los planes corporales no se empiezan aquí.** Siguen la regla de siempre. Los dos medios son opcionales, están apagados por defecto y sin ellos todo vale lo de antes. Para cada uno se separa qué está **disponible** (existe en el mundo y se puede hacer), qué se **usa espontáneamente** (la criatura lo hace sin que nadie se lo indique) y qué está **aprendido** (lo hace cada vez más y por la razón correcta, que se comprueba con un control).
+
+### Barreras (W3), qué existe
+
+- Tres tipos en el catálogo. La **reja** se rompe a empujones (cuatro empujones de una criatura de fuerza 1; el toque suave casi no la desgasta). La **reja fija** se ve igual y no se rompe (solo para el laboratorio, como la palanca rota). El **muro** es otro objeto, distinto a la vista, y tampoco se rompe.
+- Una barrera cierra el paso a las criaturas, y a lo que rueda, por los dos lados. Quien intenta cruzarla se queda junto a ella. Tras 1,5 s seguidos empujando contra ella, desiste de lo que iba a hacer, lo anota (`bloqueada:barrera`) y se frustra un poco, como con cualquier acción fallida. Por eso la comida visible al otro lado no se alcanza sin más.
+- Nada le dice a la criatura que la reja se rompe. Empujar la reja tiene un resultado inmediato pequeño (se mueve y suena) y el resto lo aprende por lo que viene después, con el crédito retrasado de siempre.
+- Limitación conocida. El mundo es una línea, así que una barrera no se rodea. Solo se rompe, o más adelante se abrirá con un mecanismo (una puerta con palanca o con placa de peso, que ya cuenta como W1 más W3).
+
+### Transporte (W1), qué existe
+
+- Dos verbos nuevos, **cargar** y **soltar**, solo para quien tiene `puedeCargar`. No están en la lista de verbos de siempre: cada uno tiene su propia entrada ampliable en la red (`NI` y `NI + 1`), así que hacen falta al menos dos `entradasExtra`. Sin ellas la memoria funciona igual, y la red no distingue esos verbos del resto.
+- Se puede intentar recoger cualquier cosa que se mueva. Lo que pesa más de lo que aguanta (0,5 más 0,7 por su fuerza) no se levanta, y lo averigua intentándolo. Lo que se lleva va delante y por encima del suelo, frena en proporción a lo que pesa (hasta un 35 % con una carga igual a lo que aguanta), se puede comer sin soltarlo, y se cae si quien lo lleva deja de estar viva. Lo que lleva otra criatura no se puede coger.
+- Cargar y soltar no dan nada en el momento. Lo que valgan lo aprende la criatura por lo que viene después, igual que con empujar una palanca. Cargar o soltar con éxito no cuenta como un fracaso que frustre aunque no dé nada de inmediato.
+- Limitación conocida. No hay destinos (nido, apilar, lanzar) ni objetivo de llevar algo a un sitio. Lo único que cambia con el transporte es dónde se come y qué se puede alejar de dónde.
+
+### Comprobaciones directas (disponible)
+
+En `tests/vida.test.ts`, bloque 1j (19 comprobaciones nuevas, 173 en total). Una barrera para por los dos lados, deja salir a quien está dentro de su franja, y no la atraviesa una criatura con mucha hambre aunque la comida esté al otro lado. La reja se rompe con 4 empujones y la reja fija y el muro no. Una pelota lanzada contra una barrera se para. Lo que se lleva va con quien lo lleva, frena, se suelta al dejarlo y se cae si quien lo lleva ya no está viva. Lo que pesa de más no se levanta. El estado se guarda y se restaura.
+
+### Caso 41. Transporte: comida donde hace daño
+
+Una criatura sola, hambre inicial 0,75, en una sala con una placa roja (descarga de 0,3 por segundo a quien está a menos de 75 de su centro) en x = 900 y una fruta de dos porciones sobre ella. Cada vez que no queda fruta a menos de 60 de la placa ni llevada, aparece otra 25 s después. 900 s, mortalidad protegida, 4 entradas ampliables. Cuatro condiciones, con las mismas semillas.
+- **A.** Transporte encendido, placa peligrosa.
+- **B.** Transporte apagado, placa peligrosa (lo que pasa sin el medio).
+- **C.** Transporte encendido, placa inocua con el mismo aspecto (lab). Control de que lo aprendido responde al daño.
+- **D.** Transporte encendido, sin placa. Cuánto carga cuando no hay motivo.
+
+Criterios, fijados ahora, por semilla (se pide un 80 % como en los demás casos, aunque el caso es informativo).
+1. **Usada espontáneamente.** En A carga la fruta al menos una vez (cargas con éxito, de modo que cargar algo que pesa de más no cuenta).
+2. **Aprendida, por el daño.** En A, en la segunda mitad (de 450 a 900 s), al menos la mitad de los mordiscos con alimento se dan fuera de la placa (a más de 75 de su centro), con al menos 2 mordiscos, y esa proporción supera en al menos 0,2 a la de C en la misma mitad.
+3. **Efecto.** Los segundos sobre la placa de A en la segunda mitad son como mucho el 70 % de los de B en la segunda mitad.
+4. **No es automática ni se vuelve universal.** En A no carga cada fruta que aparece (cargas como mucho el 95 % de las frutas aparecidas).
+Se anotan además, sin criterio, las cargas de C y de D, los segundos sobre la placa en cada mitad y los mordiscos dentro y fuera.
+
+### Caso 42. Barreras: comida detrás de una reja
+
+Una criatura sola en x = 400, hambre inicial 0,8, con una reja en x = 800 y una fruta en x = 900. Cuando la reja se rompe y la fruta se come (o cuando pasan 150 s sin ninguna de las dos), 20 s después reaparecen la reja y una fruta, y empieza un episodio nuevo. 900 s, mortalidad protegida. Cuatro condiciones.
+- **A.** Reja que se rompe, comida detrás.
+- **B.** Reja que se rompe, sin comida detrás. La criatura come de una fruta que aparece en x = 150 cada 25 s. Control de que empuja la reja por la comida y no por costumbre.
+- **C.** Reja fija (que no se rompe), comida detrás, con el mismo aspecto que la reja. Control de que deja de empujarla si no sirve.
+- **D.** Sin reja, la fruta a la vista en x = 900 (cuánto tarda en llegar sin barrera).
+
+Criterios, fijados ahora, por semilla (un 80 %, caso informativo).
+1. **Barrera real.** En A y en C la criatura nunca pasa de x = 774 mientras la reja está intacta.
+2. **Usada espontáneamente.** En A empuja la reja al menos 3 veces en total.
+3. **Llega a la comida.** En A rompe la reja y come detrás al menos una vez.
+4. **Aprendida.** En A, con al menos 3 episodios completados, el tiempo (desde que empieza el episodio hasta el primer mordisco detrás de la reja) del último es como mucho el 70 % del primero. Con menos de 3 episodios el criterio no se cumple.
+5. **Por la comida.** Los empujones a la reja de A en la segunda mitad superan en al menos 2 los de B en la segunda mitad.
+6. **Aprende que no sirve.** En C, con al menos 2 empujones en la primera mitad, los de la segunda mitad son como mucho la mitad.
+
+Si algún criterio resulta mal planteado, se corrige a la vista y se anota como cambio hecho después de ver datos. No se espera que todos se cumplan. Lo que se quiere saber es si los medios se usan, y si lo que la criatura hace con ellos cambia con la experiencia.
+
 ## Planes corporales y medios (bípedos, nadadores, voladores)
 
 Se pide que sea posible llegar hasta criaturas bípedas, nadadoras y voladoras. Cada una necesita tres cosas, no solo un dibujo, y conviene separarlas para no prometer más de lo que hay:

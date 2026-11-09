@@ -25,6 +25,10 @@ export interface Objeto {
   /** Quien la esta comiendo y desde cuando (solo con el conflicto por comida). */
   ocupante?: number;
   tOcupante?: number;
+  /** Lo que le queda de resistencia, si es una barrera que se rompe. */
+  salud?: number;
+  /** Quien lo lleva encima (solo con el transporte). */
+  llevadoPor?: number;
 }
 
 export interface Sonido {
@@ -86,6 +90,7 @@ export class Mundo {
     const def = CATALOGO[tipo];
     if (!def) throw new Error(`Tipo de objeto desconocido: ${tipo}`);
     const ob: Objeto = { id: this.sig++, tipo, x, vx: 0, z: 0, vz: 0, porciones: def.porciones, activo: true, prox: 0, luz: -99, nace: this.t, ...o };
+    if (def.barrera && def.barrera.resistencia > 0 && ob.salud === undefined) ob.salud = def.barrera.resistencia;
     this.objetos.push(ob);
     return ob;
   }
@@ -98,6 +103,64 @@ export class Mundo {
     return this.objetos.find((o) => o.id === id);
   }
 
+  /** Si un tramo de x0 a x1 cruza una barrera, donde se queda quien lo recorre (junto a ella, con un margen para el cuerpo de la criatura), y si no, null.
+      Quien ya esta dentro de la franja de una barrera puede salir de ella. Con la barrera mas cercana cuando hay varias. */
+  cruce(x0: number, x1: number, margen = 0): number | null {
+    if (x0 === x1) return null;
+    let mejor: number | null = null;
+    for (const o of this.objetos) {
+      const b = CATALOGO[o.tipo].barrera;
+      if (!b) continue;
+      const izq = o.x - b.ancho - margen, der = o.x + b.ancho + margen;
+      let p: number | null = null;
+      if (x0 <= izq && x1 > izq) p = izq;
+      else if (x0 >= der && x1 < der) p = der;
+      if (p !== null && (mejor === null || Math.abs(p - x0) < Math.abs(mejor - x0))) mejor = p;
+    }
+    return mejor;
+  }
+
+  hayBarreras(): boolean {
+    return this.objetos.some((o) => !!CATALOGO[o.tipo].barrera);
+  }
+
+  /** Lo que lleva cada criatura va con ella (delante, a media altura). Si quien lo lleva ya no esta o no esta viva, se cae donde estaba. */
+  llevar(criaturas: { id: number; x: number; dir: number; vivo: boolean }[]): void {
+    for (const o of this.objetos) {
+      if (o.llevadoPor === undefined) continue;
+      const c = criaturas.find((q) => q.id === o.llevadoPor);
+      if (!c || !c.vivo) { o.llevadoPor = undefined; o.vx = 0; continue; }
+      o.x = Math.max(20, Math.min(this.ancho - 20, c.x + c.dir * 24));
+      o.z = 26;
+      o.vx = 0;
+      o.vz = 0;
+    }
+  }
+
+  /** Una criatura recoge algo si pesa lo que puede con su fuerza. Devuelve si lo ha recogido. */
+  cargar(id: number, quien: number, capacidad: number): boolean {
+    const o = this.obj(id);
+    if (!o || o.llevadoPor !== undefined) return false;
+    const def = CATALOGO[o.tipo];
+    if (def.masa <= 0 || def.masa > capacidad) return false;
+    o.llevadoPor = quien;
+    o.vx = 0;
+    o.ocupante = undefined;
+    this.sonar(o.x, 0.08);
+    return true;
+  }
+
+  /** Lo que lleva se deja donde esta, delante de quien lo lleva. */
+  soltar(id: number): void {
+    const o = this.obj(id);
+    if (!o || o.llevadoPor === undefined) return;
+    o.llevadoPor = undefined;
+    o.z = 6;
+    o.vz = 0;
+    o.vx = 0;
+    this.sonar(o.x, 0.1);
+  }
+
   sonar(x: number, vol: number): void {
     this.sonidos.push({ x, vol, t: this.t });
   }
@@ -108,9 +171,16 @@ export class Mundo {
     this.apariciones = [];
     const danos: Dano[] = [];
     for (const o of this.objetos) {
+      if (o.llevadoPor !== undefined) continue;
       const def = CATALOGO[o.tipo];
       if (def.masa > 0) {
+        const antes = o.x;
         o.x += o.vx * dt;
+        // Las barreras tambien paran a lo que rueda
+        if (o.vx !== 0 && this.hayBarreras()) {
+          const p = this.cruce(antes, o.x, 0);
+          if (p !== null) { o.x = p; o.vx = -o.vx * 0.4; }
+        }
         o.vx *= Math.exp(-FRICCION * (o.z > 1 ? 0.4 : 1) * dt);
         if (Math.abs(o.vx) < 2) o.vx = 0;
         if (o.x < 20) { o.x = 20; o.vx = Math.abs(o.vx) * 0.6; }
@@ -160,6 +230,19 @@ export class Mundo {
     if (!o) return { res, efecto: false };
     const def = CATALOGO[o.tipo];
     let efecto = false;
+    if (def.barrera && (verbo === "empujar" || verbo === "tocar")) {
+      // Una barrera se queda donde esta. Si es de las que se rompen, cada empujon la desgasta (el toque suave, mucho menos) y se oye.
+      const fuerte = verbo === "empujar";
+      if (def.barrera.resistencia > 0 && o.salud !== undefined) {
+        o.salud -= (fuerte ? 0.25 : 0.03) * fuerza;
+        o.luz = this.t;
+        this.sonar(o.x, fuerte ? 0.35 : 0.15);
+        res[C.diversion] = def.efecto * (fuerte ? 1 : 0.5);
+        efecto = true;
+        if (o.salud <= 0) { this.sonar(o.x, 0.6); res[C.diversion] += 0.2; this.quitar(o.id); }
+      }
+      return { res, efecto };
+    }
     if (verbo === "probar") {
       if (def.porciones > 0 && o.porciones > 0) {
         res[C.sacia] = def.nutri;

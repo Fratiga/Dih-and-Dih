@@ -273,6 +273,68 @@ const cfg = (semilla: number, objetos = [{ tipo: "pelota", x: 700 }, { tipo: "fr
   afirma(Criatura.desde(JSON.parse(JSON.stringify(emb.estado())), 21).genoma.especializacion?.craneo === 0.9, "la especialización se guarda y se restaura");
 }
 
+// 1j. Barreras (W3) y transporte (W1): opcionales, y sin ellas todo vale lo de siempre
+{
+  const barrera = (tipo: string) => { const s = nuevaSim({ semilla: 71, objetos: [{ tipo, x: 700 }], criaturas: [{ genoma: genomaNuevo(1), x: 300 }], comedero: null }); return s; };
+  const s0 = barrera("reja");
+  afirma(s0.mundo.cruce(500, 800, 12) === 700 - 14 - 12 && s0.mundo.cruce(900, 600, 12) === 700 + 14 + 12, "una barrera para a quien la cruza por cualquiera de los dos lados, junto a ella y con margen para el cuerpo");
+  afirma(s0.mundo.cruce(690, 800, 12) === null && s0.mundo.cruce(300, 400, 12) === null, "quien ya esta dentro de su franja puede salir, y lo que no la cruza no se toca");
+  afirma(s0.mundo.obj(1)?.salud === 1, "una reja nace con su resistencia");
+  // Se rompe a empujones, el toque suave casi no la desgasta, y el muro y la reja fija no se rompen
+  let n = 0;
+  while (s0.mundo.obj(1) && n < 10) { s0.mundo.interactuar("empujar", 1, 650, 1); n++; }
+  afirma(n === 4 && !s0.mundo.obj(1), "una reja se rompe con 4 empujones de una criatura de fuerza 1");
+  const s1 = barrera("reja");
+  for (let i = 0; i < 6; i++) s1.mundo.interactuar("tocar", 1, 650, 1);
+  afirma(!!s1.mundo.obj(1) && (s1.mundo.obj(1)?.salud ?? 0) > 0.7, "tocar la reja suavemente la desgasta mucho menos que empujarla");
+  for (const t of ["reja_fija", "muro"]) {
+    const s = barrera(t);
+    const r = s.mundo.interactuar("empujar", 1, 650, 1);
+    for (let i = 0; i < 30; i++) s.mundo.interactuar("empujar", 1, 650, 1);
+    afirma(!!s.mundo.obj(1) && !r.efecto && s.mundo.obj(1)?.salud === undefined, `${t}: no se rompe ni responde al empujarla`);
+  }
+  // Una criatura que quiere cruzarla no pasa, desiste y lo intenta de otra manera
+  const s2 = nuevaSim({ semilla: 72, objetos: [{ tipo: "reja_fija", x: 700 }, { tipo: "fruta", x: 900 }], criaturas: [{ genoma: genomaNuevo(1), x: 300 }], comedero: null });
+  s2.criaturas[0].nec[0] = 0.9;
+  let max = 0, bloqueos = 0;
+  s2.ganchos.push(() => { max = Math.max(max, s2.criaturas[0].x); });
+  s2.avanzar(400);
+  bloqueos = s2.criaturas[0].mem.acciones["bloqueada:barrera"] ?? 0;
+  afirma(max < 700, "una criatura nunca cruza una barrera intacta (aunque tenga mucha hambre y la comida este al otro lado)");
+  afirma(bloqueos > 0, "al chocar con la barrera lo anota y desiste de lo que iba a hacer");
+  // Lo que rueda tambien se para
+  const s3 = nuevaSim({ semilla: 73, objetos: [{ tipo: "reja_fija", x: 700 }, { tipo: "pelota", x: 600 }], criaturas: [], comedero: null });
+  s3.mundo.obj(2)!.vx = 400;
+  for (let i = 0; i < 200; i++) s3.mundo.paso(0.05, []);
+  afirma((s3.mundo.obj(2)?.x ?? 999) < 700, "una pelota lanzada contra una barrera no la atraviesa");
+
+  // Transporte
+  const t = nuevaSim({ semilla: 74, objetos: [{ tipo: "fruta", x: 340 }, { tipo: "pelota_pesada", x: 380 }], criaturas: [{ genoma: genomaNuevo(1), x: 300 }], comedero: null });
+  const c = t.criaturas[0];
+  afirma(c.factorCarga(t.mundo) === 1 && !c.puedeCargar && c.lleva === null, "sin transporte no lleva nada y no la frena");
+  afirma(t.mundo.cargar(2, c.id, c.capacidadCarga()) === false, "no puede recoger lo que pesa mas de lo que aguanta");
+  afirma(t.mundo.cargar(1, c.id, c.capacidadCarga()) === true && t.mundo.cargar(1, 99, 5) === false, "recoge algo ligero, y lo que ya lleva otra no se lo lleva un tercero");
+  c.lleva = 1;
+  c.dir = 1;
+  t.mundo.llevar(t.criaturas);
+  afirma(Math.abs((t.mundo.obj(1)?.x ?? 0) - (c.x + 24)) < 1e-9 && (t.mundo.obj(1)?.z ?? 0) > 0, "lo que lleva va con ella, delante y por encima del suelo");
+  c.x = 500;
+  t.mundo.paso(0.05, [c]);
+  t.mundo.llevar(t.criaturas);
+  afirma(Math.abs((t.mundo.obj(1)?.x ?? 0) - 524) < 1e-9, "lo que lleva la sigue cuando se mueve (y la fisica no lo toca)");
+  const f = c.factorCarga(t.mundo);
+  afirma(f < 1 && f > 0.6, "llevar algo la frena, pero no la deja parada");
+  t.mundo.soltar(1);
+  c.lleva = null;
+  afirma(t.mundo.obj(1)?.llevadoPor === undefined && c.factorCarga(t.mundo) === 1, "soltarlo lo deja en el suelo y le devuelve la velocidad");
+  c.lleva = 1; t.mundo.cargar(1, c.id, 5); c.vivo = false; t.mundo.llevar(t.criaturas);
+  afirma(t.mundo.obj(1)?.llevadoPor === undefined, "si quien lo lleva deja de estar viva, se cae");
+  const conT = new Criatura(5, "T", genomaNuevo(21), 300, 21);
+  conT.puedeCargar = true; conT.lleva = 7;
+  const rest = Criatura.desde(JSON.parse(JSON.stringify(conT.estado())), 21);
+  afirma(rest.puedeCargar && rest.lleva === 7, "el transporte y lo que lleva se guardan y se restauran");
+}
+
 // 2. Determinismo y semilla
 {
   const a = new Simulacion(cfg(11));

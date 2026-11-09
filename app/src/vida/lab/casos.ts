@@ -4,7 +4,7 @@
 
 import { AJ } from "../nucleo/ajustes.ts";
 import { C, DIA, E, R, type Verbo } from "../nucleo/tipos.ts";
-import { clonarGenoma, cruzar, especializar, sexoDe, type Genoma, type TipoEspecializacion } from "../nucleo/genoma.ts";
+import { clonarGenoma, cruzar, especializar, sexoDe, type Especializacion, type Genoma, type TipoEspecializacion } from "../nucleo/genoma.ts";
 import { CATALOGO } from "../nucleo/catalogo.ts";
 import { Azar, mezclar } from "../nucleo/azar.ts";
 import { semejanza } from "../nucleo/memoria.ts";
@@ -12,7 +12,7 @@ import { featuresCriatura } from "../nucleo/conducta.ts";
 import { Criatura, type Registro } from "../nucleo/criatura.ts";
 import { ModeloAjeno } from "../nucleo/modeloajeno.ts";
 import { Simulacion } from "../nucleo/simulacion.ts";
-import { actor, avanzarMuestreando, conteoAcciones, genomaDe, impactos, media, mediana, nuevaSim, replica, type Caso, type ResSemilla } from "./laboratorio.ts";
+import { actor, avanzarMuestreando, calentada, conteoAcciones, genomaDe, impactos, media, mediana, nuevaSim, replica, type Caso, type ResSemilla } from "./laboratorio.ts";
 
 const UNOS = new Array<number>(10).fill(1);
 const rasgosDe = (tipo: string): number[] => [...CATALOGO[tipo].f, 0, 0, 0];
@@ -3411,5 +3411,256 @@ export const caso37: Caso = {
   },
 };
 
-export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso14];
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso38: Caso = {
+  id: "38",
+  titulo: "Defensa de la comida propia",
+  hipotesis: "Quien está comiendo puede empujar a otra que se acerca a su comida. No es automático: compite con seguir comiendo, huir o esperar, y se decide con el sorteo de siempre. Se espera que pese más con hambre, con agresividad, sin miedo, con ventaja de tamaño y tras haber sido robada o golpeada por esa criatura, y menos con vínculo. Y que sea una ruta distinta de la apropiación (quitar la comida a quien come): quien defiende mucho y se apropia poco no es igual a quien se apropia mucho y defiende poco. Criterios fijados antes de ejecutar (ver el plan).",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 12;
+    const VENTANA = 120;
+    const RASGO = R;
+    type Cond = "base" | "saciada" | "con vinculo" | "llega una mas grande" | "llega una mas pequena" | "con agravio previo" | "agresiva" | "miedosa" | "ocupante: defensa alta, recursos baja" | "ocupante: recursos alta, defensa baja" | "llega: defensa alta, recursos baja" | "llega: recursos alta, defensa baja" | "ocupante sin ruta de defensa (diagnostico)";
+    const gS = genomaDe(semilla, 381);
+    const gR = genomaDe(semilla, 382);
+    const esp = (recursos: number, defensa: number): Especializacion => ({ recursos, defensa, depredador: 0.5, territorial: 0, craneo: 0, mandibula: 0, garras: 0, agilidad: 0 });
+    const empujesSobre = (c: Criatura, otra: Criatura, t0: number): number => c.registro.filter((r) => r.kind === "inicio" && r.v === "empujar" && r.obj === 1000 + otra.id && r.t >= t0).length;
+    const ponerRasgo = (c: Criatura, i: number, v: number): void => { c.rasgos[i] = v; c.base[i] = v; };
+    const probar = (cond: Cond, k: number) => {
+      const gOc = especializar(gS, cond === "ocupante: defensa alta, recursos baja" ? esp(0.1, 0.9) : cond === "ocupante: recursos alta, defensa baja" ? esp(0.9, 0.1) : cond === "ocupante sin ruta de defensa (diagnostico)" ? esp(0, 0) : esp(0.3, 0.6));
+      const gLl = cond === "llega: defensa alta, recursos baja" ? especializar(gR, esp(0.1, 0.9)) : cond === "llega: recursos alta, defensa baja" ? especializar(gR, esp(0.9, 0.1)) : clonarGenoma(gR);
+      gOc.cuerpo.tamano = cond === "llega una mas grande" ? 0.9 : cond === "llega una mas pequena" ? 1.2 : 1;
+      gLl.cuerpo.tamano = cond === "llega una mas grande" ? 1.2 : cond === "llega una mas pequena" ? 0.9 : 1;
+      const s = nuevaSim({ semilla: mezclar(semilla, 383, k), objetos: [], criaturas: [{ genoma: gOc, x: 500 }, { genoma: gLl, x: 1000 }], comedero: null, mortalidad: "protegida" });
+      const [S, R] = s.criaturas;
+      for (const c of s.criaturas) { c.agresion = true; c.conflictoComida = true; c.reconocePorRasgos = true; c.capRegistro = 50000; }
+      S.nec[0] = cond === "saciada" ? 0.3 : 0.8;
+      R.nec[0] = 0.6;
+      ponerRasgo(S, RASGO.agresividad, cond === "agresiva" ? 0.9 : 0.5);
+      ponerRasgo(S, RASGO.miedo, cond === "miedosa" ? 0.9 : 0.3);
+      ponerRasgo(R, RASGO.agresividad, 0.5);
+      if (cond === "con vinculo") S.mem.vinculo(1000 + R.id, "R").afecto = 0.8;
+      if (cond === "con agravio previo") S.anotarAgravio(1000 + R.id, 0.4);
+      const comida = (): void => { if (!s.mundo.objetos.some((o) => o.tipo === "fruta" && Math.abs(o.x - S.x) < 60)) s.mundo.agregar("fruta", S.x); };
+      comida();
+      let ocupada = 0, prox = 0;
+      const t0 = s.t;
+      s.ganchos.push(() => {
+        if (s.t - t0 >= prox) { prox = s.t - t0 + 4; comida(); }
+        if (s.mundo.objetos.some((o) => o.ocupante === S.id && s.t - (o.tOcupante ?? -99) < 3) && Math.abs(R.x - S.x) < 250) ocupada += 0.25;
+      });
+      s.avanzar(VENTANA);
+      return { defensas: empujesSobre(S, R, t0), apropiaciones: empujesSobre(R, S, t0), ocupada };
+    };
+    const conds: Cond[] = ["base", "saciada", "con vinculo", "llega una mas grande", "llega una mas pequena", "con agravio previo", "agresiva", "miedosa", "ocupante: defensa alta, recursos baja", "ocupante: recursos alta, defensa baja", "llega: defensa alta, recursos baja", "llega: recursos alta, defensa baja", "ocupante sin ruta de defensa (diagnostico)"];
+    const r = Object.fromEntries(conds.map((c) => [c, Array.from({ length: REP }, (_, k) => probar(c, k))])) as Record<Cond, ReturnType<typeof probar>[]>;
+    const med = (c: Cond, f: (x: ReturnType<typeof probar>) => number): number => mediana(r[c].map(f));
+    // Probabilidad de defender (o de apropiarse): fraccion de replicas con al menos un empujon
+    const pDef = (c: Cond): number => r[c].filter((x) => x.defensas > 0).length / REP;
+    const pApro = (c: Cond): number => r[c].filter((x) => x.apropiaciones > 0).length / REP;
+    const fraccionBase = pDef("base");
+    const metricas: Record<string, number> = {};
+    for (const c of conds) { const e = c.replace(/[ :,]+/g, "_"); metricas[`pDefiende_${e}`] = pDef(c); metricas[`pSeApropia_${e}`] = pApro(c); metricas[`defensas_${e}`] = med(c, (x) => x.defensas); metricas[`segundosOcupada_${e}`] = med(c, (x) => x.ocupada); }
+    metricas.pesoDefensa = AJ.pesoDefensa;
+    return resultado(semilla, {
+      "defiende más hambrienta que saciada (al menos 0,15 más de probabilidad)": pDef("base") >= pDef("saciada") + 0.15,
+      "defiende menos a una criatura a la que quiere: como mucho la mitad de probabilidad que sin vínculo": pDef("con vinculo") <= 0.5 * pDef("base"),
+      "defiende menos frente a una más grande y más frente a una más pequeña, que la base": pDef("llega una mas grande") < pDef("base") && pDef("llega una mas pequena") > pDef("base"),
+      "defiende más tras haber sido golpeada o robada por esa criatura (agravio previo)": pDef("con agravio previo") > pDef("base"),
+      "la personalidad pesa: más con agresividad alta que con la base, y menos con miedo alto": pDef("agresiva") > pDef("base") && pDef("miedosa") < pDef("base"),
+      "no es automática: en la base defiende entre el 20 % y el 90 % de las réplicas": fraccionBase >= 0.2 && fraccionBase <= 0.9,
+      "las rutas se separan: defensa alta y recursos baja defiende con más probabilidad que al revés, y recursos alta y defensa baja se apropia con más probabilidad que al revés": pDef("ocupante: defensa alta, recursos baja") > pDef("ocupante: recursos alta, defensa baja") && pApro("llega: recursos alta, defensa baja") > pApro("llega: defensa alta, recursos baja"),
+    }, metricas, null, VENTANA);
+  },
+};
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso39: Caso = {
+  id: "39",
+  titulo: "Territorialidad: medida y calibración del peso",
+  hipotesis: "El peso de la ruta territorial (1,2) no tenía justificación. Se mide la respuesta de una criatura territorial saciada ante cinco situaciones con una grilla de pesos y se compara con cinco criterios de coherencia con lo descrito en el diseño («ahuyentar intrusos, también sin hambre»), fijados antes de ver ningún resultado. Regla de elección, también fijada antes: `pesoTerritorial` pasa a ser el menor peso de la grilla que cumple los cinco criterios en al menos 8 de 10 semillas; si ninguno los cumple, no se cambia. Este caso no es una prueba de aprobado: mide.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const REP = 4;
+    const PESOS = [0.3, 0.6, 1.2, 2.0];
+    const VENTANA = 100;
+    const gT = especializar(genomaDe(semilla, 391), { recursos: 0.3, defensa: 0, depredador: 0.2, territorial: 0.9, craneo: 0, mandibula: 0, garras: 0, agilidad: 0 });
+    gT.rasgos[R.agresividad] = 0.5;
+    const gN = genomaDe(semilla, 392);
+    const ataques = (c: Criatura, N: Criatura, t0: number, t1: number): number => c.registro.filter((r) => r.kind === "inicio" && r.v === "empujar" && r.obj === 1000 + N.id && r.t >= t0 && r.t < t1).length;
+    /** La criatura territorial vive sola 600 s, saciada (o con una conocida), para tener su sitio habitual; se copia y a cada situacion se le añade la intrusa. */
+    const calentar = (conocida: boolean, k: number): Simulacion => {
+      const s = nuevaSim({ semilla: mezclar(semilla, 393, k), objetos: [], criaturas: [{ genoma: clonarGenoma(gT), x: 600 }, ...(conocida ? [{ genoma: clonarGenoma(gN), x: 700 }] : [])], comedero: null, mortalidad: "protegida" });
+      for (const c of s.criaturas) { c.agresion = true; c.reconocePorRasgos = true; c.capRegistro = 50000; }
+      s.ganchos.push(() => { for (const c of s.criaturas) c.nec[0] = Math.min(c.nec[0], 0.05); });
+      s.avanzar(600);
+      s.ganchos.length = 0;
+      return s;
+    };
+    const situacion = (peso: number, sit: "desconocida sin comida" | "desconocida junto a un alimento propio" | "conocida" | "fuera del territorio" | "se retira", k: number) => {
+      const conocida = sit === "conocida";
+      const s = calentada(`terr-${semilla}-${k}-${conocida ? 1 : 0}`, () => calentar(conocida, k), k);
+      const S = s.criaturas[0];
+      S.agresion = true;
+      let N: Criatura;
+      if (conocida) { N = s.criaturas[1]; S.mem.vinculo(1000 + N.id, "N").afecto = 0.8; }
+      else { N = new Criatura(5, "Intrusa", clonarGenoma(gN), 1000, mezclar(semilla, 394, k)); N.agresion = true; N.capRegistro = 5000; s.criaturas.push(N); }
+      const hogar = S.hogar ?? S.x;
+      const dentro = Math.max(60, Math.min(s.mundo.ancho - 60, hogar + (hogar < s.mundo.ancho - 300 ? 150 : -150)));
+      const fuera = Math.max(60, Math.min(s.mundo.ancho - 60, hogar + (hogar < s.mundo.ancho - 700 ? 500 : -500)));
+      N.accion = null; N.atrapada = true; N.nec[0] = sit === "desconocida junto a un alimento propio" ? 0.7 : 0.05;
+      N.x = sit === "fuera del territorio" ? fuera : dentro;
+      if (sit === "desconocida junto a un alimento propio") s.mundo.agregar("fruta", Math.max(60, Math.min(s.mundo.ancho - 60, dentro + (hogar < s.mundo.ancho - 300 ? -30 : 30))));
+      S.accion = null; S.nec[0] = 0.05;
+      const previo = AJ.pesoTerritorial;
+      AJ.pesoTerritorial = peso;
+      const t0 = s.t;
+      s.ganchos.push(() => { S.nec[0] = Math.min(S.nec[0], 0.05); if (sit === "se retira" && s.t - t0 >= 30) N.x = fuera; });
+      s.avanzar(sit === "se retira" ? 60 : VENTANA);
+      AJ.pesoTerritorial = previo;
+      return sit === "se retira" ? { dentro: ataques(S, N, t0, t0 + 30), trasSalir: ataques(S, N, t0 + 30, t0 + 60) } : { dentro: ataques(S, N, t0, t0 + VENTANA), trasSalir: 0 };
+    };
+    const sits = ["desconocida sin comida", "desconocida junto a un alimento propio", "conocida", "fuera del territorio", "se retira"] as const;
+    const datos: Record<string, Record<string, { dentro: number; trasSalir: number }[]>> = {};
+    for (const w of PESOS) {
+      datos[String(w)] = {};
+      for (const sit of sits) datos[String(w)][sit] = Array.from({ length: REP }, (_, k) => situacion(w, sit, k));
+    }
+    const m = (w: number, sit: (typeof sits)[number], f: (x: { dentro: number; trasSalir: number }) => number): number => mediana(datos[String(w)][sit].map(f));
+    const cumple = (w: number): { c1: boolean; c2: boolean; c3: boolean; c4: boolean; c5: boolean } => {
+      const desc = m(w, "desconocida sin comida", (x) => x.dentro);
+      const con = m(w, "conocida", (x) => x.dentro);
+      const fue = m(w, "fuera del territorio", (x) => x.dentro);
+      return { c1: desc >= 1, c2: desc <= 6, c3: con <= 0.5 * desc, c4: fue <= 1 && fue <= 0.25 * desc, c5: m(w, "se retira", (x) => x.trasSalir) <= 1 };
+    };
+    const metricas: Record<string, number> = {};
+    const todos = (w: number): boolean => { const c = cumple(w); return c.c1 && c.c2 && c.c3 && c.c4 && c.c5; };
+    for (const w of PESOS) {
+      const e = String(w).replace(".", "_");
+      const c = cumple(w);
+      metricas[`sinComida_${e}`] = m(w, "desconocida sin comida", (x) => x.dentro);
+      metricas[`juntoAlimento_${e}`] = m(w, "desconocida junto a un alimento propio", (x) => x.dentro);
+      metricas[`conocida_${e}`] = m(w, "conocida", (x) => x.dentro);
+      metricas[`fuera_${e}`] = m(w, "fuera del territorio", (x) => x.dentro);
+      metricas[`seRetira_dentro_${e}`] = m(w, "se retira", (x) => x.dentro);
+      metricas[`seRetira_trasSalir_${e}`] = m(w, "se retira", (x) => x.trasSalir);
+      metricas[`C1_${e}`] = c.c1 ? 1 : 0; metricas[`C2_${e}`] = c.c2 ? 1 : 0; metricas[`C3_${e}`] = c.c3 ? 1 : 0; metricas[`C4_${e}`] = c.c4 ? 1 : 0; metricas[`C5_${e}`] = c.c5 ? 1 : 0;
+      metricas[`cumpleTodos_${e}`] = todos(w) ? 1 : 0;
+    }
+    return resultado(semilla, {
+      "algún peso de la grilla cumple los cinco criterios de coherencia (informativo; la elección del peso se hace con el conjunto de las semillas)": PESOS.some(todos),
+    }, metricas, null, 700);
+  },
+};
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+export const caso40: Caso = {
+  id: "40",
+  titulo: "Herencia y selección de la especialización",
+  hipotesis: "Una línea seleccionada por rendimiento depredador debería mostrar una subida reconocible de la mandíbula, y una seleccionada por disputas de recursos, cambios coherentes en los rasgos que la ayudan (cráneo, ruta de recursos o de defensa). Lo que se hereda son predisposiciones (genes), no lo aprendido. Criterios fijados antes de ejecutar (ver el plan). Ocho criaturas por generación, ocho generaciones, con tres mediciones por criatura, tres líneas: depredadora, de recursos y un control sin selección.",
+  minimo: 0.8,
+  ejecutar(semilla) {
+    const N = 8;
+    const GENERACIONES = 8;
+    const MEDICIONES = 3;
+    const ELEGIDAS = 3;
+    const gPresa = genomaDe(semilla, 409);
+    const gRival = clonarGenoma(genomaDe(semilla, 408));
+    gRival.rasgos[R.agresividad] = 0.5;
+    const bocados = (c: Criatura): number => c.registro.filter((r) => r.kind === "impacto" && r.v === "probar" && r.tipo === "fruta" && (r.res?.[0] ?? 0) > 0.05).length;
+    /** Rendimiento depredador: daño a una presa sana libre en 120 s, tras dos rondas de carroñeo (para que sepa que la carne alimenta). */
+    const rendimientoDepredador = (g: Genoma, k: number, robusta = false): number => {
+      const s = nuevaSim({ semilla: mezclar(semilla, 411, k), objetos: [], criaturas: [{ genoma: clonarGenoma(g), x: 500 }], comedero: null, mortalidad: "protegida" });
+      const H = s.criaturas[0];
+      H.agresion = true; H.conflictoComida = true; H.reconocePorRasgos = true; H.capRegistro = 20000; H.edad = DIA;
+      for (let i = 0; i < 2; i++) { for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id); s.mundo.agregar("cadaver", 1000, { porciones: 6 }); H.x = 500; H.accion = null; H.nec[0] = 0.7; s.avanzar(45); }
+      for (const o of [...s.mundo.objetos]) s.mundo.quitar(o.id);
+      const P = new Criatura(10, "Presa", clonarGenoma(gPresa), 1000, mezclar(semilla, 412, k));
+      P.agresion = true; P.capRegistro = 5000; P.rasgos[R.agresividad] = 0.1; P.base[R.agresividad] = 0.1; P.salud = robusta ? 1.0 : 0.6; if (robusta) P.atrapada = true;
+      s.criaturas = [H, P];
+      H.x = 400; H.accion = null; H.nec[0] = 0.7; H.emo.fill(0);
+      P.x = 650; P.accion = null;
+      const salud0 = P.salud;
+      let min = P.salud;
+      s.ganchos.push(() => { min = Math.min(min, P.salud); });
+      s.avanzar(120);
+      return salud0 - min;
+    };
+    /** Rendimiento en disputas: su parte de las frutas compartidas con un rival sin especializar, hambrientos los dos, en 300 s. */
+    const rendimientoRecursos = (g: Genoma, k: number): number => {
+      const s = nuevaSim({ semilla: mezclar(semilla, 413, k), objetos: [], criaturas: [{ genoma: clonarGenoma(g), x: 400 }, { genoma: clonarGenoma(gRival), x: 700 }], comedero: { cada: 25, max: 1, tipo: "fruta" }, mortalidad: "protegida" });
+      for (const c of s.criaturas) { c.agresion = true; c.conflictoComida = true; c.reconocePorRasgos = true; c.capRegistro = 20000; c.nec[0] = 0.8; }
+      s.avanzar(300);
+      const a = bocados(s.criaturas[0]), b = bocados(s.criaturas[1]);
+      return a + b > 0 ? a / (a + b) : 0.5;
+    };
+    const inicial = (i: number): Genoma => {
+      const r = new Azar(mezclar(semilla, 414, i));
+      const e: Especializacion = { recursos: 0.6 * r.next(), defensa: 0.6 * r.next(), depredador: 0.6 * r.next(), territorial: 0.6 * r.next(), craneo: 0.6 * r.next(), mandibula: 0.6 * r.next(), garras: 0.6 * r.next(), agilidad: 0.6 * r.next() };
+      const g = clonarGenoma(genomaDe(semilla, 415 + i));
+      g.especializacion = e;
+      return g;
+    };
+    type Linea = "depredadora" | "de recursos" | "control" | "mandibula directa" | "depredadora robusta";
+    const media_ = (gs: Genoma[], f: (e: Especializacion) => number): number => media(gs.map((g) => f(g.especializacion as Especializacion)));
+    const evolucionar = (linea: Linea): { primera: Genoma[]; ultima: Genoma[] } => {
+      let pob = Array.from({ length: N }, (_, i) => inicial(i));
+      const primera = pob.map((g) => clonarGenoma(g));
+      for (let gen = 0; gen < GENERACIONES; gen++) {
+        let elegidas: Genoma[];
+        if (linea === "control") {
+          const azar = new Azar(mezclar(semilla, 416, gen));
+          const idx = [...pob.keys()].sort(() => azar.next() - 0.5).slice(0, ELEGIDAS);
+          elegidas = idx.map((i) => pob[i]);
+        } else if (linea === "mandibula directa") {
+          const puntos = pob.map((g, i) => ({ g, f: (g.especializacion as Especializacion).mandibula, i }));
+          puntos.sort((a, b) => b.f - a.f || a.i - b.i);
+          elegidas = puntos.slice(0, ELEGIDAS).map((p) => p.g);
+        } else {
+          const puntos = pob.map((g, i) => ({ g, f: linea === "depredadora robusta" ? media(Array.from({ length: MEDICIONES }, (_, m) => rendimientoDepredador(g, gen * 100 + i * 10 + m, true))) : linea === "depredadora" ? media(Array.from({ length: MEDICIONES }, (_, m) => rendimientoDepredador(g, gen * 100 + i * 10 + m))) : media(Array.from({ length: MEDICIONES }, (_, m) => rendimientoRecursos(g, gen * 100 + i * 10 + m))), i }));
+          puntos.sort((a, b) => b.f - a.f || a.i - b.i);
+          elegidas = puntos.slice(0, ELEGIDAS).map((p) => p.g);
+        }
+        const azar = new Azar(mezclar(semilla, 417, gen));
+        pob = Array.from({ length: N }, (_, i) => cruzar(elegidas[Math.floor(azar.next() * elegidas.length)], elegidas[Math.floor(azar.next() * elegidas.length)], mezclar(semilla, 418, gen, i)));
+      }
+      return { primera, ultima: pob };
+    };
+    const lineas: Record<Linea, { primera: Genoma[]; ultima: Genoma[] }> = { depredadora: evolucionar("depredadora"), "de recursos": evolucionar("de recursos"), control: evolucionar("control"), "mandibula directa": evolucionar("mandibula directa"), "depredadora robusta": evolucionar("depredadora robusta") };
+    const cambio = (l: Linea, f: (e: Especializacion) => number): number => media_(lineas[l].ultima, f) - media_(lineas[l].primera, f);
+    // Las crias solo traen genes: padres que han vivido y aprendido, y una cria que nace sin memoria y con los rasgos en su predisposicion
+    const sp = nuevaSim({ semilla: mezclar(semilla, 419, 0), objetos: [{ tipo: "pelota", x: 600 }], criaturas: [{ genoma: inicial(0), x: 400 }, { genoma: inicial(1), x: 700 }], comedero: { cada: 100, max: 2, tipo: "fruta" } });
+    for (const c of sp.criaturas) c.agresion = true;
+    sp.avanzar(900);
+    const hijo = sp.nacer(sp.criaturas[0], sp.criaturas[1]);
+    const padresAprendieron = sp.criaturas[0].mem.protos.length > 3;
+    const nacioNuevo = hijo.mem.protos.length === 0 && hijo.rasgos.every((v, i) => Math.abs(v - hijo.base[i]) < 1e-9) && !!hijo.genoma.especializacion;
+    const dMand = cambio("depredadora", (e) => e.mandibula), dMandControl = cambio("control", (e) => e.mandibula), dMandRecursos = cambio("de recursos", (e) => e.mandibula);
+    const dMandDirecta = cambio("mandibula directa", (e) => e.mandibula), dMandRobusta = cambio("depredadora robusta", (e) => e.mandibula);
+    const dRec = Math.max(cambio("de recursos", (e) => e.craneo) - cambio("control", (e) => e.craneo), cambio("de recursos", (e) => e.recursos) - cambio("control", (e) => e.recursos), cambio("de recursos", (e) => e.defensa ?? e.recursos) - cambio("control", (e) => e.defensa ?? e.recursos));
+    return resultado(semilla, {
+      "depredadora: la mandíbula media sube al menos 0,15 entre la primera y la última generación, y al menos 0,10 más que en el control": dMand >= 0.15 && dMand - dMandControl >= 0.1,
+      "de recursos: sube al menos 0,10 más que el control en el cráneo, la ruta de recursos o la de defensa": dRec >= 0.1,
+      "no se hereda lo vivido: los padres han aprendido y la cría nace sin asociaciones, con los rasgos en su predisposición y con genes de la especialización": padresAprendieron && nacioNuevo,
+      "especificidad: la mandíbula de la línea de recursos sube como mucho la mitad que la de la depredadora": dMand > 0 && dMandRecursos <= 0.5 * dMand,
+      "control positivo: la línea seleccionada directamente por la mandíbula sube al menos 0,25 más que el control (si falla, la herencia o la selección no funcionan)": dMandDirecta - dMandControl >= 0.25,
+      "depredadora sobre presa inmóvil y robusta: la mandíbula sube al menos 0,15 más que el control": dMandRobusta - dMandControl >= 0.15,
+    }, {
+      mandibulaDirecta: dMandDirecta, mandibulaRobusta: dMandRobusta,
+      depredadorRobusta: cambio("depredadora robusta", (e) => e.depredador), garrasRobusta: cambio("depredadora robusta", (e) => e.garras),
+      mandibulaDepredadora: dMand, mandibulaControl: dMandControl, mandibulaRecursos: dMandRecursos,
+      craneoRecursos: cambio("de recursos", (e) => e.craneo), craneoControl: cambio("control", (e) => e.craneo), craneoDepredadora: cambio("depredadora", (e) => e.craneo),
+      recursosRecursos: cambio("de recursos", (e) => e.recursos), recursosControl: cambio("control", (e) => e.recursos),
+      defensaRecursos: cambio("de recursos", (e) => e.defensa ?? e.recursos), defensaControl: cambio("control", (e) => e.defensa ?? e.recursos),
+      depredadorDepredadora: cambio("depredadora", (e) => e.depredador), garrasDepredadora: cambio("depredadora", (e) => e.garras), agilidadDepredadora: cambio("depredadora", (e) => e.agilidad),
+      mejoraDelCraneoDeLaDeRecursosSobreElControl: dRec, padresConMemoria: padresAprendieron ? 1 : 0, criaNaceNueva: nacioNuevo ? 1 : 0,
+    }, null, 0);
+  },
+};
+
+export const CASOS: Caso[] = [caso01, caso02, caso03, caso03b, caso04, caso04b, caso13, caso05, caso05b, caso06, caso07, caso08, caso08b, caso08c, caso07b, caso07c, caso07d, caso16, caso17, caso18, caso19, caso20, caso21, caso22, caso23, caso23b, caso24, caso25, caso26, caso27, caso28, caso29, caso30, caso31, caso32, caso33, caso34, caso35, caso36, caso37, caso38, caso39, caso40, caso14];
 export const CASOS_OBLIGATORIOS = ["01", "02", "03", "03b", "04", "04b", "13", "05", "06", "07", "08", "14"];

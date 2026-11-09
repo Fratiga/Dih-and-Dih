@@ -17,10 +17,13 @@ export const ANGUSTIA_VISIBLE = 0.25;
 export type Res = number[];
 export const resCero = (): Res => new Array(NC).fill(0);
 
-export type Verbo = "probar" | "empujar" | "tocar" | "acercarse" | "evitar" | "explorar" | "descansar" | "dormir";
+export type Verbo = "probar" | "empujar" | "tocar" | "acercarse" | "evitar" | "explorar" | "descansar" | "dormir" | "cargar" | "soltar";
 export const VERBOS: readonly Verbo[] = ["probar", "empujar", "tocar", "acercarse", "evitar", "explorar", "descansar", "dormir"];
 /** Verbos que se hacen sobre algo concreto y de los que se aprende que resulta de ellos. */
-export const VERBOS_OBJETO: readonly Verbo[] = ["probar", "empujar", "tocar", "acercarse"];
+export const VERBOS_OBJETO: readonly Verbo[] = ["probar", "empujar", "tocar", "acercarse", "cargar", "soltar"];
+/** Verbos de capacidades posteriores. No estan en `VERBOS` para no mover las entradas de la red: cada uno tiene su propia entrada ampliable, detras de las de siempre
+    (la numero `i` de esta lista es la entrada `NI + i`), y sin ellas la red no distingue ese verbo. */
+export const VERBOS_EXTRA: readonly Verbo[] = ["cargar", "soltar"];
 
 export const RASGOS = ["curiosidad", "sociabilidad", "agresividad", "miedo", "apego", "persistencia", "territorialidad", "sensibilidad"] as const;
 export type NombreRasgo = (typeof RASGOS)[number];

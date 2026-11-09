@@ -118,6 +118,13 @@ export const AJ = {
   pausaExtincion: 20,
   /** Rutas de agresion (opcional): cuanto empuja a ahuyentar a un desconocido en su territorio una criatura territorial, y el radio de su territorio alrededor de su sitio habitual. */
   pesoTerritorial: 1.2,
+  /** Defensa de la comida propia (opcional): cuanto empuja a ahuyentar a quien se acerca a lo que esta comiendo y a que distancia de su comida. Con la regla fijada antes del caso 38 (el mayor peso de la grilla con el que la defensa de la base no es automatica) quedo en 0,8; `pesoDisputa` vale 1,6. */
+  pesoDefensa: 0.8,
+  /* Barreras y transporte (opcional). Segundos seguidos empujando contra una barrera tras los que una criatura desiste de lo que iba a hacer, y cuanto frena el peso de lo que lleva
+     a cuestas (con una carga igual a lo que aguanta, va un 35 % mas lenta). */
+  tiempoBloqueo: 1.5,
+  frenoCarga: 0.35,
+  distanciaDefensa: 250,
   radioTerritorio: 260,
   umbralSecuela: 2.0,
   maxSecuelas: 4,

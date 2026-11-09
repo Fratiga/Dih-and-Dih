@@ -12,7 +12,7 @@ import { ModeloAjeno, type EstadoModeloAjeno } from "./modeloajeno.ts";
 import { Memoria, articulo, semejanza, type EstadoMemoria } from "./memoria.ts";
 import type { Mundo, Objeto } from "./mundo.ts";
 import { Red, type EstadoRed } from "./red.ts";
-import { C, D, DIA, E, N, NC_RED, R, TIEMPO_TENDIDA, VERBOS, resCero, type Mortalidad, type Percepto, type Res, type Verbo } from "./tipos.ts";
+import { C, D, DIA, E, N, NC_RED, R, TIEMPO_TENDIDA, VERBOS, VERBOS_EXTRA, resCero, type Mortalidad, type Percepto, type Res, type Verbo } from "./tipos.ts";
 
 export interface Entorno {
   mundo: Mundo;
@@ -167,6 +167,9 @@ export interface EstadoCriatura {
   celos: boolean;
   celosEstado: Celo[];
   rutina?: Rutina | null;
+  defiende?: boolean;
+  puedeCargar?: boolean;
+  lleva?: number | null;
   hogar?: number | null;
   modelo?: EstadoModeloAjeno | null;
   extincion?: boolean;
@@ -262,6 +265,14 @@ export class Criatura {
   celosEstado: Celo[] = [];
   /** Raza simple (ver `Rutina`). Con null decide con su cerebro, como todas. */
   rutina: Rutina | null = null;
+  /** Opcional: defiende la comida que esta comiendo aunque no tenga especializacion (con su agresividad como impulso). Apagado, no lo hace. */
+  defiende = false;
+  /** Opcional: puede recoger objetos y llevarlos a cuestas (verbos cargar y soltar). Apagado, esos verbos no existen para ella. */
+  puedeCargar = false;
+  /** Lo que lleva a cuestas ahora (el identificador del objeto), si algo. */
+  lleva: number | null = null;
+  /** Segundos seguidos que lleva empujando contra una barrera sin poder pasar (lo pone la simulacion). */
+  bloqueo = 0;
   /** Su sitio habitual (media lenta de donde esta), solo si tiene ruta territorial: es el centro de su territorio. */
   hogar: number | null = null;
   /** Opcional: modelo de las otras criaturas (etapa 1). Si no es null, lleva la cuenta de lo que suele seguir a lo que ve hacer a otras y escala con ello el realce de verlas actuar. */
@@ -620,7 +631,13 @@ export class Criatura {
     // Las entradas de siempre son las NI primeras; las ampliables van detras y valen cero mientras nadie las use
     const out = new Array<number>(this.red.nIn).fill(0);
     for (let i = 0; i < D; i++) out[i] = f[i];
-    out[D + VERBOS.indexOf(v)] = 1;
+    const iv = VERBOS.indexOf(v);
+    if (iv >= 0) out[D + iv] = 1;
+    else {
+      // Los verbos de capacidades posteriores tienen su entrada ampliable. Sin ella (red sin entradas extra), la red no los distingue entre si.
+      const k = VERBOS_EXTRA.indexOf(v);
+      if (k >= 0 && this.red.nIn > NI + k) out[NI + k] = 1;
+    }
     let o = D + VERBOS.length;
     for (let i = 0; i < 5; i++) out[o++] = this.nec[i] * 0.6;
     for (let i = 0; i < 5; i++) out[o++] = this.emo[i] * 0.6;
@@ -672,7 +689,8 @@ export class Criatura {
     if (gus < 0.08 && res[C.dano] < 0.05) {
       this.fallos[clave] = (this.fallos[clave] ?? 0) + 1;
       // Pegar a otra criatura sin recibir nada en el momento no cuenta como un fracaso que frustre: si no, cada golpe alimentaria el siguiente sin limite
-      if (esperado > 0.25 && !(acc.esCriatura && acc.v === "empujar")) this.emo[E.frustracion] = acota(this.emo[E.frustracion] + 0.18);
+      // Ni pegar a otra criatura ni recoger o soltar algo con exito (lo que traen esos verbos llega despues) cuentan como un fracaso que frustre
+      if (esperado > 0.25 && !(acc.esCriatura && acc.v === "empujar") && !((acc.v === "cargar" || acc.v === "soltar") && efecto)) this.emo[E.frustracion] = acota(this.emo[E.frustracion] + 0.18);
     } else {
       if ((this.fallos[clave] ?? 0) >= 2) this.desarrollar(R.persistencia, 0.03);
       this.fallos[clave] = 0;
@@ -817,6 +835,9 @@ export class Criatura {
   rutaRecursos(): number { const e = this.genoma.especializacion; return e ? e.recursos : this.rasgos[R.agresividad]; }
   /** Cuanto pesa en ella el interes de cazar: 1 sin especializacion, de 0,25 a 1,75 con ella. */
   factorDepredador(): number { const e = this.genoma.especializacion; return e ? 0.25 + 1.5 * e.depredador : 1; }
+  /** El impulso de defender la comida que esta comiendo: con especializacion es su ruta de defensa (o, si no la trae, la de recursos), y sin ella, 0 salvo que se encienda `defiende`
+      (entonces, su agresividad). */
+  rutaDefensa(): number { const e = this.genoma.especializacion; return e ? (e.defensa ?? e.recursos) : this.defiende ? this.rasgos[R.agresividad] : 0; }
   /** El impulso de ahuyentar a los desconocidos de su territorio (0 sin especializacion). */
   rutaTerritorial(): number { const e = this.genoma.especializacion; return e ? e.territorial : 0; }
   /** Velocidad: el craneo pesa y la agilidad ayuda. */
@@ -825,6 +846,15 @@ export class Criatura {
   factorGolpeEsp(): number { const e = this.genoma.especializacion; return e ? 1 + 0.35 * e.craneo + 0.45 * e.mandibula + 0.3 * e.garras - 0.15 * e.agilidad : 1; }
   /** Lo que cuesta mantener ese cuerpo: mas hambre. */
   factorMetabolismoEsp(): number { const e = this.genoma.especializacion; return e ? 1 + 0.1 * e.craneo + 0.12 * e.mandibula + 0.08 * e.garras + 0.12 * e.agilidad : 1; }
+
+  /** Cuanto peso puede llevar a cuestas: lo que aguanta su fuerza (con las secuelas de debilidad, menos). */
+  capacidadCarga(): number { return 0.5 + 0.7 * this.genoma.fuerza * this.factorFuerza(); }
+  /** Cuanto la frena lo que lleva a cuestas: 1 sin carga, y hasta 1 menos `frenoCarga` con una carga igual a lo que aguanta. */
+  factorCarga(mundo: { obj(id: number): { tipo: string } | undefined }): number {
+    if (this.lleva === null) return 1;
+    const masa = CATALOGO[mundo.obj(this.lleva)?.tipo ?? ""]?.masa ?? 0;
+    return 1 - AJ.frenoCarga * Math.min(1, masa / this.capacidadCarga());
+  }
 
   /** Cuanto limita cada secuela: un factor de 0 a 1 que multiplica lo que la criatura puede hacer. Sin secuelas valen exactamente 1. */
   private factorSecuela(tipo: TipoSecuela, limite: number): number {
@@ -1273,7 +1303,7 @@ export class Criatura {
         id: this.id, nombre: this.nombre, genoma: this.genoma, huella: this.huella, azar: this.azar.s, x: this.x, dir: this.dir, nec: this.nec, salud: this.salud,
         emo: this.emo, rasgos: this.rasgos, mem: this.mem.estado(), red: this.red.estado(), accion: this.accion, trazas: this.trazas, edad: this.edad,
         dormido: this.dormido, fallos: this.fallos, ultimoDano: this.ultimoDano, vivo: this.vivo, incap: this.incap, causa: this.causa, mortalidad: this.mortalidad, padres: this.padres, generacion: this.generacion,
-        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, hogar: this.hogar, modelo: this.modelo ? this.modelo.estado() : null, extincion: this.extincion, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
+        espera: this.espera, proxDecision: this.proxDecision, forzar: this.forzar, acumOlvido: this.acumOlvido, expuesto: this.expuesto, atencion: this.atencion, ultimoImpacto: this.ultimoImpacto, ultimoContagio: this.ultimoContagio, ayudaInnata: this.ayudaInnata, estadosAjenos: this.estadosAjenos, reconocePorRasgos: this.reconocePorRasgos, aprendeObservando: this.aprendeObservando, agresion: this.agresion, celos: this.celos, celosEstado: this.celosEstado, rutina: this.rutina, defiende: this.defiende, puedeCargar: this.puedeCargar, lleva: this.lleva, hogar: this.hogar, modelo: this.modelo ? this.modelo.estado() : null, extincion: this.extincion, permiteSecuelas: this.permiteSecuelas, secuelas: this.secuelas, danoAcumulado: this.danoAcumulado, envidia: this.envidia, envidiaEstado: this.envidiaEstado, vistoBocado: this.vistoBocado, atendidaPor: this.atendidaPor, fatiga: this.fatiga, reproduccion: this.reproduccion, impulso: this.impulso, gestando: this.gestando, aversionSexo: this.aversionSexo, aversionInd: this.aversionInd, ultimoCortejo: this.ultimoCortejo, ajusteReaccion: this.ajusteReaccion, ultimoRechazo: this.ultimoRechazo, gustos: this.gustos, valencias: this.valencias, reputacion: this.reputacion, ultimoGolpe: this.ultimoGolpe, conflictoComida: this.conflictoComida, represalia: this.represalia, agravios: this.agravios, ultimoComer: this.ultimoComer, vistoComer: this.vistoComer, atrapada: this.atrapada, inconsolable: this.inconsolable, habito: this.habito, ayuda: this.ayuda,
       }),
     ) as EstadoCriatura;
   }
@@ -1316,6 +1346,9 @@ export class Criatura {
     c.agresion = e.agresion ?? false;
     c.celos = e.celos ?? false;
     c.rutina = e.rutina ?? null;
+    c.defiende = e.defiende ?? false;
+    c.puedeCargar = e.puedeCargar ?? false;
+    c.lleva = e.lleva ?? null;
     c.hogar = e.hogar ?? null;
     c.modelo = e.modelo ? ModeloAjeno.desde(e.modelo) : null;
     c.extincion = e.extincion ?? false;

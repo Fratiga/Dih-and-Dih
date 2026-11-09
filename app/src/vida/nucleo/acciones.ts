@@ -14,7 +14,7 @@ const SOLO_ALIVIO = [false, false, false, false, false, true];
 /** Segundos desde que empieza una accion durante los que se mira si la angustia de la otra baja. */
 const VENTANA_ALIVIO = 5;
 
-const DURACION = { probar: 1.4, empujar: 0.8, tocar: 0.9 } as const;
+const DURACION = { probar: 1.4, empujar: 0.8, tocar: 0.9, cargar: 0.9, soltar: 0.6 } as const;
 const IMPACTO = 0.4;
 
 export function iniciar(c: Criatura, cand: Cand, env: Entorno): Accion {
@@ -181,6 +181,7 @@ function empujarACriatura(c: Criatura, a: Accion, env: Entorno, dt: number): voi
   const ancho = env.mundo.ancho;
   if (a.fase === "ir") {
     const pos = otro.x + (c.x < otro.x ? -50 : 50);
+    if (c.bloqueo > AJ.tiempoBloqueo) { c.bloqueo = 0; c.mem.contar("bloqueada:barrera"); terminar(c, a, env, true); return; }
     if (Math.abs(pos - c.x) <= AJ.alcance) { a.fase = "hacer"; a.tf = env.t; }
     else {
       mover(c, pos, AJ.velCorrer * c.genoma.velocidad, dt, ancho);
@@ -222,14 +223,17 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
   if (a.ajeno && !a.ajeno.medido && env.t - a.tf >= VENTANA_ALIVIO) notarAlivio(c, a, env);
   const ancho = env.mundo.ancho;
   const g = c.genoma;
-  const caminar = AJ.velCaminar * g.velocidad * c.factorMovilidad() * c.factorVelocidadEsp();
-  const correr = AJ.velCorrer * g.velocidad * c.factorMovilidad() * c.factorVelocidadEsp();
+  // Lo que lleva a cuestas la frena segun lo que pesa frente a lo que aguanta (sin carga, exactamente 1)
+  const carga = c.factorCarga(env.mundo);
+  const caminar = AJ.velCaminar * g.velocidad * c.factorMovilidad() * c.factorVelocidadEsp() * carga;
+  const correr = AJ.velCorrer * g.velocidad * c.factorMovilidad() * c.factorVelocidadEsp() * carga;
   c.vx = 0;
 
   if (a.fase === "ir") {
+    if (c.bloqueo > AJ.tiempoBloqueo) { c.bloqueo = 0; c.mem.contar("bloqueada:barrera"); terminar(c, a, env, true); return; }
     let pos = a.dest;
     let objetivo: Objeto | undefined;
-    if (a.v === "probar" || a.v === "empujar" || a.v === "tocar") {
+    if (a.v === "probar" || a.v === "empujar" || a.v === "tocar" || a.v === "cargar" || a.v === "soltar") {
       objetivo = env.mundo.obj(a.obj);
       if (!objetivo && !a.recordado) { terminar(c, a, env, true); return; }
       if (objetivo) pos = objetivo.x;
@@ -278,9 +282,9 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
   }
 
   // fase "hacer"
-  const dur = a.v === "probar" || a.v === "empujar" || a.v === "tocar" ? DURACION[a.v] : a.dur;
+  const dur = a.v === "probar" || a.v === "empujar" || a.v === "tocar" || a.v === "cargar" || a.v === "soltar" ? DURACION[a.v] : a.dur;
   const t = env.t - a.tf;
-  if (a.v === "probar" || a.v === "empujar" || a.v === "tocar") {
+  if (a.v === "probar" || a.v === "empujar" || a.v === "tocar" || a.v === "cargar" || a.v === "soltar") {
     const ob = env.mundo.obj(a.obj);
     if (!a.hecho) {
       if (!ob || Math.abs(ob.x - c.x) > AJ.alcance * 2) { a.fase = "ir"; if (!ob) terminar(c, a, env, true); return; }
@@ -297,7 +301,16 @@ export function ejecutar(c: Criatura, env: Entorno, dt: number): void {
           ob.ocupante = c.id;
           ob.tOcupante = env.t;
         }
-        const r = env.mundo.interactuar(a.v, a.obj, c.x, g.fuerza);
+        let r: { res: number[]; efecto: boolean };
+        if (a.v === "cargar") {
+          const ok = c.lleva === null && env.mundo.cargar(a.obj, c.id, c.capacidadCarga());
+          if (ok) c.lleva = a.obj;
+          r = { res: resCero(), efecto: ok };
+        } else if (a.v === "soltar") {
+          const ok = c.lleva === a.obj;
+          if (ok) { env.mundo.soltar(a.obj); c.lleva = null; }
+          r = { res: resCero(), efecto: ok };
+        } else r = env.mundo.interactuar(a.v, a.obj, c.x, g.fuerza);
         a.hecho = true;
         c.experimentar(a, r.res, r.efecto, env);
       }

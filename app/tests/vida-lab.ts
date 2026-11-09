@@ -8,6 +8,7 @@ const n = Number(process.env.N ?? 6);
 /* Para experimentos de capacidad: OCULTAS=24 cambia las neuronas ocultas de la red y DESDE=21 empieza en otra semilla. */
 if (process.env.OCULTAS) AJ.ocultas = Number(process.env.OCULTAS);
 if (process.env.EXTRA) AJ.entradasExtra = Number(process.env.EXTRA);
+if (process.env.PESO_DEFENSA) AJ.pesoDefensa = Number(process.env.PESO_DEFENSA);
 const desde = Number(process.env.DESDE ?? 1);
 for (const caso of CASOS) {
   if (ids.length && !ids.includes(caso.id)) continue;

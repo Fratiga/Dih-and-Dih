@@ -197,6 +197,8 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
   }
   // Ver a alguien angustiado: lo que espera conseguir (que su angustia baje) segun lo que haya visto pasar antes al acercarse, quedarse o alejarse.
   // Vale mas cuanto mas afecto le tiene. No hay ninguna orden de ayudar: solo lo aprendido de su efecto.
+  // La comida que esta comiendo ahora (solo con el conflicto por comida): si otra se acerca a ella puede defenderla (empujando). Es distinto de la apropiacion (quitar la comida a quien come) y de la territorialidad (ahuyentar a quien no conoce del sitio).
+  const comidaPropia = c.conflictoComida && c.rutaDefensa() > 0 ? env.mundo.objetos.filter((o) => o.ocupante === c.id && env.t - (o.tOcupante ?? -99) < 3 && Math.abs(o.x - c.x) < 150) : [];
   const angustiadas = c.estadosAjenos ? ps.filter((p) => p.esCriatura && !p.recordado && p.f[IDX.sonido] > ANGUSTIA_VISIBLE) : [];
   const pesoAlivio = (id: number): number => AJ.pesoAlivio * (0.15 + (c.mem.vinculos.find((q) => q.id === id)?.afecto ?? 0));
   const alivioEsperado = (verbo: string, p: Percepto): number => {
@@ -205,7 +207,17 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
   };
   const comestible = (p: Percepto): boolean => !p.esCriatura && c.mem.predecir("probar", p.f, p.m, p.x / ancho).res[C.sacia] > 0.05;
   for (const p of ps) {
-    const verbos: readonly Verbo[] = p.esCriatura ? (c.agresion ? ["acercarse", "empujar"] : ["acercarse"]) : (["probar", "empujar", "tocar"] as const);
+    let verbos: readonly Verbo[];
+    if (p.esCriatura) verbos = c.agresion ? ["acercarse", "empujar"] : ["acercarse"];
+    else if (!c.puedeCargar) verbos = ["probar", "empujar", "tocar"];
+    else {
+      // Con el transporte: lo que lleva otra no se toca, lo que lleva ella solo se come o se suelta, y lo que se puede mover se puede intentar recoger (si pesa demasiado, lo averigua intentandolo)
+      const ob = env.mundo.obj(p.id);
+      if (ob && ob.llevadoPor !== undefined && ob.llevadoPor !== c.id) continue;
+      if (p.id === c.lleva) verbos = ["probar", "soltar"];
+      else if (c.lleva === null && !p.recordado && (CATALOGO[p.tipo]?.masa ?? 0) > 0) verbos = ["probar", "empujar", "tocar", "cargar"];
+      else verbos = ["probar", "empujar", "tocar"];
+    }
     for (const v of verbos) {
       if (!VERBOS_OBJETO.includes(v)) continue;
       const A = c.mem.predecir(v, p.f, p.m, p.x / ancho);
@@ -253,6 +265,12 @@ export function candidatas(c: Criatura, ps: Percepto[], env: Entorno): Cand[] {
         }
       }
       if (c.agresion && p.esCriatura && v === "empujar") u -= AJ.pesoFatiga * c.fatiga * frenoFatiga;
+      // Defensa de la comida propia: pesa mas con hambre, con agresividad y sin miedo, con ventaja de tamano y tras haber sido robada o golpeada por esa criatura, y menos con vinculo
+      if (c.agresion && comidaPropia.length && p.esCriatura && !p.recordado && v === "empujar" && comidaPropia.some((o) => Math.abs(o.x - p.x) < AJ.distanciaDefensa)) {
+        const mio = c.genoma.cuerpo.tamano * 0.5, suyo = p.f[IDX.tamano];
+        const ventaja = acota(1 + (mio / Math.max(0.05, suyo) - 1) * 3, 0.3, 1.5);
+        u += AJ.pesoDefensa * c.rutaDefensa() * (0.5 + ras[R.agresividad]) * (1 - 0.5 * ras[R.miedo]) * (0.3 + hambre) * ventaja * Math.max(0, 1 - 2 * afectoDe(c, p)) * (1 - emo[E.miedo]) * (1 + 0.5 * (c.agravios[p.id]?.n ?? 0));
+      }
       // Ruta territorial: ahuyenta a quien no conoce dentro de su territorio, tenga hambre o no (solo con especializacion)
       if (c.agresion && p.esCriatura && !p.recordado && v === "empujar" && c.rutaTerritorial() > 0 && c.hogar !== null && Math.abs(p.x - c.hogar) < AJ.radioTerritorio && Math.abs(c.x - c.hogar) < AJ.radioTerritorio) {
         u += AJ.pesoTerritorial * c.rutaTerritorial() * Math.max(0, 1 - 2 * afectoDe(c, p)) * (1 - emo[E.miedo]);

@@ -125,7 +125,18 @@ export class Simulacion {
       mundo: this.mundo, criaturas: this.criaturas, t: this.t,
       embarazar: (madre: Criatura, padre: Criatura) => { madre.gestando = true; this.embarazos.push({ madre: madre.id, padre: padre.id, nace: this.t + AJ.gestacion, genomaPadre: JSON.parse(JSON.stringify(padre.genoma)) }); },
     };
+    const antes = this.mundo.hayBarreras() ? this.criaturas.map((c) => c.x) : null;
     for (const c of this.criaturas) c.paso(env, dt);
+    // Las barreras paran a quien intenta cruzarlas (la criatura queda junto a ella) y cuenta los segundos que lleva empujando contra una
+    if (antes) {
+      this.criaturas.forEach((c, i) => {
+        const p = this.mundo.cruce(antes[i], c.x, 12);
+        if (p !== null) { c.x = p; c.vx = 0; c.bloqueo += dt; } else c.bloqueo = 0;
+      });
+    }
+    // Lo que se lleva a cuestas va con quien lo lleva
+    this.mundo.llevar(this.criaturas);
+    for (const c of this.criaturas) if (c.lleva !== null && this.mundo.obj(c.lleva)?.llevadoPor !== c.id) c.lleva = null;
     this.partos();
     for (const c of this.criaturas) if (!c.vivo && !this.legado.some((l) => l.id === c.id)) this.registrarLegado(c);
     for (const g of this.ganchos) g(this);

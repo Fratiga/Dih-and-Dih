@@ -32,6 +32,8 @@ export interface TipoObjeto {
   descarga?: number;
   /** Segundos que dura antes de desaparecer, si caduca. */
   caduca?: number;
+  /** Algo solido que cierra el paso a las criaturas. `ancho` es la mitad de su grosor y `resistencia` lo que aguanta de empujones antes de romperse (0: no se rompe). */
+  barrera?: { ancho: number; resistencia: number };
 }
 
 export const CATALOGO: Record<string, TipoObjeto> = {
@@ -51,5 +53,11 @@ export const CATALOGO: Record<string, TipoObjeto> = {
   placa: { id: "placa", nombre: "placa roja", gen: "f", f: [0.05, 0.9, 0.9, 0.95, 0, 0, 0.6], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, peligro: { ratio: 0.3, ancho: 150 } },
   foco_rojo: { id: "foco_rojo", nombre: "foco rojo", gen: "m", f: [0.8, 0.3, 0.95, 0.95, 0, 0, 0.3], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, descarga: 0.5 },
   foco_azul: { id: "foco_azul", nombre: "foco azul", gen: "m", f: [0.8, 0.3, 0.95, 0.05, 0.2, 0, 0.3], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, descarga: 0 },
+  /* Barreras (capacidad W3). La reja se rompe a empujones; la reja fija se ve igual y no se rompe (solo para el laboratorio); el muro es otra cosa y tampoco. */
+  reja: { id: "reja", nombre: "reja", gen: "f", f: [0.05, 0.85, 0.4, 0.3, 0.15, 0, 0.05], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.12, barrera: { ancho: 14, resistencia: 1 } },
+  reja_fija: { id: "reja_fija", nombre: "reja", gen: "f", f: [0.05, 0.85, 0.4, 0.3, 0.15, 0, 0.05], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0.12, barrera: { ancho: 14, resistencia: 0 } },
+  muro: { id: "muro", nombre: "muro", gen: "m", f: [0.1, 0.95, 0.15, 0.5, 0.05, 0, 0], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, barrera: { ancho: 18, resistencia: 0 } },
+  /* Solo para el laboratorio: la placa roja con el mismo aspecto y sin descarga. */
+  placa_inocua: { id: "placa_inocua", nombre: "placa roja", gen: "f", f: [0.05, 0.9, 0.9, 0.95, 0, 0, 0.6], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0 },
   foco_rojo_b: { id: "foco_rojo_b", nombre: "foco rojo grande", gen: "m", f: [0.7, 0.45, 0.9, 0.9, 0.05, 0, 0.3], masa: 0, nutri: 0, toxico: 0, porciones: 0, efecto: 0, descarga: 0 },
 };

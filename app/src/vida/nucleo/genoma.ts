@@ -40,7 +40,10 @@ export const sexoDe = (g: Genoma): 0 | 1 => (mezclar(g.semillaCerebro, 7) & 1) a
     Rutas: `recursos` (defender comida o sitio: empujar, embestir), `depredador` (ver a otras como comida) y `territorial` (ahuyentar intrusos, tambien sin hambre).
     Cuerpo: `craneo` (embestir: mas golpe, mas peso), `mandibula` (cazar a mordidas), `garras` (sujetar y desgarrar) y `agilidad` (perseguir: mas velocidad, menos golpe). */
 export interface Especializacion {
+  /** Apropiacion: empujar a quien esta comiendo para quedarse con su comida. */
   recursos: number;
+  /** Defensa: empujar a quien se acerca a la comida propia mientras se come. Si falta, vale lo mismo que `recursos`. */
+  defensa?: number;
   depredador: number;
   territorial: number;
   craneo: number;
@@ -53,11 +56,11 @@ export type TipoEspecializacion = "embestidor" | "mordedor" | "desgarrador" | "c
 
 /** Una especializacion de ejemplo para cada estilo (los valores no usados quedan en su neutro). */
 export const ESPECIALIZACIONES: Record<TipoEspecializacion, Especializacion> = {
-  "embestidor": { recursos: 0.8, depredador: 0.4, territorial: 0, craneo: 0.9, mandibula: 0, garras: 0, agilidad: 0 },
+  "embestidor": { recursos: 0.8, defensa: 0.5, depredador: 0.4, territorial: 0, craneo: 0.9, mandibula: 0, garras: 0, agilidad: 0 },
   "mordedor": { recursos: 0.3, depredador: 0.9, territorial: 0, craneo: 0, mandibula: 0.9, garras: 0, agilidad: 0 },
   "desgarrador": { recursos: 0.3, depredador: 0.8, territorial: 0, craneo: 0, mandibula: 0, garras: 0.9, agilidad: 0 },
   "corredor": { recursos: 0.3, depredador: 0.7, territorial: 0, craneo: 0, mandibula: 0, garras: 0, agilidad: 0.9 },
-  "guardian de recursos": { recursos: 0.9, depredador: 0.2, territorial: 0, craneo: 0.4, mandibula: 0, garras: 0, agilidad: 0 },
+  "guardian de recursos": { recursos: 0.3, defensa: 0.9, depredador: 0.2, territorial: 0, craneo: 0.4, mandibula: 0, garras: 0, agilidad: 0 },
   "territorial": { recursos: 0.4, depredador: 0.2, territorial: 0.9, craneo: 0.3, mandibula: 0, garras: 0, agilidad: 0 },
 };
 
@@ -129,11 +132,11 @@ function gen(r: Azar, a: number, b: number, lo: number, hi: number, mut = 0.04):
     Con su propio azar, para no mover el de los demas genes. Si ninguno de los dos tiene, no sale (no hay mutacion desde cero). */
 function cruzarEspecializacion(a: Genoma, b: Genoma, semilla: number): Especializacion | undefined {
   if (!a.especializacion && !b.especializacion) return undefined;
-  const base = (g: Genoma): Especializacion => g.especializacion ?? { recursos: g.rasgos[R.agresividad], depredador: 0.5, territorial: 0, craneo: 0, mandibula: 0, garras: 0, agilidad: 0 };
+  const base = (g: Genoma): Required<Especializacion> => { const e = g.especializacion ?? { recursos: g.rasgos[R.agresividad], depredador: 0.5, territorial: 0, craneo: 0, mandibula: 0, garras: 0, agilidad: 0 }; return { ...e, defensa: e.defensa ?? e.recursos }; };
   const ea = base(a), eb = base(b);
   const r = new Azar(mezclar(semilla, 43));
-  const k = (x: keyof Especializacion): number => gen(r, ea[x], eb[x], 0, 1, 0.12);
-  return { recursos: k("recursos"), depredador: k("depredador"), territorial: k("territorial"), craneo: k("craneo"), mandibula: k("mandibula"), garras: k("garras"), agilidad: k("agilidad") };
+  const k = (x: keyof Required<Especializacion>): number => gen(r, ea[x], eb[x], 0, 1, 0.12);
+  return { recursos: k("recursos"), defensa: k("defensa"), depredador: k("depredador"), territorial: k("territorial"), craneo: k("craneo"), mandibula: k("mandibula"), garras: k("garras"), agilidad: k("agilidad") };
 }
 
 /** El hijo de dos genomas: hereda predisposiciones (no recuerdos: eso lo vive cada uno), con mutaciones pequenas.
