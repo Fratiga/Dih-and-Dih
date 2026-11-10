@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lilita+One&family=Nunito:wght@600;700;800;900&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/concurso-escena.css?v=20271166">
-  <link rel="stylesheet" href="css/concurso.css?v=20271165">
+  <link rel="stylesheet" href="css/concurso-escena.css?v=20271167">
+  <link rel="stylesheet" href="css/concurso.css?v=20271167">
 </head>
 <body class="cz-cabina">
   <header class="cz-top">
@@ -59,6 +59,10 @@
           <button type="button" data-anadir="feud">Respuestas ocultas</button>
           <button type="button" data-anadir="fichas">Fichas por dificultad</button>
           <button type="button" data-anadir="reloj">Temporizador</button>
+          <button type="button" data-anadir="pizarra">Pizarra para dibujar</button>
+          <button type="button" data-anadir="clip">Canción (con recorte)</button>
+          <button type="button" data-anadir="pulsador">Quién pulsó primero</button>
+          <button type="button" data-anadir="sellable">Imagen con sello (FALSO)</button>
         </div>
       </div>
       <span class="cz-herr-sep"></span>
@@ -90,6 +94,7 @@
         <button type="button" class="cz-btn cz-btn-fuerte" id="czPasoSig" title="Espacio">Siguiente ▶</button>
       </div>
       <div class="cz-aire-sig" id="czAireSiguiente"></div>
+      <div class="cz-aire-puls" id="czPulsador" hidden></div>
       <div class="cz-aire-notas" id="czAireNotas" hidden></div>
       <div class="cz-aire-pie">
         <label class="cz-casilla"><input type="checkbox" id="czSilencio"><i></i><span>Silenciar el programa</span></label>
@@ -107,11 +112,12 @@
   <div class="cz-avisos" id="czAvisos"></div>
 
   <script src="js/fichas-supabase.js?v=20271111"></script>
-  <script src="js/concurso-modelo.js?v=20271164"></script>
-  <script src="js/concurso-componentes.js?v=20271166"></script>
-  <script src="js/concurso-plantillas.js?v=20271166"></script>
-  <script src="js/concurso-escena.js?v=20271164"></script>
-  <script src="js/concurso-sync.js?v=20271164"></script>
-  <script src="js/concurso-cabina.js?v=20271165"></script>
+  <script src="js/concurso-modelo.js?v=20271167"></script>
+  <script src="js/concurso-componentes.js?v=20271167"></script>
+  <script src="js/concurso-plantillas.js?v=20271167"></script>
+  <script src="js/concurso-escena.js?v=20271167"></script>
+  <script src="js/concurso-sync.js?v=20271167"></script>
+  <script src="js/concurso-recorte.js?v=20271167"></script>
+  <script src="js/concurso-cabina.js?v=20271167"></script>
 </body>
 </html>

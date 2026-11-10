@@ -438,3 +438,93 @@
 .cz-reloj.cz-urgente { color: var(--cz-mal); animation: czLatido 1s infinite; }
 .cz-reloj.cz-fin { background: var(--cz-mal); color: #fff; }
 @keyframes czLatido { 50% { transform: scale(1.06); } }
+
+/* ---------------------------------------------------------------- imagen con sello (Encuentra al falso) */
+
+.cz-imagen { position: relative; }
+.cz-imagen.cz-con-marco { background: var(--cz-papel); overflow: hidden; }
+.cz-img-sello {
+  position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+  opacity: 0; transform: scale(2) rotate(-14deg); transition: opacity .2s, transform .35s cubic-bezier(.3, 1.5, .5, 1);
+}
+.cz-img-sello span {
+  font: 22cqh var(--cz-f-titulo); color: var(--cz-sc, #e03131); letter-spacing: .04em;
+  border: 2.4cqh solid currentColor; border-radius: 3cqh; padding: 0 .25em;
+  background: rgba(255, 255, 255, .82); transform: rotate(-12deg);
+}
+.cz-sellada .cz-img-sello { opacity: 1; transform: none; }
+.cz-sellada img { filter: saturate(.4) brightness(.85); }
+:is(.cz-modo-monitor, .cz-modo-programa) .cz-el[data-tipo="imagen"] .cz-img-sello ~ * { cursor: pointer; }
+
+/* ---------------------------------------------------------------- canción */
+
+.cz-clip {
+  display: flex; align-items: center; gap: 6cqh; padding: 0 7cqh;
+  background: var(--cz-papel); color: var(--cz-tinta);
+  border: var(--cz-borde) solid var(--cz-contorno); border-radius: var(--cz-radio); box-shadow: var(--cz-sombra);
+}
+.cz-clip-disco {
+  flex: 0 0 auto; width: 74cqh; aspect-ratio: 1; border-radius: 50%; position: relative;
+  background: repeating-radial-gradient(circle, #1d1d1f 0 1.4cqh, #2c2c30 1.4cqh 2.4cqh);
+  border: 1.6cqh solid var(--cz-contorno);
+}
+.cz-clip-disco i { position: absolute; inset: 34%; border-radius: 50%; background: var(--cz-a0); border: 1.2cqh solid #fff; }
+.cz-sonando .cz-clip-disco { animation: czGira 1.6s linear infinite; }
+@keyframes czGira { to { transform: rotate(360deg); } }
+.cz-clip-der { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4cqh; }
+.cz-clip-et { font: 16cqh var(--cz-f-titulo); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cz-clip-barras { display: flex; align-items: flex-end; gap: 1.6%; height: 22cqh; }
+.cz-clip-barras b { flex: 1; height: 18%; background: var(--cz-a3); border-radius: 1cqh; transition: height .2s; }
+.cz-sonando .cz-clip-barras b { animation: czBarra .5s ease-in-out infinite alternate; animation-delay: calc(var(--i) * -.13s); }
+@keyframes czBarra { from { height: 15%; } to { height: 100%; } }
+.cz-clip-prog { height: 4cqh; border-radius: 99px; background: color-mix(in srgb, var(--cz-tinta) 18%, transparent); overflow: hidden; }
+.cz-clip-prog i { display: block; height: 100%; width: 0; background: var(--cz-a0); }
+.cz-clip-dur { font: 800 9cqh var(--cz-f-cuerpo); opacity: .7; }
+.cz-clip-vacio { opacity: .75; }
+:is(.cz-modo-monitor, .cz-modo-programa) .cz-clip { cursor: pointer; }
+
+/* ---------------------------------------------------------------- pizarra */
+
+.cz-pizarra {
+  position: relative; background: var(--cz-piz, #fff);
+  border: var(--cz-borde) solid var(--cz-contorno); border-radius: var(--cz-radio); box-shadow: var(--cz-sombra);
+  overflow: hidden;
+}
+.cz-pizarra canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.cz-piz-activa canvas { cursor: crosshair; }
+.cz-piz-barra {
+  position: absolute; left: 50%; bottom: 2.2cqh; transform: translateX(-50%);
+  display: flex; align-items: center; gap: .9cqh; padding: 1.2cqh 1.8cqh;
+  background: rgba(30, 30, 34, .82); border-radius: 99px;
+}
+.cz-piz-barra span { width: 1.6cqh; }
+.cz-piz-barra button {
+  width: 6.2cqh; height: 6.2cqh; padding: 0; border-radius: 50%; border: .5cqh solid rgba(255, 255, 255, .5);
+  background: var(--c, #444); cursor: pointer; display: grid; place-items: center;
+}
+.cz-piz-barra button.activo { border-color: #fff; box-shadow: 0 0 0 .6cqh #fab005; }
+.cz-piz-barra .cz-piz-g { background: #444; }
+.cz-piz-barra .cz-piz-g i { width: calc(var(--g) * .13cqh + .8cqh); aspect-ratio: 1; border-radius: 50%; background: #fff; }
+.cz-piz-barra .cz-piz-txt { width: auto; padding: 0 1.8cqh; border-radius: 99px; background: #444; color: #fff; font: 800 3.4cqh "Nunito", sans-serif; }
+.cz-modo-editor .cz-piz-barra, .cz-modo-mini .cz-piz-barra { pointer-events: none; }
+.cz-piz-tiempo { position: absolute; inset: 0; display: none; place-items: center; background: rgba(0, 0, 0, .12); pointer-events: none; }
+.cz-piz-tiempo span { font: 18cqh var(--cz-f-titulo); color: #fff; background: var(--cz-mal); border: var(--cz-borde) solid var(--cz-contorno); border-radius: 99px; padding: 0 .6em; transform: rotate(-6deg); }
+.cz-piz-bloq .cz-piz-tiempo { display: grid; }
+.cz-piz-bloq canvas { cursor: not-allowed; }
+
+/* ---------------------------------------------------------------- quién pulsó primero */
+
+.cz-pulsador { display: flex; align-items: center; justify-content: center; gap: 2.2%; }
+.cz-puls-vacio { font: 800 30cqh var(--cz-f-cuerpo); color: var(--cz-tinta); opacity: .55; }
+.cz-puls {
+  display: flex; align-items: center; gap: 6cqh; height: 74%; padding: 0 8cqh 0 4cqh;
+  background: var(--cz-papel); color: var(--cz-tinta);
+  border: var(--cz-borde) solid var(--cz-contorno); border-radius: 99px; box-shadow: var(--cz-sombra);
+  animation: czRebote .45s both;
+}
+.cz-puls-1 { height: 100%; background: var(--cz-jc); color: #fff; }
+.cz-puls-n { font: 34cqh var(--cz-f-titulo); }
+.cz-puls-a { width: 52cqh; height: 52cqh; }
+.cz-puls-1 .cz-puls-a { width: 68cqh; height: 68cqh; }
+.cz-puls-nom { font: 800 26cqh var(--cz-f-cuerpo); line-height: 1; white-space: nowrap; display: flex; flex-direction: column; }
+.cz-puls-nom small { font-size: .62em; opacity: .7; }

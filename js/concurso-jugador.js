@@ -1,13 +1,14 @@
 /* =============================================================================
    CONCURSO — vista de un jugador (concurso-jugador.html?t=TOKEN). Lee lo suyo
    con concurso_jugador(token) y vuelve a leer cuando la cabina avisa por el
-   canal de Realtime (y cada 15 s por si el aviso se pierde). No tiene ningún
-   control: solo muestra.
+   canal de Realtime (y cada 15 s por si el aviso se pierde). Su único control
+   es el botón RESPONDER: avisa a la cabina por ese mismo canal, y la cabina
+   apunta el orden en que llegan.
 ============================================================================= */
 (function () {
   const raiz = document.getElementById("jugador");
   const token = new URLSearchParams(location.search).get("t") || "";
-  let sb = null, partidaId = null, canal = null, ultimo = "";
+  let sb = null, partidaId = null, canal = null, ultimo = "", enviado = 0, datos = null;
 
   function pintarError(texto) {
     raiz.innerHTML = `<div class="czj-vacio"><h1>Sin conexión con la partida</h1><p>${CZ.esc(texto)}</p></div>`;
@@ -31,9 +32,32 @@
     canal = sb.channel("concurso-" + id).on("broadcast", { event: "cambio" }, () => leer()).subscribe();
   }
 
+  /* RESPONDER: se manda una vez; el botón se queda apagado hasta que la cabina limpie el orden. */
+  function pulsar() {
+    if (!canal || Date.now() - enviado < 3000) return;
+    const pub = (datos && datos.publico) || {}, yo = datos && datos.privado && datos.privado.jugadorId;
+    if ((pub.pulsador || []).includes(yo)) return;
+    enviado = Date.now();
+    canal.send({ type: "broadcast", event: "pulsador", payload: { token } });
+    pintarBoton();
+    setTimeout(pintarBoton, 3100);
+  }
+  function pintarBoton() {
+    const b = raiz.querySelector(".czj-responder");
+    if (!b || !datos) return;
+    const orden = (datos.publico && datos.publico.pulsador) || [], yo = datos.privado && datos.privado.jugadorId;
+    const pos = orden.indexOf(yo);
+    b.disabled = pos >= 0 || Date.now() - enviado < 3000;
+    b.classList.toggle("czj-primero", pos === 0);
+    b.innerHTML = pos === 0 ? "¡Primero!<small>Responde tú</small>" : pos > 0 ? `${pos + 1}.º<small>Llegaste en ${pos + 1}.º lugar</small>` : b.disabled ? "Enviado..." : "Responder<small>Espacio también vale</small>";
+  }
+  document.addEventListener("keydown", ev => { if (ev.key === " " && !/^(INPUT|TEXTAREA)$/.test(ev.target.tagName)) { ev.preventDefault(); pulsar(); } });
+
   const puntosAntes = new Map();
 
   function pintar(d) {
+    datos = d;
+    if (((d.publico || {}).pulsador || []).length === 0) enviado = Math.min(enviado, Date.now() - 2500);
     const pub = d.publico || {}, priv = d.privado || {};
     const jugadores = (pub.jugadores || []).slice();
     const yo = jugadores.find(j => j.id === priv.jugadorId);
@@ -45,6 +69,7 @@
     const antes = puntosAntes.get(yo.id);
     raiz.innerHTML = `
       <header class="czj-cab"><span>${CZ.esc(pub.nombre || "Concurso")}</span></header>
+      <button type="button" class="czj-responder" style="--cz-jc:${CZ.esc(yo.color)}"></button>
       <section class="czj-yo" style="--cz-jc:${CZ.esc(yo.color)}">
         <div class="czj-avatar"></div>
         <div class="czj-datos">
@@ -65,6 +90,8 @@
         <h2>Clasificación</h2>
         <ol>${ranking.map(j => `<li class="${j.id === yo.id ? "czj-soy" : ""}" style="--cz-jc:${CZ.esc(j.color)}"><span class="czj-mini" data-j="${CZ.esc(j.id)}"></span><b>${CZ.esc(j.nombre)}</b><em>${j.puntos}</em></li>`).join("")}</ol>
       </section>`;
+    raiz.querySelector(".czj-responder").addEventListener("click", pulsar);
+    pintarBoton();
     raiz.querySelector(".czj-avatar").appendChild(CZ.avatar(yo, "czj-av"));
     raiz.querySelectorAll(".czj-mini").forEach(n => { const j = ranking.find(x => x.id === n.dataset.j); n.appendChild(CZ.avatar(j)); });
     const num = raiz.querySelector(".czj-n");

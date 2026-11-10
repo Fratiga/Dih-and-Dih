@@ -77,6 +77,8 @@
       eventoPendiente = null;
       CZ.canal.enviar({ tipo: "estado", partida: C.p, evento: ev.evento, sonido: ev.sonido });
       CZ.remoto.publicar(C.p);
+      CZ.clips.sincronizar(C.p, $("#czSonidoCabina").checked);
+      pintarPulsador();
     }, 16);
   }
 
@@ -91,11 +93,38 @@
       const j = CZ.jugador(C.p, msg.jugador);
       if (j && Number.isFinite(msg.valor)) sumar(j, msg.valor - j.puntos);
     }
+    if (msg.tipo === "pizarra" && msg.accion) alPizarra(msg.el, msg.accion);
     if (msg.tipo === "tecla") {
       if (msg.tecla === " " || msg.tecla === "ArrowRight") pasoSiguiente();
       else pasoAnterior();
     }
   });
+
+  /* Trazos de la pizarra: llegan del programa o del monitor. Sin historial: la pizarra tiene su propio deshacer. */
+  function alPizarra(id, accion) {
+    const J = C.p.juego;
+    cambio(() => { J.trazos[id] = CZ.aplicarPizarra(J.trazos[id], accion); }, { partes: "aire", historial: false });
+  }
+  CZ.alPizarra = alPizarra;
+
+  /* ---------------------------------------------------------------- pulsador (botón RESPONDER de los jugadores) */
+  CZ.remoto.alPulsar = datos => {
+    const j = datos && C.p.jugadores.find(x => x.token === datos.token);
+    if (!j) return;
+    const P = C.p.juego.pulsador;
+    if (P.orden.some(o => o.j === j.id)) return;
+    cambio(() => { P.orden.push({ j: j.id, t: Date.now() }); }, { partes: "aire", historial: false, evento: "sonido", sonido: P.orden.length ? "volteo" : "timbre" });
+  };
+  function limpiarPulsador() { cambio(() => { C.p.juego.pulsador = { orden: [] }; }, { partes: "aire", historial: false }); }
+  function pintarPulsador() {
+    const caja = $("#czPulsador");
+    if (!caja) return;
+    const orden = C.p.juego.pulsador.orden;
+    caja.hidden = !orden.length;
+    if (!orden.length) return;
+    const t0 = orden[0].t;
+    caja.innerHTML = `<b>Pulsaron</b> ${orden.map((o, i) => { const j = CZ.jugador(C.p, o.j); return j ? `<span style="--cz-jc:${esc(j.color)}">${i + 1}.º ${esc(j.nombre)}${i ? ` <small>+${((o.t - t0) / 1000).toFixed(2)} s</small>` : ""}</span>` : ""; }).join("")}<button type="button" class="cz-btn-mini" data-limpiar-puls>Limpiar</button>`;
+  }
 
   const escenaEdit = () => CZ.escena(C.p, C.editId);
   const elDe = id => { const e = escenaEdit(); return e && e.elementos.find(x => x.id === id); };
@@ -288,12 +317,24 @@
         <div class="cz-imagen-campo"><div class="cz-imagen-prev" data-prev="${esc(valor || "")}"></div>
         <div><input data-k="${c.k}" placeholder="Pega una URL" value="${esc(valor && !valor.startsWith("idb:") ? valor : "")}">
         <button type="button" class="cz-btn-mini" data-archivo="${c.k}">Archivo del equipo</button>${valor ? ` <button type="button" class="cz-btn-mini" data-quitar="${c.k}">Quitar</button>` : ""}</div></div></div>`;
+      case "audio": {
+        const el = seleccion()[0] || { props: {} }, p = el.props;
+        return `<div class="cz-campo"><span>${esc(c.l)}</span>
+          <div class="cz-audio-campo">
+            <div class="cz-audio-info">${valor ? `<b>${esc(p.archivo || "Canción")}</b> suena de ${esc(segs(p.inicio))} a ${esc(segs(p.fin))} (${esc(segs((p.fin || 0) - (p.inicio || 0)))})` : "Todavía no hay canción. Elige un archivo o arrástralo al escenario."}</div>
+            <input data-k="${c.k}" placeholder="O pega la URL directa de un .mp3" value="${esc(valor && !valor.startsWith("idb:") ? valor : "")}">
+            <div class="cz-fila-mini"><button type="button" class="cz-btn-mini" data-archivo-audio>Archivo del equipo</button>
+            <button type="button" class="cz-btn-mini cz-btn-fuerte" data-recortar${valor ? "" : " disabled"}>Escuchar y recortar</button></div>
+          </div></div>`;
+      }
       case "jugador": return `<label class="cz-campo"><span>${esc(c.l)}</span><select data-k="${c.k}"><option value="">Elige</option>${C.p.jugadores.map(j => `<option value="${j.id}"${j.id === valor ? " selected" : ""}>${esc(j.nombre)}</option>`).join("")}</select></label>`;
       case "lista": case "listaImagenes": return `<label class="cz-campo"><span>${esc(c.l)}</span><textarea data-k="${c.k}" data-lista="1" rows="4">${esc((valor || []).join("\n"))}</textarea></label>`;
       case "enlacesMatriz": return "";
       default: return "";
     }
   }
+
+  const segs = v => (Math.round((Number(v) || 0) * 100) / 100).toLocaleString("es") + " s";
 
   function pintarProps() {
     const cont = $("#czProps");
@@ -445,6 +486,8 @@
       }
       if (b.closest("[data-color]")) { if (b.dataset.v !== undefined) aplicarColor(b.closest("[data-color]").dataset.color, b.dataset.v); return; }
       if (b.dataset.archivo) { elegirArchivo(b.dataset.archivo); return; }
+      if (b.dataset.archivoAudio !== undefined) { elegirAudio(); return; }
+      if (b.dataset.recortar !== undefined && el) { recortar(el); return; }
       if (b.dataset.quitar && el) { cambio(() => { el.props[b.dataset.quitar] = ""; }, { partes: "editor" }); return; }
       if (b.dataset.accion) accion(b.dataset.accion);
     });
@@ -494,18 +537,32 @@
 
   function alAire(id) {
     if (!CZ.escena(C.p, id)) return;
-    cambio(() => { C.p.vivo = { escena: id, paso: 0 }; }, { historial: false, partes: "aire" });
+    cambio(() => {
+      if (C.p.vivo.escena !== id) C.p.juego.pulsador = { orden: [] };
+      C.p.vivo = { escena: id, paso: 0 };
+    }, { historial: false, partes: "aire" });
     pintar("escenas");
+    if (C.pestana === "jugadores") pintarJugadores();
   }
+  // Un paso marcado «a la vez» se aplica junto con el anterior (una sola pulsación de Espacio)
   function pasoSiguiente() {
     const e = CZ.escena(C.p, C.p.vivo.escena);
     if (!e || C.p.vivo.paso >= e.pasos.length) return;
-    cambio(() => { C.p.vivo.paso++; }, { historial: false, partes: "aire" });
-    if (!CZ.silencio && $("#czSonidoCabina").checked) CZ.sonidosDePasos(e, C.p.vivo.paso - 1, C.p.vivo.paso);
+    const desde = C.p.vivo.paso;
+    let hasta = desde + 1;
+    while (hasta < e.pasos.length && e.pasos[hasta].junto) hasta++;
+    cambio(() => {
+      C.p.vivo.paso = hasta;
+      e.pasos.slice(desde, hasta).forEach(p => { if (p.accion === "reproducir" && p.objetivo) C.p.juego.audios[p.objetivo] = { t: Date.now() }; });
+    }, { historial: false, partes: "aire" });
+    if (!CZ.silencio && $("#czSonidoCabina").checked) CZ.sonidosDePasos(e, desde, hasta);
   }
   function pasoAnterior() {
-    if (C.p.vivo.paso <= 0) return;
-    cambio(() => { C.p.vivo.paso--; }, { historial: false, partes: "aire" });
+    const e = CZ.escena(C.p, C.p.vivo.escena);
+    if (!e || C.p.vivo.paso <= 0) return;
+    let h = C.p.vivo.paso - 1;
+    while (h > 0 && e.pasos[h] && e.pasos[h].junto) h--;
+    cambio(() => { C.p.vivo.paso = h; }, { historial: false, partes: "aire" });
   }
 
   function clicAlAire(el, sub, ev) {
@@ -531,6 +588,16 @@
       return;
     }
     if (el.tipo === "carta") { cambio(() => { J.volteadas[el.id] = !J.volteadas[el.id]; }, { partes: "aire", evento: "volteo" }); return; }
+    if (el.tipo === "imagen" && el.props.sello) { cambio(() => { J.volteadas[el.id] = !J.volteadas[el.id]; }, { partes: "aire", evento: "sonido", sonido: J.volteadas[el.id] ? "volteo" : "buzz" }); return; }
+    if (el.tipo === "clip") {
+      // Clic: suena el trozo desde el principio. Si ya está sonando, se para.
+      const a = J.audios[el.id], suena = a && a.t && Date.now() - a.t < CZ.duracionClip(el) * 1000;
+      if (!el.props.src) { aviso("Esta canción no tiene archivo. Ponlo en Propiedades.", true); return; }
+      cambio(() => { if (suena) delete J.audios[el.id]; else J.audios[el.id] = { t: Date.now() }; }, { partes: "aire", historial: false });
+      return;
+    }
+    if (el.tipo === "pulsador") { limpiarPulsador(); return; }
+    if (el.tipo === "pizarra") return;
     if (el.tipo === "temporizador") {
       // Clic: arranca o pausa. Alt+clic: vuelve al tiempo inicial. Si ya terminó, el clic lo reinicia y arranca.
       cambio(() => {
@@ -645,7 +712,11 @@
     matriz: () => anadir("matriz", { w: 1500, h: 820, props: { categorias: ["Recortes", "Siluetas", "Dibujos rápidos", "¿Cuál es el falso?", "¿Existe?"], valores: [1, 1, 2, 2, 3] } }),
     prueba: () => anadir("prueba"),
     silueta: () => anadir("prueba", { nombre: "Silueta", props: { modo: "silueta" } }),
-    reloj: () => anadir("temporizador")
+    reloj: () => anadir("temporizador"),
+    clip: () => anadir("clip"),
+    pizarra: () => anadir("pizarra"),
+    pulsador: () => anadir("pulsador"),
+    sellable: () => anadir("imagen", { nombre: "Imagen A", w: 420, h: 420, props: { sello: "FALSO", marco: true } })
   };
 
   function duplicar() {
@@ -696,7 +767,8 @@
   function accionPorDefecto(el) {
     if (!el) return "sonido";
     if (el.tipo === "prueba") return "revelar";
-    if (el.tipo === "carta" || el.tipo === "rejilla") return "voltear";
+    if (el.tipo === "carta" || el.tipo === "rejilla" || (el.tipo === "imagen" && el.props.sello)) return "voltear";
+    if (el.tipo === "clip") return "reproducir";
     return el.oculto ? "mostrar" : "ocultar";
   }
 
@@ -718,13 +790,14 @@
     const opsEl = sel => e.elementos.map(x => `<option value="${x.id}"${x.id === sel ? " selected" : ""}>${esc(x.nombre || CZ.COMPONENTES[x.tipo].nombre)}</option>`).join("");
     cont.innerHTML = e.pasos.map((p, i) => {
       const el = e.elementos.find(x => x.id === p.objetivo);
-      return `<div class="cz-paso${C.vistaPaso === i + 1 ? " cz-paso-visto" : ""}" data-paso="${p.id}">
+      return `<div class="cz-paso${C.vistaPaso === i + 1 ? " cz-paso-visto" : ""}${p.junto ? " cz-paso-con" : ""}" data-paso="${p.id}">
         <button type="button" class="cz-paso-n" data-ver="${i + 1}" title="Ver la escena en este paso">${i + 1}</button>
         <select data-p="accion">${Object.entries(CZ.ACCIONES).map(([k, t]) => `<option value="${k}"${p.accion === k ? " selected" : ""}>${t}</option>`).join("")}</select>
         ${p.accion === "sonido"
           ? `<select data-p="sonido">${Object.entries(CZ.SONIDOS).map(([k, t]) => `<option value="${k}"${p.sonido === k ? " selected" : ""}>${t}</option>`).join("")}</select><button type="button" class="cz-btn-mini" data-probar="${esc(p.sonido || "ding")}">Escuchar</button>`
           : `<select data-p="objetivo"><option value="">Elige un elemento</option>${opsEl(p.objetivo)}</select>`}
         ${p.accion === "voltear" && el && el.tipo === "rejilla" ? `<label class="cz-paso-celda">carta <input type="number" min="1" data-p="celda" value="${Number(p.celda || 0) + 1}"></label>` : ""}
+        ${i > 0 ? `<label class="cz-paso-junto" title="Se aplica con la misma pulsación que el paso anterior"><input type="checkbox" data-p="junto"${p.junto ? " checked" : ""}> a la vez</label>` : ""}
         <span class="cz-paso-mov"><button type="button" data-mover="-1" title="Subir">↑</button><button type="button" data-mover="1" title="Bajar">↓</button><button type="button" data-quitar-paso title="Quitar">×</button></span>
       </div>`;
     }).join("");
@@ -738,6 +811,7 @@
       const p = e.pasos.find(x => x.id === fila.dataset.paso);
       cambio(() => {
         if (t.dataset.p === "celda") p.celda = Math.max(0, Number(t.value) - 1);
+        else if (t.type === "checkbox") { if (t.checked) p[t.dataset.p] = true; else delete p[t.dataset.p]; }
         else p[t.dataset.p] = t.value;
         if (p.accion === "sonido" && !p.sonido) p.sonido = "ding";
       }, { partes: "editor" });
@@ -761,11 +835,45 @@
 
   /* ---------------------------------------------------------------- jugadores */
 
+  /* ¿Quién está mintiendo?: una escena con textos llamados «Pregunta real» y «Pregunta del mentiroso».
+     Se usa la escena al aire; si no los tiene, la que estás editando. */
+  function escenaMentiroso() {
+    const tiene = e => e && e.elementos.some(x => x.nombre === "Pregunta real") && e.elementos.some(x => x.nombre === "Pregunta del mentiroso");
+    const aire = CZ.escena(C.p, C.p.vivo.escena);
+    return tiene(aire) ? aire : tiene(escenaEdit()) ? escenaEdit() : null;
+  }
+  function mentirosoHtml() {
+    const e = escenaMentiroso();
+    if (!e) return "";
+    const m = C.p.juego.mentiroso, j = m && m.escena === e.id && CZ.jugador(C.p, m.j);
+    return `<div class="cz-consigna">
+      <b>¿Quién está mintiendo?</b> <small>${esc(e.nombre)}</small>
+      <div class="cz-fila-mini"><select data-mentiroso><option value="">Mentiroso al azar</option>${C.p.jugadores.map(x => `<option value="${x.id}">${esc(x.nombre)}</option>`).join("")}</select>
+      <button type="button" class="cz-btn-mini cz-btn-fuerte" data-j-accion="repartir">Repartir las preguntas</button>
+      <button type="button" class="cz-btn-mini" data-j-accion="borrarConsignas">Borrar</button></div>
+      ${j ? `<small class="cz-nota">Repartidas. El mentiroso es <b>${esc(j.nombre)}</b> (solo lo ves tú).</small>` : `<small class="cz-nota">A todos les llega la pregunta real a su enlace; al mentiroso, la otra.</small>`}
+    </div>`;
+  }
+  function repartirPreguntas(elegido) {
+    const e = escenaMentiroso();
+    if (!e || !C.p.jugadores.length) return;
+    const texto = n => ((e.elementos.find(x => x.nombre === n) || {}).props || {}).texto || "";
+    const real = texto("Pregunta real").trim(), falsa = texto("Pregunta del mentiroso").trim();
+    if (!real || !falsa) { aviso("Escribe antes la pregunta real y la del mentiroso.", true); return; }
+    const m = CZ.jugador(C.p, elegido) || C.p.jugadores[Math.floor(Math.random() * C.p.jugadores.length)];
+    cambio(() => {
+      C.p.jugadores.forEach(j => { j.privado = j === m ? falsa : real; });
+      C.p.juego.mentiroso = { escena: e.id, j: m.id };
+    }, { partes: "jugadores" });
+    aviso("Preguntas repartidas. Cada uno la ve en su enlace.");
+  }
+
   function pintarJugadores() {
     const cont = $("#czJug");
     const ranking = CZ.ranking(C.p);
     cont.innerHTML = `
       <div class="cz-jug-cab"><h3 class="cz-lado-tit">Jugadores</h3><button type="button" class="cz-btn-mini" data-j-accion="nuevo">Añadir jugador</button></div>
+      ${mentirosoHtml()}
       <p class="cz-ayuda">Teclas 1 a ${Math.min(9, C.p.jugadores.length)} para elegir, + y − para sumar o restar 1, * y _ para 5. También puedes escribir los puntos en su casilla o hacer clic en el número de un marcador o del podio al aire. Lo que ganas en la matriz se marca con el jugador elegido.</p>
       <div class="cz-jug-lista">${C.p.jugadores.map((j, i) => {
         const pos = ranking.indexOf(j) + 1;
@@ -856,6 +964,8 @@
       if (!b) return;
       const j = fila && CZ.jugador(C.p, fila.dataset.jug);
       if (b.dataset.jAccion === "nuevo") { cambio(() => { C.p.jugadores.push(CZ.nuevoJugador(C.p.jugadores.length)); }, { partes: "jugadores" }); return; }
+      if (b.dataset.jAccion === "repartir") { repartirPreguntas(cont.querySelector("[data-mentiroso]").value); return; }
+      if (b.dataset.jAccion === "borrarConsignas") { cambio(() => { C.p.jugadores.forEach(x => { x.privado = ""; }); delete C.p.juego.mentiroso; }, { partes: "jugadores" }); aviso("Consignas borradas."); return; }
       if (!j) return;
       if (b.dataset.delta) { sumar(j, Number(b.dataset.delta)); return; }
       if (b.dataset.abrir !== undefined) { C.abierto = C.abierto === j.id ? "" : j.id; pintarJugadores(); return; }
@@ -906,6 +1016,34 @@
     inp.accept = "image/*";
     inp.onchange = () => { if (inp.files[0]) usarArchivo(inp.files[0], destino); };
     inp.click();
+  }
+
+  function elegirAudio(nuevo, punto) {
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = "audio/*";
+    inp.onchange = () => { if (inp.files[0]) usarAudio(inp.files[0], nuevo, punto); };
+    inp.click();
+  }
+  async function usarAudio(archivo, nuevo, punto) {
+    if (archivo.size > 60 * 1024 * 1024) { aviso("El audio pesa más de 60 MB.", true); return; }
+    let src;
+    try { src = await CZ.imagenes.guardar(archivo); } catch (e) { aviso("No se pudo guardar el audio en este navegador.", true); return; }
+    const nombre = archivo.name.replace(/\.[^.]+$/, "");
+    let el = !nuevo && seleccion()[0];
+    // Si el reproductor ya tenía un largo (por ejemplo, 3 s en la plantilla), se conserva
+    if (el && el.tipo === "clip") { const largo = Math.max(0.1, (Number(el.props.fin) || 0) - (Number(el.props.inicio) || 0)) || 5; cambio(() => { Object.assign(el.props, { src, archivo: nombre, inicio: 0, fin: largo }); }, { partes: "todo" }); }
+    else {
+      const extra = { nombre: "Canción: " + nombre, props: { src, archivo: nombre, inicio: 0, fin: 5 } };
+      if (punto) { extra.x = Math.round(punto.x - 380); extra.y = Math.round(punto.y - 150); }
+      el = anadir("clip", extra);
+    }
+    if (el) recortar(el);
+  }
+  async function recortar(el) {
+    if (!el.props.src) return;
+    const r = await CZ.abrirRecorte({ src: el.props.src, nombre: el.props.archivo || el.nombre, inicio: el.props.inicio, fin: el.props.fin, volumen: el.props.volumen });
+    if (r) cambio(() => { el.props.inicio = r.inicio; el.props.fin = r.fin; }, { partes: "todo" });
   }
 
   async function usarArchivo(archivo, destino, punto) {
@@ -1046,6 +1184,13 @@
     zona.addEventListener("dragleave", () => zona.classList.remove("cz-soltar"));
     zona.addEventListener("drop", ev => {
       zona.classList.remove("cz-soltar");
+      const sonido = Array.from(ev.dataTransfer.files || []).find(x => x.type.startsWith("audio/"));
+      if (sonido) {
+        ev.preventDefault();
+        const nodoA = ev.target.closest(".cz-el"), elA = nodoA && elDe(nodoA.dataset.id);
+        if (elA && elA.tipo === "clip") { C.sel = [elA.id]; usarAudio(sonido, false); } else usarAudio(sonido, true, aLienzo(ev));
+        return;
+      }
       const f = Array.from(ev.dataTransfer.files || []).find(x => x.type.startsWith("image/"));
       if (!f) return;
       ev.preventDefault();
@@ -1129,15 +1274,18 @@
     $("#czEditarAire").addEventListener("click", () => { C.editId = C.p.vivo.escena; C.sel = []; C.vistaPaso = 0; pintarTodo(); });
     $("#czReiniciarAire").addEventListener("click", async () => {
       const e = CZ.escena(C.p, C.p.vivo.escena);
-      if (!e || !(await confirmar("¿Quitar las marcas de esta escena (celdas usadas, cartas volteadas y temporizadores)? Los puntos no cambian."))) return;
+      if (!e || !(await confirmar("¿Quitar las marcas de esta escena (celdas usadas, cartas volteadas, sellos, temporizadores, dibujos y quién pulsó)? Los puntos no cambian."))) return;
       cambio(() => {
         const ids = new Set(e.elementos.map(x => x.id)), J = C.p.juego;
         Object.keys(J.usadas).forEach(k => { if (ids.has(k.split(":")[0])) delete J.usadas[k]; });
-        ["volteadas", "relojes"].forEach(t => Object.keys(J[t]).forEach(k => { if (ids.has(k)) delete J[t][k]; }));
+        ["volteadas", "relojes", "audios", "trazos"].forEach(t => Object.keys(J[t]).forEach(k => { if (ids.has(k)) delete J[t][k]; }));
+        J.pulsador = { orden: [] };
         C.p.vivo.paso = 0;
       }, { partes: "todo" });
     });
     $("#czSilencio").addEventListener("change", ev => { CZ.canal.enviar({ tipo: "silencio", valor: ev.target.checked }); });
+    $("#czSonidoCabina").addEventListener("change", () => CZ.clips.sincronizar(C.p, $("#czSonidoCabina").checked));
+    $("#czPulsador").addEventListener("click", ev => { if (ev.target.closest("[data-limpiar-puls]")) limpiarPulsador(); });
 
     // Lista de escenas: elegir, poner al aire y reordenar arrastrando
     const lista = $("#czEscenas");

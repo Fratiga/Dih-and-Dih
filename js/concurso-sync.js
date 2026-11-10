@@ -20,6 +20,7 @@
   function parteComun(p) {
     return {
       nombre: p.nombre, tema: p.tema,
+      pulsador: ((p.juego && p.juego.pulsador && p.juego.pulsador.orden) || []).map(o => o.j),
       jugadores: p.jugadores.map(j => ({
         id: j.id, nombre: j.nombre, color: j.color, puntos: j.puntos,
         avatar: j.avatar && !j.avatar.startsWith("idb:") ? j.avatar : "",
@@ -39,6 +40,7 @@
     estado: "apagado",          // apagado | conectando | sin-sesion | sin-admin | sin-sql | conectado | error
     detalle: "",
     alCambiar: null,
+    alPulsar: null,
     _sb: null, _canal: null, _canalId: null, _t: null, _pendiente: null, _ultimo: "",
 
     poner(estado, detalle) {
@@ -92,7 +94,8 @@
     async _avisar(id) {
       if (this._canalId !== id) {
         if (this._canal) this._sb.removeChannel(this._canal);
-        this._canal = this._sb.channel("concurso-" + id);
+        // Por el mismo canal llegan los botones RESPONDER de los jugadores
+        this._canal = this._sb.channel("concurso-" + id).on("broadcast", { event: "pulsador" }, m => { if (this.alPulsar) this.alPulsar(m.payload); });
         this._canalId = id;
         await new Promise(res => this._canal.subscribe(s => { if (s === "SUBSCRIBED" || s === "CHANNEL_ERROR" || s === "TIMED_OUT") res(); }));
       }

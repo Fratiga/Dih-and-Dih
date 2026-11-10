@@ -24,8 +24,8 @@ window.CZ = window.CZ || {};
   CZ.PATRONES = { madera: "Madera", velocidad: "Líneas de velocidad", escaneo: "Pantalla nocturna", puntos: "Puntos", papel: "Papel arrugado" };
   CZ.TRANSICIONES = { corte: "Corte", barrido: "Barrido", cortina: "Cortina", zoom: "Zoom", fundido: "Fundido" };
   CZ.ENTRADAS = { ninguna: "Sin animación", aparecer: "Aparecer", subir: "Subir", rebote: "Rebote", zoom: "Zoom", girar: "Girar", sello: "Sello" };
-  CZ.ACCIONES = { mostrar: "Mostrar", ocultar: "Ocultar", revelar: "Revelar", voltear: "Voltear", sonido: "Sonido" };
-  CZ.SONIDOS = { ding: "Acierto", buzz: "Fallo", tambor: "Redoble", whoosh: "Barrido", jumpscare: "Susto", moneda: "Moneda" };
+  CZ.ACCIONES = { mostrar: "Mostrar", ocultar: "Ocultar", revelar: "Revelar", voltear: "Voltear", reproducir: "Reproducir", sonido: "Sonido" };
+  CZ.SONIDOS = { ding: "Acierto", buzz: "Fallo", tambor: "Redoble", whoosh: "Barrido", jumpscare: "Susto", moneda: "Moneda", timbre: "Timbre" };
   CZ.COLORES_JUGADOR = ["#e8453c", "#3d8de0", "#6cc04a", "#f5b82e", "#a35ee8", "#ff8fb6", "#1fb5a6", "#ff8a3d"];
 
   /* ---------------------------------------------------------------- constructores */
@@ -63,7 +63,7 @@ window.CZ = window.CZ || {};
     const p = {
       id: CZ.uuid(), nombre: nombre || "Partida nueva", tema: "madera", creada: Date.now(), actualizada: Date.now(),
       jugadores: [0, 1, 2, 3].map(i => CZ.nuevoJugador(i)), escenas: [],
-      vivo: { escena: "", paso: 0 }, juego: { usadas: {}, volteadas: {}, relojes: {} }, registro: []
+      vivo: { escena: "", paso: 0 }, juego: { usadas: {}, volteadas: {}, relojes: {}, audios: {}, trazos: {}, pulsador: { orden: [] } }, registro: []
     };
     if (!conEjemplo) {
       const e = CZ.nuevaEscena("Título");
@@ -149,7 +149,8 @@ window.CZ = window.CZ || {};
     p.vivo = p.vivo || { escena: "", paso: 0 };
     if (!p.escenas.some(e => e.id === p.vivo.escena) && p.escenas[0]) p.vivo = { escena: p.escenas[0].id, paso: 0 };
     p.juego = p.juego || {};
-    ["usadas", "volteadas", "relojes"].forEach(k => { p.juego[k] = p.juego[k] || {}; });
+    ["usadas", "volteadas", "relojes", "audios", "trazos"].forEach(k => { p.juego[k] = p.juego[k] || {}; });
+    p.juego.pulsador = p.juego.pulsador || { orden: [] };
     p.registro = p.registro || [];
     p.tema = CZ.TEMAS[p.tema] ? p.tema : "madera";
     return p;

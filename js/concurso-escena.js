@@ -270,9 +270,77 @@
       case "whoosh": ruido(a, 0, 0.45, 0.35, "bandpass", 300, 3000); break;
       case "volteo": ruido(a, 0, 0.12, 0.3, "highpass", 2500); break;
       case "tambor": for (let i = 0; i < 14; i++) ruido(a, i * 0.07, 0.08, 0.25 + i * 0.02, "lowpass", 400); tono(a, "sine", 110, 55, 1.0, 0.5, 0.5); break;
+      case "timbre": tono(a, "square", 1046, 0, 0, 0.09, 0.14); tono(a, "square", 1568, 0, 0.1, 0.22, 0.14); break;
       case "jumpscare": ruido(a, 0, 1.2, 0.9, "bandpass", 800, 200); tono(a, "sawtooth", 70, 40, 0, 1.2, 0.5); tono(a, "square", 620, 300, 0, 0.8, 0.2); break;
     }
   };
+  CZ.contextoAudio = audio;
+
+  /* ---------------------------------------------------------------- clips de canciones
+     Un elemento «clip» lleva un archivo de audio (idb: o URL) y el trozo que suena (inicio y fin, en segundos).
+     El estado de reproducción vive en partida.juego.audios[id] = { t } (hora en que empezó, según la cabina).
+     sincronizar() hace sonar en esta ventana lo que diga ese estado: empieza, para y se pone al día si llega tarde. */
+  const buffers = new Map();     // src -> Promise<AudioBuffer>
+  CZ.bufferDe = function (src) {
+    if (!src) return Promise.reject(new Error("sin audio"));
+    if (!buffers.has(src)) {
+      const pr = CZ.imagenes.url(src)
+        .then(u => fetch(u))
+        .then(r => { if (!r.ok) throw new Error("No se pudo descargar el audio"); return r.arrayBuffer(); })
+        .then(b => new Promise((res, rej) => audio().decodeAudioData(b, res, rej)));
+      pr.catch(() => buffers.delete(src));
+      buffers.set(src, pr);
+    }
+    return buffers.get(src);
+  };
+  CZ.duracionClip = el => Math.max(0.1, (Number(el.props.fin) || 0) - (Number(el.props.inicio) || 0));
+
+  const sonando = new Map();     // id -> { t, fuente, ganancia }
+  function pararClip(id) {
+    const s = sonando.get(id);
+    if (!s) return;
+    sonando.delete(id);
+    if (s.fuente) {
+      const a = audio(), g = s.ganancia.gain;
+      try { g.cancelScheduledValues(a.currentTime); g.setValueAtTime(g.value, a.currentTime); g.linearRampToValueAtTime(0.0001, a.currentTime + 0.06); s.fuente.stop(a.currentTime + 0.07); } catch (e) { /* ya parado */ }
+    }
+  }
+  CZ.clips = {
+    /* activo: si esta ventana debe sonar (el programa siempre; la cabina solo con «Sonidos aquí»). */
+    sincronizar(partida, activo) {
+      const escena = partida && CZ.escena(partida, partida.vivo.escena);
+      const J = (partida && partida.juego.audios) || {};
+      const quiere = new Map();
+      if (activo && !CZ.silencio && escena) escena.elementos.forEach(el => { if (el.tipo === "clip" && J[el.id] && J[el.id].t) quiere.set(el.id, { el, t: J[el.id].t }); });
+      sonando.forEach((s, id) => { const q = quiere.get(id); if (!q || q.t !== s.t) pararClip(id); });
+      quiere.forEach(({ el, t }, id) => {
+        if (sonando.has(id)) return;
+        const dur = CZ.duracionClip(el), tarde = (Date.now() - t) / 1000;
+        if (tarde >= dur || tarde < -5) return;
+        const marca = { t, fuente: null, ganancia: null };
+        sonando.set(id, marca);
+        CZ.bufferDe(el.props.src).then(buf => {
+          if (sonando.get(id) !== marca) return;
+          const a = audio(), ya = Math.max(0, (Date.now() - t) / 1000);
+          if (ya >= dur) { sonando.delete(id); return; }
+          const f = a.createBufferSource(), g = a.createGain();
+          f.buffer = buf;
+          const vol = el.props.volumen == null ? 1 : Number(el.props.volumen);
+          // Fundido corto al entrar y al salir para que no chasquee
+          g.gain.setValueAtTime(0.0001, a.currentTime);
+          g.gain.linearRampToValueAtTime(vol, a.currentTime + 0.03);
+          g.gain.setValueAtTime(vol, a.currentTime + Math.max(0.03, dur - ya - 0.05));
+          g.gain.linearRampToValueAtTime(0.0001, a.currentTime + (dur - ya));
+          f.connect(g).connect(a.destination);
+          f.start(a.currentTime, (Number(el.props.inicio) || 0) + ya, dur - ya);
+          f.onended = () => { if (sonando.get(id) === marca) sonando.delete(id); };
+          marca.fuente = f; marca.ganancia = g;
+        }).catch(() => { if (sonando.get(id) === marca) sonando.delete(id); });
+      });
+    },
+    pararTodo() { Array.from(sonando.keys()).forEach(pararClip); }
+  };
+
   /* Sonidos de los pasos que se acaban de aplicar (de "desde" a "hasta", sin incluir "desde"). */
   CZ.sonidosDePasos = function (escena, desde, hasta) {
     if (!escena || hasta <= desde) return;

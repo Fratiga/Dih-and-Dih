@@ -18,6 +18,8 @@
     }
   });
   let anterior = null;     // { escena, paso, puntos: Map }
+  // Lo que se dibuja en la pizarra de esta ventana se manda a la cabina, que lo guarda y lo reparte
+  CZ.alPizarra = (id, accion) => CZ.canal.enviar({ tipo: "pizarra", el: id, accion });
 
   function aplicar(msg) {
     const p = msg.partida;
@@ -27,6 +29,7 @@
     const escena = CZ.escena(p, v.escena);
     const cambiaEscena = !anterior || anterior.escena !== v.escena;
     escenario.mostrar(p, v.escena, v.paso || 0, { transicion: true });
+    CZ.clips.sincronizar(p, true);
     if (anterior && !cambiaEscena && v.paso > anterior.paso) CZ.sonidosDePasos(escena, anterior.paso, v.paso);
     if (anterior && cambiaEscena && escena && escena.transicion !== "corte") CZ.sonar("whoosh");
     if (anterior) {
@@ -47,7 +50,7 @@
 
   CZ.canal.escuchar(msg => {
     if (msg && msg.tipo === "estado") aplicar(msg);
-    if (msg && msg.tipo === "silencio") CZ.silencio = !!msg.valor;
+    if (msg && msg.tipo === "silencio") { CZ.silencio = !!msg.valor; if (CZ.silencio) CZ.clips.pararTodo(); }
   });
   CZ.canal.enviar({ tipo: "pedir" });
 

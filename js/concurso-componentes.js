@@ -97,26 +97,40 @@
 
     imagen: {
       nombre: "Imagen", w: 600, h: 400, entrada: "zoom",
-      props: { src: "", ajuste: "contain", pegatina: false, radio: 0 },
+      props: { src: "", ajuste: "contain", pegatina: false, radio: 0, marco: false, sello: "", colorSello: "" },
       campos: [
         { k: "src", t: "imagen", l: "Imagen" },
         { k: "ajuste", t: "elegir", l: "Ajuste", ops: { contain: "Entera", cover: "Llenar el recuadro" } },
         { k: "pegatina", t: "casilla", l: "Contorno de pegatina" },
-        { k: "radio", t: "rango", l: "Esquinas", min: 0, max: 300 }
+        { k: "marco", t: "casilla", l: "Con marco" },
+        { k: "radio", t: "rango", l: "Esquinas", min: 0, max: 300 },
+        { k: "sello", t: "linea", l: "Sello al hacer clic al aire (por ejemplo FALSO)" },
+        { k: "colorSello", t: "color", l: "Color del sello" }
       ],
-      crear(el) {
+      crear(el, ctx) {
         const p = el.props;
-        if (!p.src) return div("cz-imagen cz-vacia", "<span>Imagen</span>");
-        const d = div("cz-imagen" + (p.pegatina ? " cz-pegatina" : ""));
-        const img = document.createElement("img");
-        img.alt = "";
-        img.draggable = false;
-        img.style.objectFit = p.ajuste || "contain";
-        img.style.borderRadius = (p.radio || 0) + "px";
-        CZ.ponerImagen(img, p.src);
-        d.appendChild(img);
+        let d;
+        if (!p.src) d = div("cz-imagen cz-vacia" + (p.marco ? " cz-con-marco" : ""), `<span>${esc(el.nombre || "Imagen")}</span>`);
+        else {
+          d = div("cz-imagen" + (p.pegatina ? " cz-pegatina" : "") + (p.marco ? " cz-con-marco" : ""));
+          const img = document.createElement("img");
+          img.alt = "";
+          img.draggable = false;
+          img.style.objectFit = p.ajuste || "contain";
+          img.style.borderRadius = (p.radio || 0) + "px";
+          CZ.ponerImagen(img, p.src);
+          d.appendChild(img);
+        }
+        if (p.sello) {
+          const s = div("cz-img-sello", `<span>${esc(p.sello)}</span>`);
+          if (p.colorSello) s.style.setProperty("--cz-sc", p.colorSello);
+          d.appendChild(s);
+          d.classList.toggle("cz-sellada", sellada(el, ctx));
+        }
         return d;
-      }
+      },
+      actualizar(nodo, el, ctx) { if (el.props.sello) nodo.classList.toggle("cz-sellada", sellada(el, ctx)); return nodo; },
+      firma(el) { return JSON.stringify(el.props) + "|" + el.nombre; }
     },
 
     forma: {
@@ -405,7 +419,208 @@
       },
       actualizar(nodo, el, ctx) { nodo._el = el; nodo._ctx = ctx; return nodo; },
       firma() { return "r"; }
+    },
+
+    clip: {
+      nombre: "Canción", w: 760, h: 300, entrada: "rebote",
+      props: { src: "", archivo: "", inicio: 0, fin: 5, volumen: 1, etiqueta: "¿Qué canción es?" },
+      campos: [
+        { k: "src", t: "audio", l: "Canción" },
+        { k: "etiqueta", t: "linea", l: "Texto que se ve (no pongas el título)" },
+        { k: "volumen", t: "rango", l: "Volumen", min: 0, max: 1.5, paso: 0.05 }
+      ],
+      crear(el, ctx) {
+        const p = el.props;
+        const d = div("cz-clip" + (p.src ? "" : " cz-clip-vacio"));
+        d.innerHTML = `
+          <div class="cz-clip-disco"><i></i></div>
+          <div class="cz-clip-der">
+            <div class="cz-clip-et">${esc(p.etiqueta || "")}</div>
+            <div class="cz-clip-barras">${Array.from({ length: 14 }, (_, i) => `<b style="--i:${i}"></b>`).join("")}</div>
+            <div class="cz-clip-prog"><i></i></div>
+            <div class="cz-clip-dur">${p.src ? fmtSeg(duracion(el)) : "Sin canción"}</div>
+          </div>`;
+        d._el = el; d._ctx = ctx;
+        const tic = () => {
+          if (!d.isConnected) { clearInterval(d._t); return; }
+          const a = d._ctx.juego.audios && d._ctx.juego.audios[d._el.id];
+          const k = a && a.t ? (Date.now() - a.t) / 1000 / duracion(d._el) : 1;
+          const corre = k >= 0 && k < 1;
+          d.classList.toggle("cz-sonando", corre);
+          d.querySelector(".cz-clip-prog i").style.width = (corre ? k * 100 : 0) + "%";
+        };
+        tic();
+        d._t = setInterval(tic, 100);
+        return d;
+      },
+      actualizar(nodo, el, ctx) { nodo._el = el; nodo._ctx = ctx; return nodo; },
+      firma(el) { const p = el.props; return [p.src, p.inicio, p.fin, p.etiqueta].join("|"); }
+    },
+
+    pizarra: {
+      nombre: "Pizarra", w: 1100, h: 640, entrada: "zoom",
+      props: { barra: true, fondo: "#ffffff" },
+      campos: [
+        { k: "barra", t: "casilla", l: "Herramientas a la vista" },
+        { k: "fondo", t: "color", l: "Color del papel" }
+      ],
+      crear(el, ctx) { return crearPizarra(el, ctx); },
+      actualizar(nodo, el, ctx) { nodo._el = el; nodo._ctx = ctx; dibujarPizarra(nodo); return nodo; },
+      firma(el) { return [el.w, el.h, el.props.barra, el.props.fondo].join("|"); }
+    },
+
+    pulsador: {
+      nombre: "Quién pulsó primero", w: 900, h: 120, entrada: "subir",
+      props: { vacio: "Pulsa RESPONDER en tu enlace" },
+      campos: [{ k: "vacio", t: "linea", l: "Texto mientras nadie ha pulsado" }],
+      crear(el, ctx) {
+        const orden = ((ctx.juego.pulsador || {}).orden || []);
+        const d = div("cz-pulsador");
+        if (!orden.length) { d.appendChild(div("cz-puls-vacio", esc(el.props.vacio || ""))); return d; }
+        const t0 = orden[0].t;
+        orden.forEach((o, i) => {
+          const j = CZ.jugador(ctx.partida, o.j);
+          if (!j) return;
+          const c = div("cz-puls" + (i === 0 ? " cz-puls-1" : ""));
+          c.style.setProperty("--cz-jc", j.color);
+          c.appendChild(div("cz-puls-n", (i + 1) + ".º"));
+          c.appendChild(avatar(j, "cz-puls-a"));
+          c.appendChild(div("cz-puls-nom", esc(j.nombre) + (i ? `<small>+${((o.t - t0) / 1000).toFixed(2)} s</small>` : "")));
+          d.appendChild(c);
+        });
+        return d;
+      },
+      firma(el, ctx) { return el.props.vacio + "|" + JSON.stringify((ctx.juego.pulsador || {}).orden || []) + "|" + ctx.partida.jugadores.map(j => j.avatar + j.color + j.nombre).join(","); }
     }
+  };
+
+  const fmtSeg = s => (Math.round(s * 10) / 10).toLocaleString("es") + " s";
+  const duracion = el => Math.max(0.1, (Number(el.props.fin) || 0) - (Number(el.props.inicio) || 0));
+
+  /* ---------------------------------------------------------------- pizarra
+     Se dibuja en el programa o en el monitor de la cabina. Cada trazo terminado se manda a la cabina
+     (CZ.alPizarra), que lo guarda en partida.juego.trazos[id] y lo reparte. Mientras vuelve, el trazo
+     se queda en «pendientes» para que no parpadee. Si en la escena hay un temporizador que ya llegó a
+     cero, la pizarra se bloquea hasta que lo reinicies. */
+  const PIZ_COLORES = ["#1f1f1f", "#e03131", "#f08c00", "#fab005", "#2f9e44", "#1c7ed6", "#9c36b5", "#f783ac", "#8d5a2b", "#ffffff"];
+  const PIZ_GROSOR = [6, 14, 30];
+  const piz = { c: "#1f1f1f", g: 14, goma: false };
+  const pendientes = new Map();   // id de pizarra -> [trazos]
+
+  function trazosDe(el, ctx) {
+    const guardados = (ctx.juego.trazos && ctx.juego.trazos[el.id]) || [];
+    const ids = new Set(guardados.map(t => t.id));
+    const pend = (pendientes.get(el.id) || []).filter(t => !ids.has(t.id) && Date.now() - t.hora < 4000);
+    pendientes.set(el.id, pend);
+    return guardados.concat(pend);
+  }
+  function pintarTrazo(g, t) {
+    const p = t.p;
+    if (!p || p.length < 2) return;
+    g.globalCompositeOperation = t.goma ? "destination-out" : "source-over";
+    g.strokeStyle = t.c; g.fillStyle = t.c; g.lineWidth = t.g; g.lineCap = "round"; g.lineJoin = "round";
+    if (p.length === 2) { g.beginPath(); g.arc(p[0], p[1], t.g / 2, 0, Math.PI * 2); g.fill(); return; }
+    g.beginPath();
+    g.moveTo(p[0], p[1]);
+    for (let i = 2; i < p.length - 2; i += 2) g.quadraticCurveTo(p[i], p[i + 1], (p[i] + p[i + 2]) / 2, (p[i + 1] + p[i + 3]) / 2);
+    g.lineTo(p[p.length - 2], p[p.length - 1]);
+    g.stroke();
+  }
+  function dibujarPizarra(nodo) {
+    const cv = nodo.querySelector("canvas"), g = cv.getContext("2d");
+    g.clearRect(0, 0, cv.width, cv.height);
+    trazosDe(nodo._el, nodo._ctx).forEach(t => pintarTrazo(g, t));
+    if (nodo._actual) pintarTrazo(g, nodo._actual);
+    g.globalCompositeOperation = "source-over";
+    nodo.classList.toggle("cz-piz-bloq", pizarraBloqueada(nodo._el, nodo._ctx));
+  }
+  function pizarraBloqueada(el, ctx) {
+    return ctx.escena.elementos.some(x => x.tipo === "temporizador" && ctx.juego.relojes[x.id] && ctx.estado.visibles.has(x.id) && restanteReloj(x, ctx.juego) <= 0);
+  }
+  function crearPizarra(el, ctx) {
+    const d = div("cz-pizarra");
+    d.style.setProperty("--cz-piz", el.props.fondo || "#ffffff");
+    d._el = el; d._ctx = ctx;
+    const cv = document.createElement("canvas");
+    cv.width = el.w; cv.height = el.h;
+    d.appendChild(cv);
+    d.appendChild(div("cz-piz-tiempo", "<span>¡Tiempo!</span>"));
+    const activa = ctx.modo === "programa" || ctx.modo === "monitor";
+    if (el.props.barra !== false) {
+      const barra = div("cz-piz-barra");
+      barra.innerHTML = PIZ_COLORES.map(c => `<button type="button" data-c="${c}" style="--c:${c}" title="${c}"></button>`).join("")
+        + `<span></span>` + PIZ_GROSOR.map(gr => `<button type="button" data-g="${gr}" class="cz-piz-g"><i style="--g:${gr}"></i></button>`).join("")
+        + `<button type="button" data-goma class="cz-piz-txt">goma</button><button type="button" data-hacer="deshacer" class="cz-piz-txt" title="Quitar el último trazo">↶</button><button type="button" data-hacer="borrar" class="cz-piz-txt">borrar</button>`;
+      const marcar = () => barra.querySelectorAll("button").forEach(b => b.classList.toggle("activo",
+        !!((b.dataset.c && !piz.goma && b.dataset.c === piz.c) || (b.dataset.g && Number(b.dataset.g) === piz.g) || (b.dataset.goma !== undefined && piz.goma))));
+      marcar();
+      d._marcar = marcar;
+      if (activa) {
+        barra.addEventListener("pointerdown", ev => ev.stopPropagation());
+        barra.addEventListener("click", ev => {
+          ev.stopPropagation();
+          const b = ev.target.closest("button");
+          if (!b) return;
+          if (b.dataset.c) { piz.c = b.dataset.c; piz.goma = false; }
+          else if (b.dataset.g) piz.g = Number(b.dataset.g);
+          else if (b.dataset.goma !== undefined) piz.goma = !piz.goma;
+          else if (b.dataset.hacer) {
+            if (b.dataset.hacer === "borrar") pendientes.set(d._el.id, []);
+            if (CZ.alPizarra) CZ.alPizarra(d._el.id, { tipo: b.dataset.hacer });
+          }
+          document.querySelectorAll(".cz-pizarra").forEach(n => n._marcar && n._marcar());
+        });
+      }
+      d.appendChild(barra);
+    }
+    if (activa) {
+      d.classList.add("cz-piz-activa");
+      const punto = ev => {
+        const r = cv.getBoundingClientRect();
+        return [Math.round((ev.clientX - r.left) * cv.width / r.width), Math.round((ev.clientY - r.top) * cv.height / r.height)];
+      };
+      cv.addEventListener("pointerdown", ev => {
+        if (ev.button !== 0 || pizarraBloqueada(d._el, d._ctx)) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        cv.setPointerCapture(ev.pointerId);
+        d._actual = { id: CZ.uid(), c: piz.c, g: piz.goma ? piz.g * 2.2 : piz.g, p: punto(ev) };
+        if (piz.goma) d._actual.goma = true;
+        dibujarPizarra(d);
+      });
+      cv.addEventListener("pointermove", ev => {
+        if (!d._actual) return;
+        const [x, y] = punto(ev), p = d._actual.p;
+        if (Math.abs(x - p[p.length - 2]) + Math.abs(y - p[p.length - 1]) < 3) return;
+        p.push(x, y);
+        dibujarPizarra(d);
+      });
+      const soltar = () => {
+        const t = d._actual;
+        if (!t) return;
+        d._actual = null;
+        const l = pendientes.get(d._el.id) || [];
+        l.push(Object.assign({ hora: Date.now() }, t));
+        pendientes.set(d._el.id, l);
+        dibujarPizarra(d);
+        if (CZ.alPizarra) CZ.alPizarra(d._el.id, { tipo: "trazo", trazo: t });
+      };
+      cv.addEventListener("pointerup", soltar);
+      cv.addEventListener("pointercancel", soltar);
+      d.addEventListener("click", ev => ev.stopPropagation());
+    }
+    // El bloqueo depende del reloj, que corre sin que cambie el estado: se mira cada poco
+    d._t = setInterval(() => { if (!d.isConnected) clearInterval(d._t); else d.classList.toggle("cz-piz-bloq", pizarraBloqueada(d._el, d._ctx)); }, 250);
+    dibujarPizarra(d);
+    return d;
+  }
+  /* Aplica a una lista de trazos lo que mande la pizarra (lo usa la cabina). */
+  CZ.aplicarPizarra = function (lista, accion) {
+    lista = (lista || []).slice();
+    if (accion.tipo === "trazo" && accion.trazo && !lista.some(t => t.id === accion.trazo.id)) lista.push(accion.trazo);
+    else if (accion.tipo === "deshacer") lista.pop();
+    else if (accion.tipo === "borrar") lista = [];
+    return lista;
   };
 
   function firmaJugador(j) { return [j.nombre, j.avatar, j.color].join("|"); }
@@ -423,6 +638,8 @@
     c.appendChild(papel);
     return c;
   }
+
+  function sellada(el, ctx) { return !!ctx.estado.volteos[el.id] !== !!ctx.juego.volteadas[el.id]; }
 
   function cartaBocaAbajo(el, ctx) {
     let abajo = !!el.props.bocaAbajo;
