@@ -229,7 +229,7 @@
 
     carta: {
       nombre: "Carta", w: 360, h: 500, entrada: "rebote",
-      props: { titulo: "Nombre", etiqueta: "OBJETIVO", colorEtiqueta: "#e8453c", imagen: "", habilidad: "Habilidad", texto: "Lo que hace la carta.", nota: "", bocaAbajo: false },
+      props: { titulo: "Nombre", etiqueta: "OBJETIVO", colorEtiqueta: "#e8453c", imagen: "", habilidad: "Habilidad", texto: "Lo que hace la carta.", nota: "", bocaAbajo: false, dorso: "", colorDorso: "" },
       campos: [
         { k: "titulo", t: "linea", l: "Nombre" },
         { k: "etiqueta", t: "linea", l: "Etiqueta" },
@@ -238,12 +238,15 @@
         { k: "habilidad", t: "linea", l: "Habilidad" },
         { k: "texto", t: "area", l: "Efecto" },
         { k: "nota", t: "linea", l: "Letra pequeña" },
-        { k: "bocaAbajo", t: "casilla", l: "Empieza boca abajo" }
+        { k: "bocaAbajo", t: "casilla", l: "Empieza boca abajo" },
+        { k: "dorso", t: "linea", l: "Texto del dorso" },
+        { k: "colorDorso", t: "color", l: "Color del dorso" }
       ],
       crear(el, ctx) {
         const p = el.props;
         const d = div("cz-carta");
         d.style.setProperty("--cz-cc", p.colorEtiqueta || "#e8453c");
+        d.style.setProperty("--cz-cd", p.colorDorso || p.colorEtiqueta || "#e8453c");
         d.innerHTML = `
           <div class="cz-carta-giro">
             <div class="cz-carta-cara">
@@ -253,7 +256,7 @@
               <div class="cz-carta-txt">${esc(p.texto)}</div>
               ${p.nota ? `<div class="cz-carta-nota">${esc(p.nota)}</div>` : ""}
             </div>
-            <div class="cz-carta-dorso"><span>?</span></div>
+            <div class="cz-carta-dorso"><span>?</span>${p.dorso ? `<b>${esc(p.dorso)}</b>` : ""}</div>
           </div>`;
         CZ.ponerImagen(d.querySelector(".cz-carta-ilus"), p.imagen, true);
         d.classList.toggle("cz-volteada", cartaBocaAbajo(el, ctx));
@@ -263,7 +266,7 @@
         nodo.classList.toggle("cz-volteada", cartaBocaAbajo(el, ctx));
         return nodo;
       },
-      firma(el) { const p = el.props; return [p.titulo, p.etiqueta, p.colorEtiqueta, p.imagen, p.habilidad, p.texto, p.nota].join("|"); }
+      firma(el) { const p = el.props; return [p.titulo, p.etiqueta, p.colorEtiqueta, p.imagen, p.habilidad, p.texto, p.nota, p.dorso, p.colorDorso].join("|"); }
     },
 
     rejilla: {

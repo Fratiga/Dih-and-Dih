@@ -316,14 +316,18 @@
 .cz-carta-nota { margin-top: auto; font-size: 3.4cqh; font-style: italic; color: #555; }
 .cz-carta-dorso {
   transform: rotateY(180deg);
-  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, .14) 0 3cqh, transparent 3cqh 6cqh), var(--cz-cc);
+  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, .14) 0 3cqh, transparent 3cqh 6cqh), var(--cz-cd, var(--cz-cc));
   border: 2.6cqh solid #fff;
   box-shadow: 0 0 0 .6cqh var(--cz-contorno), var(--cz-sombra);
-  display: grid; place-items: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4cqh;
+}
+.cz-carta-dorso b {
+  background: #fff; color: var(--cz-contorno); border: .8cqh solid var(--cz-contorno); border-radius: 99px;
+  padding: .4cqh 1em; font: 400 9cqh "Lilita One", sans-serif; white-space: nowrap;
 }
 .cz-carta-dorso span {
   width: 42%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
-  background: #fff; color: var(--cz-cc); border: 1cqh solid var(--cz-contorno);
+  background: #fff; color: var(--cz-cd, var(--cz-cc)); border: 1cqh solid var(--cz-contorno);
   font: 22cqh "Lilita One", sans-serif;
 }
 

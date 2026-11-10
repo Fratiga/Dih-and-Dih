@@ -186,10 +186,11 @@
       const t = TIPOS[it.tipo];
       e.elementos.push(el("carta", it.n, 60 + (i % 4) * 460, 140 + Math.floor(i / 4) * 470, 420, 450, {
         titulo: it.n, etiqueta: it.precio + " PTS", colorEtiqueta: t.color, imagen: "",
-        habilidad: t.nombre, texto: it.t, nota: it.tema, bocaAbajo: false
+        habilidad: t.nombre, texto: it.t, nota: it.tema, bocaAbajo: true,
+        dorso: it.precio + " PTS", colorDorso: "#3d7bd9"
       }, { entrada: "rebote" }));
     });
-    e.notas = "Para vender: selecciona la carta en el editor y, en Jugadores, abre los datos del comprador y pulsa «Dar la carta seleccionada». Luego réstale el precio.\nPuedes poner una ilustración a cada carta con «Archivo del equipo».\n\n"
+    e.notas = "Las cartas salen boca abajo y solo se ve el precio. Cuando alguien compre una, haz clic en ella al aire para darle la vuelta (otro clic la vuelve a tapar).\nPara vender: selecciona la carta en el editor y, en Jugadores, abre los datos del comprador y pulsa «Dar la carta seleccionada». Luego réstale el precio.\nPuedes poner una ilustración a cada carta con «Archivo del equipo».\n\n"
       + items.filter(it => it.nota).map(it => `${it.n}: ${it.nota}`).join("\n");
     return e;
   }
