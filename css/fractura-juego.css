@@ -342,3 +342,11 @@ body.fr-en-portada .fr-contenido { padding: 0; max-width: none; margin: 0; }
   .fr-arbol-saber { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .fr-bando.activo, .fr-previa-barra i.pierde, .fr-resumen, #frGuerra .fr-cartel { animation: none; } .fr-menu-btn { transition: none; } }
+
+/* ---------- Pantalla completa (todo el juego) ---------- */
+body.fr-pantalla-completa .mj-barra { display: none; }
+body.fr-pantalla-completa .fr-portada { height: 100vh; }
+body.fr-pantalla-completa:not(.fr-en-guerra):not(.fr-en-portada) .fr-contenido { padding-top: 14px; }
+.fr-salir-completa { position: fixed; top: 6px; right: 8px; z-index: 50; font: inherit; font-size: .76rem; padding: 3px 9px; color: #b8a99c; background: rgba(14, 11, 19, .8); border: 1px solid var(--fr-filete); cursor: pointer; }
+.fr-salir-completa:hover { color: var(--fr-marfil); border-color: var(--accent); }
+.fr-salir-completa.hidden, body.fr-en-guerra .fr-salir-completa { display: none; }

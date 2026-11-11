@@ -87,7 +87,8 @@
     menu.innerHTML = `<button type="button" class="fr-menu-btn principal" data-pm="jugar"><span>Jugar</span><small>Elige un ejército y ve a la guerra</small></button>
       <button type="button" class="fr-menu-btn" data-pm="codice"><span>Códice</span><small>Los trece ejércitos, sus tropas y sus héroes</small></button>
       <button type="button" class="fr-menu-btn" data-pm="ayuda"><span>Cómo se juega</span></button>
-      <button type="button" class="fr-menu-btn" data-pm="ajustes"><span>Ajustes</span></button>`;
+      <button type="button" class="fr-menu-btn" data-pm="ajustes"><span>Ajustes</span></button>
+      ${document.documentElement.requestFullscreen ? `<button type="button" class="fr-menu-btn" data-pm="pantalla"><span>Pantalla completa</span><small>También con la tecla F</small></button>` : ""}`;
     animarPortada();
     await cargarEjercitos();
     if (!$("frPortada").classList.contains("hidden")) {
@@ -111,6 +112,7 @@
     else if (m === "codice") abrirCodice();
     else if (m === "ayuda") abrirAyuda();
     else if (m === "ajustes") abrirAjustes();
+    else if (m === "pantalla") pantallaCompleta();
   });
   $("frAPortada").addEventListener("click", pintarPortada);
 
@@ -1460,7 +1462,18 @@ pintarHero();
     else if (v === "pantalla") pantallaCompleta();
   });
   function pantallaCompleta() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); }
-  document.addEventListener("fullscreenchange", () => { const b = $("frPantallaCompleta"); if (b) b.textContent = document.fullscreenElement ? "✕" : "⛶"; });
+  /* Pantalla completa: vale en todo el juego (portada, cuartel y guerra) y no se sale sola al cambiar de pantalla */
+  document.addEventListener("fullscreenchange", () => {
+    const si = !!document.fullscreenElement;
+    const b = $("frPantallaCompleta"); if (b) b.textContent = si ? "✕" : "⛶";
+    document.body.classList.toggle("fr-pantalla-completa", si);
+    const f = $("frSalirCompleta"); if (f) f.classList.toggle("hidden", !si);
+  });
+  document.addEventListener("keydown", ev => {
+    if (ev.key.toLowerCase() !== "f" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.target.closest("input, textarea, select") || !document.documentElement.requestFullscreen) return;
+    pantallaCompleta();
+  });
+  $("frSalirCompleta").addEventListener("click", pantallaCompleta);
 
   /* --- Teclado --- */
   document.addEventListener("keydown", ev => {
@@ -1570,7 +1583,6 @@ pintarHero();
     else if (m === "salir") {
       if (est && est.ganador === null && !pvp) Red.guardarGuerra(est, cfgGuerraActual);
       musicaPartida(false); pararSondeo();
-      if (document.fullscreenElement) document.exitFullscreen();
       entrarCuartel(pvp ? "duelos" : "guerra");
     }
   });
@@ -1627,7 +1639,6 @@ pintarHero();
     if (finHecho) return;
     finHecho = true;
     musicaPartida(false);
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     const resumen = C.cerrarGuerra(ej, est, null, humano());
     const narr = CR.narrar(est, ej, resumen, humano());
     const reg = resumen.registro;
