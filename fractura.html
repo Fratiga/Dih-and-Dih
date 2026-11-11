@@ -9,7 +9,8 @@
   <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
   <link rel="stylesheet" href="css/style.css?v=20271111">
   <link rel="stylesheet" href="css/minijuegos.css?v=20271111">
-  <link rel="stylesheet" href="css/fractura.css?v=20271115">
+  <link rel="stylesheet" href="css/fractura.css?v=20271117">
+  <link rel="stylesheet" href="css/fractura-juego.css?v=20271117">
 </head>
 <body class="mj-pagina fractura-tema">
   <script src="js/carga.js?v=20271111"></script>
@@ -27,14 +28,27 @@
   </div>
 
   <main class="mj-contenido fr-contenido">
-    <p class="eyebrow">ESTRATEGIA</p>
-    <h1 class="mj-titulo">La Fractura</h1>
-    <p class="fr-lead">Un espacio fuera del mundo conocido, hecho de fragmentos de lugares, sueños y recuerdos. Lo que pase aquí no cambia lo que ocurre en la campaña. Tus soldados sí lo recordarán.</p>
     <p id="frAviso" class="fr-aviso hidden" role="status"></p>
 
+    <!-- 0. Portada del juego -->
+    <section id="frPortada" class="fr-pantalla fr-portada">
+      <canvas id="frPortadaFondo" class="fr-portada-fondo" aria-hidden="true"></canvas>
+      <div class="fr-portada-centro">
+        <p class="fr-portada-sobre">Un juego de estrategia por turnos del Compendio</p>
+        <h1 class="fr-logo">La Fractura</h1>
+        <p class="fr-portada-lema">Un espacio fuera del mundo conocido, hecho de fragmentos de lugares, sueños y recuerdos. Lo que pase aquí no cambia la campaña. Tus soldados sí lo recordarán.</p>
+        <nav id="frPortadaMenu" class="fr-portada-menu" aria-label="Menú principal"></nav>
+      </div>
+      <p class="fr-portada-pie">Trece ejércitos · de 2 a 8 bandos · guerras contra la máquina y duelos entre jugadores</p>
+    </section>
+
     <!-- 1. Elegir ejército -->
-    <section id="frInicio" class="fr-pantalla">
-      <h2 class="fr-h2">Tus ejércitos</h2>
+    <section id="frInicio" class="fr-pantalla hidden">
+      <div class="fr-inicio-cab">
+        <button type="button" class="fr-btn" id="frAPortada">← Portada</button>
+        <h2 class="fr-h2">Elige tu ejército</h2>
+        <p class="fr-sub">Cada ejército guarda sus soldados, sus casas y sus caídos de una guerra a otra.</p>
+      </div>
       <div id="frEjercitos" class="fr-ejercitos"></div>
     </section>
 
@@ -54,38 +68,52 @@
       <div id="frVista" class="fr-vista"></div>
     </section>
 
-    <!-- 3. La guerra: el tablero ocupa toda la pantalla y la interfaz flota encima -->
+    <!-- 3. La guerra: el mapa ocupa toda la pantalla y la interfaz flota encima -->
     <section id="frGuerra" class="fr-pantalla hidden" aria-label="La guerra">
-      <canvas id="frTablero" aria-label="Mapa de la Fractura"></canvas>
+      <canvas id="frTablero" aria-label="Mapa de la guerra"></canvas>
+      <div class="fr-vineta" aria-hidden="true"></div>
       <div class="fr-hud">
-        <header class="fr-hud-arriba">
-          <button type="button" id="frSalir" class="fr-boton" title="Volver al cuartel. La guerra queda guardada">← Cuartel</button>
+        <header class="fr-top">
+          <button type="button" id="frMenu" class="fr-ibtn" title="Menú de la guerra (Esc)" aria-label="Menú de la guerra">☰</button>
           <div id="frRecursos" class="fr-recursos" aria-label="Recursos"></div>
-          <div class="fr-turno">
-            <span id="frTurno"></span>
-            <button type="button" id="frRendirse" class="fr-boton">Rendirse</button>
-            <button type="button" id="frTerminar" class="fr-boton fr-boton-principal">Terminar turno</button>
-          </div>
+          <div id="frBandos" class="fr-bandos" aria-label="Bandos y orden de turnos"></div>
+          <div id="frTurno" class="fr-turno-caja"></div>
         </header>
-        <aside id="frPanel" class="fr-hud-lateral abierto" aria-label="Información">
-          <nav class="fr-pestanas fr-pestanas-chicas" id="frLatPestanas">
-            <button type="button" data-l="sel" class="activa">Selección</button>
-            <button type="button" data-l="ciudades">Ciudades</button>
-            <button type="button" data-l="saber">Investigar</button>
-            <button type="button" data-l="registro">Registro</button>
-            <button type="button" id="frPanelCerrar" class="fr-panel-x" aria-label="Ocultar el panel">×</button>
-          </nav>
-          <div id="frLateral" class="fr-lateral-cuerpo"></div>
-        </aside>
-        <button type="button" id="frPanelAbrir" class="fr-boton fr-panel-abrir" aria-label="Mostrar el panel">Panel</button>
-        <div id="frVistaMapa" class="fr-vista hidden" role="group" aria-label="Vista del mapa">
-          <button type="button" class="fr-boton" data-vista="mas" title="Acercar (también con la rueda o pellizcando)" aria-label="Acercar">+</button>
-          <button type="button" class="fr-boton" data-vista="menos" title="Alejar" aria-label="Alejar">−</button>
-          <button type="button" class="fr-boton" data-vista="tropas" title="Centrar en tus tropas" aria-label="Centrar en tus tropas">◎</button>
-          <button type="button" class="fr-boton" data-vista="todo" title="Ver el mapa entero" aria-label="Ver el mapa entero">▢</button>
-          <button type="button" class="fr-boton" data-vista="pantalla" id="frPantallaCompleta" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
+        <div id="frDesglose" class="fr-desglose hidden" role="dialog" aria-label="De dónde sale"></div>
+
+        <div class="fr-izq">
+          <div id="frVistaMapa" class="fr-vista-botones" role="group" aria-label="Vista del mapa">
+            <button type="button" class="fr-ibtn" data-vista="mas" title="Acercar (rueda o pellizco)" aria-label="Acercar">+</button>
+            <button type="button" class="fr-ibtn" data-vista="menos" title="Alejar" aria-label="Alejar">−</button>
+            <button type="button" class="fr-ibtn" data-vista="tropas" title="Ir a tus tropas (C)" aria-label="Ir a tus tropas">◎</button>
+            <button type="button" class="fr-ibtn" data-vista="todo" title="Ver el mapa entero" aria-label="Ver el mapa entero">▢</button>
+            <button type="button" class="fr-ibtn" data-vista="amenaza" id="frAmenaza" title="Ver hasta dónde llegan los enemigos (A)" aria-label="Alcance de los enemigos">⚠</button>
+            <button type="button" class="fr-ibtn" data-vista="pantalla" id="frPantallaCompleta" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
+          </div>
         </div>
+        <div class="fr-mini-caja"><canvas id="frMini" class="fr-mini" aria-label="Minimapa"></canvas></div>
+
+        <p id="frPista" class="fr-pista" role="status"></p>
+        <section id="frSeleccion" class="fr-seleccion" aria-label="Selección"></section>
+
+        <div class="fr-mando">
+          <div class="fr-mando-fila">
+            <button type="button" class="fr-ibtn fr-ibtn-txt" data-panel="saber" title="Investigación (I)"><i>✎</i>Saber</button>
+            <button type="button" class="fr-ibtn fr-ibtn-txt" data-panel="ciudades" title="Ciudades y provincias"><i>⌂</i>Ciudades</button>
+            <button type="button" class="fr-ibtn fr-ibtn-txt" data-panel="bandos" title="Marcador de la guerra"><i>⚑</i>Bandos</button>
+            <button type="button" class="fr-ibtn fr-ibtn-txt" data-panel="registro" title="Crónica de la guerra"><i>❡</i>Crónica</button>
+          </div>
+          <button type="button" id="frSiguiente" class="fr-siguiente" title="Siguiente tropa con órdenes pendientes (N)"></button>
+          <button type="button" id="frTerminar" class="fr-terminar" title="Terminar el turno (E)"><span>Terminar turno</span><small id="frTerminarSub"></small></button>
+        </div>
+
+        <aside id="frPanel" class="fr-panel hidden" aria-label="Panel">
+          <header class="fr-panel-cab"><h3 id="frPanelTitulo" class="fr-h3"></h3><button type="button" id="frPanelCerrar" class="fr-ibtn" aria-label="Cerrar el panel">×</button></header>
+          <div id="frPanelCuerpo" class="fr-panel-cuerpo"></div>
+        </aside>
+
         <div id="frPrevia" class="fr-previa hidden" role="status"></div>
+        <div id="frResumen" class="fr-resumen hidden" role="status"></div>
         <div id="frToasts" class="fr-toasts" aria-live="polite"></div>
         <div id="frCartel" class="fr-cartel hidden"></div>
       </div>
@@ -100,23 +128,50 @@
     <div id="frFichaCuerpo"></div>
   </dialog>
 
+  <dialog id="frMenuJuego" class="fr-dialogo">
+    <h2 class="fr-h2">La guerra espera</h2>
+    <div class="fr-menu-lista">
+      <button type="button" class="fr-btn fr-btn-principal" data-mj="seguir">Volver a la guerra</button>
+      <button type="button" class="fr-btn" data-mj="ayuda">Cómo se juega</button>
+      <button type="button" class="fr-btn" data-mj="ajustes">Ajustes</button>
+      <button type="button" class="fr-btn" data-mj="salir">Salir al cuartel (la guerra se guarda)</button>
+      <button type="button" class="fr-btn fr-btn-peligro" data-mj="rendirse">Rendirse</button>
+    </div>
+  </dialog>
+  <dialog id="frAjustes" class="fr-dialogo">
+    <h2 class="fr-h2">Ajustes</h2>
+    <div id="frAjustesCuerpo" class="fr-ajustes"></div>
+    <div class="fr-fila"><button type="button" class="fr-btn fr-btn-principal" data-cerrar>Hecho</button></div>
+  </dialog>
+  <dialog id="frAyuda" class="fr-dialogo fr-dialogo-ancho">
+    <h2 class="fr-h2">Cómo se juega</h2>
+    <div id="frAyudaCuerpo" class="fr-ayuda"></div>
+    <div class="fr-fila"><button type="button" class="fr-btn fr-btn-principal" data-cerrar>Entendido</button></div>
+  </dialog>
+  <dialog id="frCodice" class="fr-dialogo fr-dialogo-ancho">
+    <h2 class="fr-h2">Códice de ejércitos</h2>
+    <div id="frCodiceCuerpo" class="fr-codice"></div>
+    <div class="fr-fila"><button type="button" class="fr-btn fr-btn-principal" data-cerrar>Cerrar</button></div>
+  </dialog>
+
   <script src="js/temas.js?v=20271111"></script>
   <script src="js/fichas-supabase.js?v=20271111"></script>
   <script src="js/interruptores.js?v=20271111"></script>
   <script src="js/presencia.js?v=20271111"></script>
   <script src="js/lado.js?v=20271111"></script>
-  <script src="js/fractura-datos.js?v=20271111"></script>
-  <script src="js/fractura-soldados.js?v=20271111"></script>
-  <script src="js/fractura-mapa.js?v=20271111"></script>
-  <script src="js/fractura-motor.js?v=20271111"></script>
-  <script src="js/fractura-ia.js?v=20271111"></script>
-  <script src="js/fractura-campana.js?v=20271111"></script>
-  <script src="js/fractura-cronica.js?v=20271111"></script>
-  <script src="js/fractura-red.js?v=20271111"></script>
-  <script src="js/fractura-retratos.js?v=20271111"></script>
-  <script src="js/fractura-tablero.js?v=20271115"></script>
-  <script type="module" src="app/dist/fractura/tablero.js?v=20271115"></script>
-  <script src="js/fractura.js?v=20271116"></script>
+  <script src="js/fractura-datos.js?v=20271117"></script>
+  <script src="js/fractura-soldados.js?v=20271117"></script>
+  <script src="js/fractura-mapa.js?v=20271117"></script>
+  <script src="js/fractura-motor.js?v=20271117"></script>
+  <script src="js/fractura-ia.js?v=20271117"></script>
+  <script src="js/fractura-campana.js?v=20271117"></script>
+  <script src="js/fractura-cronica.js?v=20271117"></script>
+  <script src="js/fractura-red.js?v=20271117"></script>
+  <script src="js/fractura-retratos.js?v=20271117"></script>
+  <script src="js/fractura-figuras.js?v=20271117"></script>
+  <script src="js/fractura-sonido.js?v=20271117"></script>
+  <script type="module" src="app/dist/fractura/tablero.js?v=20271117"></script>
+  <script src="js/fractura.js?v=20271117"></script>
   <script src="js/avisos-admin.js?v=20271111"></script>
   <script src="js/musica-paginas.js?v=20271111"></script>
 </body>

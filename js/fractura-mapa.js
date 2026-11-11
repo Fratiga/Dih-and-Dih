@@ -1,8 +1,11 @@
 /* =============================================================================
    LA FRACTURA: generación del mapa. Todo sale de una semilla, así que la misma semilla da el mismo
-   mapa. El mapa es simétrico por giro de 180 grados para que los dos lados partan en igualdad:
-   lo que hay en una casilla está también en la casilla opuesta.
-   Casillas 13x13. Regiones: una cuadrícula de 3x3 fragmentos de 4, 5 y 4 casillas.
+   mapa. El mapa es un trozo de mundo con silueta irregular: fuera queda el vacío (se pinta como mar
+   o abismo). Los terrenos se agrupan en biomas y cada ciudad, fortaleza y el Núcleo tienen su
+   provincia alrededor (las regiones).
+   De 2 a 8 bandos. Con 2 el mapa es simétrico por giro de 180 grados y con 4, de 90. Con otro número
+   no hay simetría exacta: cada bando recibe la misma zona de salida y los mismos sitios a distancias
+   parecidas.
 ============================================================================= */
 (function (raiz) {
   const D = raiz.FRACTURA_DATOS || (typeof require !== "undefined" ? require("./fractura-datos.js") : null);
@@ -10,11 +13,18 @@
   const { TERRENOS, TIPOS_FRACTURA, FRAGMENTOS } = D;
   const { rnd, ent } = S;
 
-  const ANCHO = 13, ALTO = 13;
-  const regionDe = (x, y) => (y < 4 ? 0 : y < 9 ? 3 : 6) + (x < 4 ? 0 : x < 9 ? 1 : 2);
-  const espejo = (x, y, w, h) => ({ x: w - 1 - x, y: h - 1 - y });
+  // Tamaño del mapa según el número de bandos
+  const TAMANOS = { 2: [17, 13], 3: [19, 17], 4: [19, 19], 5: [23, 21], 6: [25, 21], 7: [27, 23], 8: [27, 25] };
+  const ANCHO = 17, ALTO = 13;
   const dist = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+  const espejo = (x, y, w, h) => ({ x: w - 1 - x, y: h - 1 - y });
+  const pasable = c => TERRENOS[c.t].mov > 0;
 
+  function barajar(r, lista) {
+    const a = lista.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = ent(r, i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
   function pesoElegir(r, pesos) {
     let total = 0;
     Object.keys(pesos).forEach(k => { total += pesos[k]; });
@@ -23,13 +33,16 @@
     return Object.keys(pesos)[0];
   }
 
-  function barajar(r, lista) {
-    const a = lista.slice();
-    for (let i = a.length - 1; i > 0; i--) { const j = ent(r, i + 1); [a[i], a[j]] = [a[j], a[i]]; }
-    return a;
+  /* Ruido suave y repetible: valores al azar en una rejilla, interpolados */
+  function hacerRuido(semilla) {
+    const h = (x, y) => { let n = (x * 374761393 + y * 668265263 + semilla * 1442695041) | 0; n = (n ^ (n >>> 13)) * 1274126177; return ((n ^ (n >>> 16)) >>> 0) / 4294967296; };
+    const sua = t => t * t * (3 - 2 * t);
+    return (x, y) => {
+      const x0 = Math.floor(x), y0 = Math.floor(y), fx = sua(x - x0), fy = sua(y - y0);
+      const a = h(x0, y0), b = h(x0 + 1, y0), c = h(x0, y0 + 1), d = h(x0 + 1, y0 + 1);
+      return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+    };
   }
-
-  const pasable = c => TERRENOS[c.t].mov > 0;
 
   function conectado(casillas, w, h, a, b) {
     const visto = new Set([`${a.x},${a.y}`]);
@@ -48,154 +61,227 @@
     return false;
   }
 
-  /* Pone la casilla y su opuesta */
-  function poner(casillas, w, h, x, y, cambios) {
-    const m = espejo(x, y, w, h);
-    Object.assign(casillas[y][x], cambios);
-    Object.assign(casillas[m.y][m.x], cambios);
-  }
-
   function generarMapa(semilla, tipoId, opciones) {
+    opciones = opciones || {};
     const tipo = TIPOS_FRACTURA[tipoId] || TIPOS_FRACTURA.reinos;
+    const N = Math.max(2, Math.min(8, opciones.bandos || 2));
+    const [w, h] = TAMANOS[N];
+    const sim = N === 2 ? 2 : N === 4 ? 4 : 1;
     const r = { s: (semilla >>> 0) || 1 };
-    const w = ANCHO, h = ALTO;
-    const n = w * h, mitad = (n - 1) / 2;
+    const cx = (w - 1) / 2, cy = (h - 1) / 2;
+    const dentro = (x, y) => x >= 0 && y >= 0 && x < w && y < h;
 
-    // Regiones: los fragmentos de arriba se repiten abajo (el del centro es uno solo)
-    const regiones = [];
-    const nombresUsados = new Set();
-    const tiposFr = {};
-    for (let i = 0; i < 9; i++) {
-      const op = 8 - i;
-      let tf;
-      if (i === 4) tf = tipoId === "reinos" || tipoId === "archivo" ? "onirico" : "imposible";
-      else if (i > op) tf = tiposFr[op];
-      else tf = pesoElegir(r, tipo.tiposFragmento);
-      tiposFr[i] = tf;
+    /* Las casillas que deben ser iguales por la simetría del mapa */
+    const orbita = (x, y) => {
+      if (sim === 2) { const m = espejo(x, y, w, h); return m.x === x && m.y === y ? [{ x, y }] : [{ x, y }, m]; }
+      if (sim === 4) {
+        const out = [{ x, y }];
+        let p = { x, y };
+        for (let i = 0; i < 3; i++) { p = { x: w - 1 - p.y, y: p.x }; if (!out.some(o => o.x === p.x && o.y === p.y)) out.push(p); }
+        return out;
+      }
+      return [{ x, y }];
+    };
+    const canonica = (x, y) => orbita(x, y).reduce((m, p) => (p.y < m.y || (p.y === m.y && p.x < m.x) ? p : m));
+
+    // --- Silueta del continente ---
+    const rForma = hacerRuido(ent(r, 1e6)), rHueco = hacerRuido(ent(r, 1e6));
+    const casillas = [];
+    for (let y = 0; y < h; y++) { casillas.push([]); for (let x = 0; x < w; x++) casillas[y].push({ t: "vacio", region: -1, est: null, objetos: [] }); }
+    const poner = (x, y, cambios) => orbita(x, y).forEach(p => Object.assign(casillas[p.y][p.x], cambios));
+    const esTierra = (x, y) => {
+      const c = canonica(x, y);
+      const dx = (c.x - cx) / (w / 2), dy = (c.y - cy) / (h / 2);
+      const rr = Math.sqrt(dx * dx + dy * dy);
+      let lim = 0.9 + (rForma(c.x * 0.3, c.y * 0.3) - 0.5) * 0.5;
+      if (tipo.vacio && rr > 0.2 && rHueco(c.x * 0.45 + 9, c.y * 0.45) < tipo.vacio / 100 * 0.9) return false;
+      if (c.x === 0 || c.y === 0 || c.x === w - 1 || c.y === h - 1) lim -= 0.12;
+      return rr < lim;
+    };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (esTierra(x, y)) casillas[y][x].t = "llanura";
+
+    // --- Capitales: repartidas alrededor del centro ---
+    const capitales = [];
+    const angulo0 = N === 2 ? -Math.PI * 0.8 : -Math.PI / 2 - Math.PI / N;
+    const capEn = k => {
+      const a = angulo0 + (2 * Math.PI * k) / N;
+      return { x: Math.max(1, Math.min(w - 2, Math.round(cx + Math.cos(a) * (w / 2) * 0.74))), y: Math.max(1, Math.min(h - 2, Math.round(cy + Math.sin(a) * (h / 2) * 0.72))) };
+    };
+    if (sim === 1) for (let k = 0; k < N; k++) capitales.push(capEn(k));
+    else {
+      // Con simetría, las demás capitales son la imagen de la primera, en el orden del giro
+      let p = capEn(0);
+      capitales.push(p);
+      for (let k = 1; k < N; k++) { p = sim === 2 ? espejo(p.x, p.y, w, h) : { x: w - 1 - p.y, y: p.x }; capitales.push(p); }
     }
-    for (let i = 0; i < 9; i++) {
-      const tf = tiposFr[i];
-      const pool = barajar(r, FRAGMENTOS[tf]).filter(nm => !nombresUsados.has(nm));
-      const nombre = pool.length ? pool[0] : `${FRAGMENTOS[tf][0]} ${i}`;
-      nombresUsados.add(nombre);
-      regiones.push({ id: i, nombre: tf === "estable" ? `Fragmento de ${nombre}` : nombre, tipo: tf, estab: 0, dueno: null });
+    const centro = { x: Math.round(cx), y: Math.round(cy) };
+
+    // --- Biomas: cada terreno tiene su campo de ruido y gana el más alto. El sesgo se ajusta para acercarse al reparto del tipo ---
+    const tipos = Object.keys(tipo.terrenos).filter(t => t !== "vacio" && tipo.terrenos[t] > 0);
+    const ESCALA = { llanura: 0.2, bosque: 0.27, montana: 0.3, desierto: 0.2, agua: 0.33, magica: 0.55, huesos: 0.42 };
+    const campos = {}, sesgo = {};
+    let totalPeso = 0;
+    tipos.forEach(t => { campos[t] = hacerRuido(ent(r, 1e6)); totalPeso += tipo.terrenos[t]; });
+    tipos.forEach(t => { sesgo[t] = (tipo.terrenos[t] / totalPeso - 1 / tipos.length) * 0.9; });
+    const tierra = [];
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const c = canonica(x, y); if (c.x === x && c.y === y && casillas[y][x].t !== "vacio") tierra.push({ x, y }); }
+    const elegirTerreno = p => {
+      let mejor = null, mv = -9;
+      tipos.forEach(t => { const v = campos[t](p.x * ESCALA[t] + 3.1, p.y * ESCALA[t] + 7.7) + sesgo[t]; if (v > mv) { mv = v; mejor = t; } });
+      return mejor;
+    };
+    for (let it = 0; it < 12; it++) {
+      const cuenta = {};
+      tierra.forEach(p => { const t = elegirTerreno(p); cuenta[t] = (cuenta[t] || 0) + 1; });
+      tipos.forEach(t => { sesgo[t] += (tipo.terrenos[t] / totalPeso - (cuenta[t] || 0) / Math.max(1, tierra.length)) * 0.55; });
     }
-    for (let i = 0; i < 9; i++) {
-      const op = 8 - i;
-      if (i < op) {
-        const e = Math.round(tipo.estab[0] + rnd(r) * (tipo.estab[1] - tipo.estab[0]));
-        const ajuste = regiones[i].tipo === "estable" ? 15 : regiones[i].tipo === "imposible" ? -15 : 0;
-        regiones[i].estab = regiones[op].estab = Math.max(5, Math.min(100, e + ajuste));
-      } else if (i === 4) {
-        regiones[4].estab = Math.round(tipo.estab[0] + rnd(r) * (tipo.estab[1] - tipo.estab[0]));
+    tierra.forEach(p => poner(p.x, p.y, { t: elegirTerreno(p) }));
+
+    // --- Zona de salida: igual para todos ---
+    const patron = [];
+    for (let i = 0; i < 9; i++) patron.push(i === 4 ? "llanura" : rnd(r) < 0.55 ? "llanura" : rnd(r) < 0.6 ? "bosque" : "montana");
+    const sellar = cap => {
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+        const x = cap.x + dx, y = cap.y + dy;
+        if (!dentro(x, y)) continue;
+        const borde = Math.max(Math.abs(dx), Math.abs(dy)) === 2;
+        if (borde) { if (casillas[y][x].t === "vacio" && Math.abs(dx) + Math.abs(dy) < 4) casillas[y][x].t = "llanura"; if (casillas[y][x].t === "agua") casillas[y][x].t = "llanura"; continue; }
+        casillas[y][x].t = patron[(dy + 1) * 3 + (dx + 1)];
+      }
+    };
+    if (sim === 1) capitales.forEach(sellar);
+    else { sellar(capitales[0]); for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const x = capitales[0].x + dx, y = capitales[0].y + dy; if (dentro(x, y)) poner(x, y, { t: casillas[y][x].t }); } }
+    // Núcleo del Sueño en el centro, con tierra alrededor
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const c = casillas[centro.y + dy][centro.x + dx]; if (!pasable(c)) c.t = "llanura"; }
+    casillas[centro.y][centro.x].t = "llanura";
+    casillas[centro.y][centro.x].est = "nucleo";
+
+    // --- Sitios: ciudades sin dueño, fortalezas y ruinas, los mismos para cada bando ---
+    const ocupadas = capitales.map(c => ({ x: c.x, y: c.y })).concat([centro]);
+    capitales.forEach(c => { casillas[c.y][c.x].est = "ciudad"; });
+    const sitios = [], fortalezas = [], ruinas = [];
+    const propio = (p, k) => capitales.every((c, i) => i === k || dist(c, p) >= dist(capitales[k], p));
+    const valido = (p, sepCap, sepEntre) => dentro(p.x, p.y) && pasable(casillas[p.y][p.x]) && !casillas[p.y][p.x].est && p.x > 0 && p.y > 0 && p.x < w - 1 && p.y < h - 1 &&
+      capitales.every(c => dist(c, p) >= sepCap) && ocupadas.every(o => dist(o, p) >= sepEntre);
+    const escala = Math.max(1, Math.min(w, h) / 13);
+    function buscar(k, objetivo, sepCap, sepEntre, haciaCentro) {
+      const cap = capitales[k];
+      let mejor = null;
+      for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+        const p = { x, y };
+        if (!valido(p, sepCap, sepEntre)) continue;
+        if (sim > 1 && !orbita(x, y).every((q, i, arr) => valido(q, sepCap, sepEntre) && arr.every((o, j) => i === j || dist(o, q) >= 2))) continue;
+        let v = Math.abs(dist(cap, p) - objetivo) * 1.4 + rnd(r) * 1.6;
+        if (!propio(p, k)) v += 5;
+        if (haciaCentro) v += Math.max(0, dist(p, centro) - dist(cap, centro) + 1) * 0.8;
+        if (!mejor || v < mejor.v) mejor = { v, p };
+      }
+      return mejor ? mejor.p : null;
+    }
+    function colocar(lista, est, cuantosPorBando, objetivos, sepCap, sepEntre, haciaCentro) {
+      for (let i = 0; i < cuantosPorBando; i++) {
+        const bandos = sim === 1 ? N : 1;
+        for (let k = 0; k < bandos; k++) {
+          const obj = Math.round(objetivos[i % objetivos.length] * escala);
+          // Si el mapa está muy apretado se aceptan sitios algo más juntos antes que dejar a un bando sin el suyo
+          const p = buscar(k, obj, sepCap, sepEntre, haciaCentro && i % 2 === 1) || buscar(k, obj, sepCap - 1, sepEntre - 1, false) || buscar(k, obj, 2, 1, false);
+          if (!p) continue;
+          orbita(p.x, p.y).forEach(q => { casillas[q.y][q.x].est = est; ocupadas.push(q); lista.push({ x: q.x, y: q.y }); });
+        }
       }
     }
+    colocar(sitios, "ciudad", Math.max(1, Math.round(tipo.neutrales / 2)), [4, 6, 5, 7], 4, 3, true);
+    colocar(fortalezas, "fortaleza", Math.max(1, Math.round(tipo.fortalezas / 2)), [5, 7], 3, 3, true);
+    colocar(ruinas, "ruinas", Math.max(1, Math.round(tipo.ruinas / 2)), [3, 6, 5, 7], 3, 2, false);
 
-    // Terreno
-    const casillas = [];
-    for (let y = 0; y < h; y++) { casillas.push([]); for (let x = 0; x < w; x++) casillas[y].push({ t: "llanura", region: regionDe(x, y), est: null, objetos: [] }); }
-    for (let i = 0; i <= mitad; i++) {
-      const x = i % w, y = Math.floor(i / w);
-      const rg = regiones[regionDe(x, y)];
-      const pesos = Object.assign({}, tipo.terrenos);
-      if (rg.tipo === "onirico") { pesos.magica = (pesos.magica || 0) * 2 + 2; pesos.bosque = (pesos.bosque || 0) + 6; }
-      if (rg.tipo === "imposible") { pesos.magica = (pesos.magica || 0) * 2 + 3; pesos.huesos = (pesos.huesos || 0) + 4; if (tipo.vacio) pesos.vacio = tipo.vacio * 1.3; }
-      if (rg.tipo === "estable") { pesos.llanura = (pesos.llanura || 0) + 8; if (tipo.vacio) pesos.vacio = Math.round(tipo.vacio * 0.5); }
-      const t = pesoElegir(r, pesos);
-      poner(casillas, w, h, x, y, { t });
-    }
-
-    // Capitales en esquinas opuestas, con terreno amable alrededor
-    const cap0 = { x: 1, y: 1 }, cap1 = espejo(1, 1, w, h);
-    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-      const x = cap0.x + dx, y = cap0.y + dy;
-      const t = !dx && !dy ? "llanura" : rnd(r) < 0.6 ? "llanura" : rnd(r) < 0.6 ? "bosque" : "montana";
-      poner(casillas, w, h, x, y, { t });
-    }
-    // Núcleo del Sueño en el centro
-    const centro = { x: (w - 1) / 2, y: (h - 1) / 2 };
-    poner(casillas, w, h, centro.x, centro.y, { t: "llanura", est: "nucleo" });
-
-    // Comunicación asegurada: si algo quedó aislado, se abre un camino (también simétrico)
+    // --- Comunicación asegurada: todo sitio importante se alcanza desde la primera capital ---
     const abrir = (a, b) => {
       let x = a.x, y = a.y;
       while (x !== b.x || y !== b.y) {
         if (x !== b.x) x += Math.sign(b.x - x);
         if (y !== b.y) y += Math.sign(b.y - y);
-        if (!pasable(casillas[y][x])) poner(casillas, w, h, x, y, { t: "llanura" });
+        if (!pasable(casillas[y][x])) poner(x, y, { t: "llanura" });
       }
     };
-    if (!conectado(casillas, w, h, cap0, cap1)) abrir(cap0, centro);
-    if (!conectado(casillas, w, h, cap0, cap1)) abrir(cap0, cap1);
+    capitales.concat(sitios, fortalezas).forEach(p => { if (!conectado(casillas, w, h, p, centro)) abrir(p, centro); });
+    ruinas.forEach(p => { if (!conectado(casillas, w, h, p, centro)) abrir(p, centro); });
 
-    const ocupadas = [cap0, cap1, centro];
-    casillas[cap0.y][cap0.x].est = "ciudad"; casillas[cap1.y][cap1.x].est = "ciudad";
-    const libre = (x, y, sep) => {
-      const c = casillas[y][x];
-      return !c.est && pasable(c) && ocupadas.every(o => dist(o, { x, y }) >= sep);
-    };
-    // Coloca pares de estructuras simétricas
-    const colocar = (cuantos, est, sepCap, sepEntre) => {
-      const pares = Math.max(1, Math.round(cuantos / 2));
-      const puestos = [];
-      let intentos = 0;
-      while (puestos.length < pares && intentos++ < 400) {
-        const i = ent(r, mitad);
-        const x = i % w, y = Math.floor(i / w);
-        if (dist(cap0, { x, y }) < sepCap || dist(cap1, { x, y }) < sepCap) continue;
-        const m = espejo(x, y, w, h);
-        if (!libre(x, y, sepEntre) || !libre(m.x, m.y, sepEntre) || dist({ x, y }, m) < 2) continue;
-        poner(casillas, w, h, x, y, { est });
-        ocupadas.push({ x, y }, m);
-        puestos.push({ x, y }, m);
-      }
-      return puestos;
-    };
-    const sitios = colocar(tipo.neutrales, "ciudad", 4, 3);
-    const fortalezas = colocar(tipo.fortalezas, "fortaleza", 3, 3);
-    const ruinas = colocar(tipo.ruinas, "ruinas", 3, 2);
-
-    // Costuras: cada una une una casilla con su opuesta
-    const costuras = [];
-    const pares = tipo.costuras;
-    let intentos = 0;
-    while (costuras.length < pares && intentos++ < 400) {
-      const i = ent(r, mitad);
+    // --- Provincias: cada ciudad, fortaleza y el Núcleo extienden la suya hasta tocar la del vecino ---
+    const semillas = capitales.map((p, k) => ({ x: p.x, y: p.y, capital: k })).concat(sitios.map(p => ({ x: p.x, y: p.y })), fortalezas.map(p => ({ x: p.x, y: p.y, fortaleza: true })), [{ x: centro.x, y: centro.y, nucleo: true }]);
+    const rBorde = hacerRuido(ent(r, 1e6));
+    const coste = new Array(w * h).fill(1e9);
+    const abiertos = [];
+    semillas.forEach((sm, i) => { coste[sm.y * w + sm.x] = 0; casillas[sm.y][sm.x].region = i; abiertos.push(sm.y * w + sm.x); });
+    while (abiertos.length) {
+      abiertos.sort((a, b) => coste[a] - coste[b]);
+      const i = abiertos.shift();
       const x = i % w, y = Math.floor(i / w);
-      const m = espejo(x, y, w, h);
-      if (dist(cap0, { x, y }) < 3 || dist(cap1, { x, y }) < 3) continue;
-      if (!libre(x, y, 2) || !libre(m.x, m.y, 2)) continue;
-      casillas[y][x].est = "costura"; casillas[m.y][m.x].est = "costura";
-      casillas[y][x].costura = costuras.length; casillas[m.y][m.x].costura = costuras.length;
-      costuras.push({ a: { x, y }, b: m });
-      ocupadas.push({ x, y }, m);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (!dentro(nx, ny) || casillas[ny][nx].t === "vacio") continue;
+        const cn = canonica(nx, ny);
+        const nc = coste[i] + 1 + rBorde(cn.x * 0.5, cn.y * 0.5) * 0.9 + (casillas[ny][nx].t === "agua" ? 0.6 : 0);
+        if (nc < coste[ny * w + nx]) { coste[ny * w + nx] = nc; casillas[ny][nx].region = casillas[y][x].region; abiertos.push(ny * w + nx); }
+      }
     }
+    // Islas sueltas: a la provincia de la semilla más cercana
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const c = casillas[y][x];
+      if (c.t === "vacio" || c.region >= 0) continue;
+      let m = 0;
+      semillas.forEach((sm, i) => { if (dist(sm, { x, y }) < dist(semillas[m], { x, y })) m = i; });
+      c.region = m;
+    }
+    const nombresUsados = new Set();
+    const regiones = semillas.map((sm, i) => {
+      const tf = sm.capital !== undefined ? "estable" : sm.nucleo ? (tipoId === "reinos" || tipoId === "archivo" ? "onirico" : "imposible") : pesoElegir(r, tipo.tiposFragmento);
+      const pool = barajar(r, FRAGMENTOS[tf]).filter(nm => !nombresUsados.has(nm));
+      const nombre = pool.length ? pool[0] : `${FRAGMENTOS[tf][i % FRAGMENTOS[tf].length]} ${i}`;
+      nombresUsados.add(nombre);
+      const e = Math.round(tipo.estab[0] + rnd(r) * (tipo.estab[1] - tipo.estab[0])) + (tf === "estable" ? 15 : tf === "imposible" ? -15 : 0);
+      return { id: i, nombre: tf === "estable" ? `Fragmento de ${nombre}` : nombre, tipo: tf, estab: Math.max(5, Math.min(100, e)), dueno: null, sitio: { x: sm.x, y: sm.y }, capitalDe: sm.capital === undefined ? null : sm.capital };
+    });
 
-    return { ancho: w, alto: h, casillas, regiones, costuras, capitales: [cap0, cap1], nucleo: centro, sitios, fortalezas, ruinas, rng: r.s };
+    // --- Costuras: pares de casillas unidas, lejos una de otra ---
+    const costuras = [];
+    const pares = Math.max(1, Math.round(tipo.costuras * N / 2));
+    const candidatas = [];
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) if (valido({ x, y }, 3, 1)) candidatas.push({ x, y });
+    const lejos = Math.min(w, h) * 0.34;
+    barajar(r, candidatas).forEach(a => {
+      if (costuras.length >= pares || !valido(a, 3, 1)) return;
+      let b = null;
+      if (sim > 1) { const o = orbita(a.x, a.y); if (o.length > 1) b = o[1 + ent(r, o.length - 1)]; }
+      else b = barajar(r, candidatas).find(q => dist(a, q) >= lejos && valido(q, 3, 1)) || null;
+      if (!b || dist(a, b) < lejos || !valido(b, 3, 1)) return;
+      casillas[a.y][a.x].est = "costura"; casillas[b.y][b.x].est = "costura";
+      casillas[a.y][a.x].costura = costuras.length; casillas[b.y][b.x].costura = costuras.length;
+      costuras.push({ a, b });
+      ocupadas.push(a, b);
+    });
+
+    return { ancho: w, alto: h, casillas, regiones, costuras, capitales, nucleo: centro, sitios, fortalezas, ruinas, rng: r.s, sim, bandos: N };
   }
 
-  /* Mueve las costuras a otras casillas (en los mapas inestables). Devuelve true si algo cambió. */
+  /* Mueve una costura a otras dos casillas (en los mapas inestables). Devuelve true si algo cambió. */
   function moverCostura(est, r, indice, ocupado) {
-    const w = est.ancho, h = est.alto, mitad = (w * h - 1) / 2;
+    const w = est.ancho, h = est.alto;
     const c = est.costuras[indice];
     if (!c) return false;
-    for (let intento = 0; intento < 60; intento++) {
-      const i = ent(r, mitad);
-      const x = i % w, y = Math.floor(i / w);
-      const m = espejo(x, y, w, h);
-      const a = est.casillas[y][x], b = est.casillas[m.y][m.x];
-      if (a.est || b.est || !pasable(a) || !pasable(b)) continue;
-      if (dist(est.capitales[0], { x, y }) < 3 || dist(est.capitales[1], { x, y }) < 3) continue;
-      if (ocupado && (ocupado(x, y) || ocupado(m.x, m.y))) continue;
+    const libre = p => { const k = est.casillas[p.y][p.x]; return !k.est && pasable(k) && est.capitales.every(cap => dist(cap, p) >= 3) && !(ocupado && ocupado(p.x, p.y)); };
+    for (let intento = 0; intento < 80; intento++) {
+      const a = { x: 1 + ent(r, w - 2), y: 1 + ent(r, h - 2) }, b = { x: 1 + ent(r, w - 2), y: 1 + ent(r, h - 2) };
+      if (dist(a, b) < Math.min(w, h) * 0.4 || !libre(a) || !libre(b)) continue;
       const va = est.casillas[c.a.y][c.a.x], vb = est.casillas[c.b.y][c.b.x];
       va.est = null; delete va.costura; vb.est = null; delete vb.costura;
-      a.est = "costura"; a.costura = indice; b.est = "costura"; b.costura = indice;
-      c.a = { x, y }; c.b = m;
+      const na = est.casillas[a.y][a.x], nb = est.casillas[b.y][b.x];
+      na.est = "costura"; na.costura = indice; nb.est = "costura"; nb.costura = indice;
+      c.a = a; c.b = b;
       return true;
     }
     return false;
   }
 
-  raiz.FracturaMapa = { ANCHO, ALTO, regionDe, espejo, dist, generarMapa, moverCostura, conectado, pasable };
+  raiz.FracturaMapa = { ANCHO, ALTO, TAMANOS, espejo, dist, generarMapa, moverCostura, conectado, pasable };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FracturaMapa;
 })(typeof window !== "undefined" ? window : globalThis);

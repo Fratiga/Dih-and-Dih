@@ -17,11 +17,10 @@
   let ej = null;           // el ejército con el que se juega
   let pestana = "guerra";
   let est = null;          // guerra en curso
-  let lat = "sel";
   let sel = { uid: null, ciudad: null };
   let modo = null;         // habilidad que espera una casilla: { id, ... }
   let guardarEstadoTimer = null;
-  let ajustesGuerra = { tipo: "azar", dificultad: "normal", rival: "azar", ids: null };
+  let ajustesGuerra = { tipo: "azar", dificultad: "normal", rival: "azar", ids: null, bandos: 2, equipos: false };
   let tablero = null;
   let ultimoResumen = null;
 
@@ -29,7 +28,7 @@
   const retr = (s, w, anim, ejf) => `<canvas class="fr-ret" data-retr="${s.id}" data-w="${w}"${ejf ? ` data-ejf="${ejf}"` : ""}${anim ? " data-anim" : ""}></canvas>`;
   const retrGen = (clase, id, faccion, w, anim, sexo) => `<canvas class="fr-ret" data-gen="${clase}|${id}|${faccion}|${sexo || "m"}" data-w="${w}"${anim ? " data-anim" : ""}></canvas>`;
   // Quién representa a cada facción cuando aún no hay nadie que mostrar
-  const REP = { "caballeros-del-reino": ["lider", "m"], "academia-arcana-de-dolbred": ["archimago", "m"], "trono-de-ceniza": ["esqueleto", "m"], "compania-dorada": ["lider", "f"], "hijos-del-acero": ["cazador", "m"], "peregrinos-del-alba": ["sanador", "f"] };
+  const REP = { "academia-arcana-de-dolbred": ["archimago", "m"], "trono-de-ceniza": ["esqueleto", "m"], "compania-dorada": ["mercenario", "f"], "hijos-del-acero": ["cazador", "m"], "santos-de-asmodeo": ["paladin", "m"], nikaalia: ["picaro", "m"], seosan: ["guerrero", "f"], okran: ["guerrero", "m"], pelgiria: ["cazador", "f"], mravec: ["guerrero", "f"], nernib: ["paladin", "m"], balutia: ["guerrero", "m"] };
   const retrFaccion = (f, w, anim) => { const r = REP[f] || ["lider", "m"]; return retrGen(r[0], f, f, w, anim, r[1]); };
   function pintarRetratos(raiz) {
     if (!FR) return;
@@ -57,8 +56,11 @@
     if (t) { clearTimeout(aviso.t); aviso.t = setTimeout(() => a.classList.add("hidden"), 5000); }
   }
   function mostrar(pantalla) {
-    ["frInicio", "frCuartel", "frGuerra", "frFin"].forEach(id => $(id).classList.toggle("hidden", id !== pantalla));
+    ["frPortada", "frInicio", "frCuartel", "frGuerra", "frFin"].forEach(id => $(id).classList.toggle("hidden", id !== pantalla));
     document.body.classList.toggle("fr-en-guerra", pantalla === "frGuerra");
+    document.body.classList.toggle("fr-en-portada", pantalla === "frPortada");
+    // Con la guerra fuera de la vista, el mapa deja de dibujarse
+    if (tablero && tablero.dormir) tablero.dormir(pantalla !== "frGuerra");
     document.body.classList.toggle("fr-en-cuartel", pantalla === "frCuartel");
     window.scrollTo(0, 0);
   }
@@ -74,18 +76,138 @@
   }
 
   /* =========================================================================
-     INICIO: elegir o fundar un ejército
+     PORTADA: el menú principal del juego
   ========================================================================= */
+  const CURVA_TEXTO = { "Empieza fuerte": "Pega pronto. Si la guerra se alarga, pierde ventaja.", "Tardío": "Necesita tiempo. Cuando llega arriba cuesta pararlo.", "Desgaste": "Cada baja lo alimenta.", "Pico": "Tiene un momento de fuerza muy alto si llega a él.", "Depende del mapa": "Su fuerza depende del terreno y de cómo se plantee la guerra." };
+  let portadaAnim = 0;
+  async function pintarPortada() {
+    ej = null; est = null;
+    mostrar("frPortada");
+    const menu = $("frPortadaMenu");
+    menu.innerHTML = `<button type="button" class="fr-menu-btn principal" data-pm="jugar"><span>Jugar</span><small>Elige un ejército y ve a la guerra</small></button>
+      <button type="button" class="fr-menu-btn" data-pm="codice"><span>Códice</span><small>Los trece ejércitos, sus tropas y sus héroes</small></button>
+      <button type="button" class="fr-menu-btn" data-pm="ayuda"><span>Cómo se juega</span></button>
+      <button type="button" class="fr-menu-btn" data-pm="ajustes"><span>Ajustes</span></button>`;
+    animarPortada();
+    await cargarEjercitos();
+    if (!$("frPortada").classList.contains("hidden")) {
+      const enCurso = Red.cargarGuerra();
+      if (enCurso && ejercitos[enCurso.cfg.faccion] && enCurso.est.reglas === D.REGLAS) {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "fr-menu-btn principal"; b.dataset.pm = "retomar";
+        b.innerHTML = `<span>Continuar la guerra</span><small>${esc(ejercitos[enCurso.cfg.faccion].nombre)} · turno ${enCurso.est.turno} de ${enCurso.est.maxTurnos}</small>`;
+        menu.insertBefore(b, menu.firstChild);
+        menu.querySelector('[data-pm="jugar"]').classList.remove("principal");
+      } else if (enCurso && enCurso.est.reglas !== D.REGLAS) Red.borrarGuerra();
+    }
+  }
+  $("frPortadaMenu").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-pm]");
+    if (!b) return;
+    son("clic");
+    const m = b.dataset.pm;
+    if (m === "jugar") pantallaInicio();
+    else if (m === "retomar") retomarGuerra();
+    else if (m === "codice") abrirCodice();
+    else if (m === "ayuda") abrirAyuda();
+    else if (m === "ajustes") abrirAjustes();
+  });
+  $("frAPortada").addEventListener("click", pintarPortada);
+
+  /* El fondo de la portada: los líderes de los trece ejércitos en fila, sobre el horizonte */
+  function animarPortada() {
+    const cv = $("frPortadaFondo");
+    cancelAnimationFrame(portadaAnim);
+    if (!FF) return;
+    const ids = Object.keys(FACCIONES);
+    let ultimo = 0;
+    const paso = ahora => {
+      if ($("frPortada").classList.contains("hidden")) return;
+      portadaAnim = requestAnimationFrame(paso);
+      if (ahora - ultimo < 66) return;
+      ultimo = ahora;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5), w = cv.clientWidth, h = cv.clientHeight;
+      if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+      const g = cv.getContext("2d");
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const cielo = g.createLinearGradient(0, 0, 0, h);
+      cielo.addColorStop(0, "#0a0812"); cielo.addColorStop(0.55, "#1c1424"); cielo.addColorStop(0.8, "#3a2230"); cielo.addColorStop(1, "#120d16");
+      g.fillStyle = cielo; g.fillRect(0, 0, w, h);
+      // la grieta de luz en el cielo
+      const t = ahora / 1000, gx = w * 0.5;
+      const luz = g.createRadialGradient(gx, h * 0.3, 4, gx, h * 0.3, h * 0.7);
+      luz.addColorStop(0, "rgba(240,210,120,.30)"); luz.addColorStop(0.4, "rgba(185,140,255,.10)"); luz.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = luz; g.fillRect(0, 0, w, h);
+      g.strokeStyle = `rgba(255,236,170,${0.5 + 0.2 * Math.sin(t * 1.3)})`; g.lineWidth = 2; g.lineJoin = "round";
+      g.beginPath(); g.moveTo(gx - 6, 0); [[8, 0.08], [-14, 0.16], [10, 0.24], [-6, 0.33], [4, 0.42]].forEach(([dx, fy]) => g.lineTo(gx + dx, h * fy)); g.stroke();
+      // sierra al fondo y suelo
+      g.fillStyle = "#17111c"; g.beginPath(); g.moveTo(0, h * 0.78);
+      for (let i = 0; i <= 24; i++) g.lineTo((i / 24) * w, h * (0.78 - 0.1 * Math.abs(Math.sin(i * 1.7)) - 0.04 * Math.sin(i * 0.6)));
+      g.lineTo(w, h); g.lineTo(0, h); g.fill();
+      g.fillStyle = "#0c0910"; g.fillRect(0, h * 0.86, w, h * 0.14);
+      const n = ids.length, s = Math.min(w / (n * 0.62), h * 0.2), ancho = Math.min(w * 0.96, n * s * 0.7);
+      ids.forEach((f, i) => {
+        const x = (w - ancho) / 2 + (i + 0.5) * (ancho / n), y = h * 0.93 + Math.sin(i * 2.1) * 4;
+        FF.figura(g, { faccion: f, clase: "lider" }, Object.assign(FF.colorFaccion(f), { faccion: f }), { x, y, s, dir: i < n / 2 ? 1 : -1, t, bob: Math.sin(t * 1.4 + i) * 0.6, sinAro: true });
+      });
+      const velo = g.createLinearGradient(0, h * 0.5, 0, h); velo.addColorStop(0, "rgba(10,8,14,0)"); velo.addColorStop(1, "rgba(10,8,14,.55)");
+      g.fillStyle = velo; g.fillRect(0, h * 0.5, w, h * 0.5);
+      // ceniza que sube
+      g.fillStyle = "rgba(255,190,110,.5)";
+      for (let i = 0; i < 26; i++) { const px = ((i * 137.5) % 100) / 100 * w + Math.sin(t * 0.6 + i) * 12, py = h - ((t * (10 + (i % 5) * 6) + i * 53) % h); g.fillRect(px, py, 1.6, 1.6); }
+    };
+    portadaAnim = requestAnimationFrame(paso);
+  }
+
+  /* Códice: los trece ejércitos con sus tropas y su héroe, tal como se ven en el mapa */
+  function abrirCodice(faccionInicial) {
+    const c = $("frCodiceCuerpo");
+    const pinta = f => {
+      const fac = FACCIONES[f];
+      const clases = D.CLASES_BASE.concat(fac.clasesExtra);
+      c.innerHTML = `<nav class="fr-codice-lista">${Object.keys(FACCIONES).map(k => `<button type="button" class="${k === f ? "sel" : ""}" data-cod="${k}" style="--c:${FACCIONES[k].color}">${figHtml({ faccion: k, clase: "lider", sinAro: true }, 34, 42)}<span>${esc(FACCIONES[k].corto)}</span></button>`).join("")}</nav>
+        <article class="fr-codice-ficha" style="--c:${fac.color};--b:${fac.bandera}">
+          <header><h3>${esc(fac.nombre)}</h3><span class="fr-curva" title="${esc(CURVA_TEXTO[fac.curva] || "")}">${esc(fac.curva)}</span></header>
+          <p>${esc(fac.resumen)}</p><p><strong>Ventaja.</strong> ${esc(fac.ventaja)}</p>
+          <p class="fr-sub">${esc(CURVA_TEXTO[fac.curva] || "")}</p>
+          <h4>Tropas</h4>
+          <div class="fr-codice-tropas">${clases.concat(["lider"]).map(cl => { const tr = D.tropa(f, cl), k = CLASES[cl]; return `<div class="fr-codice-tropa${fac.clasesExtra.includes(cl) ? " propia" : ""}">${figHtml({ faccion: f, clase: cl }, 64, 78)}<div><strong>${esc(tr.nombre)}</strong><small>${esc(k.rol)}${fac.clasesExtra.includes(cl) ? " · solo este ejército" : ""}</small>
+            <span class="fr-recluta-cifras">${ico("vida")}${k.hp} ${ico("ataque")}${k.atq} ${ico("defensa")}${k.def} ${ico("mov")}${k.mov}${k.alc > 1 ? ` ${ico("alcance")}${k.alc}` : ""}</span><p>${esc(tr.aspecto)}</p><p class="fr-sub">${esc(tr.texto)}</p></div></div>`; }).join("")}</div>
+          <h4>${fac.heroe.length > 1 ? "Héroes (se invoca uno)" : "Héroe"}</h4>
+          <div class="fr-codice-tropas">${fac.heroe.map(hid => { const h = HEROES[hid]; return `<div class="fr-codice-tropa heroe">${figHtml({ faccion: f, clase: "heroe", heroe: hid }, 76, 92)}<div><strong>${esc(h.variantes ? h.variantes.join(" o ") : h.nombre)}</strong><small>${esc(h.titulo)}</small>
+            <span class="fr-recluta-cifras">${ico("vida")}${h.hp} ${ico("ataque")}${h.atq} ${ico("defensa")}${h.def} ${ico("mov")}${h.mov}${h.alc > 1 ? ` ${ico("alcance")}${h.alc}` : ""}</span><p>${esc(h.aspecto)}</p><p class="fr-sub">${esc(h.texto)}${h.ef.activa ? ` ${esc(h.ef.activa.nombre)}: ${esc(h.ef.activa.texto)}` : ""}</p>
+            <p class="fr-sub"><strong>Para invocarlo:</strong> ${h.req.map(r => r.texto || (r.t === "edificio" ? `tener ${EDIFICIOS[r.id].nombre}` : r.t === "fortaleza" ? "tener una fortaleza" : r.t === "escuela" ? `${ESCUELAS[r.e].nombre} ${r.n}` : r.t === "ciudades" ? `${r.n} ciudades` : r.t === "regiones" ? `${r.n} provincias` : r.t === "turno" ? `turno ${r.n}` : r.t === "consagradas" ? `${r.n} casillas consagradas` : "")).filter(Boolean).concat([`pagar ${costeTexto(h.coste)}`]).join("; ").toLowerCase()}.</p></div></div>`; }).join("")}</div>
+        </article>`;
+      pintarFiguras(c);
+    };
+    pinta(faccionInicial || Object.keys(FACCIONES)[0]);
+    c.onclick = ev => { const b = ev.target.closest("[data-cod]"); if (b) { son("clic"); pinta(b.dataset.cod); c.querySelector(".fr-codice-ficha").scrollTop = 0; } };
+    if (!$("frCodice").open) $("frCodice").showModal();
+  }
+
+  /* =========================================================================
+     ELEGIR O FUNDAR UN EJÉRCITO
+  ========================================================================= */
+  async function cargarEjercitos() {
+    const alias = Object.keys(D.ALIAS_FACCION);
+    const guardados = await Red.listarEjercitos(Object.keys(FACCIONES).concat(alias));
+    // Los ejércitos guardados con un nombre antiguo pasan al nuevo, una sola vez
+    for (const viejo of alias) {
+      const nuevo = D.ALIAS_FACCION[viejo];
+      if (!guardados[viejo]) continue;
+      if (!guardados[nuevo]) { const e = guardados[viejo].ej; e.faccion = nuevo; guardados[nuevo] = { origen: "local", ej: e }; await Red.guardarEjercito(e); }
+      await Red.borrarEjercito(viejo);
+      delete guardados[viejo];
+    }
+    ejercitos = {};
+    Object.keys(guardados).forEach(f => { ejercitos[f] = guardados[f].ej; });
+  }
+
   async function pantallaInicio() {
     ej = null; est = null;
     mostrar("frInicio");
-    const guardados = await Red.listarEjercitos(Object.keys(FACCIONES));
-    ejercitos = {};
-    Object.keys(guardados).forEach(f => { ejercitos[f] = guardados[f].ej; });
-    const enCurso = Red.cargarGuerra();
-    const banner = enCurso && ejercitos[enCurso.cfg.faccion]
-      ? `<div class="fr-banner"><p>Tienes una guerra en curso con <strong>${esc(ejercitos[enCurso.cfg.faccion].nombre)}</strong>, en el turno ${enCurso.est.turno}.</p><button type="button" class="fr-btn fr-btn-principal" data-retomar>Retomar la guerra</button></div>` : "";
-    $("frEjercitos").innerHTML = banner + Object.keys(FACCIONES).map((f, i) => {
+    await cargarEjercitos();
+    $("frEjercitos").innerHTML = Object.keys(FACCIONES).map((f, i) => {
       const fac = FACCIONES[f], e = ejercitos[f];
       const filas = e ? C.enFila(e).length : 0;
       const estrella = e ? C.enFila(e).slice().sort((a, b) => b.victorias - a.victorias || a.nacimiento - b.nacimiento)[0] : null;
@@ -94,21 +216,24 @@
         <div class="fr-ejercito-ret">${estrella ? retr(estrella, 132, true, f) : retrFaccion(f, 132, true)}</div>
         <div class="fr-ejercito-cuerpo">
           <h3>${esc(fac.nombre)}</h3>
-          <p class="fr-ejercito-titulo">${esc(fac.lider.titulo)}</p>
+          <p class="fr-ejercito-titulo">${esc(fac.lider.titulo)} <span class="fr-curva" title="${esc(CURVA_TEXTO[fac.curva] || "")}">${esc(fac.curva)}</span></p>
           <p class="fr-ejercito-resumen">${esc(fac.resumen)}</p>
+          <div class="fr-ejercito-tropas">${D.CLASES_BASE.concat(fac.clasesExtra).map(cl => `<span title="${esc(D.tropa(f, cl).nombre)}">${figHtml({ faccion: f, clase: cl, sinAro: true }, 34, 42)}</span>`).join("")}${fac.heroe.slice(0, 1).map(h => `<span class="heroe" title="Héroe: ${esc(HEROES[h].nombre)}">${figHtml({ faccion: f, clase: "heroe", heroe: h, sinAro: true }, 40, 48)}</span>`).join("")}</div>
           <p class="fr-ejercito-ventaja"><strong>Ventaja.</strong> ${esc(fac.ventaja)}</p>
-          ${e ? `<p class="fr-ejercito-datos">${esc(e.nombre)} · ${e.guerras} guerra${e.guerras === 1 ? "" : "s"} (${e.ganadas} ganadas) · ${filas} en filas · año ${e.anio}</p>
-            <button type="button" class="fr-btn fr-btn-principal" data-entrar="${f}">Entrar al cuartel</button>`
-            : `<button type="button" class="fr-btn" data-fundar="${f}">Fundar este ejército</button>`}
+          ${e ? `<p class="fr-ejercito-datos">${esc(e.nombre)} · ${e.guerras} guerra${e.guerras === 1 ? "" : "s"} (${e.ganadas} ganadas) · ${filas} en filas · año ${e.anio}</p>` : ""}
+          <div class="fr-fila">${e ? `<button type="button" class="fr-btn fr-btn-principal" data-entrar="${f}">Entrar al cuartel</button>` : `<button type="button" class="fr-btn" data-fundar="${f}">Fundar este ejército</button>`}
+            <button type="button" class="fr-btn fr-btn-chico" data-codice="${f}">Ver tropas</button></div>
         </div>
       </article>`;
     }).join("");
     $("frEjercitos").classList.add("fr-entra");
     pintarRetratos($("frEjercitos"));
+    pintarFiguras($("frEjercitos"));
   }
 
   $("frEjercitos").addEventListener("click", async ev => {
-    const f = ev.target.closest("[data-fundar]"), e = ev.target.closest("[data-entrar]"), r = ev.target.closest("[data-retomar]");
+    const f = ev.target.closest("[data-fundar]"), e = ev.target.closest("[data-entrar]"), cod = ev.target.closest("[data-codice]");
+    if (cod) { abrirCodice(cod.dataset.codice); return; }
     if (f) {
       const id = f.dataset.fundar;
       const nombreEj = await dialogo.pedir(`Nombre del ejército de ${FACCIONES[id].corto}`, `Ejército de ${FACCIONES[id].corto}`);
@@ -118,14 +243,13 @@
       await guardar();
       entrarCuartel();
     } else if (e) { ej = ejercitos[e.dataset.entrar]; entrarCuartel(); }
-    else if (r) retomarGuerra();
   });
 
   /* =========================================================================
      CUARTEL
   ========================================================================= */
   function entrarCuartel(p) {
-    if (!ej) return pantallaInicio();
+    if (!ej) return pintarPortada();
     pestana = p || pestana || "guerra";
     est = null;
     mostrar("frCuartel");
@@ -180,7 +304,7 @@ pintarHero();
   /* o: { pon: "quita" | "lleva" (se puede cambiar de sitio al tocarla), ver (abre la ficha), caido, bloq, extra, i, attr } */
   function carta(s, o) {
     o = o || {};
-    const rg = rango(s), claseN = CLASES[s.clase] ? CLASES[s.clase].nombre : s.clase;
+    const rg = rango(s), claseN = CLASES[s.clase] ? D.tropa(ej.faccion, s.clase).nombre : s.clase;
     const herido = C.convaleciente(ej, s);
     const marcas = [];
     if (s.estado === "nino") marcas.push(`Niño de ${edad(s)}`);
@@ -231,7 +355,7 @@ pintarHero();
     const porClase = {};
     elegidos.forEach(s => { porClase[s.clase] = (porClase[s.clase] || 0) + 1; });
     const caps = elegidos.filter(s => s.capitan).map(s => ROM[s.compania]);
-    const chips = Object.keys(porClase).map(k => `<span>${porClase[k]} × ${esc(CLASES[k].nombre)}</span>`)
+    const chips = Object.keys(porClase).map(k => `<span>${porClase[k]} × ${esc(D.tropa(ej.faccion, k).nombre)}</span>`)
       .concat([`<span>${elegidos.reduce((a, s) => a + s.victorias, 0)} victorias entre todos</span>`], caps.length ? [`<span>Capitanes: ${caps.join(", ")}</span>`] : []).join("");
     let n = 0;
     const slots = Array.from({ length: lim }, (_, i) => elegidos[i]
@@ -241,6 +365,9 @@ pintarHero();
     const rivales = ["azar"].concat(Object.keys(FACCIONES).filter(f => f !== ej.faccion));
     const tipoTexto = ajustesGuerra.tipo === "azar" ? "Cada guerra cae en un tipo distinto." : TIPOS_FRACTURA[ajustesGuerra.tipo].texto;
     const rivalFac = ajustesGuerra.rival !== "azar" ? FACCIONES[ajustesGuerra.rival] : null;
+    if (ajustesGuerra.rival !== "azar" && (!FACCIONES[ajustesGuerra.rival] || ajustesGuerra.rival === ej.faccion)) ajustesGuerra.rival = "azar";
+    const nb = ajustesGuerra.bandos || 2, tam = window.FracturaMapa.TAMANOS[nb];
+    if (!(nb >= 4 && nb % 2 === 0)) ajustesGuerra.equipos = false;
     v.innerHTML = `
       ${pend.length ? `<div class="fr-banner"><p><strong>${pend.length} veterano${pend.length === 1 ? "" : "s"} esperan una especialización.</strong> Elígela en su ficha antes de partir.</p>
         <div class="fr-fila">${pend.map(s => `<button type="button" class="fr-btn fr-btn-chico" data-ficha="${s.id}">${esc(nombre(s))}</button>`).join("")}</div></div>` : ""}
@@ -271,11 +398,17 @@ pintarHero();
             <p class="fr-sub" id="frTextoTipo">${esc(tipoTexto)}</p>
           </div>
           <div class="fr-mision-bloque">
-            <h4 class="fr-h4">Rival</h4>
+            <h4 class="fr-h4">Bandos</h4>
+            <div class="fr-segmentos">${[2, 3, 4, 5, 6, 7, 8].map(n => `<button type="button" class="fr-opcion${nb === n ? " sel" : ""}" data-aj="bandos" data-v="${n}">${n}</button>`).join("")}</div>
+            ${nb >= 4 && nb % 2 === 0 ? `<div class="fr-segmentos"><button type="button" class="fr-opcion${!ajustesGuerra.equipos ? " sel" : ""}" data-aj="equipos" data-v="0">Todos contra todos</button><button type="button" class="fr-opcion${ajustesGuerra.equipos ? " sel" : ""}" data-aj="equipos" data-v="1">Dos equipos</button></div>` : ""}
+            <p class="fr-sub">Mapa de ${tam[0]} por ${tam[1]} casillas · hasta ${35 + 5 * (nb - 2)} turnos${nb > 2 ? ` · tregua los 3 primeros turnos. ${ajustesGuerra.equipos ? "Los aliados comparten lo que ven y no se atacan." : "Quien pierde su capital queda fuera."}` : "."}</p>
+          </div>
+          <div class="fr-mision-bloque">
+            <h4 class="fr-h4">${nb > 2 ? "Rival principal" : "Rival"}</h4>
             <div class="fr-opciones">${rivales.map((f, i) => f === "azar"
               ? `<button type="button" class="fr-opcion fr-rival${ajustesGuerra.rival === f ? " sel" : ""}" data-aj="rival" data-v="azar" style="--i:${i}"><span class="fr-rival-azar">?</span><strong>Al azar</strong></button>`
-              : `<button type="button" class="fr-opcion fr-rival${ajustesGuerra.rival === f ? " sel" : ""}" data-aj="rival" data-v="${f}" style="--c:${FACCIONES[f].color};--b:${FACCIONES[f].bandera};--i:${i}"><span class="fr-rival-ret">${retrFaccion(f, 44)}</span><strong>${esc(FACCIONES[f].corto)}</strong></button>`).join("")}</div>
-            ${rivalFac ? `<p class="fr-sub">${esc(rivalFac.resumen)}</p>` : `<p class="fr-sub">Cada guerra te toca contra un bando distinto.</p>`}
+              : `<button type="button" class="fr-opcion fr-rival${ajustesGuerra.rival === f ? " sel" : ""}" data-aj="rival" data-v="${f}" style="--c:${FACCIONES[f].color};--b:${FACCIONES[f].bandera};--i:${i}"><span class="fr-rival-ret">${figHtml({ faccion: f, clase: "lider", sinAro: true }, 40, 46)}</span><strong>${esc(FACCIONES[f].corto)}</strong></button>`).join("")}</div>
+            ${rivalFac ? `<p class="fr-sub">${esc(rivalFac.resumen)}</p>` : `<p class="fr-sub">Cada guerra te toca contra un bando distinto.</p>`}${nb > 2 ? `<p class="fr-sub">Los otros ${nb - 2} bando${nb === 3 ? "" : "s"} salen al azar.</p>` : ""}
           </div>
           <div class="fr-mision-bloque">
             <h4 class="fr-h4">Dificultad</h4>
@@ -283,10 +416,11 @@ pintarHero();
             <p class="fr-sub">${esc(DESC_DIF[ajustesGuerra.dificultad] || "")}</p>
           </div>
           ${ej.nemesis.length ? `<p class="fr-nemesis"><strong>Némesis.</strong> ${ej.nemesis.map(x => esc(`${x.nombre} ${x.casa}`)).join(", ")} te espera${ej.nemesis.length === 1 ? "" : "n"} en alguna parte.</p>` : ""}
-          <button type="button" class="fr-empezar" data-empezar><span>Empezar la guerra</span><small>${elegidos.length} de ${lim} soldados · ${DIFICULTADES[ajustesGuerra.dificultad].nombre}</small></button>
+          <button type="button" class="fr-empezar" data-empezar><span>Empezar la guerra</span><small>${elegidos.length} de ${lim} soldados · ${nb} bandos · ${DIFICULTADES[ajustesGuerra.dificultad].nombre}</small></button>
         </aside>
       </div>`;
     pintarRetratos(v);
+    pintarFiguras(v);
   }
 
   function alternarContingente(id) {
@@ -314,7 +448,7 @@ pintarHero();
     const pon = t.closest("[data-pon]");
     if (pon) { alternarContingente(pon.dataset.pon); return; }
     const aj = t.closest("[data-aj]");
-    if (aj) { ajustesGuerra[aj.dataset.aj] = aj.dataset.v; vistaGuerra($("frVista")); return; }
+    if (aj) { const k = aj.dataset.aj; ajustesGuerra[k] = k === "bandos" ? +aj.dataset.v : k === "equipos" ? aj.dataset.v === "1" : aj.dataset.v; son("clic"); vistaGuerra($("frVista")); return; }
     const casa = t.closest("[data-casa]");
     if (casa) { const el = casa.nextElementSibling; if (el && el.classList.contains("fr-arbol")) el.classList.toggle("hidden"); return; }
     const cr = t.closest("[data-cronica]");
@@ -354,7 +488,7 @@ pintarHero();
   }
   function arbolHtml(nodos, nivel) {
     return `<ul class="fr-arbol-lista">${nodos.map(n => `<li><span class="fr-av">${retr(n.s, 40)}</span><button type="button" class="fr-enlace ${n.s.estado === "caido" ? "fr-caido" : ""}" data-ficha="${n.s.id}">${esc(nombreApodo(n.s))}</button>
-      <small>${n.s.nacimiento}${n.s.estado === "caido" && n.s.muerte ? ` – ${n.s.muerte.anio}` : ""} · ${esc(CLASES[n.s.clase].nombre)} · ${n.s.victorias}v</small>${n.hijos.length ? arbolHtml(n.hijos, nivel + 1) : ""}</li>`).join("")}</ul>`;
+      <small>${n.s.nacimiento}${n.s.estado === "caido" && n.s.muerte ? ` – ${n.s.muerte.anio}` : ""} · ${esc(D.tropa(ej.faccion, n.s.clase).nombre)} · ${n.s.victorias}v</small>${n.hijos.length ? arbolHtml(n.hijos, nivel + 1) : ""}</li>`).join("")}</ul>`;
   }
 
   /* --- Pestaña: Reliquias --- */
@@ -434,7 +568,7 @@ pintarHero();
     const s = ej.soldados[id];
     if (!s) return;
     const rg = rango(s);
-    const claseN = CLASES[s.clase].nombre;
+    const claseN = D.tropa(ej.faccion, s.clase).nombre;
     const barra = k => `<div class="fr-stat"><span>${STAT_NOMBRE[k]}</span><i><b style="width:${s.stats[k] * 10}%"></b></i><em>${s.stats[k]}</em></div>`;
     const vivo = s.estado !== "caido";
     const equipo = SLOTS.map(slot => {
@@ -508,101 +642,122 @@ pintarHero();
 
   /* =========================================================================
      LA GUERRA
+     El mapa (Phaser) ocupa toda la pantalla y la interfaz flota encima: recursos y bandos arriba,
+     vista y minimapa a la izquierda, la selección abajo y el mando (saber, ciudades, fin de turno) a la derecha.
+     Nada da por hecho dos bandos: todo sale de est.jugadores.
   ========================================================================= */
+  const FF = window.FracturaFiguras, SON = window.FracturaSonido, HEROES = D.HEROES;
+  const son = n => { if (SON) SON.tocar(n); };
+  const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+  let yoIdx = 0;           // qué bando soy (siempre 0 contra la máquina)
+  let pvp = null;          // guerra entre jugadores en curso: { id, n, acciones, timer }
+  let cfgGuerraActual = null, ejercitosAntes = null;
+  let bandos = [];         // color, forma y número de cada bando
+  let panel = null;        // panel abierto a la derecha: saber, ciudades, bandos, registro
+  let verAmenaza = false;
+  let ocupadoIA = false;   // los demás bandos están jugando
+  const humano = () => yoIdx;
+  const soyYo = () => est && est.activo === humano() && est.ganador === null && !ocupadoIA;
+  const esRival = d => d !== null && d >= 0 && FM.hostil(est, d, humano());
+  const musicaPartida = si => { if (window.MusicaPaginas) window.MusicaPaginas.partida(si); };
+  const tropaDe = u => (u.heroe ? { nombre: HEROES[u.heroe].titulo, texto: HEROES[u.heroe].texto, rol: "Héroe", aspecto: HEROES[u.heroe].aspecto } : u.dueno >= 0 ? D.tropa(est.jugadores[u.dueno].faccion, u.clase) : { nombre: CLASES[u.clase].nombre, texto: CLASES[u.clase].texto, rol: CLASES[u.clase].rol, aspecto: "" });
+
+  /* --- Ajustes del juego (se guardan en este navegador) --- */
+  let ajustes = { rapidez: 1, seguir: true, pistas: true };
+  try { ajustes = Object.assign(ajustes, JSON.parse(localStorage.getItem("fracturaAjustes") || "{}")); } catch (e) { /* sin almacenamiento */ }
+  const guardarAjustes = () => { try { localStorage.setItem("fracturaAjustes", JSON.stringify(ajustes)); } catch (e) { /* nada */ } if (tablero) tablero.ajustes(ajustes); };
+
+  /* --- Iconos: dibujos pequeños en vez de palabras --- */
+  const ICONOS = {
+    comida: '<path d="M2.5 10c0-3.4 2.4-5.6 5.5-5.6s5.500 2.200 5.500 5.600v1.600h-11z" fill="#d9a05a"/><path d="M5.400 6.800l.9 2M8 6.200v2.400M10.600 6.800l-.9 2" stroke="#7a4a1c" stroke-width="1" fill="none" stroke-linecap="round"/>',
+    materiales: '<rect x="1.500" y="5.500" width="11" height="5.500" rx="2.700" fill="#8a5a32"/><circle cx="12" cy="8.200" r="2.700" fill="#c79a6a"/><circle cx="12" cy="8.200" r="1.100" fill="#8a5a32"/>',
+    mineral: '<path d="M2.500 12l2.300-5.500h6.400l2.300 5.500z" fill="#9aa6b2"/><path d="M4.800 6.500h6.400l-1.400-2.500h-3.600z" fill="#d2dae2"/>',
+    oro: '<circle cx="8" cy="8" r="5.500" fill="#e3bb4e"/><circle cx="8" cy="8" r="3.200" fill="none" stroke="#9a7a1e" stroke-width="1.100"/>',
+    mana: '<path d="M8 1.500l4.500 5.500-4.500 7.500-4.500-7.500z" fill="#b98cff"/><path d="M8 1.500l-4.500 5.500h4.500z" fill="#e6d6ff"/>',
+    anima: '<path d="M8 1.500c3.200 2.200 4.300 4.300 4.300 7.300a4.300 4.300 0 01-8.600 0c0-2 1-3.200 2.100-4.200 0 2 1.100 2.200 2.200 2.200-1.100-2.100-1.100-3.200 0-5.300z" fill="#9fe6d2"/>',
+    vida: '<path d="M8 13.800S2.300 10.200 2.300 6.300A2.900 2.900 0 018 5a2.900 2.900 0 015.700 1.300c0 3.900-5.700 7.500-5.700 7.500z" fill="#e0605a"/>',
+    ataque: '<path d="M12.600 1.800l1.600 1.600-7.200 7.200-1.600-1.600z" fill="#dfe4ea"/><path d="M3.800 8.800l3.400 3.400M5 12.200l-2.600 2.600" stroke="#c79a44" stroke-width="1.700" fill="none" stroke-linecap="round"/>',
+    defensa: '<path d="M8 1.800l5.200 2v4.200c0 3-2.300 5.200-5.200 6.200-2.900-1-5.200-3.200-5.200-6.200V3.800z" fill="#8aa0b8"/><path d="M8 1.800v12.400c2.900-1 5.200-3.200 5.200-6.200V3.800z" fill="#62768c"/>',
+    mov: '<path d="M5 1.800h4.200v7l4.300 2.100v3.300H3.800z" fill="#b08a5a"/><path d="M3.800 12.400h9.700" stroke="#5a3d24" stroke-width="1.200"/>',
+    alcance: '<circle cx="8" cy="8" r="5.700" fill="none" stroke="#e9e2cf" stroke-width="1.400"/><circle cx="8" cy="8" r="2.100" fill="#e0605a"/>'
+  };
+  const ico = n => `<svg class="fr-ic" viewBox="0 0 16 16" aria-hidden="true">${ICONOS[n] || ""}</svg>`;
+  /* Un coste con iconos; en rojo lo que no alcanza */
+  function costeHtml(c, jug) {
+    const ks = Object.keys(c || {}).filter(k => c[k]);
+    if (!ks.length) return `<span class="fr-coste"><em>gratis</em></span>`;
+    return `<span class="fr-coste">${ks.map(k => `<b class="${jug && (jug.recursos[k] || 0) < c[k] ? "falta" : ""}" title="${c[k]} de ${RECURSO_NOMBRE[k].toLowerCase()}">${ico(k)}${c[k]}</b>`).join("")}</span>`;
+  }
+  /* Figura de una tropa en un lienzo pequeño: se pinta después de poner el HTML */
+  const figHtml = (q, w, h, cls) => `<canvas class="fr-fig ${cls || ""}" data-fig='${JSON.stringify(q)}' data-fw="${w}" data-fh="${h}"></canvas>`;
+  function pintarFiguras(raiz) {
+    if (!FF) return;
+    raiz.querySelectorAll("canvas[data-fig]").forEach(cv => {
+      const q = JSON.parse(cv.dataset.fig);
+      const b = q.dueno !== undefined && q.dueno >= 0 && bandos[q.dueno] ? bandos[q.dueno] : q.dueno === -1 ? { col: "#8c8c8c", ban: "#3a3a3a" } : Object.assign(FF.colorFaccion(q.faccion || "caballeros-del-reino"), { faccion: q.faccion });
+      FF.icono(cv, q, b, { w: +cv.dataset.fw, h: +cv.dataset.fh, sinAro: !!q.sinAro });
+    });
+  }
+
   function empezarGuerra() {
-    const cfg = C.prepararGuerra(ej, ajustesGuerra.ids, { tipo: ajustesGuerra.tipo === "azar" ? "azar" : ajustesGuerra.tipo, dificultad: ajustesGuerra.dificultad, rival: ajustesGuerra.rival === "azar" ? null : ajustesGuerra.rival });
+    const cfg = C.prepararGuerra(ej, ajustesGuerra.ids, {
+      tipo: ajustesGuerra.tipo === "azar" ? "azar" : ajustesGuerra.tipo, dificultad: ajustesGuerra.dificultad, rival: ajustesGuerra.rival === "azar" ? null : ajustesGuerra.rival,
+      bandos: ajustesGuerra.bandos || 2, equipos: !!ajustesGuerra.equipos
+    });
     if (!cfg) { aviso("No hay soldados disponibles.", true); return; }
     pararSondeo(); pvp = null; yoIdx = 0;
     est = FM.crearGuerra(cfg);
     cfgGuerraActual = { faccion: ej.faccion };
     ejercitosAntes = null;
-    sel = { uid: null, ciudad: null }; modo = null; lat = "sel";
-    entrarGuerra();
+    sel = { uid: null, ciudad: null }; modo = null;
+    entrarGuerra(true);
     guardarEnCurso();
   }
-  const musicaPartida = si => { if (window.MusicaPaginas) window.MusicaPaginas.partida(si); };
-  let cfgGuerraActual = null, ejercitosAntes = null;
-
-  function guardarEnCurso() { if (pvp) return; clearTimeout(guardarEstadoTimer); guardarEstadoTimer = setTimeout(() => Red.guardarGuerra(est, cfgGuerraActual), 300); }
+  function guardarEnCurso() { if (pvp || !est) return; clearTimeout(guardarEstadoTimer); guardarEstadoTimer = setTimeout(() => { if (est && !ocupadoIA) Red.guardarGuerra(est, cfgGuerraActual); }, 400); }
 
   function retomarGuerra() {
     const g = Red.cargarGuerra();
     if (!g || !ejercitos[g.cfg.faccion]) return;
+    if (g.est.reglas !== D.REGLAS) { Red.borrarGuerra(); aviso("Esa guerra empezó con las reglas anteriores y ya no se puede continuar.", true); pintarPortada(); return; }
     ej = ejercitos[g.cfg.faccion];
     pararSondeo(); pvp = null; yoIdx = 0;
     est = g.est; cfgGuerraActual = g.cfg;
-    sel = { uid: null, ciudad: null }; modo = null; lat = "sel";
-    entrarGuerra();
+    sel = { uid: null, ciudad: null }; modo = null;
+    entrarGuerra(false);
   }
 
-  /* El tablero se dibuja con Phaser (app/dist/fractura/tablero.js). Si no carga, o con ?renderer=canvas,
-     se usa el de canvas de siempre. Phaser toma el contexto del canvas, asi que el de respaldo recibe uno nuevo. */
   function crearTablero() {
-    var ganchos = { alTocar: tocar, alPasar: pasarPor };
-    var quiereCanvas = /[?&]renderer=canvas/.test(location.search);
-    if (!quiereCanvas && window.FracturaTableroPhaser) {
-      try { return window.FracturaTableroPhaser.crear($("frTablero"), ganchos); }
-      catch (e) {
-        if (window.console) console.warn("Phaser no arranco, uso el canvas de siempre", e);
-        var viejo = $("frTablero"), nuevo = viejo.cloneNode(false);
-        viejo.parentNode.replaceChild(nuevo, viejo);
-      }
-    }
-    return window.FracturaTablero.crear($("frTablero"), ganchos);
+    if (!window.FracturaTableroPhaser) return null;
+    return window.FracturaTableroPhaser.crear($("frTablero"), { alTocar: tocar, alPasar: pasarPor, alSonar: son, alMoverVista: pintarMiniPronto });
   }
 
-  function entrarGuerra() {
+  function entrarGuerra(nueva) {
+    if (!tablero) tablero = crearTablero();
+    if (!tablero) { aviso("No se pudo cargar el mapa de la guerra. Recarga la página.", true); return; }
     mostrar("frGuerra");
     musicaPartida(est.ganador === null);
-    if (!tablero) tablero = crearTablero();
-    $("frVistaMapa").classList.toggle("hidden", !(tablero && tablero.zoom));
+    bandos = FF.coloresBando(est);
+    cronicaVista = est.cronica.length; resumenDesde = est.cronica.length;
+    panel = null; verAmenaza = false; ocupadoIA = false; finHecho = false;
     $("frPantallaCompleta").classList.toggle("hidden", !document.documentElement.requestFullscreen);
-    cronicaVista = est.cronica.length;
-    panelAbierto = window.innerWidth >= 900;
-    aplicarPanel();
+    tablero.ajustes(ajustes);
     tablero.poner(est);
+    reservarVista();
     refrescar();
-    if (est.ganador !== null) terminarGuerraUI();
+    if (est.ganador !== null) { terminarGuerraUI(); return; }
+    if (nueva) {
+      const rivales = est.jugadores.filter(j => j.id !== humano()).map(j => FACCIONES[j.faccion].corto);
+      cartel(`${TIPOS_FRACTURA[est.tipo].nombre}`, 2200, `${FACCIONES[est.jugadores[humano()].faccion].corto} contra ${rivales.join(", ")}${est.tregua ? ` · tregua hasta el turno ${est.tregua}` : ""}`);
+      son("turno");
+    } else if (est.activo === humano()) cartel(`Turno ${est.turno}`, 1200);
   }
-
-  /* --- Panel flotante: a la derecha en pantallas anchas, abajo en móvil --- */
-  let panelAbierto = true;
-  const estrecho = () => window.innerWidth < 900;
-  function aplicarPanel() {
-    $("frPanel").classList.toggle("abierto", panelAbierto);
-    $("frPanelAbrir").classList.toggle("hidden", panelAbierto);
+  function reservarVista() {
     if (!tablero) return;
-    if (estrecho()) tablero.reservar({ der: 8, abajo: panelAbierto ? Math.round(window.innerHeight * 0.4) : 8 });
-    else tablero.reservar({ der: panelAbierto ? 356 : 8, abajo: 8 });
+    const estrecho = window.innerWidth < 760;
+    tablero.reservar({ arriba: 54, abajo: estrecho ? 150 : 132, izq: 8, der: panel && !estrecho ? 372 : 8 });
   }
-  $("frPanelAbrir").addEventListener("click", () => { panelAbierto = true; aplicarPanel(); });
-  $("frVistaMapa").addEventListener("click", ev => {
-    const b = ev.target.closest("[data-vista]");
-    if (!b || !tablero) return;
-    const v = b.dataset.vista;
-    if (v === "mas") tablero.zoom(1.4);
-    else if (v === "menos") tablero.zoom(1 / 1.4);
-    else if (v === "tropas") tablero.centrar();
-    else if (v === "todo") tablero.verTodo();
-    else if (v === "pantalla") {
-      if (document.fullscreenElement) document.exitFullscreen();
-      else document.documentElement.requestFullscreen().catch(() => {});
-    }
-  });
-  document.addEventListener("fullscreenchange", () => { const b = $("frPantallaCompleta"); if (b) b.textContent = document.fullscreenElement ? "✕" : "⛶"; });
-  $("frPanelCerrar").addEventListener("click", () => { panelAbierto = false; aplicarPanel(); });
-  window.addEventListener("resize", () => { if (!$("frGuerra").classList.contains("hidden")) aplicarPanel(); });
-  $("frSalir").addEventListener("click", async () => {
-    if (est && est.ganador === null && !pvp && !(await dialogo.confirmar("Vuelves al cuartel. La guerra queda guardada y puedes retomarla desde el cuartel.", { titulo: "Salir de la guerra", aceptar: "Salir" }))) return;
-    if (est && est.ganador === null && !pvp) Red.guardarGuerra(est, cfgGuerraActual);
-    musicaPartida(false); pararSondeo();
-    entrarCuartel("guerra");
-  });
+  window.addEventListener("resize", () => { if (est && !$("frGuerra").classList.contains("hidden")) { reservarVista(); pintarMini(); } });
 
-  let yoIdx = 0;           // qué lado soy (siempre 0 contra la IA)
-  let pvp = null;          // guerra entre jugadores en curso: { id, n, acciones, timer, miUid }
-  const humano = () => yoIdx;
-  const soyYo = () => est.activo === humano() && est.ganador === null;
   /* Toda acción mía pasa por aquí: en una guerra entre jugadores se anota para enviarla al terminar el turno */
   function aplicarYo(acc) {
     const antes = tablero ? tablero.instantanea() : null;
@@ -613,50 +768,101 @@ pintarHero();
   }
 
   function refrescar() {
-    pintarRecursos();
-    $("frTurno").textContent = est.ganador !== null ? "Guerra terminada" : est.activo === humano() ? `Turno ${est.turno} de ${est.maxTurnos}` : "Turno del rival";
-    $("frTerminar").disabled = !soyYo();
-    pintarResaltes();
-    pintarLateral();
+    if (!est) return;
+    pintarRecursos(); pintarBandos(); pintarTurno(); pintarResaltes(); pintarSeleccion(); pintarMando(); pintarPista(); pintarMini();
+    if (panel) pintarPanel();
   }
 
+  /* --- Barra de arriba: recursos con lo que cambian por turno --- */
   function pintarRecursos() {
-    const jug = est.jugadores[humano()];
-    const ing = FM.ingresoDe(est, humano());
-    const gasto = FM.mantenimiento(est, humano());
-    $("frRecursos").innerHTML = RECURSOS.map(k => {
+    const H = humano(), jug = est.jugadores[H];
+    const ing = FM.ingresoDe(est, H), gasto = FM.mantenimiento(est, H);
+    const sinComida = FACCIONES[jug.faccion].mods.sinComida;
+    $("frRecursos").innerHTML = RECURSOS.filter(k => !(k === "comida" && sinComida)).map(k => {
       const neto = (ing[k] || 0) - (k === "comida" ? gasto : 0);
-      return `<span class="fr-rec" title="${RECURSO_NOMBRE[k]}"><b>${RECURSO_NOMBRE[k]}</b> ${jug.recursos[k]}<small class="${neto < 0 ? "fr-neg" : ""}">${neto >= 0 ? "+" : ""}${neto}</small></span>`;
-    }).join("") + `<span class="fr-rec" title="Turnos que llevas sobre el Núcleo del Sueño"><b>Núcleo</b> ${est.nucleoHold[0]}/${est.hold}</span>`;
+      const apuro = k === "comida" && jug.recursos[k] + neto < 0;
+      return `<button type="button" class="fr-rec${apuro ? " fr-rec-apuro" : ""}" data-rec="${k}" title="${RECURSO_NOMBRE[k]}: toca para ver de dónde sale">${ico(k)}<b>${jug.recursos[k]}</b><small class="${neto < 0 ? "fr-neg" : ""}">${neto >= 0 ? "+" : ""}${neto}</small></button>`;
+    }).join("");
+  }
+  $("frRecursos").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-rec]");
+    if (!b || !est) return;
+    const k = b.dataset.rec, H = humano(), des = $("frDesglose");
+    if (!des.classList.contains("hidden") && des.dataset.rec === k) { des.classList.add("hidden"); return; }
+    const d = FM.ingresoDe(est, H, true), gasto = k === "comida" ? FM.mantenimiento(est, H) : 0;
+    const filas = Object.keys(d.fuentes).filter(f => d.fuentes[f][k]).map(f => `<li><span>${esc(f)}</span><b class="${d.fuentes[f][k] < 0 ? "fr-neg" : ""}">${d.fuentes[f][k] > 0 ? "+" : ""}${d.fuentes[f][k]}</b></li>`);
+    if (gasto) filas.push(`<li><span>Mantener a las tropas</span><b class="fr-neg">−${gasto}</b></li>`);
+    const NOTA = { comida: "Cada ciudad alimenta a 3 tropas. Las demás gastan 1 de alimento por turno; si falta, pasan hambre y pierden vida.", materiales: "Para construir edificios y hacer crecer las ciudades.", mineral: "Para tropas pesadas y edificios militares.", oro: "Para reclutar y construir.", mana: "Para investigar y para la magia.", anima: "La dejan las bajas. Paga a los muertos y la reanimación." };
+    des.dataset.rec = k;
+    des.innerHTML = `<h4>${ico(k)} ${RECURSO_NOMBRE[k]} <b>${est.jugadores[H].recursos[k]}</b></h4><ul>${filas.join("") || "<li><span>Nada por ahora</span><b>0</b></li>"}</ul><p>${NOTA[k]}</p>`;
+    des.classList.remove("hidden");
+    const r = b.getBoundingClientRect();
+    des.style.left = `${Math.max(8, Math.min(window.innerWidth - 268, r.left))}px`;
+    son("clic");
+  });
+  document.addEventListener("pointerdown", ev => { const d = $("frDesglose"); if (d && !d.classList.contains("hidden") && !ev.target.closest("#frDesglose, [data-rec]")) d.classList.add("hidden"); });
+
+  /* --- Bandos: orden de turnos, quién juega, cuántas ciudades y puntos lleva cada uno (solo datos públicos) --- */
+  function pintarBandos() {
+    const H = humano();
+    $("frBandos").innerHTML = est.jugadores.map((j, i) => {
+      const b = bandos[i], ciudades = FM.ciudadesDe(est, i).length;
+      const aliado = i !== H && FM.mismoEquipo(est, i, H);
+      return `<button type="button" class="fr-bando${est.activo === i && est.ganador === null ? " activo" : ""}${j.eliminado ? " fuera" : ""}${i === H ? " yo" : ""}" data-bando="${i}" style="--c:${b.col}"
+        title="${esc(j.nombre)} (${esc(FACCIONES[j.faccion].corto)})${i === H ? " · eres tú" : aliado ? " · aliado" : ""}${j.eliminado ? " · eliminado" : ` · ${ciudades} ciudad${ciudades === 1 ? "" : "es"} · ${FM.puntuacion(est, i)} puntos`}">
+        <i>${b.forma}</i><span>${esc(FACCIONES[j.faccion].corto)}</span><b>${j.eliminado ? "✕" : `⌂${ciudades}`}</b>${aliado ? "<em>aliado</em>" : ""}</button>`;
+    }).join("");
+  }
+  $("frBandos").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-bando]");
+    if (!b || !est) return;
+    const i = +b.dataset.bando, H = humano(), cap = est.capitales[i];
+    const visto = i === H || (cap && est.vision[H][cap.y * est.ancho + cap.x] > 0);
+    if (visto && cap) tablero.irA(cap.x, cap.y); else aviso(`Todavía no has encontrado a ${est.jugadores[i].nombre}.`);
+    abrirPanel("bandos");
+  });
+
+  function pintarTurno() {
+    const H = humano(), activo = est.jugadores[est.activo];
+    const tregua = FM.enTregua(est) ? `<span class="fr-tregua" title="Durante la tregua no se puede atacar a otros bandos ni entrar en sus ciudades">Tregua · ${est.tregua - est.turno + 1}</span>` : "";
+    const hold = est.nucleoHold.map((n, k) => ({ n, k })).filter(o => o.n > 0)[0];
+    const nucleo = hold ? `<span class="fr-nucleo" style="--c:${bandos[hold.k].col}" title="${esc(est.jugadores[hold.k].nombre)} lleva ${hold.n} de ${est.hold} turnos sobre el Núcleo del Sueño">◎ ${hold.n}/${est.hold}</span>` : "";
+    $("frTurno").innerHTML = `${tregua}${nucleo}<span class="fr-turno-n" title="Al acabar el último turno gana quien tenga más puntos">Turno <b>${est.turno}</b> / ${est.maxTurnos}</span>`;
+    void H; void activo;
   }
 
+  /* --- Lo que se marca sobre el mapa --- */
+  let rutaPrevia = null, ataquePrevio = null, previaFija = null;
   function pintarResaltes() {
-    const e = { sel: sel.uid, ciudad: sel.ciudad, mover: new Map(), atacar: new Set(), objetivosHab: new Set(), ruta: rutaPrevia, previaAtq: ataquePrevio, casilla: sel.casilla || null };
+    const H = humano();
+    const e = { sel: sel.uid, ciudad: sel.ciudad, mover: new Map(), atacar: new Set(), objetivosHab: new Set(), ruta: rutaPrevia, previaAtq: ataquePrevio, casilla: sel.casilla || null, amenaza: null };
     const u = sel.uid && est.unidades[sel.uid];
-    if (u && u.dueno === humano() && soyYo()) {
+    if (u && u.dueno === H && soyYo()) {
       if (!modo) {
         if (u.pm > 0) FM.alcanzables(est, u).destinos.forEach((n, k) => e.mover.set(k, n));
-        if (!u.atacado && u.clase !== "sanador") {
-          const alc = FM.ef(est, u).alc;
-          Object.values(est.unidades).forEach(w => { if (w.dueno !== humano() && FM.veCasilla(est, humano(), w.x, w.y) && Math.max(Math.abs(w.x - u.x), Math.abs(w.y - u.y)) <= alc) e.atacar.add(`${w.x},${w.y}`); });
-        }
-      } else if (modo.id === "alterar") {
-        const alc = FM.ef(est, u).alc;
-        for (let y = u.y - alc; y <= u.y + alc; y++) for (let x = u.x - alc; x <= u.x + alc; x++) { const c = FM.casilla(est, x, y); if (c && !c.est && !FM.unidadEn(est, x, y) && D.TERRENOS[c.t].mov > 0 && (x !== u.x || y !== u.y)) e.objetivosHab.add(`${x},${y}`); }
-      }
+        Object.values(est.unidades).forEach(w => { if (FM.hostil(est, w.dueno, H) && FM.veCasilla(est, H, w.x, w.y) && !FM.razonNoAtacar(est, u, w)) e.atacar.add(`${w.x},${w.y}`); });
+      } else modo.casillas.forEach(k => e.objetivosHab.add(k));
     }
+    if (verAmenaza) e.amenaza = zonaAmenaza();
     tablero.estado(e);
   }
-
-  /* --- Tocar el tablero --- */
-  let rutaPrevia = null, ataquePrevio = null, previaFija = null;
-  const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+  /* Casillas a las que llega el golpe de algún enemigo a la vista (lo que anda más su alcance) */
+  function zonaAmenaza() {
+    const H = humano(), out = new Set();
+    Object.values(est.unidades).forEach(w => {
+      if (!FM.hostil(est, w.dueno, H) || !FM.veCasilla(est, H, w.x, w.y) || (w.dueno < 0 && !w.errante)) return;
+      const e = FM.ef(est, w), r = (w.dueno < 0 ? 1 : e.mov) + e.alc;
+      for (let y = w.y - r; y <= w.y + r; y++) for (let x = w.x - r; x <= w.x + r; x++) { const c = FM.casilla(est, x, y); if (c && c.t !== "vacio") out.add(`${x},${y}`); }
+    });
+    return out;
+  }
 
   /* Cuánto pegaría y cuánto respondería, con los números reales del motor, y desde dónde atacaría */
   function previaAtaque(u, t) {
     const e = FM.ef(est, u);
     let desde = { x: u.x, y: u.y, rec: u.recorrido || 0 };
     if (cheb(u, t) > e.alc) {
+      if (FM.usaPolvora(est, u)) return null;
       const info = FM.alcanzables(est, u);
       let mejor = null;
       info.destinos.forEach(n => { const dd = cheb(n, t); if (dd <= e.alc && dd >= 1 && (!mejor || n.c < mejor.c || (n.c === mejor.c && dd > mejor.dd))) mejor = { x: n.x, y: n.y, c: n.c, dd }; });
@@ -669,7 +875,7 @@ pintarHero();
     let ret = 0;
     if (dmg < t.hp && cheb(desde, t) <= FM.ef(est, t).alc && CLASES[t.clase].atq > 1) ret = Math.max(1, Math.ceil(FM.calcularDano(est, t, u) * 0.6));
     u.x = sx; u.y = sy; u.recorrido = sr;
-    return { dmg, ret, mata: dmg >= t.hp, mueve: !!desde.mueve, hpT: t.hp };
+    return { dmg, ret, mata: dmg >= t.hp, mueve: !!desde.mueve, hpT: t.hp, desde };
   }
 
   function mostrarPrevia(x, y, html) {
@@ -678,68 +884,95 @@ pintarHero();
     const p = tablero.pantallaDe(x, y);
     el.innerHTML = html;
     el.classList.remove("hidden");
-    el.style.left = `${Math.max(8, Math.min(window.innerWidth - 200, p.x - 90))}px`;
-    el.style.top = `${Math.max(64, p.y - 12 - el.offsetHeight)}px`;
+    el.style.left = `${Math.max(8, Math.min(window.innerWidth - 240, p.x - 110))}px`;
+    el.style.top = `${Math.max(60, p.y - 14 - el.offsetHeight - p.ts * 0.5)}px`;
   }
   function limpiarPrevia() { rutaPrevia = null; ataquePrevio = null; previaFija = null; mostrarPrevia(0, 0, null); }
+  function limpiarPreviaVisual() { rutaPrevia = null; ataquePrevio = null; mostrarPrevia(0, 0, null); }
 
-  /* Ratón encima de una casilla: ruta si es un destino, vista previa del combate si es un enemigo al alcance */
+  /* Ratón encima de una casilla: ruta si es un destino, vista previa del combate si es un enemigo */
   function pasarPor(x, y) {
     rutaPrevia = null; ataquePrevio = null;
     mostrarPrevia(0, 0, null);
+    if (!est) return;
     const u = sel.uid && est.unidades[sel.uid];
     if (x >= 0 && u && u.dueno === humano() && soyYo() && !modo && !tablero.ocupado()) calcularPrevia(u, x, y);
+    else if (x >= 0 && !modo) previaInfo(x, y);
     pintarResaltes();
+  }
+  /* Sin nada elegido: el ratón sobre una tropa o una ciudad dice qué es */
+  function previaInfo(x, y) {
+    const H = humano();
+    if (!FM.veCasilla(est, H, x, y)) return;
+    const t = FM.unidadEn(est, x, y);
+    if (t) { const e = FM.ef(est, t), tr = tropaDe(t); mostrarPrevia(x, y, `<b>${esc(FM.nombreUnidad(t))}</b><span>${esc(tr.nombre)} · ${t.dueno >= 0 ? esc(FACCIONES[est.jugadores[t.dueno].faccion].corto) : "sin dueño"}</span><span class="fr-previa-cifras">${ico("vida")}${t.hp}/${e.hpMax} ${ico("ataque")}${e.atq} ${ico("defensa")}${e.def}</span>`); }
   }
   function calcularPrevia(u, x, y) {
     const H = humano();
     const t = FM.unidadEn(est, x, y);
-    if (t && t.dueno !== H && FM.veCasilla(est, H, x, y) && !u.atacado && u.clase !== "sanador") {
+    if (t && FM.hostil(est, t.dueno, H) && FM.veCasilla(est, H, x, y)) {
+      if (u.atacado) { mostrarPrevia(x, y, `<b>${esc(FM.nombreUnidad(t))}</b><span>Esta tropa ya atacó este turno</span>`); return; }
       const p = previaAtaque(u, t);
-      if (!p) { mostrarPrevia(x, y, `<b>${esc(FM.nombreUnidad(t))}</b><span>No llega este turno</span>`); return; }
+      // el motivo real por el que no se puede (tregua, noche, pólvora, alcance)
+      const sx = u.x, sy = u.y, q = u.quieto;
+      if (p && p.mueve) { u.x = p.desde.x; u.y = p.desde.y; u.quieto = false; }
+      const razon = p ? FM.razonNoAtacar(est, u, t) : (FM.usaPolvora(est, u) && cheb(u, t) > FM.ef(est, u).alc ? "Con pólvora no puede moverse y disparar: acércalo antes y dispara el turno siguiente" : "No llega este turno");
+      u.x = sx; u.y = sy; u.quieto = q;
+      if (!p || razon) { mostrarPrevia(x, y, `<b>${esc(FM.nombreUnidad(t))}</b><span class="fr-previa-no">${esc(razon || "No llega este turno")}</span>`); return; }
       ataquePrevio = { x, y };
-      mostrarPrevia(x, y, `<b>${esc(FM.nombreUnidad(t))}</b><span>${p.mata ? "Lo derribas" : `Le quitas ${p.dmg} de ${p.hpT}`}${p.ret ? ` · responde ${p.ret}` : ""}${p.mueve ? " · avanzas primero" : ""}</span>`);
+      const queda = Math.max(0, p.hpT - p.dmg);
+      mostrarPrevia(x, y, `<b>${esc(FM.nombreUnidad(t))}</b>
+        <span class="fr-previa-barra"><i style="width:${(queda / FM.ef(est, t).hpMax) * 100}%"></i><i class="pierde" style="width:${(Math.min(p.dmg, p.hpT) / FM.ef(est, t).hpMax) * 100}%"></i></span>
+        <span>${p.mata ? "<strong>Lo derribas</strong>" : `Le quitas <strong>${p.dmg}</strong> de ${p.hpT}`}${p.ret ? ` · te responde <strong class="fr-neg">${p.ret}</strong>` : " · sin respuesta"}${p.mueve ? " · avanzas primero" : ""}</span>`);
     } else if (!t && u.pm > 0) {
       const info = FM.alcanzables(est, u);
       const n = info.destinos.get(`${x},${y}`);
-      if (n) { rutaPrevia = FM.camino(info, x, y); mostrarPrevia(x, y, `<span>Cuesta ${n.c} de ${u.pm} de movimiento</span>`); }
+      if (n) {
+        rutaPrevia = FM.camino(info, x, y);
+        const c = FM.casilla(est, x, y), ci = FM.ciudadEn(est, x, y);
+        const extra = ci && ci.dueno !== humano() ? " · tomas la ciudad" : c.est === "ruinas" && !c.saqueada ? " · registras las ruinas" : c.est === "fortaleza" ? " · tomas la fortaleza" : c.est === "nucleo" ? " · ocupas el Núcleo" : c.est === "costura" ? " · costura a otro fragmento" : "";
+        mostrarPrevia(x, y, `<span>${ico("mov")} ${n.c} de ${u.pm}${D.TERRENOS[c.t].def ? ` · ${ico("defensa")}+${D.TERRENOS[c.t].def}` : ""}${extra}</span>`);
+      }
     }
   }
 
+  /* --- Tocar el mapa --- */
   async function tocar(x, y, tactil) {
-    if (est.ganador !== null || !soyYo()) return;
+    if (!est || est.ganador !== null) return;
     const H = humano();
     const u = sel.uid ? est.unidades[sel.uid] : null;
     const enCasilla = FM.unidadEn(est, x, y);
     const visible = FM.veCasilla(est, H, x, y);
+    if (!soyYo()) {
+      // fuera de mi turno solo se puede mirar
+      if (enCasilla && visible) { sel = { uid: enCasilla.uid, ciudad: null }; refrescar(); }
+      return;
+    }
     // Habilidades que piden una casilla
     if (modo && u) {
-      if (modo.id === "alterar") {
-        const r = aplicarYo({ t: "habilidad", id: "alterar", uid: u.uid, x, y, a: modo.a });
-        modo = null; if (!r.ok) aviso(r.error, true);
+      if (modo.casillas.has(`${x},${y}`)) {
+        const r = aplicarYo(Object.assign({ t: "habilidad", uid: u.uid, x, y }, modo.acc));
+        modo = null;
+        if (!r.ok) { aviso(r.error, true); son("error"); }
         return despuesDeAccion();
       }
+      modo = null; refrescar(); return;
     }
-    if (enCasilla && enCasilla.dueno === H) { limpiarPrevia(); sel = { uid: enCasilla.uid, ciudad: null }; modo = null; lat = "sel"; refrescar(); return; }
-    if (u && u.dueno === H && enCasilla && enCasilla.dueno !== H && visible) {
+    if (enCasilla && enCasilla.dueno === H) { limpiarPrevia(); sel = { uid: enCasilla.uid, ciudad: null }; modo = null; son("elegir"); refrescar(); return; }
+    if (u && u.dueno === H && enCasilla && FM.hostil(est, enCasilla.dueno, H) && visible) {
       // Atacar: si no llega desde donde está, se acerca primero
-      const e = FM.ef(est, u);
-      const d = Math.max(Math.abs(enCasilla.x - u.x), Math.abs(enCasilla.y - u.y));
-      if (u.atacado) { aviso("Esa unidad ya atacó este turno.", true); return; }
+      const p = previaAtaque(u, enCasilla);
+      if (u.atacado) { aviso("Esa tropa ya atacó este turno.", true); son("error"); return; }
+      if (!p) { aviso(FM.usaPolvora(est, u) ? "Con pólvora no puede moverse y disparar en el mismo turno." : "No llega hasta ahí este turno.", true); son("error"); return; }
       if (tactil && !(previaFija && previaFija.x === x && previaFija.y === y)) { previaFija = { x, y }; limpiarPreviaVisual(); calcularPrevia(u, x, y); pintarResaltes(); return; }
       limpiarPrevia();
-      if (d > e.alc) {
-        const info = FM.alcanzables(est, u);
-        let mejor = null;
-        info.destinos.forEach(n => { const dd = Math.max(Math.abs(enCasilla.x - n.x), Math.abs(enCasilla.y - n.y)); if (dd <= e.alc && dd >= 1 && (!mejor || n.c < mejor.c || (n.c === mejor.c && dd > mejor.dd))) mejor = { x: n.x, y: n.y, c: n.c, dd }; });
-        if (!mejor) { aviso("No llega hasta ahí este turno.", true); return; }
-        const m = aplicarYo({ t: "mover", uid: u.uid, x: mejor.x, y: mejor.y });
-        if (!m.ok) { aviso(m.error, true); return; }
-        tablero.redibujar();
+      if (p.mueve) {
+        const m = aplicarYo({ t: "mover", uid: u.uid, x: p.desde.x, y: p.desde.y });
+        if (!m.ok) { aviso(m.error, true); son("error"); return; }
         if (est.ganador !== null || !est.unidades[u.uid]) return despuesDeAccion();
       }
       const a = aplicarYo({ t: "atacar", uid: u.uid, x: enCasilla.x, y: enCasilla.y });
-      if (!a.ok) aviso(a.error, true);
+      if (!a.ok) { aviso(a.error, true); son("error"); }
       return despuesDeAccion();
     }
     if (u && u.dueno === H && !enCasilla) {
@@ -748,18 +981,18 @@ pintarHero();
         if (tactil && !(previaFija && previaFija.x === x && previaFija.y === y)) { previaFija = { x, y }; limpiarPreviaVisual(); calcularPrevia(u, x, y); pintarResaltes(); return; }
         limpiarPrevia();
         const m = aplicarYo({ t: "mover", uid: u.uid, x, y });
-        if (!m.ok) aviso(m.error, true);
+        if (!m.ok) { aviso(m.error, true); son("error"); }
         return despuesDeAccion();
       }
     }
-    const ciudad = FM.ciudadEn(est, x, y);
-    if (ciudad && visible) { limpiarPrevia(); sel = { uid: null, ciudad: ciudad.id }; modo = null; lat = "sel"; refrescar(); return; }
     limpiarPrevia();
-    // Una casilla vacía se inspecciona: terreno, región y lo que hay en ella
-    if (est.vision[H][y * est.ancho + x] > 0) { sel = { uid: null, ciudad: null, casilla: { x, y } }; lat = "sel"; modo = null; if (estrecho() && !panelAbierto) { panelAbierto = true; aplicarPanel(); } refrescar(); return; }
-    sel = { uid: null, ciudad: null }; modo = null; refrescar();
+    if (enCasilla && visible) { sel = { uid: enCasilla.uid, ciudad: null }; modo = null; son("clic"); refrescar(); return; }
+    const ciudad = FM.ciudadEn(est, x, y);
+    if (ciudad && est.vision[H][y * est.ancho + x] > 0) { sel = { uid: null, ciudad: ciudad.id }; modo = null; son("clic"); refrescar(); return; }
+    // Una casilla vacía se inspecciona: terreno, provincia y lo que hay en ella
+    if (est.vision[H][y * est.ancho + x] > 0 && FM.casilla(est, x, y).t !== "vacio" && !(sel.casilla && sel.casilla.x === x && sel.casilla.y === y)) { sel = { uid: null, ciudad: null, casilla: { x, y } }; modo = null; refrescar(); return; }
+    sel = { uid: null, ciudad: null }; modo = null; son("soltar"); refrescar();
   }
-  function limpiarPreviaVisual() { rutaPrevia = null; ataquePrevio = null; mostrarPrevia(0, 0, null); }
 
   function despuesDeAccion() {
     limpiarPrevia();
@@ -768,15 +1001,18 @@ pintarHero();
     guardarEnCurso();
     tablero.alTerminar(() => {
       procesarCronica();
-      if (est.ganador !== null) setTimeout(terminarGuerraUI, 500);
+      refrescar();
+      if (est.ganador !== null) setTimeout(terminarGuerraUI, 600);
     });
   }
 
   /* --- Avisos de acontecimientos importantes (conquistas, bajas de mando, reliquias...) --- */
-  let cronicaVista = 0;
-  const TOAST = { conquista: ["Conquista", "⚑", "conq"], fortaleza: ["Fortaleza tomada", "⚑", "conq"], lider: ["Cae un líder", "☠", "baja"], heroico: ["Hazaña", "★", "oro"], reliquia: ["Reliquia", "◆", "oro"], nucleo: ["Núcleo del Sueño", "◎", "cian"], reanimacion: ["Vuelve de entre los muertos", "✦", "cian"], tecnologia: ["Conocimiento", "✎", ""] };
+  let cronicaVista = 0, resumenDesde = 0;
+  const TOAST = { conquista: ["Conquista", "⚑", "conq"], fortaleza: ["Fortaleza tomada", "⚑", "conq"], lider: ["Cae un líder", "☠", "baja"], heroico: ["Hazaña", "★", "oro"], reliquia: ["Reliquia", "◆", "oro"], nucleo: ["Núcleo del Sueño", "◎", "cian"],
+    reanimacion: ["Vuelve de entre los muertos", "✦", "cian"], tecnologia: ["Conocimiento", "✎", ""], heroe: ["Llega un héroe", "✪", "oro"], heroe_cae: ["Cae un héroe", "☠", "baja"], eliminado: ["Un bando cae", "✕", "baja"], refugio: ["Refugio", "⌂", "conq"] };
   function procesarCronica() {
     const nuevos = est.cronica.slice(cronicaVista);
+    const base = cronicaVista;
     cronicaVista = est.cronica.length;
     nuevos.forEach((e, i) => {
       let t = TOAST[e.tipo];
@@ -784,8 +1020,7 @@ pintarHero();
       if (e.tipo === "tecnologia" && e.dueno !== humano()) return;
       if (e.tipo === "suceso" || e.tipo === "sabotaje" || e.tipo === "fin") return;
       if (!t) return;
-      const texto = CR.frase(est, e, null, cronicaVista - nuevos.length + i) || "";
-      toast(t[0], texto, t[1], t[2]);
+      toast(t[0], CR.frase(est, e, null, base + i) || "", t[1], t[2]);
     });
   }
   function toast(titulo, texto, icono, clase) {
@@ -796,210 +1031,593 @@ pintarHero();
     el.addEventListener("click", () => el.remove());
     cont.appendChild(el);
     while (cont.children.length > 4) cont.firstChild.remove();
-    setTimeout(() => el.classList.add("sale"), 4200);
-    setTimeout(() => el.remove(), 4700);
+    setTimeout(() => el.classList.add("sale"), 4600);
+    setTimeout(() => el.remove(), 5100);
   }
 
-  /* --- Panel lateral --- */
-  function pintarLateral() {
-    document.querySelectorAll("#frLatPestanas button").forEach(b => b.classList.toggle("activa", b.dataset.l === lat));
-    const c = $("frLateral");
-    ({ sel: latSeleccion, ciudades: latCiudades, saber: latSaber, registro: latRegistro }[lat])(c);
-  }
-  $("frLatPestanas").addEventListener("click", ev => { const b = ev.target.closest("button[data-l]"); if (b) { lat = b.dataset.l; pintarLateral(); } });
-
-  function statsUnidad(u) {
-    const e = FM.ef(est, u);
-    const cl = CLASES[u.clase];
-    return `<div class="fr-cifras fr-cifras-chicas"><div><b>${u.hp}/${e.hpMax}</b>vida</div><div><b>${e.atq}</b>ataque</div><div><b>${e.def}</b>defensa</div><div><b>${u.pm}/${e.mov}</b>movimiento</div><div><b>${e.alc}</b>alcance</div></div>
-      <p class="fr-sub">${esc(cl.texto)}</p>`;
-  }
-
-  /* Una acción puede estar disponible, condicionada (falta algo que se puede conseguir) o imposible ahora mismo */
-  const estadoAccion = razon => (!razon ? "" : /turno|ya entren|máximo|sitio|no entrena|no es tuya|ya está|huecos|especializ/i.test(razon) ? " fr-cond fr-imposible" : " fr-cond");
-
-  function latCasilla(c, x, y) {
-    const ca = FM.casilla(est, x, y), t = D.TERRENOS[ca.t], rg = est.regiones[ca.region];
-    const quien = rg.dueno === null ? "nadie" : rg.dueno === humano() ? "tuyo" : "del rival";
-    let h = `<h3 class="fr-h3">${esc(t.nombre)}</h3><p class="fr-sub">${esc(rg.nombre)} · fragmento ${rg.tipo} · estabilidad ${rg.estab} · ${quien}</p>
-      <div class="fr-cifras fr-cifras-chicas"><div><b>${t.mov ? t.mov : "—"}</b>coste de paso</div><div><b>+${t.def}</b>defensa</div><div><b>${Object.keys(t.rinde).map(k => `${t.rinde[k]} ${D.RECURSO_NOMBRE[k].toLowerCase()}`).join(", ") || "nada"}</b>rinde a una ciudad cercana</div></div>`;
-    if (!t.mov) h += `<p class="fr-sub">No se puede pisar.</p>`;
-    if (ca.est) h += `<p class="fr-sub"><strong>${esc(D.ESTRUCTURAS[ca.est].nombre)}.</strong> ${ca.est === "costura" ? "Une este fragmento con otro. Pisarla cuesta 1 de movimiento y te lleva al otro extremo." : ca.est === "nucleo" ? `Mantener aquí una unidad ${est.hold} turnos seguidos da la victoria.` : ca.est === "ruinas" ? (ca.saqueada ? "Ya se saquearon." : "Quien las pise se lleva lo que guardan.") : ca.est === "fortaleza" ? "Se toma entrando en ella. Da defensa y vista." : ""}</p>`;
-    if (ca.objetos && ca.objetos.length) h += `<p class="fr-sub"><strong>En el suelo.</strong> ${ca.objetos.map(id => esc((est.reliquias[id] || {}).nombre || "algo")).join(", ")}</p>`;
-    c.innerHTML = h;
-  }
-
-  function latSeleccion(c) {
+  /* Al volver a mi turno: lo que pasó mientras jugaban los demás, en una tarjeta que no estorba */
+  function resumenDeRonda() {
     const H = humano();
+    const evs = est.cronica.slice(resumenDesde);
+    resumenDesde = est.cronica.length;
+    const filas = [];
+    evs.forEach((e, i) => {
+      const mio = e.dueno === H, j = e.dueno !== undefined && e.dueno !== null && est.jugadores[e.dueno] ? est.jugadores[e.dueno] : null;
+      const col = j ? bandos[e.dueno].col : "#8f8498";
+      if (e.tipo === "conquista" && !mio) filas.push([e.antes === H ? "baja" : "", "⚑", `${j ? esc(FACCIONES[j.faccion].corto) : "Alguien"} toma ${esc(e.ciudad)}${e.antes === H ? ", que era tuya" : ""}`, col]);
+      else if (e.tipo === "caida" && mio) filas.push(["baja", "☠", `Cae ${esc(e.nombre)}${e.por ? `, a manos de ${esc(e.por)}` : ""}`, col]);
+      else if (e.tipo === "lider") filas.push([mio ? "baja" : "", "☠", `Cae ${esc(e.nombre)}`, col]);
+      else if (e.tipo === "heroe" && !mio) filas.push(["oro", "✪", `${j ? esc(FACCIONES[j.faccion].corto) : "Alguien"} invoca a ${esc(e.nombre)}`, col]);
+      else if (e.tipo === "eliminado") filas.push(["baja", "✕", `${j ? esc(j.nombre) : "Un bando"} queda fuera de la guerra`, col]);
+      else if (e.tipo === "nucleo" && !mio) filas.push(["cian", "◎", `${j ? esc(FACCIONES[j.faccion].corto) : "Alguien"} ocupa el Núcleo del Sueño`, col]);
+      else if (e.tipo === "fortaleza" && !mio) filas.push(["", "⚑", `${j ? esc(FACCIONES[j.faccion].corto) : "Alguien"} toma una fortaleza`, col]);
+      void i;
+    });
+    const el = $("frResumen");
+    if (!filas.length) { el.classList.add("hidden"); return; }
+    el.innerHTML = `<h4>Mientras tanto</h4><ul>${filas.slice(-6).map(f => `<li class="${f[0]}"><i style="color:${f[3]}">${f[1]}</i><span>${f[2]}</span></li>`).join("")}</ul>`;
+    el.classList.remove("hidden", "sale");
+    clearTimeout(resumenDeRonda.t);
+    resumenDeRonda.t = setTimeout(() => { el.classList.add("sale"); setTimeout(() => el.classList.add("hidden"), 500); }, 7000);
+  }
+  $("frResumen").addEventListener("click", () => $("frResumen").classList.add("hidden"));
+
+  /* --- Pista: una línea que dice qué se puede hacer ahora --- */
+  function pendientes() { const H = humano(); return FM.unidadesDe(est, H).filter(u => !(u.desatado > 0) && (u.pm > 0 || !u.atacado) && u.quieto && !u.atacado); }
+  function pintarPista() {
+    const el = $("frPista");
+    if (!ajustes.pistas || est.ganador !== null) { el.textContent = ""; return; }
+    const H = humano(), u = sel.uid && est.unidades[sel.uid];
+    let t = "";
+    if (ocupadoIA || est.activo !== H) t = `Juega ${est.jugadores[est.activo].nombre}. Toca el mapa para saltar la animación.`;
+    else if (modo) t = "Toca una casilla marcada en violeta, o cualquier otra para cancelar.";
+    else if (u && u.dueno === H) t = u.pm > 0 || !u.atacado ? "Azul: adonde puede ir. Espadas: a quién puede atacar. Toca otra tropa para cambiar." : "Esta tropa ya ha hecho todo lo que podía este turno.";
+    else if (sel.ciudad && est.ciudades[sel.ciudad] && est.ciudades[sel.ciudad].dueno === H) t = "En tus ciudades entrenas tropas, levantas edificios e invocas a tu héroe.";
+    else { const n = pendientes().length; t = n ? `Tienes ${n} tropa${n === 1 ? "" : "s"} sin órdenes. Tócalas, o pulsa Siguiente.` : "No queda nada por mover. Mira tus ciudades o termina el turno."; }
+    if (FM.enTregua(est) && est.activo === H && !modo && !u) t += ` Hay tregua ${est.tregua - est.turno + 1} turno${est.tregua - est.turno + 1 === 1 ? "" : "s"} más.`;
+    el.textContent = t;
+  }
+
+  /* --- Mando: siguiente tropa y fin de turno --- */
+  function pintarMando() {
+    const mio = soyYo(), n = mio ? pendientes().length : 0;
+    const sig = $("frSiguiente"), fin = $("frTerminar");
+    sig.disabled = !mio || !n;
+    sig.innerHTML = n ? `<b>${n}</b> sin órdenes <span>Siguiente ›</span>` : "Todas con órdenes";
+    fin.disabled = !mio && !(tablero && tablero.ocupado());
+    fin.classList.toggle("listo", mio && n === 0);
+    $("frTerminarSub").textContent = est.ganador !== null ? "La guerra terminó" : mio ? (n ? `quedan ${n} por mover` : "todo hecho") : `juega ${FACCIONES[est.jugadores[est.activo].faccion].corto}`;
+    document.querySelectorAll(".fr-mando [data-panel]").forEach(b => b.classList.toggle("activa", b.dataset.panel === panel));
+    // lo que se puede hacer ahora en el saber y en las ciudades, con un punto de aviso
+    const H = humano();
+    const puedeSaber = mio && Object.keys(ESCUELAS).some(k => !FM.razonNoInvestigar(est, H, k));
+    const puedeCiudad = mio && FM.ciudadesDe(est, H).some(c => !c.reclutado && FM.clasesDisponibles(est, H).some(cl => !FM.razonNoReclutar(est, H, c.id, cl)));
+    document.querySelector('.fr-mando [data-panel="saber"]').classList.toggle("aviso", puedeSaber);
+    document.querySelector('.fr-mando [data-panel="ciudades"]').classList.toggle("aviso", puedeCiudad);
+    $("frAmenaza").classList.toggle("activa", verAmenaza);
+  }
+  function siguienteTropa() {
+    const lista = pendientes();
+    if (!lista.length) return;
+    const i = lista.findIndex(u => u.uid === sel.uid);
+    const u = lista[(i + 1) % lista.length];
+    sel = { uid: u.uid, ciudad: null }; modo = null;
+    tablero.irA(u.x, u.y);
+    son("elegir");
+    refrescar();
+  }
+  $("frSiguiente").addEventListener("click", siguienteTropa);
+
+  /* --- Tarjeta de selección: tropa, ciudad o terreno --- */
+  const NOMBRE_RASGO = FM.RASGO_NOMBRE;
+  function accionesDeUnidad(u) {
+    const H = humano(), jh = est.jugadores[H], fac = FACCIONES[jh.faccion], out = [];
+    const ya = u.atacado ? "Ya actuó este turno." : null;
+    const junto = (x, y) => Object.values(est.unidades).filter(w => cheb(w, { x, y }) <= 1);
+    if (u.clase === "picaro") {
+      Object.values(est.ciudades).filter(ci => esRival(ci.dueno) && cheb(ci, u) <= 1).forEach(ci => ci.edificios.filter(e => !(ci.desh[e] >= est.turno)).slice(0, 3).forEach(e =>
+        out.push({ ic: "✂", nombre: `Sabotear ${EDIFICIOS[e].nombre}`, texto: `Deja sin uso ${EDIFICIOS[e].nombre} de ${ci.nombre} durante 3 turnos.`, razon: ya || (FM.enTregua(est) ? "Hay tregua." : null), acc: { id: "sabotear", x: ci.x, y: ci.y, edificio: e } })));
+    }
+    if ((u.clase === "arcanista" || u.clase === "archimago") && jh.tech.arcano >= 3) {
+      ["llanura", "bosque", "desierto"].forEach(t => {
+        const alc = FM.ef(est, u).alc, cas = new Set();
+        for (let y = u.y - alc; y <= u.y + alc; y++) for (let x = u.x - alc; x <= u.x + alc; x++) { const c = FM.casilla(est, x, y); if (c && !c.est && !FM.unidadEn(est, x, y) && D.TERRENOS[c.t].mov > 0 && c.t !== t) cas.add(`${x},${y}`); }
+        out.push({ ic: "✦", nombre: `Volver ${D.TERRENOS[t].nombre.toLowerCase()}`, texto: "Cambia el terreno de una casilla cercana.", coste: { mana: 3 }, razon: ya || (u.enfriar > 0 ? `Le faltan ${u.enfriar} turnos.` : jh.recursos.mana < 3 ? "Hacen falta 3 de maná." : null), casillas: cas, acc: { id: "alterar", a: t } });
+      });
+    }
+    if (jh.tech.tanato >= 3) est.tumbas.filter(t => cheb(t, u) <= 1 && !FM.unidadEn(est, t.x, t.y)).slice(0, 2).forEach(t =>
+      out.push({ ic: "☥", nombre: `Reanimar a ${t.s ? t.s.nombre : "un caído"}`, texto: "Lo levanta a tu servicio con la mitad de la vida.", coste: { anima: 3 }, razon: ya || (jh.recursos.anima < 3 ? "Hacen falta 3 de Ánima." : null), acc: { id: "reanimar", x: t.x, y: t.y } }));
+    if (u.clase === "sanador" && fac.mods.consagra) out.push({ ic: "☀", nombre: "Consagrar", texto: "Consagra esta casilla y las de alrededor: tus tropas ganan +1 de defensa y se curan 1 más en ellas.", razon: ya || (FM.consagradaPara(est, H, u.x, u.y) && [[1, 0], [-1, 0], [0, 1], [0, -1]].every(([dx, dy]) => !FM.casilla(est, u.x + dx, u.y + dy) || FM.consagradaPara(est, H, u.x + dx, u.y + dy)) ? "Este terreno ya está consagrado." : null), acc: { id: "consagrar" } });
+    if (fac.mods.soborno && !u.heroe) junto(u.x, u.y).filter(w => w.dueno === -1).slice(0, 2).forEach(w => {
+      const precio = FM.heroeVivo(est, H) && HEROES[FM.heroeVivo(est, H).heroe].ef.sobornoMitad ? Math.ceil(fac.mods.soborno / 2) : fac.mods.soborno;
+      out.push({ ic: "¤", nombre: `Sobornar a ${FM.nombreUnidad(w)}`, texto: "La criatura lucha por ti 2 turnos.", coste: { oro: precio }, razon: ya || (jh.recursos.oro < precio ? "No te alcanza el oro." : null), acc: { id: "sobornar", x: w.x, y: w.y } });
+    });
+    if (u.heroe) {
+      const h = HEROES[u.heroe];
+      [[h.ef.activa, 1, u.cd], [h.ef.activa2, 2, u.cd2]].forEach(([ab, n, cd]) => {
+        if (!ab) return;
+        let razon = ya || (cd > 0 ? (cd > 50 ? "Solo se puede usar una vez." : `Le faltan ${cd} turnos.`) : ab.coste && !FM.puedePagar(jh, ab.coste) ? "No te alcanzan los recursos." : null);
+        const base = { ic: "✪", nombre: ab.nombre, texto: ab.texto, coste: ab.coste, heroe: true };
+        if (ab.id === "area" || ab.id === "muro") {
+          const cas = new Set();
+          for (let y = u.y - ab.alc; y <= u.y + ab.alc; y++) for (let x = u.x - ab.alc; x <= u.x + ab.alc; x++) {
+            const c = FM.casilla(est, x, y);
+            if (!c || c.t === "vacio") continue;
+            if (ab.id === "muro" ? (!c.est && !FM.unidadEn(est, x, y) && D.TERRENOS[c.t].mov > 0) : junto(x, y).some(w => FM.hostil(est, w.dueno, H) && FM.veCasilla(est, H, w.x, w.y))) cas.add(`${x},${y}`);
+          }
+          if (!razon && !cas.size) razon = ab.id === "muro" ? "No hay sitio." : "No hay enemigos al alcance.";
+          if (!razon && ab.id === "area" && FM.enTregua(est)) razon = "Hay tregua.";
+          out.push(Object.assign(base, { razon, casillas: cas, acc: { id: "heroe", n } }));
+        } else if (ab.id === "contratar") {
+          const ws = junto(u.x, u.y).filter(w => w.dueno === -1);
+          if (!ws.length) out.push(Object.assign(base, { razon: razon || "No hay ninguna criatura salvaje a su lado." }));
+          ws.slice(0, 2).forEach(w => out.push(Object.assign({}, base, { nombre: `${ab.nombre}: ${FM.nombreUnidad(w)}`, razon, acc: { id: "heroe", n, x: w.x, y: w.y } })));
+        } else out.push(Object.assign(base, { razon, acc: { id: "heroe", n } }));
+      });
+    }
+    return out;
+  }
+
+  function estadosDeUnidad(u) {
+    const e = FM.ef(est, u), out = [];
+    if (u.hp <= e.hpMax * 0.45) out.push(["Herido", "baja"]);
+    if (u.efectos && u.efectos.frenado >= est.turno) out.push(["Frenado", ""]);
+    if (u.efectos && u.efectos.clavado) out.push(["Clavado", ""]);
+    if (u.efectos && u.efectos.formado >= est.turno) out.push(["En formación", "oro"]);
+    if (u.efectos && u.efectos.sinMando >= est.turno) out.push(["Sin capitán", "baja"]);
+    if (u.desatado > 0) out.push([`Desatado ${u.desatado}`, "baja"]);
+    if (u.sobornada !== undefined) out.push([`A sueldo hasta el turno ${u.sobornada}`, "oro"]);
+    if (FM.usaPolvora(est, u)) out.push([u.quieto ? "Pólvora lista" : "Se movió: no dispara", u.quieto ? "oro" : ""]);
+    (u.rasgos || []).forEach(k => out.push([NOMBRE_RASGO[k], "cian"]));
+    if (u.dueno >= 0 && FM.consagradaPara(est, u.dueno, u.x, u.y)) out.push(["En suelo consagrado", "oro"]);
+    if (u.s && u.s.luto) out.push([`De luto por ${u.s.luto.nombre}`, ""]);
+    return out;
+  }
+
+  let accionesActuales = [];
+  function pintarSeleccion() {
+    const c = $("frSeleccion"), H = humano();
     const u = sel.uid && est.unidades[sel.uid];
+    accionesActuales = [];
     if (u) {
-      const jug = est.jugadores[u.dueno] || null;
-      const verFicha = u.s && ej.soldados[u.s.id] ? `<button type="button" class="fr-enlace" data-ver-ficha="${u.s.id}">Ver su ficha</button>` : "";
-      let h = `<div class="fr-sel-cab"><canvas class="fr-retrato" data-ret="1"></canvas><div><h3 class="fr-h3">${esc(FM.nombreUnidad(u))}</h3><p class="fr-sub">${esc(CLASES[u.clase].nombre)}${u.s ? ` · ${rango(u.s).nombre}${u.s.spec ? " · " + ESPECIALIZACIONES[u.s.spec].nombre : ""} · ${u.s.victorias + (u.vicG || 0)} victorias` : ""}</p>${verFicha}</div></div>`;
-      h += statsUnidad(u);
-      if (u.s) {
-        const rels = Object.values(u.s.equipo || {}).map(id => est.reliquias[id]).filter(Boolean);
-        if (rels.length) h += `<p class="fr-sub"><strong>Lleva.</strong> ${rels.map(r => esc(r.nombre)).join(", ")}</p>`;
-        if (u.s.luto) h += `<p class="fr-sub">De luto por ${esc(u.s.luto.nombre)}.</p>`;
-      }
-      if (u.dueno === H && soyYo()) {
-        const botones = [];
-        const jh = est.jugadores[H];
-        if (u.clase === "picaro" && !u.atacado) {
-          FM.ciudadesDe(est, 1 - H).filter(ci => Math.max(Math.abs(ci.x - u.x), Math.abs(ci.y - u.y)) <= 1).forEach(ci => ci.edificios.filter(e => !(ci.desh[e] >= est.turno)).forEach(e => botones.push(`<button type="button" class="fr-btn fr-btn-chico" data-hab="sabotear" data-x="${ci.x}" data-y="${ci.y}" data-ed="${e}">Sabotear ${esc(EDIFICIOS[e].nombre)}</button>`)));
-        }
-        if ((u.clase === "arcanista" || u.clase === "archimago" || u.clase === "eco") && jh.tech.arcano >= 3 && !u.atacado && u.enfriar <= 0) {
-          ["llanura", "bosque", "desierto"].forEach(t => botones.push(`<button type="button" class="fr-btn fr-btn-chico${modo && modo.a === t ? " fr-btn-principal" : ""}" data-hab="alterar" data-a="${t}">Cambiar terreno a ${D.TERRENOS[t].nombre.toLowerCase()} (3 maná)</button>`));
-        }
-        if (jh.tech.tanato >= 3 && !u.atacado) est.tumbas.filter(t => Math.max(Math.abs(t.x - u.x), Math.abs(t.y - u.y)) <= 1 && !FM.unidadEn(est, t.x, t.y)).forEach(t => botones.push(`<button type="button" class="fr-btn fr-btn-chico" data-hab="reanimar" data-x="${t.x}" data-y="${t.y}">Reanimar a ${esc(t.s ? nombreApodo(t.s) : "un caído")} (3 Ánima)</button>`));
-        if (botones.length) h += `<div class="fr-fila fr-fila-botones">${botones.join("")}</div>`;
-        if (modo) h += `<p class="fr-sub">Toca una casilla marcada en violeta.</p>`;
-      }
-      c.innerHTML = h;
+      const e = FM.ef(est, u), tr = tropaDe(u), jug = u.dueno >= 0 ? est.jugadores[u.dueno] : null, mia = u.dueno === H;
+      const b = u.dueno >= 0 ? bandos[u.dueno] : { col: "#8c8c8c", forma: "·" };
+      const q = { faccion: jug ? jug.faccion : null, clase: u.clase, heroe: u.heroe || null, dueno: u.dueno };
+      const retrato = u.s && FR ? `<canvas class="fr-sel-ret" data-ret="1"></canvas>` : figHtml(q, 84, 104, "fr-sel-fig");
+      const rangoTxt = u.s ? `${S.rangoDe(u.s.victorias + (u.vicG || 0)).nombre}${u.s.spec ? ` · ${ESPECIALIZACIONES[u.s.spec].nombre}` : ""}${u.s.capitan ? " · Capitán" : ""}` : u.lider ? "Líder" : u.heroe ? `Héroe · nivel ${HEROES[u.heroe].nivel}` : "";
+      const estados = estadosDeUnidad(u);
+      if (mia && soyYo()) accionesActuales = accionesDeUnidad(u);
+      const verFicha = u.s && ej && ej.soldados[u.s.id] ? `<button type="button" class="fr-enlace" data-ver-ficha="${u.s.id}">Ver su ficha</button>` : "";
+      c.innerHTML = `<div class="fr-sel fr-sel-unidad" style="--c:${b.col}">
+        <div class="fr-sel-lado">${retrato}<span class="fr-sel-bando"><i>${b.forma || ""}</i>${jug ? esc(FACCIONES[jug.faccion].corto) : "Sin dueño"}</span></div>
+        <div class="fr-sel-cuerpo">
+          <div class="fr-sel-cab"><h3>${esc(FM.nombreUnidad(u))}</h3><p>${esc(tr.nombre)}${rangoTxt ? ` · ${esc(rangoTxt)}` : ""}${u.s ? ` · ${u.s.victorias + (u.vicG || 0)} victorias` : ""} ${verFicha}</p></div>
+          <div class="fr-vida"><i style="width:${Math.max(0, Math.min(100, (u.hp / e.hpMax) * 100))}%" class="${u.hp <= e.hpMax * 0.25 ? "roja" : u.hp <= e.hpMax * 0.5 ? "ambar" : ""}"></i><b>${u.hp} / ${e.hpMax}</b></div>
+          <div class="fr-stats">
+            <span title="Ataque">${ico("ataque")}<b>${e.atq}</b></span><span title="Defensa (más la del terreno: +${FM.defensaDelTerreno(est, u)})">${ico("defensa")}<b>${e.def}</b><small>+${FM.defensaDelTerreno(est, u)}</small></span>
+            <span title="Movimiento que le queda este turno">${ico("mov")}<b>${mia ? `${u.pm}/${e.mov}` : e.mov}</b></span><span title="Alcance">${ico("alcance")}<b>${e.alc}</b></span>
+            ${mia ? `<span class="fr-stat-estado ${u.atacado ? "gastado" : "listo"}">${u.atacado ? "Ya actuó" : "Puede atacar"}</span>` : ""}
+          </div>
+          ${estados.length ? `<div class="fr-estados">${estados.map(s => `<i class="${s[1]}">${esc(s[0])}</i>`).join("")}</div>` : ""}
+          <p class="fr-sel-texto">${esc(tr.texto)}</p>
+        </div>
+        ${accionesActuales.length ? `<div class="fr-sel-acciones">${accionesActuales.map((a, i) => `<button type="button" class="fr-accion${a.razon ? " no" : ""}${modo && modo.i === i ? " activa" : ""}" data-accion="${i}" title="${esc(a.texto)}${a.razon ? ` — ${esc(a.razon)}` : ""}"><i>${a.ic}</i><span>${esc(a.nombre)}</span>${a.coste ? costeHtml(a.coste, est.jugadores[H]) : ""}${a.razon ? `<small>${esc(a.razon)}</small>` : ""}</button>`).join("")}</div>` : ""}
+        <button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button>
+      </div>`;
       const ret = c.querySelector("[data-ret]");
-      if (ret && u.s && FR) {
-        ret.dataset.w = 96; ret.style.width = "96px"; ret.style.height = "122px";
-        FR.animar(ret, u.s, { faccion: est.jugadores[u.dueno >= 0 ? u.dueno : 1].faccion, anio: ej ? ej.anio : 1, herido: u.hp <= FM.ef(est, u).hpMax * 0.45, w: 96 });
-      } else if (ret) window.FracturaTablero.retrato(ret, u.clase, window.FracturaTablero.coloresBando(est)[u.dueno >= 0 ? u.dueno : 1], { w: 84, h: 98, cap: !!(u.s && u.s.capitan), rango: u.s ? S.rangoIndice(u.s.victorias + (u.vicG || 0)) : 0, herido: u.hp <= FM.ef(est, u).hpMax * 0.45, luto: !!(u.s && u.s.luto) });
+      if (ret) FR.animar(ret, u.s, { faccion: jug ? jug.faccion : ej.faccion, anio: ej ? ej.anio : 1, herido: u.hp <= e.hpMax * 0.45, w: 84 });
+      pintarFiguras(c);
       return;
     }
     const ci = sel.ciudad && est.ciudades[sel.ciudad];
-    if (ci) { latCiudad(c, ci); return; }
-    if (sel.casilla) { latCasilla(c, sel.casilla.x, sel.casilla.y); return; }
-    // Nada seleccionado: resumen de las unidades propias
+    if (ci) { pintarCiudad(c, ci); return; }
+    if (sel.casilla) { pintarCasilla(c, sel.casilla.x, sel.casilla.y); return; }
+    // Nada elegido: tus tropas, de un vistazo
     const mias = FM.unidadesDe(est, H);
-    c.innerHTML = `<h3 class="fr-h3">Tus unidades (${mias.length})</h3>
-      <div class="fr-lista fr-lista-chica">${mias.map(u => `<button type="button" class="fr-soldado fr-soldado-chico" data-uid="${u.uid}"><span class="fr-soldado-nombre">${esc(FM.nombreUnidad(u))}</span><span class="fr-soldado-meta">${esc(CLASES[u.clase].nombre)} · ${u.hp}/${FM.ef(est, u).hpMax}${u.pm > 0 || !u.atacado ? "" : " · ya actuó"}</span></button>`).join("")}</div>`;
+    c.innerHTML = `<div class="fr-sel fr-sel-lista"><div class="fr-tropas">${mias.map(u => {
+      const e = FM.ef(est, u), hecho = !(u.pm > 0 || !u.atacado) || est.activo !== H;
+      return `<button type="button" class="fr-tropa${hecho ? " hecha" : ""}" data-uid="${u.uid}" title="${esc(FM.nombreUnidad(u))} · ${esc(tropaDe(u).nombre)} · ${u.hp}/${e.hpMax}">${figHtml({ faccion: est.jugadores[H].faccion, clase: u.clase, heroe: u.heroe || null, dueno: H, sinAro: true }, 40, 48)}<i class="fr-tropa-vida"><b style="width:${(u.hp / e.hpMax) * 100}%" class="${u.hp <= e.hpMax * 0.25 ? "roja" : u.hp <= e.hpMax * 0.5 ? "ambar" : ""}"></b></i></button>`;
+    }).join("")}</div></div>`;
+    pintarFiguras(c);
   }
 
-  function latCiudad(c, ci) {
-    const H = humano();
-    const mia = ci.dueno === H;
-    let h = `<h3 class="fr-h3">${esc(ci.nombre)}${ci.capital ? " (capital)" : ""}</h3><p class="fr-sub">Nivel ${ci.nivel} · ${ci.dueno === null ? "Sin dueño" : mia ? "Tuya" : "Del rival"} · ${esc(est.regiones[ci.region].nombre)} (estabilidad ${est.regiones[ci.region].estab})</p>`;
-    if (ci.edificios.length) h += `<p class="fr-sub"><strong>Edificios.</strong> ${ci.edificios.map(e => `${esc(EDIFICIOS[e].nombre)}${ci.desh[e] >= est.turno ? " (inutilizado)" : ""}`).join(", ")}</p>`;
-    if (!mia) { c.innerHTML = h; return; }
-    if (soyYo()) {
-      h += `<h4 class="fr-h4">Entrenar</h4><div class="fr-fila-botones">${FM.clasesDisponibles(est, H).map(cl => {
-        const razon = FM.razonNoReclutar(est, H, ci.id, cl);
-        const coste = FM.costeReclutar(est, H, cl, ci);
-        return `<button type="button" class="fr-btn fr-btn-chico${estadoAccion(razon)}" data-recluta="${cl}" data-razon="${esc(razon || "")}" title="${esc(razon || CLASES[cl].texto)}">${esc(CLASES[cl].nombre)} <small>${esc(costeTexto(coste))}</small></button>`;
-      }).join("")}</div>
-      <h4 class="fr-h4">Construir (${ci.edificios.length}/${ci.nivel + 2} huecos)</h4><div class="fr-fila-botones">${Object.keys(EDIFICIOS).filter(e => !ci.edificios.includes(e)).map(e => {
-        const razon = FM.razonNoConstruir(est, H, ci.id, e);
-        return `<button type="button" class="fr-btn fr-btn-chico${estadoAccion(razon)}" data-construye="${e}" data-razon="${esc(razon || "")}" title="${esc(razon || EDIFICIOS[e].texto)}">${esc(EDIFICIOS[e].nombre)} <small>${esc(costeTexto(EDIFICIOS[e].coste))}</small></button>`;
-      }).join("")}</div>
-      ${ci.nivel < 5 ? `<h4 class="fr-h4">Crecer</h4><button type="button" class="fr-btn fr-btn-chico" data-mejora="${ci.id}"${FM.puedePagar(est.jugadores[H], { materiales: 4 * ci.nivel, oro: 3 * ci.nivel }) ? "" : " disabled"}>Subir a nivel ${ci.nivel + 1} <small>${4 * ci.nivel} materiales, ${3 * ci.nivel} oro</small></button>` : ""}`;
+  function pintarCasilla(c, x, y) {
+    const ca = FM.casilla(est, x, y), t = D.TERRENOS[ca.t], rg = est.regiones[ca.region], H = humano();
+    const dueno = rg && rg.dueno !== null ? est.jugadores[rg.dueno] : null;
+    const rinde = Object.keys(t.rinde).map(k => `<b>${ico(k)}${t.rinde[k]}</b>`).join("") || "<em>nada</em>";
+    const que = ca.est ? { costura: "Une este fragmento con otro. Pisarla cuesta 1 de movimiento y te lleva al otro extremo.", nucleo: `Quien tenga aquí una tropa ${est.hold} turnos seguidos gana la guerra.`, ruinas: ca.saqueada ? "Ya se registraron." : "Quien las pise se lleva lo que guardan. Puede haber una reliquia.", fortaleza: "Se toma entrando en ella. Da defensa, vista y cuenta para dominar la provincia.", ciudad: "" }[ca.est] : "";
+    c.innerHTML = `<div class="fr-sel fr-sel-casilla" style="--c:${dueno ? bandos[rg.dueno].col : "#8f8498"}">
+      <div class="fr-sel-cuerpo">
+        <div class="fr-sel-cab"><h3>${esc(t.nombre)}${ca.est ? ` · ${esc(D.ESTRUCTURAS[ca.est].nombre)}` : ""}</h3><p>${rg ? `${esc(rg.nombre)} · ${dueno ? (rg.dueno === H ? "provincia tuya" : `provincia de ${esc(FACCIONES[dueno.faccion].corto)}`) : "provincia sin dueño"} · estabilidad ${rg.estab}` : ""}</p></div>
+        <div class="fr-stats"><span title="Lo que cuesta entrar">${ico("mov")}<b>${t.mov || "—"}</b></span><span title="Defensa que da a quien la ocupa">${ico("defensa")}<b>+${t.def + (ca.est ? D.ESTRUCTURAS[ca.est].def : 0)}</b></span><span title="Lo que rinde a una ciudad cercana" class="fr-coste">${rinde}</span>${FM.consagradaPara(est, H, x, y) ? `<span class="fr-stat-estado listo">Consagrada</span>` : ""}</div>
+        ${que ? `<p class="fr-sel-texto">${esc(que)}</p>` : ""}${!t.mov ? `<p class="fr-sel-texto">No se puede pisar${ca.t === "agua" ? " (salvo las tropas de Pelgiria, que navegan)" : ""}.</p>` : ""}
+        ${ca.objetos && ca.objetos.length ? `<p class="fr-sel-texto"><strong>En el suelo:</strong> ${ca.objetos.map(id => esc((est.reliquias[id] || {}).nombre || "algo")).join(", ")}</p>` : ""}
+      </div><button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button></div>`;
+  }
+
+  /* Una ciudad: lo que rinde, sus edificios en huecos, las tropas que entrena y el héroe del ejército */
+  const RAMA = { eco: "Economía", mil: "Guerra", mag: "Magia" };
+  function pintarCiudad(c, ci) {
+    const H = humano(), mia = ci.dueno === H, jug = est.jugadores[H];
+    const dueno = ci.dueno !== null ? est.jugadores[ci.dueno] : null, rg = est.regiones[ci.region];
+    const cab = `<div class="fr-sel-cab"><h3>${ci.capital ? "★ " : ""}${esc(ci.nombre)}</h3><p>Nivel ${ci.nivel} · ${dueno ? (mia ? "tuya" : `de ${esc(FACCIONES[dueno.faccion].corto)}`) : "sin dueño"}${rg ? ` · ${esc(rg.nombre)}` : ""}</p></div>`;
+    const edificios = ci.edificios.map(e => `<span class="fr-hueco lleno${ci.desh[e] >= est.turno ? " roto" : ""}" title="${esc(EDIFICIOS[e].texto)}${ci.desh[e] >= est.turno ? " (inutilizado por ahora)" : ""}"><i class="r-${EDIFICIOS[e].rama}"></i>${esc(EDIFICIOS[e].nombre)}</span>`).join("");
+    if (!mia || !soyYo()) {
+      c.innerHTML = `<div class="fr-sel fr-sel-ciudad" style="--c:${dueno ? bandos[ci.dueno].col : "#8f8498"}"><div class="fr-sel-cuerpo">${cab}
+        ${ci.edificios.length ? `<div class="fr-huecos">${edificios}</div>` : `<p class="fr-sel-texto">${dueno ? "Sin edificios a la vista." : "Una ciudad sin dueño: se toma entrando en ella."}</p>`}
+        ${mia ? "" : dueno ? `<p class="fr-sel-texto">${ci.capital ? "Es su capital: si cae, ese bando queda fuera de la guerra (salvo que tenga un refugio)." : "Se toma entrando en ella con una tropa."}</p>` : ""}</div>
+        <button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button></div>`;
+      return;
     }
-    c.innerHTML = h;
-  }
-
-  function latCiudades(c) {
-    const H = humano();
-    const vis = Object.values(est.ciudades).filter(ci => ci.dueno === H || FM.veCasilla(est, H, ci.x, ci.y) || est.vision[H][ci.y * est.ancho + ci.x] === 1);
-    c.innerHTML = `<h3 class="fr-h3">Ciudades</h3><div class="fr-lista fr-lista-chica">${vis.map(ci => `<button type="button" class="fr-soldado fr-soldado-chico" data-ciu="${ci.id}"><span class="fr-soldado-nombre">${esc(ci.nombre)}${ci.capital ? " (capital)" : ""}</span><span class="fr-soldado-meta">${ci.dueno === null ? "Sin dueño" : ci.dueno === H ? "Tuya" : "Del rival"} · nivel ${ci.nivel}</span></button>`).join("")}</div>
-      <h3 class="fr-h3">Fragmentos</h3><div class="fr-lista fr-lista-chica">${est.regiones.map(r => `<div class="fr-soldado fr-soldado-chico"><span class="fr-soldado-nombre">${esc(r.nombre)}</span><span class="fr-soldado-meta">${r.tipo} · estabilidad ${r.estab}${r.dueno === H ? " · tuyo" : r.dueno === 1 - H ? " · rival" : ""}</span></div>`).join("")}</div>`;
-  }
-
-  function latSaber(c) {
-    const H = humano();
-    const jug = est.jugadores[H];
-    c.innerHTML = Object.keys(ESCUELAS).map(k => {
-      const esc0 = ESCUELAS[k];
-      return `<h3 class="fr-h3">${esc0.nombre}</h3>${esc0.escalones.map((e, i) => {
-        const hecho = jug.tech[k] > i, siguiente = jug.tech[k] === i;
-        const coste = siguiente ? FM.costeInvestigar(est, H, k) : e.coste;
-        const razon = siguiente ? FM.razonNoInvestigar(est, H, k) : null;
-        return `<div class="fr-saber ${hecho ? "fr-hecho" : ""}"><div><strong>${["I", "II", "III", "IV"][i]}. ${esc(e.nombre)}</strong><p class="fr-sub">${esc(e.texto)}</p></div>
-          ${hecho ? "<em>Dominado</em>" : siguiente ? `<button type="button" class="fr-btn fr-btn-chico${estadoAccion(razon || (!soyYo() ? "No es tu turno." : ""))}" data-investiga="${k}" data-razon="${esc(razon || (!soyYo() ? "No es tu turno." : ""))}" title="${esc(razon || "")}">${esc(costeTexto(coste))}</button>` : "<em>Antes, el escalón anterior</em>"}</div>`;
-      }).join("")}`;
+    const libres = ci.nivel + 2 - ci.edificios.length;
+    const vacios = Array.from({ length: Math.max(0, libres) }, () => `<span class="fr-hueco vacio">libre</span>`).join("");
+    const reclutas = FM.clasesDisponibles(est, H).map(cl => {
+      const razon = FM.razonNoReclutar(est, H, ci.id, cl), tr = D.tropa(jug.faccion, cl), k = CLASES[cl];
+      return `<button type="button" class="fr-recluta${razon ? " no" : ""}" data-recluta="${cl}" data-razon="${esc(razon || "")}" title="${esc(tr.aspecto ? `${tr.aspecto} ` : "")}${esc(tr.texto)}${razon ? ` — ${esc(razon)}` : ""}">
+        ${figHtml({ faccion: jug.faccion, clase: cl, dueno: H, sinAro: true }, 46, 54)}
+        <strong>${esc(tr.nombre)}</strong><span class="fr-recluta-cifras">${ico("vida")}${k.hp} ${ico("ataque")}${k.atq} ${ico("defensa")}${k.def}${k.alc > 1 ? ` ${ico("alcance")}${k.alc}` : ""}</span>
+        ${costeHtml(FM.costeReclutar(est, H, cl, ci), jug)}${razon ? `<small>${esc(razon)}</small>` : ""}</button>`;
     }).join("");
+    const obras = Object.keys(EDIFICIOS).filter(e => !ci.edificios.includes(e) && (!EDIFICIOS[e].solo || EDIFICIOS[e].solo === jug.faccion)).map(e => {
+      const razon = FM.razonNoConstruir(est, H, ci.id, e), ed = EDIFICIOS[e];
+      return { e, ed, razon, orden: (razon ? 10 : 0) + ed.nivel };
+    }).sort((a, b) => a.orden - b.orden).map(({ e, ed, razon }) => `<button type="button" class="fr-obra${razon ? " no" : ""}" data-construye="${e}" data-razon="${esc(razon || "")}" title="${esc(ed.texto)}${razon ? ` — ${esc(razon)}` : ""}"><i class="r-${ed.rama}" title="${RAMA[ed.rama]}"></i><strong>${esc(ed.nombre)}</strong>${costeHtml(ed.coste, jug)}<small>${esc(razon || ed.texto)}</small></button>`).join("");
+    // el héroe del ejército
+    let heroe = "";
+    if (jug.heroeInvocado) { const hv = FM.heroeVivo(est, H); heroe = `<p class="fr-sel-texto">${hv ? `${esc(hv.nombre)} está en el campo.` : "Tu héroe ya cayó en esta guerra."}</p>`; }
+    else heroe = jug.heroes.map(hf => {
+      const h = HEROES[hf.id], rq = FM.requisitosHeroe(est, H, hf.id, ci.id);
+      return `<div class="fr-heroe${rq.ok ? " listo" : ""}">${figHtml({ faccion: jug.faccion, clase: "heroe", heroe: hf.id, dueno: H, sinAro: true }, 60, 72)}
+        <div><strong>${esc(hf.nombre)}</strong><small>${esc(h.titulo)}</small>
+          <span class="fr-recluta-cifras">${ico("vida")}${h.hp} ${ico("ataque")}${h.atq} ${ico("defensa")}${h.def} ${ico("mov")}${h.mov}${h.alc > 1 ? ` ${ico("alcance")}${h.alc}` : ""}</span>
+          <p>${esc(h.texto)}${h.ef.activa ? ` <em>${esc(h.ef.activa.nombre)}:</em> ${esc(h.ef.activa.texto)}` : ""}</p>
+          <ul class="fr-requisitos">${rq.lista.map(r => `<li class="${r.ok ? "ok" : "no"}">${r.ok ? "✔" : "✖"} ${esc(r.texto)}${r.de && !r.ok ? ` <b>${r.lleva}/${r.de}</b>` : ""}</li>`).join("")}</ul>
+          <button type="button" class="fr-btn fr-btn-chico${rq.ok ? " fr-btn-principal" : ""}" data-invoca="${hf.id}" data-razon="${esc(rq.ok ? "" : rq.razon)}">Invocar${rq.ok ? "" : " (falta algo)"}</button></div></div>`;
+    }).join("");
+    const costeCrecer = { materiales: 4 * ci.nivel, oro: 3 * ci.nivel };
+    c.innerHTML = `<div class="fr-sel fr-sel-ciudad mia" style="--c:${bandos[H].col}">
+      <div class="fr-sel-cuerpo">${cab}
+        <div class="fr-ciudad-cols">
+          <section><h4>Entrenar ${ci.reclutado ? "<small>ya entrenó este turno</small>" : ""}</h4><div class="fr-reclutas">${reclutas}</div></section>
+          <section><h4>Edificios <small>${ci.edificios.length} de ${ci.nivel + 2}</small>${ci.nivel < 5 ? `<button type="button" class="fr-btn fr-btn-chico fr-crecer" data-mejora="${ci.id}"${FM.puedePagar(jug, costeCrecer) ? "" : " disabled"} title="Sube la ciudad de nivel: un hueco más y más oro">Crecer ${costeHtml(costeCrecer, jug)}</button>` : ""}</h4>
+            <div class="fr-huecos">${edificios}${vacios}</div><div class="fr-obras">${obras}</div></section>
+          <section><h4>Héroe</h4>${heroe}</section>
+        </div>
+      </div><button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button></div>`;
+    pintarFiguras(c);
   }
 
-  const ICONO_LOG = { combate: "⚔", muerte: "☠", conquista: "⚑", lider: "☠", heroico: "★", reliquia: "◆", recluta: "＋", obra: "▣", tecnologia: "✎", magia: "✦", nucleo: "◎", hambre: "⚠", suceso: "~", turno: "⏱", fin: "■", botin: "◇", sabotaje: "✂", compania: "⚑" };
-  function latRegistro(c) {
-    c.innerHTML = `<h3 class="fr-h3">Registro</h3><ol class="fr-registro">${est.log.slice(-50).reverse().map(l => `<li class="fr-log-${esc(l.tipo)}"><i aria-hidden="true">${ICONO_LOG[l.tipo] || "·"}</i><span><b>T${l.t}</b> ${esc(l.texto)}</span></li>`).join("")}</ol>`;
-  }
-
-  $("frLateral").addEventListener("click", async ev => {
-    const t = ev.target;
-    const H = humano();
+  $("frSeleccion").addEventListener("click", async ev => {
+    const t = ev.target, H = humano();
+    if (t.closest("[data-soltar]")) { sel = { uid: null, ciudad: null }; modo = null; son("soltar"); refrescar(); return; }
     const un = t.closest("[data-uid]");
-    if (un) { sel = { uid: un.dataset.uid, ciudad: null }; refrescar(); return; }
+    if (un) { const u = est.unidades[un.dataset.uid]; if (u) { sel = { uid: u.uid, ciudad: null }; modo = null; tablero.irA(u.x, u.y); son("elegir"); refrescar(); } return; }
     const vf = t.closest("[data-ver-ficha]");
     if (vf) { abrirFicha(vf.dataset.verFicha, true); return; }
+    const ac = t.closest("[data-accion]");
+    if (ac) {
+      const i = +ac.dataset.accion, a = accionesActuales[i], u = sel.uid && est.unidades[sel.uid];
+      if (!a || !u) return;
+      if (a.razon) { aviso(a.razon, true); son("error"); return; }
+      if (a.casillas) { modo = modo && modo.i === i ? null : { i, acc: a.acc, casillas: a.casillas }; son("clic"); refrescar(); return; }
+      const r = aplicarYo(Object.assign({ t: "habilidad", uid: u.uid }, a.acc));
+      if (!r.ok) { aviso(r.error, true); son("error"); } else son(a.acc.id === "consagrar" ? "consagra" : "magia");
+      despuesDeAccion();
+      return;
+    }
     const bloqueado = t.closest("[data-razon]");
-    if (bloqueado && bloqueado.dataset.razon) { aviso(bloqueado.dataset.razon, true); return; }
-    const ciu = t.closest("[data-ciu]");
-    if (ciu) { sel = { uid: null, ciudad: ciu.dataset.ciu }; lat = "sel"; refrescar(); return; }
+    if (bloqueado && bloqueado.dataset.razon) { aviso(bloqueado.dataset.razon, true); son("error"); return; }
     if (!soyYo()) return;
     let r = null;
-    const rec = t.closest("[data-recluta]"), con = t.closest("[data-construye]"), mej = t.closest("[data-mejora]"), inv = t.closest("[data-investiga]"), hab = t.closest("[data-hab]");
-    if (rec && sel.ciudad) r = aplicarYo({ t: "reclutar", ciudad: sel.ciudad, clase: rec.dataset.recluta });
-    else if (con && sel.ciudad) r = aplicarYo({ t: "construir", ciudad: sel.ciudad, edificio: con.dataset.construye });
-    else if (mej) r = aplicarYo({ t: "mejorar", ciudad: mej.dataset.mejora });
-    else if (inv) r = aplicarYo({ t: "investigar", escuela: inv.dataset.investiga });
-    else if (hab) {
-      const u = sel.uid && est.unidades[sel.uid];
-      if (!u) return;
-      const id = hab.dataset.hab;
-      if (id === "alterar") { modo = { id: "alterar", a: hab.dataset.a }; refrescar(); return; }
-      if (id === "sabotear") r = aplicarYo({ t: "habilidad", id, uid: u.uid, x: Number(hab.dataset.x), y: Number(hab.dataset.y), edificio: hab.dataset.ed });
-      if (id === "reanimar") r = aplicarYo({ t: "habilidad", id, uid: u.uid, x: Number(hab.dataset.x), y: Number(hab.dataset.y) });
-    }
-    if (r) { if (!r.ok) aviso(r.error, true); if (r.uid) { sel = { uid: r.uid, ciudad: null }; } despuesDeAccion(); }
+    const rec = t.closest("[data-recluta]"), con = t.closest("[data-construye]"), mej = t.closest("[data-mejora]"), inv = t.closest("[data-invoca]");
+    if (rec && sel.ciudad) { r = aplicarYo({ t: "reclutar", ciudad: sel.ciudad, clase: rec.dataset.recluta }); if (r.ok) son("recluta"); }
+    else if (con && sel.ciudad) { r = aplicarYo({ t: "construir", ciudad: sel.ciudad, edificio: con.dataset.construye }); if (r.ok) son("obra"); }
+    else if (mej) { r = aplicarYo({ t: "mejorar", ciudad: mej.dataset.mejora }); if (r.ok) son("obra"); }
+    else if (inv && sel.ciudad) r = aplicarYo({ t: "invocar", ciudad: sel.ciudad, heroe: inv.dataset.invoca });
+    if (r) { if (!r.ok) { aviso(r.error, true); son("error"); } despuesDeAccion(); }
     void H;
   });
 
-  /* --- Fin del turno y turno del rival --- */
+  /* --- Paneles de la derecha: saber, ciudades, bandos y crónica --- */
+  const TITULO_PANEL = { saber: "Saber", ciudades: "Ciudades y provincias", bandos: "Bandos", registro: "Crónica de la guerra" };
+  function abrirPanel(p) {
+    panel = panel === p ? null : p;
+    $("frPanel").classList.toggle("hidden", !panel);
+    reservarVista();
+    if (panel) pintarPanel();
+    pintarMando();
+  }
+  document.querySelector(".fr-mando-fila").addEventListener("click", ev => { const b = ev.target.closest("[data-panel]"); if (b) { son("clic"); abrirPanel(b.dataset.panel); } });
+  $("frPanelCerrar").addEventListener("click", () => { panel = null; $("frPanel").classList.add("hidden"); reservarVista(); pintarMando(); });
+
+  function pintarPanel() {
+    $("frPanelTitulo").textContent = TITULO_PANEL[panel] || "";
+    const c = $("frPanelCuerpo");
+    ({ saber: panelSaber, ciudades: panelCiudades, bandos: panelBandos, registro: panelRegistro }[panel])(c);
+  }
+  /* El saber como árbol: tres ramas, cuatro escalones cada una, de abajo arriba */
+  function panelSaber(c) {
+    const H = humano(), jug = est.jugadores[H], fac = FACCIONES[jug.faccion];
+    c.innerHTML = `<p class="fr-sub">Cada escalón pide el anterior. Lo que cuesta se paga en maná y oro.</p><div class="fr-arbol-saber">${Object.keys(ESCUELAS).map(k => {
+      const e0 = ESCUELAS[k], tope = k === "arcano" && fac.mods.arcanoMax ? fac.mods.arcanoMax : 4;
+      return `<div class="fr-rama fr-rama-${k}"><h4>${esc(e0.nombre)}</h4>${e0.escalones.map((e, i) => {
+        const hecho = jug.tech[k] > i, sig = jug.tech[k] === i, vedado = i >= tope;
+        const razon = sig && !vedado ? FM.razonNoInvestigar(est, H, k) || (!soyYo() ? "No es tu turno." : "") : "";
+        const coste = sig ? FM.costeInvestigar(est, H, k) : e.coste;
+        return `<button type="button" class="fr-nodo${hecho ? " hecho" : sig && !vedado ? (razon ? " sig no" : " sig") : " lejos"}${vedado ? " vedado" : ""}" ${sig && !vedado ? `data-investiga="${k}" data-razon="${esc(razon)}"` : "disabled"} title="${esc(e.texto)}${razon ? ` — ${esc(razon)}` : ""}">
+          <b>${["I", "II", "III", "IV"][i]}</b><strong>${esc(e.nombre)}</strong><small>${esc(e.texto)}</small>${hecho ? "<em>Dominado</em>" : vedado ? "<em>Fuera del alcance de tu ejército</em>" : costeHtml(coste, sig ? jug : null)}</button>`;
+      }).join('<i class="fr-nodo-une"></i>')}</div>`;
+    }).join("")}</div>`;
+  }
+  function panelCiudades(c) {
+    const H = humano();
+    const vis = Object.values(est.ciudades).filter(ci => ci.dueno === H || est.vision[H][ci.y * est.ancho + ci.x] > 0).sort((a, b) => (a.dueno === H ? 0 : 1) - (b.dueno === H ? 0 : 1));
+    c.innerHTML = `<div class="fr-lista-panel">${vis.map(ci => {
+      const col = ci.dueno !== null ? bandos[ci.dueno].col : "#8f8498", mia = ci.dueno === H;
+      const puede = mia && soyYo() && !ci.reclutado && FM.clasesDisponibles(est, H).some(cl => !FM.razonNoReclutar(est, H, ci.id, cl));
+      return `<button type="button" class="fr-fila-ciudad" data-ciu="${ci.id}" style="--c:${col}"><i></i><span><strong>${ci.capital ? "★ " : ""}${esc(ci.nombre)}</strong><small>${ci.dueno === null ? "Sin dueño" : mia ? "Tuya" : esc(FACCIONES[est.jugadores[ci.dueno].faccion].corto)} · nivel ${ci.nivel} · ${ci.edificios.length} edificio${ci.edificios.length === 1 ? "" : "s"}</small></span>${puede ? "<em>puede entrenar</em>" : ""}</button>`;
+    }).join("")}</div>
+    <h4 class="fr-h4">Provincias</h4><div class="fr-lista-panel">${est.regiones.filter(r => { for (let y = 0; y < est.alto; y++) for (let x = 0; x < est.ancho; x++) if (est.casillas[y][x].region === r.id && est.vision[H][y * est.ancho + x] > 0) return true; return false; }).map(r =>
+      `<button type="button" class="fr-fila-ciudad" data-region="${r.id}" style="--c:${r.dueno !== null ? bandos[r.dueno].col : "#8f8498"}"><i></i><span><strong>${esc(r.nombre)}</strong><small>${r.dueno === null ? "Sin dueño" : r.dueno === H ? "Tuya" : esc(FACCIONES[est.jugadores[r.dueno].faccion].corto)} · ${r.tipo} · estabilidad ${r.estab}</small></span></button>`).join("")}</div>
+    <p class="fr-sub">Una provincia es de quien tiene su ciudad o su fortaleza. Las inestables (estabilidad baja) dan sorpresas: criaturas, cambios de terreno.</p>`;
+  }
+  function panelBandos(c) {
+    const H = humano();
+    const orden = est.jugadores.map((j, i) => ({ j, i, p: FM.puntuacion(est, i) })).sort((a, b) => (a.j.eliminado ? 1 : 0) - (b.j.eliminado ? 1 : 0) || b.p - a.p);
+    const maxP = Math.max(1, ...orden.map(o => o.p));
+    c.innerHTML = `<div class="fr-marcador">${orden.map(({ j, i, p }) => {
+      const b = bandos[i], fac = FACCIONES[j.faccion];
+      return `<div class="fr-marca${j.eliminado ? " fuera" : ""}${i === H ? " yo" : ""}" style="--c:${b.col}">
+        ${figHtml({ faccion: j.faccion, clase: "lider", dueno: i, sinAro: true }, 44, 52)}
+        <div><strong><i>${b.forma}</i> ${esc(j.nombre)}</strong><small>${esc(fac.nombre)}${i === H ? " · eres tú" : FM.mismoEquipo(est, i, H) ? " · aliado" : ""}${j.eliminado ? " · eliminado" : ""}</small>
+          <span class="fr-marca-barra"><b style="width:${(p / maxP) * 100}%"></b></span>
+          <span class="fr-marca-datos">${p} puntos · ⌂ ${FM.ciudadesDe(est, i).length} · ▣ ${est.regiones.filter(r => r.dueno === i).length} provincias · ☠ ${est.stats.bajas[i]} bajas${j.heroeInvocado ? ` · ✪ ${esc((j.heroes.find(h => h.id === j.heroeInvocado) || {}).nombre || "héroe")}` : ""}${j.liderMuerto ? " · sin líder" : ""}</span>
+          <small>${esc(fac.ventaja)}</small></div></div>`;
+    }).join("")}</div>
+    <p class="fr-sub">Se gana tomando capitales hasta quedar solo${est.jugadores.some(j => j.equipo !== null && j.equipo !== undefined) ? " (con tu equipo)" : ""}, teniendo una tropa ${est.hold} turnos seguidos sobre el Núcleo del Sueño o con más puntos al acabar el turno ${est.maxTurnos}. Puntos: 3 por ciudad, 2 por fortaleza y por provincia, 1 por baja enemiga.</p>`;
+    pintarFiguras(c);
+  }
+  const ICONO_LOG = { combate: "⚔", muerte: "☠", conquista: "⚑", lider: "☠", heroico: "★", reliquia: "◆", recluta: "＋", obra: "▣", tecnologia: "✎", magia: "✦", nucleo: "◎", hambre: "⚠", suceso: "~", turno: "⏱", fin: "■", botin: "◇", sabotaje: "✂", compania: "⚑", heroe: "✪" };
+  let filtroLog = "todo";
+  function panelRegistro(c) {
+    const FILTRO = { todo: null, combate: ["combate", "muerte", "lider", "heroico"], conquistas: ["conquista", "nucleo", "heroe", "fin"], gestion: ["recluta", "obra", "tecnologia", "botin", "reliquia", "magia"] };
+    const tipos = FILTRO[filtroLog];
+    const lineas = est.log.filter(l => !tipos || tipos.includes(l.tipo)).slice(-80).reverse();
+    let turno = null;
+    c.innerHTML = `<div class="fr-filtros">${Object.keys(FILTRO).map(f => `<button type="button" class="${filtroLog === f ? "activa" : ""}" data-filtro="${f}">${{ todo: "Todo", combate: "Combate", conquistas: "Conquistas", gestion: "Gestión" }[f]}</button>`).join("")}</div>
+      <ol class="fr-registro">${lineas.map(l => { const cab = l.t !== turno ? `<li class="fr-log-turno">Turno ${l.t}</li>` : ""; turno = l.t; return `${cab}<li class="fr-log-${esc(l.tipo)}"><i aria-hidden="true">${ICONO_LOG[l.tipo] || "·"}</i><span>${esc(l.texto)}</span></li>`; }).join("")}</ol>`;
+  }
+  $("frPanelCuerpo").addEventListener("click", ev => {
+    const t = ev.target, H = humano();
+    const f = t.closest("[data-filtro]");
+    if (f) { filtroLog = f.dataset.filtro; pintarPanel(); return; }
+    const ciu = t.closest("[data-ciu]");
+    if (ciu) { const ci = est.ciudades[ciu.dataset.ciu]; sel = { uid: null, ciudad: ci.id }; tablero.irA(ci.x, ci.y); son("clic"); refrescar(); return; }
+    const rg = t.closest("[data-region]");
+    if (rg) { const r = est.regiones[+rg.dataset.region]; if (r && r.sitio) tablero.irA(r.sitio.x, r.sitio.y); return; }
+    const inv = t.closest("[data-investiga]");
+    if (inv) {
+      if (inv.dataset.razon) { aviso(inv.dataset.razon, true); son("error"); return; }
+      const r = aplicarYo({ t: "investigar", escuela: inv.dataset.investiga });
+      if (!r.ok) { aviso(r.error, true); son("error"); } else son("saber");
+      despuesDeAccion();
+    }
+    void H;
+  });
+
+  /* --- Minimapa --- */
+  const COLOR_MINI = { llanura: "#6f8a44", bosque: "#3f6b3a", montana: "#8a8276", desierto: "#c8a567", agua: "#2f6f8f", magica: "#8a6ac0", huesos: "#a39c8a" };
+  let miniPendiente = false;
+  function pintarMiniPronto() { if (miniPendiente) return; miniPendiente = true; requestAnimationFrame(() => { miniPendiente = false; pintarMini(); }); }
+  function pintarMini() {
+    const cv = $("frMini");
+    if (!est || !cv || !tablero) return;
+    const H = humano(), vis = est.vision[H], w = est.ancho, h = est.alto;
+    const ancho = window.innerWidth < 760 ? 112 : 172, k = ancho / w, alto = Math.round(h * k), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (cv.width !== Math.round(ancho * dpr) || cv.height !== Math.round(alto * dpr)) { cv.width = Math.round(ancho * dpr); cv.height = Math.round(alto * dpr); cv.style.width = `${ancho}px`; cv.style.height = `${alto}px`; }
+    const g = cv.getContext("2d");
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.fillStyle = "#0b1622"; g.fillRect(0, 0, ancho, alto);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const c = est.casillas[y][x], v = vis[y * w + x];
+      if (c.t === "vacio") continue;
+      if (v === 0) { g.fillStyle = "#1b1a26"; g.fillRect(x * k, y * k, k + 0.5, k + 0.5); continue; }
+      g.fillStyle = COLOR_MINI[c.t] || "#6f8a44"; g.globalAlpha = v === 2 ? 1 : 0.5; g.fillRect(x * k, y * k, k + 0.5, k + 0.5); g.globalAlpha = 1;
+      const d = c.region >= 0 ? est.regiones[c.region].dueno : null;
+      if (d !== null) { g.fillStyle = bandos[d].col; g.globalAlpha = 0.34; g.fillRect(x * k, y * k, k + 0.5, k + 0.5); g.globalAlpha = 1; }
+    }
+    Object.values(est.ciudades).forEach(c => { if (vis[c.y * w + c.x] === 0) return; g.fillStyle = "#0a0810"; g.fillRect(c.x * k - 1, c.y * k - 1, k + 2, k + 2); g.fillStyle = c.dueno !== null ? bandos[c.dueno].col : "#d8d2c4"; g.fillRect(c.x * k, c.y * k, k, k); });
+    g.fillStyle = "#fff0b0"; g.fillRect(est.nucleo.x * k + k * 0.2, est.nucleo.y * k + k * 0.2, k * 0.6, k * 0.6);
+    Object.values(est.unidades).forEach(u => {
+      if (!(u.dueno === H || vis[u.y * w + u.x] === 2)) return;
+      g.fillStyle = "#0a0810"; g.beginPath(); g.arc((u.x + 0.5) * k, (u.y + 0.5) * k, k * 0.46, 0, 7); g.fill();
+      g.fillStyle = u.dueno >= 0 ? bandos[u.dueno].col : "#b0a8a0"; g.beginPath(); g.arc((u.x + 0.5) * k, (u.y + 0.5) * k, k * 0.32, 0, 7); g.fill();
+    });
+    const v = tablero.vista();
+    g.strokeStyle = "#fff4d6"; g.lineWidth = 1.5;
+    g.strokeRect(Math.max(0.75, v.x0 * k), Math.max(0.75, v.y0 * k), Math.min(ancho - 1.5, (v.x1 - v.x0) * k), Math.min(alto - 1.5, (v.y1 - v.y0) * k));
+  }
+  (function () {
+    const cv = $("frMini");
+    let abajo = false;
+    const ir = ev => { if (!est || !tablero) return; const r = cv.getBoundingClientRect(); tablero.irA(((ev.clientX - r.left) / r.width) * est.ancho - 0.5, ((ev.clientY - r.top) / r.height) * est.alto - 0.5, false); };
+    cv.addEventListener("pointerdown", ev => { abajo = true; cv.setPointerCapture(ev.pointerId); ir(ev); });
+    cv.addEventListener("pointermove", ev => { if (abajo) ir(ev); });
+    ["pointerup", "pointercancel"].forEach(n => cv.addEventListener(n, () => { abajo = false; }));
+  })();
+
+  /* --- Botones de la vista --- */
+  $("frVistaMapa").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-vista]");
+    if (!b || !tablero) return;
+    const v = b.dataset.vista;
+    son("clic");
+    if (v === "mas") tablero.zoom(1.35);
+    else if (v === "menos") tablero.zoom(1 / 1.35);
+    else if (v === "tropas") tablero.centrar();
+    else if (v === "todo") tablero.verTodo();
+    else if (v === "amenaza") { verAmenaza = !verAmenaza; refrescar(); }
+    else if (v === "pantalla") pantallaCompleta();
+  });
+  function pantallaCompleta() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); }
+  document.addEventListener("fullscreenchange", () => { const b = $("frPantallaCompleta"); if (b) b.textContent = document.fullscreenElement ? "✕" : "⛶"; });
+
+  /* --- Teclado --- */
+  document.addEventListener("keydown", ev => {
+    if (!est || $("frGuerra").classList.contains("hidden") || ev.target.closest("input, textarea, select, dialog[open]")) return;
+    if (document.querySelector("dialog[open]")) return;
+    const k = ev.key.toLowerCase();
+    if (k === "n" || k === "tab") { ev.preventDefault(); siguienteTropa(); }
+    else if (k === "e") $("frTerminar").click();
+    else if (k === "c") tablero.centrar();
+    else if (k === "a") { verAmenaza = !verAmenaza; refrescar(); }
+    else if (k === "i") abrirPanel("saber");
+    else if (k === "+" || k === "=") tablero.zoom(1.25);
+    else if (k === "-") tablero.zoom(0.8);
+    else if (k === "escape") {
+      if (tablero.ocupado()) return;
+      if (modo) { modo = null; refrescar(); }
+      else if (sel.uid || sel.ciudad || sel.casilla) { sel = { uid: null, ciudad: null }; refrescar(); }
+      else if (panel) abrirPanel(panel);
+      else abrirMenu();
+    }
+  });
+
+  /* --- Fin del turno y turnos de los demás --- */
+  const esperar = ms => new Promise(r => setTimeout(r, ms));
   $("frTerminar").addEventListener("click", async () => {
+    if (!est) return;
     if (tablero.ocupado()) { tablero.saltar(); return; }
     if (!soyYo()) return;
-    // Aviso si quedan unidades sin mover
-    const sinActuar = FM.unidadesDe(est, humano()).filter(u => !u.lider && u.pm > 0 && !u.atacado && u.quieto).length;
-    if (sinActuar >= 3 && !(await dialogo.confirmar(`Tienes ${sinActuar} unidades sin mover. ¿Terminar el turno?`, { aceptar: "Terminar" }))) return;
-    sel = { uid: null, ciudad: null }; modo = null;
+    const n = pendientes().filter(u => !u.lider).length;
+    if (n >= 3 && !(await dialogo.confirmar(`Tienes ${n} tropas sin órdenes. ¿Terminar el turno?`, { aceptar: "Terminar" }))) return;
+    sel = { uid: null, ciudad: null }; modo = null; limpiarPrevia();
+    $("frResumen").classList.add("hidden");
+    resumenDesde = est.cronica.length;
     aplicarYo({ t: "terminar" });
+    son("clic");
+    if (pvp) { refrescar(); await enviarTurnoPvp(); return; }
+    await turnosDeLosDemas();
+  });
+
+  /* Los demás bandos juegan de uno en uno: cartel con su nombre, y lo que se ve de su turno se anima */
+  async function turnosDeLosDemas() {
+    const H = humano();
+    ocupadoIA = true;
     refrescar();
-    if (pvp) { await enviarTurnoPvp(); return; }
-    if (est.ganador !== null) { terminarGuerraUI(); return; }
-    cartel("Turno del rival");
-    const antesSnap = tablero.instantanea();
-    setTimeout(() => {
-      // La IA juega de una vez sobre el estado real; lo que hizo se reproduce después como animación
+    let guarda = 0;
+    while (est.ganador === null && est.activo !== H && guarda++ < 12) {
+      const j = est.activo, jug = est.jugadores[j];
+      cartel(`Turno de ${FACCIONES[jug.faccion].corto}`, 0, null, bandos[j].col);
+      son("turnoRival");
+      pintarBandos(); pintarMando(); pintarPista();
+      await esperar(380);
+      const antes = tablero.instantanea();
       const evs = [];
       const original = FM.aplicar;
       FM.aplicar = (e, a) => { const r = original(e, a); if (r && r.ok && r.ev) evs.push(...r.ev); return r; };
-      try {
-        let guard = 0;
-        while (est.ganador === null && est.activo !== humano() && guard++ < 3) IA.turnoCompleto(est, est.activo);
-      } finally { FM.aplicar = original; }
+      try { IA.turnoCompleto(est, j); } finally { FM.aplicar = original; }
+      // Solo se anima lo que el jugador llega a ver
+      const ve = (x, y) => x !== undefined && FM.dentro(est, Math.round(x), Math.round(y)) && FM.veCasilla(est, H, Math.round(x), Math.round(y));
+      const vistos = evs.filter(e => e.k === "mov" ? (ve(e.de.x, e.de.y) || ve(e.a.x, e.a.y)) : ve(e.x, e.y));
       cartel(null);
+      if (vistos.length) await new Promise(res => tablero.reproducir(vistos, antes, { tope: 4200, rapidez: 0.8, seguir: true, alTerminar: res }));
+      else { tablero.redibujar(); await esperar(120); }
+      procesarCronica();
       refrescar();
-      guardarEnCurso();
-      const fin = () => {
-        procesarCronica();
-        if (est.ganador !== null) { setTimeout(terminarGuerraUI, 500); return; }
-        if (est.activo === humano()) { cartel(`Turno ${est.turno}`, 1000); const cap = est.capitales[humano()]; tablero.onda(cap.x, cap.y, "#f0d278"); }
-      };
-      tablero.reproducir(evs, antesSnap, { tope: 5200, alTerminar: fin });
-    }, 450);
-  });
+    }
+    ocupadoIA = false;
+    guardarEnCurso();
+    refrescar();
+    if (est.ganador !== null) { setTimeout(terminarGuerraUI, 600); return; }
+    cartel(`Turno ${est.turno}`, 1100, `de ${est.maxTurnos}`);
+    son("turno");
+    resumenDeRonda();
+    const cap = est.capitales[H];
+    if (cap) tablero.onda(cap.x, cap.y, "#f0d278");
+  }
 
-  $("frRendirse").addEventListener("click", async () => {
-    if (!soyYo()) return;
-    if (!(await dialogo.confirmar("Rendirte cuenta como derrota. Los soldados que lleves conservarán lo que hayan ganado, pero perderás lo que no hayas recuperado.", { titulo: "Rendirse", aceptar: "Rendirme", peligro: true }))) return;
+  async function rendirse() {
+    if (!est || est.ganador !== null || est.activo !== humano()) { aviso("Solo puedes rendirte en tu turno.", true); return; }
+    if (!(await dialogo.confirmar("Rendirte cuenta como derrota. Los soldados que lleves conservan lo que hayan ganado.", { titulo: "Rendirse", aceptar: "Rendirme", peligro: true }))) return;
     if (pvp) { try { await Red.pvpRendirse(pvp.id); } catch (e) { aviso(`No se pudo rendir: ${e.message || e}`, true); return; } }
-    FM.terminarGuerra(est, 1 - yoIdx, `${est.jugadores[yoIdx].nombre} se rinde.`);
+    const rivales = FM.rivalesDe(est, yoIdx).sort((a, b) => FM.puntuacion(est, b) - FM.puntuacion(est, a));
+    FM.terminarGuerra(est, rivales.length ? rivales[0] : "empate", `${est.jugadores[yoIdx].nombre} se rinde.`);
     refrescar();
     terminarGuerraUI();
-  });
-
-  function cartel(t, ms) {
-    const el = $("frCartel");
-    el.textContent = t || "";
-    el.classList.toggle("hidden", !t);
-    if (t && ms) setTimeout(() => el.classList.add("hidden"), ms);
   }
+
+  function cartel(t, ms, sub, color) {
+    const el = $("frCartel");
+    el.innerHTML = t ? `<strong>${esc(t)}</strong>${sub ? `<span>${esc(sub)}</span>` : ""}` : "";
+    el.style.setProperty("--c", color || "#f0cf6a");
+    el.classList.toggle("hidden", !t);
+    clearTimeout(cartel.t);
+    if (t && ms) cartel.t = setTimeout(() => el.classList.add("hidden"), ms);
+  }
+
+  /* --- Menú de la guerra, ajustes y ayuda --- */
+  function abrirMenu() { son("clic"); $("frMenuJuego").showModal(); }
+  $("frMenu").addEventListener("click", abrirMenu);
+  $("frMenuJuego").addEventListener("click", async ev => {
+    const b = ev.target.closest("[data-mj]");
+    if (!b) return;
+    const m = b.dataset.mj;
+    $("frMenuJuego").close();
+    if (m === "ayuda") abrirAyuda();
+    else if (m === "ajustes") abrirAjustes();
+    else if (m === "rendirse") rendirse();
+    else if (m === "salir") {
+      if (est && est.ganador === null && !pvp) Red.guardarGuerra(est, cfgGuerraActual);
+      musicaPartida(false); pararSondeo();
+      if (document.fullscreenElement) document.exitFullscreen();
+      entrarCuartel(pvp ? "duelos" : "guerra");
+    }
+  });
+  function abrirAjustes() {
+    const c = $("frAjustesCuerpo");
+    const vol = SON ? SON.volumen() : 0.6, mudo = SON ? SON.silencio() : false;
+    c.innerHTML = `
+      <label class="fr-ajuste"><span>Sonido</span><input type="range" min="0" max="100" value="${Math.round(vol * 100)}" data-aj="vol"><button type="button" class="fr-btn fr-btn-chico" data-aj="mudo">${mudo ? "Activar" : "Silenciar"}</button></label>
+      <div class="fr-ajuste"><span>Animaciones</span><div class="fr-segmentos">${[[0.6, "Lentas"], [1, "Normales"], [1.8, "Rápidas"]].map(([v, t]) => `<button type="button" class="fr-opcion${ajustes.rapidez === v ? " sel" : ""}" data-aj="rapidez" data-v="${v}">${t}</button>`).join("")}</div></div>
+      <div class="fr-ajuste"><span>Seguir con la vista el turno de los demás</span><div class="fr-segmentos"><button type="button" class="fr-opcion${ajustes.seguir ? " sel" : ""}" data-aj="seguir" data-v="1">Sí</button><button type="button" class="fr-opcion${!ajustes.seguir ? " sel" : ""}" data-aj="seguir" data-v="0">No</button></div></div>
+      <div class="fr-ajuste"><span>Pistas de qué hacer</span><div class="fr-segmentos"><button type="button" class="fr-opcion${ajustes.pistas ? " sel" : ""}" data-aj="pistas" data-v="1">Sí</button><button type="button" class="fr-opcion${!ajustes.pistas ? " sel" : ""}" data-aj="pistas" data-v="0">No</button></div></div>
+      ${document.documentElement.requestFullscreen ? `<div class="fr-ajuste"><span>Pantalla completa</span><button type="button" class="fr-btn fr-btn-chico" data-aj="pantalla">${document.fullscreenElement ? "Salir" : "Activar"}</button></div>` : ""}`;
+    if (!$("frAjustes").open) $("frAjustes").showModal();
+  }
+  $("frAjustes").addEventListener("input", ev => { if (ev.target.dataset.aj === "vol" && SON) { SON.volumen(+ev.target.value / 100); SON.silencio(false); } });
+  $("frAjustes").addEventListener("change", ev => { if (ev.target.dataset.aj === "vol") son("aviso"); });
+  $("frAjustes").addEventListener("click", ev => {
+    if (ev.target.closest("[data-cerrar]")) { $("frAjustes").close(); if (est) pintarPista(); return; }
+    const b = ev.target.closest("button[data-aj]");
+    if (!b) return;
+    const k = b.dataset.aj;
+    if (k === "mudo") { if (SON) SON.silencio(!SON.silencio()); }
+    else if (k === "pantalla") pantallaCompleta();
+    else if (k === "rapidez") ajustes.rapidez = +b.dataset.v;
+    else ajustes[k] = b.dataset.v === "1";
+    guardarAjustes();
+    son("clic");
+    setTimeout(abrirAjustes, k === "pantalla" ? 200 : 0);
+  });
+  function abrirAyuda() {
+    $("frAyudaCuerpo").innerHTML = `
+      <section><h3>La guerra</h3><p>Cada bando empieza con su capital, su líder y un puñado de tropas. Se juega por turnos: en el tuyo mueves y atacas con cada tropa, y en tus ciudades entrenas, construyes e investigas.</p>
+        <ul><li><strong>Ganas</strong> si te quedas solo tomando capitales, si mantienes una tropa sobre el Núcleo del Sueño (el centro del mapa) varios turnos seguidos, o si tienes más puntos cuando se acaba el tiempo.</li>
+        <li><strong>Pierdes</strong> si toman tu capital y no tienes un Refugio.</li></ul></section>
+      <section><h3>Mover y atacar</h3><ul><li>Toca una tropa tuya. En <b style="color:#7fd8ff">azul</b> sale adónde puede ir y con <b style="color:#ff8a7a">espadas</b> a quién puede atacar.</li>
+        <li>Pasa el ratón por un enemigo para ver cuánto le quitas y cuánto te responde antes de atacar.</li>
+        <li>Entrar en una ciudad o una fortaleza la toma. Pisar unas ruinas las registra.</li>
+        <li>Bosques y montañas cuestan más de cruzar y dan defensa. El agua no se cruza (salvo Pelgiria).</li></ul></section>
+      <section><h3>Recursos</h3><p>Arriba ves lo que tienes y lo que entra cada turno. Toca cualquiera para ver de dónde sale. Las ciudades rinden según el terreno que tienen alrededor y sus edificios. Cada ciudad alimenta a 3 tropas: las demás gastan alimento.</p></section>
+      <section><h3>Ciudades, saber y héroe</h3><ul><li>Cada ciudad entrena una tropa por turno. Algunas tropas piden un edificio.</li>
+        <li>En <strong>Saber</strong> investigas tres ramas: militar, arcana y tanatología.</li>
+        <li>Cada ejército puede invocar a <strong>un héroe</strong> una vez por guerra, desde una ciudad, cuando cumple sus requisitos.</li></ul></section>
+      <section><h3>Varios bandos</h3><p>Con más de dos bandos hay una tregua los primeros turnos. Quien pierde su capital queda fuera y sus tropas se quedan sin bandera. Arriba ves el orden de turnos y cuántas ciudades tiene cada uno.</p></section>
+      <section><h3>Teclas</h3><p><kbd>N</kbd> siguiente tropa · <kbd>E</kbd> terminar turno · <kbd>C</kbd> ir a tus tropas · <kbd>A</kbd> alcance de los enemigos · <kbd>I</kbd> saber · <kbd>+</kbd> <kbd>−</kbd> zoom · <kbd>Esc</kbd> soltar o abrir el menú. Arrastra el mapa para moverlo.</p></section>`;
+    $("frAyuda").showModal();
+  }
+  ["frAyuda", "frCodice"].forEach(id => $(id).addEventListener("click", ev => { if (ev.target.closest("[data-cerrar]")) $(id).close(); }));
 
   /* =========================================================================
      FINAL
@@ -1009,11 +1627,14 @@ pintarHero();
     if (finHecho) return;
     finHecho = true;
     musicaPartida(false);
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     const resumen = C.cerrarGuerra(ej, est, null, humano());
     const narr = CR.narrar(est, ej, resumen, humano());
     const reg = resumen.registro;
+    const yoFin = humano();
     reg.titulo = narr.titulo; reg.parrafos = narr.parrafos.slice(0, 12);
-    ultimoResumen = { resumen, narr, reg, estFin: est, pvp: !!pvp };
+    ultimoResumen = { resumen, narr, reg, estFin: est, pvp: !!pvp, yo: yoFin };
+    son(resumen.gano ? "victoria" : resumen.perdio ? "derrota" : "aviso");
     if (!pvp) Red.borrarGuerra();
     await guardar();
     if (pvp) {
@@ -1035,7 +1656,8 @@ pintarHero();
       <div class="fr-fin-cab ${resumen.gano ? "gano" : resumen.perdio ? "perdio" : "tablas"}">
         <span class="fr-fin-sello">${resumen.gano ? "Victoria" : resumen.perdio ? "Derrota" : "Tablas"}</span>
         <h2 class="fr-fin-titulo">${esc(narr.titulo)}</h2>
-        <p>${esc(FACCIONES[ej.faccion].corto)} contra ${esc(FACCIONES[reg.rival] ? FACCIONES[reg.rival].corto : String(reg.rival || ""))} · ${reg.turnos} turno${reg.turnos === 1 ? "" : "s"}</p>
+        <p>${esc(FACCIONES[ej.faccion].corto)} contra ${esc(ultimoResumen.estFin.jugadores.filter((j, i) => i !== (ultimoResumen.yo || 0)).map(j => FACCIONES[j.faccion].corto).join(", "))} · ${reg.turnos} turno${reg.turnos === 1 ? "" : "s"}</p>
+        ${ultimoResumen.estFin.jugadores.length > 2 ? `<div class="fr-fin-bandos">${ultimoResumen.estFin.jugadores.map((j, i) => ({ j, i, p: FM.puntuacion(ultimoResumen.estFin, i) })).sort((a, b) => b.p - a.p).map(o => `<span class="${FM.ganoJugador(ultimoResumen.estFin, o.i) ? "gana" : ""}${o.j.eliminado ? " fuera" : ""}">${esc(FACCIONES[o.j.faccion].corto)} <b>${o.p}</b></span>`).join("")}</div>` : ""}
       </div>
       <div class="fr-cronica-texto">${narr.parrafos.map(p => `<p>${esc(p)}</p>`).join("")}</div>
       ${paseDeLista(resumen)}
@@ -1153,7 +1775,7 @@ pintarHero();
         const rival = $("frVista").querySelector('[data-pvp="rival"]').value, tipo = $("frVista").querySelector('[data-pvp="tipo"]').value;
         if (!rival) { aviso("Elige a quién retar.", true); return; }
         const b = C.prepararBando(ej, ajustesGuerra.ids);
-        await Red.pvpRetar(rival, { tipo, anio: ej.anio, maxTurnos: 35, hold: 6, dificultad: "normal", pvp: true, jugadores: [b] });
+        await Red.pvpRetar(rival, { tipo, anio: ej.anio, maxTurnos: 35, hold: 6, dificultad: "normal", pvp: true, reglas: D.REGLAS, jugadores: [b] });
         aviso("Reto enviado.");
         await guardar();
         vistaDuelos($("frVista"));
@@ -1175,6 +1797,7 @@ pintarHero();
     const miIdx = fila.j1 === s.user.id ? 0 : 1;
     const cfg = fila.config;
     if (!cfg.jugadores || cfg.jugadores.length < 2) { aviso("Esa guerra todavía no empezó.", true); return; }
+    if (cfg.reglas !== D.REGLAS) { aviso("Esa guerra empezó con las reglas anteriores y ya no se puede continuar. Lanza un reto nuevo.", true); return; }
     if (cfg.jugadores[miIdx].faccion !== ej.faccion) { aviso(`Esa guerra se juega con ${nombreFaccion(cfg.jugadores[miIdx].faccion)}. Entra a ese ejército.`, true); return; }
     pararSondeo();
     yoIdx = miIdx;
@@ -1182,8 +1805,8 @@ pintarHero();
     cfgGuerraActual = { faccion: ej.faccion };
     pvp = { id, n: 0, acciones: [], timer: null };
     aplicarTurnosNuevos(fila);
-    sel = { uid: null, ciudad: null }; modo = null; lat = "sel";
-    entrarGuerra();
+    sel = { uid: null, ciudad: null }; modo = null;
+    entrarGuerra(false);
     if (est.ganador === null && est.activo !== miIdx) { cartel("Turno del rival"); iniciarSondeo(); }
   }
 
@@ -1202,6 +1825,7 @@ pintarHero();
     catch (e) { aviso(`No se pudo enviar el turno (${e.message || e}). Se recarga la guerra.`, true); await abrirPartidaPvp(pvp.id); return; }
     if (est.ganador !== null) { terminarGuerraUI(); return; }
     cartel("Turno del rival");
+    refrescar();
     iniciarSondeo();
   }
 
@@ -1214,13 +1838,14 @@ pintarHero();
         const fila = await Red.pvpGet(pvp.id);
         if ((fila.turnos || []).length === pvp.n && !(fila.estado === "terminada" && est.ganador === null)) return;
         aplicarTurnosNuevos(fila);
+        tablero.redibujar();
         refrescar();
         if (est.ganador !== null) { pararSondeo(); terminarGuerraUI(); }
-        else if (est.activo === yoIdx) { pararSondeo(); cartel("Tu turno", 1200); }
+        else if (est.activo === yoIdx) { pararSondeo(); cartel("Tu turno", 1200); son("turno"); resumenDeRonda(); }
       } catch (e) { /* sin conexión: se reintenta */ }
     }, 5000);
   }
   function pararSondeo() { if (pvp && pvp.timer) { clearInterval(pvp.timer); pvp.timer = null; } }
 
-  pantallaInicio();
+  pintarPortada();
 })();

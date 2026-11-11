@@ -197,6 +197,7 @@
     const dif = opciones.dificultad || ej.config.dificultad || "normal";
     const tipo = TIPOS_FRACTURA[opciones.tipo] ? opciones.tipo : (opciones.tipo === "azar" || !opciones.tipo ? Object.keys(TIPOS_FRACTURA)[ri(ej, 5)] : "reinos");
     const rival = rivalElegido(ej, opciones.rival);
+    const bandos = Math.max(2, Math.min(8, opciones.bandos || 2));
     const elegidos = (ids && ids.length ? ids : elegirContingenteAuto(ej)).slice(0, limiteContingente(ej)).map(id => ej.soldados[id]).filter(s => s && disponibles(ej).includes(s));
     const soldados = elegidos.map(s => { const c = clon(s); c.victoriasAntes = s.victorias; return c; });
     // Si faltan soldados, la compañía recibe reclutas para llegar a seis
@@ -205,7 +206,8 @@
       const fac = FACCIONES[ej.faccion];
       const r = { s: ej.rs };
       const mezcla = ["guerrero", "cazador", "guerrero", "cazador", "picaro", "paladin"];
-      if (ej.faccion === "trono-de-ceniza") mezcla.splice(4, 2, "esqueleto", "esqueleto");
+      const propia = (FACCIONES[ej.faccion].clasesExtra || []).find(c => !CLASES[c].requiere.edificio && c !== "sanador");
+      if (propia) mezcla.splice(4, 2, propia, propia);
       for (let i = 0; i < falta; i++) {
         let clase = mezcla[(soldados.length + i) % mezcla.length];
         if (CLASES[clase].exclusiva && CLASES[clase].exclusiva !== ej.faccion) clase = "guerrero";
@@ -233,8 +235,18 @@
       jugRival.soldados = [s];
       jugRival.nemesis = n.id;
     }
-    return { semilla, tipo, dificultad: dif, anio: ej.anio, maxTurnos: 35, hold: 6,
-      jugadores: [{ nombre: ej.nombre, faccion: ej.faccion, humano: true, soldados, reliquias, ejercito: true }, jugRival], rivalFaccion: rival, ids: elegidos.map(s => s.id) };
+    const jugadores = [{ nombre: ej.nombre, faccion: ej.faccion, humano: true, soldados, reliquias, ejercito: true }, jugRival];
+    // Con más de dos bandos, los demás se sacan al azar sin repetir ejército
+    const usadas = new Set([ej.faccion, rival]);
+    for (let i = 2; i < bandos; i++) {
+      const libres = Object.keys(FACCIONES).filter(f => !usadas.has(f));
+      const f = libres[ri(ej, libres.length)];
+      usadas.add(f);
+      jugadores.push({ nombre: `Fuerzas de ${FACCIONES[f].corto}`, faccion: f, humano: false, nivelIA: dif, escala: prom, extraTropas: Math.min(4, Math.floor(ej.ganadas / 4)) });
+    }
+    // Por equipos: se alternan alrededor del mapa, así cada bando tiene un enemigo a cada lado
+    if (opciones.equipos && bandos >= 4 && bandos % 2 === 0) jugadores.forEach((j, i) => { j.equipo = i % 2; });
+    return { semilla, tipo, dificultad: dif, anio: ej.anio, maxTurnos: 35 + 5 * (bandos - 2), hold: 6, jugadores, rivalFaccion: rival, ids: elegidos.map(s => s.id) };
   }
 
   /* --- Cerrar una guerra --- */
@@ -255,8 +267,12 @@
     jIdx = jIdx || 0;
     const rr = { s: ej.rs };
     const jug = est.jugadores[jIdx];
-    const gano = est.ganador === jIdx, perdio = est.ganador === 1 - jIdx, empate = est.ganador === "empate";
-    const rivalFaccion = est.jugadores[1 - jIdx].faccion;
+    const gano = FM.ganoJugador(est, jIdx), empate = est.ganador === "empate", perdio = !gano && !empate;
+    // El rival principal: quien ganó si perdiste; si no, el enemigo que más puntos hizo
+    const esRival = d => d !== null && d >= 0 && FM.hostil(est, d, jIdx);
+    const rivales = est.jugadores.filter(o => esRival(o.id)).sort((a, b) => FM.puntuacion(est, b.id) - FM.puntuacion(est, a.id));
+    const rivalPrincipal = perdio && est.ganador !== null && esRival(est.ganador) ? est.jugadores[est.ganador] : rivales[0];
+    const rivalFaccion = rivalPrincipal.faccion;
     const resumen = { levasPerdidas: 0, heridos: [], gano, perdio, empate, ascensos: [], muertos: [], nacimientos: [], alistados: [], retirados: [], renacidos: [], reliquiasPerdidas: [], reliquiasHalladas: [], luto: [], nemesisNuevo: [], nemesisCaido: [], vejez: [], sinFamilia: [], ganancias: [] };
     const anioGuerra = ej.anio;
     ej.guerras += 1;
@@ -334,7 +350,7 @@
       if (unidadesVivas.some(u => u.s && Object.values(u.s.equipo || {}).includes(id))) ubicacion = "viva";
       else if (jug.mochila.includes(id)) ubicacion = "mochila";
       else if (est.casillas.some(f => f.some(c => c.objetos.includes(id)))) ubicacion = "suelo";
-      else if (est.jugadores[1 - jIdx].mochila.includes(id) || Object.values(est.unidades).some(u => u.dueno === 1 - jIdx && u.s && Object.values(u.s.equipo || {}).includes(id))) ubicacion = "enemigo";
+      else if (rivales.some(o => o.mochila.includes(id)) || Object.values(est.unidades).some(u => esRival(u.dueno) && u.s && Object.values(u.s.equipo || {}).includes(id))) ubicacion = "enemigo";
       if (!eraMia && !["viva", "mochila"].includes(ubicacion)) return;
       if (ubicacion === "enemigo" && !eraMia) return;
       const registro = ej.reliquias[id] || (ej.reliquias[id] = Object.assign({ estado: "activa" }, clon(inst)));
@@ -394,13 +410,13 @@
       if (!asesino || S.rangoIndice(s.victorias) < 1) return;
       let n = ej.nemesis.find(x => x.nombre === asesino.nombre && x.casa === asesino.casa);
       if (!n) {
-        n = { id: `n${ej.nemesis.length + 1}${asesino.id.slice(1, 4)}`, nombre: asesino.nombre, casa: asesino.casa, sexo: asesino.sexo, apodo: asesino.apodo, clase: asesino.clase, faccion: est.jugadores[1 - jIdx].faccion, victorias: asesino.victorias + (est.unidades[c.por.uid].vicG || 0), bajas: [] };
+        n = { id: `n${ej.nemesis.length + 1}${asesino.id.slice(1, 4)}`, nombre: asesino.nombre, casa: asesino.casa, sexo: asesino.sexo, apodo: asesino.apodo, clase: asesino.clase, faccion: c.por.faccion || rivalFaccion, victorias: asesino.victorias + (est.unidades[c.por.uid].vicG || 0), bajas: [] };
         ej.nemesis.push(n);
         resumen.nemesisNuevo.push(n);
       }
       n.bajas.push(s.id);
     });
-    (est.caidos || []).filter(c => c.dueno === 1 - jIdx && c.s.nemesisId).forEach(c => {
+    (est.caidos || []).filter(c => esRival(c.dueno) && c.s.nemesisId).forEach(c => {
       const i = ej.nemesis.findIndex(n => n.id === c.s.nemesisId);
       if (i >= 0) { resumen.nemesisCaido.push(ej.nemesis[i]); ej.nemesis.splice(i, 1); }
     });
@@ -426,12 +442,14 @@
 
   function calcularLogros(ej, est, jIdx, resumen) {
     const l = [];
-    const gano = est.ganador === jIdx;
+    const gano = FM.ganoJugador(est, jIdx);
+    const rivalFac = (ej.historia.length && ej.historia[ej.historia.length - 1].rival) || null;
     if (gano) l.push("victoria");
     if (gano && est.dificultad === "dificil") l.push("victoria_dificil");
     if (gano && est.razon && est.razon.includes("Núcleo")) l.push("nucleo");
     if (gano && est.razon && est.razon.includes("capital")) l.push("capital");
-    if (gano && ej.victoriasContra[est.jugadores[1 - jIdx].faccion] === 1) l.push(`primera_victoria:${est.jugadores[1 - jIdx].faccion}`);
+    est.jugadores.forEach(o => { if (gano && o.id !== jIdx && FM.hostil(est, o.id, jIdx) && ej.victoriasContra[o.faccion] === 1) l.push(`primera_victoria:${o.faccion}`); });
+    void rivalFac;
     if (resumen.ascensos.some(a => a.rango === "Leyenda")) l.push("leyenda");
     if (resumen.nemesisCaido.length) l.push("nemesis");
     if (casas(ej).some(c => c.generaciones >= 3)) l.push("tres_generaciones");

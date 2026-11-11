@@ -1,7 +1,8 @@
 /* =============================================================================
    LA FRACTURA: el rival controlado por la máquina. Juega su turno con las mismas acciones que un
    jugador (FracturaMotor.aplicar), sin trampas salvo el bono de recursos de la dificultad Difícil.
-   Ve todo el mapa (no usa la niebla de guerra).
+   Ve todo el mapa (no usa la niebla de guerra). Con varios rivales ataca al enemigo cercano que más le
+   conviene y cada ejército tiene sus manías, sacadas de su historia (a quién odia y a quién prefiere atacar).
    Cada turno: investiga, construye, recluta y mueve unidad por unidad: ataca donde más rinde,
    captura lo que queda libre, retira a los heridos y empuja contra la ciudad enemiga.
 ============================================================================= */
@@ -9,18 +10,29 @@
   const D = raiz.FRACTURA_DATOS || (typeof require !== "undefined" ? require("./fractura-datos.js") : null);
   const FM = raiz.FracturaMotor || (typeof require !== "undefined" ? require("./fractura-motor.js") : null);
   const S = raiz.FracturaSoldados || (typeof require !== "undefined" ? require("./fractura-soldados.js") : null);
-  const { TERRENOS, CLASES, EDIFICIOS, FACCIONES, DIFICULTADES } = D;
+  const { TERRENOS, CLASES, EDIFICIOS, FACCIONES, DIFICULTADES, HEROES } = D;
   const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
   const PREF_ESCUELA = {
     "caballeros-del-reino": ["militar", "tanato", "arcano"], "academia-arcana-de-dolbred": ["arcano", "militar", "tanato"], "trono-de-ceniza": ["tanato", "militar", "arcano"],
-    "compania-dorada": ["militar", "arcano", "tanato"], "hijos-del-acero": ["militar", "arcano", "tanato"], "peregrinos-del-alba": ["militar", "arcano", "tanato"]
+    "compania-dorada": ["militar", "arcano", "tanato"], "hijos-del-acero": ["militar", "arcano", "tanato"], "santos-de-asmodeo": ["militar", "arcano", "tanato"],
+    nikaalia: ["tanato", "militar", "arcano"], mravec: ["tanato", "militar", "arcano"], nernib: ["arcano", "militar", "tanato"]
+  };
+  /* Manías de cada ejército con varios rivales. odia: a quién va primero. gusto: "debil" (al que va peor), "fuerte" (al que va mejor),
+     "rico" (al que tiene más oro) o "monstruos" (a los ejércitos de monstruos). */
+  const PERFIL = {
+    "caballeros-del-reino": { odia: ["trono-de-ceniza"], gusto: "invasor" }, "academia-arcana-de-dolbred": { odia: ["nernib"], gusto: "invasor" },
+    "trono-de-ceniza": { odia: ["caballeros-del-reino"], gusto: "debil" }, "compania-dorada": { odia: [], gusto: "rico" },
+    "hijos-del-acero": { odia: ["trono-de-ceniza", "okran", "mravec"], gusto: "monstruos" }, "santos-de-asmodeo": { odia: ["mravec", "okran", "trono-de-ceniza", "nernib", "pelgiria"], gusto: "monstruos" },
+    nikaalia: { odia: [], gusto: "debil" }, seosan: { odia: [], gusto: "fuerte" }, okran: { odia: [], gusto: "fuerte" }, pelgiria: { odia: [], gusto: "debil" },
+    mravec: { odia: [], gusto: "rico" }, nernib: { odia: ["mravec"], gusto: "invasor" }, balutia: { odia: [], gusto: "debil" }
   };
   const PREF_EDIFICIO = {
     militar: ["granja", "aserradero", "cuartel", "mina", "mercado", "herreria", "santuario", "arsenal", "academia_militar", "banco", "biblioteca", "fortaleza"],
     magico: ["granja", "santuario", "aserradero", "mina", "biblioteca", "mercado", "cuartel", "torre_magia", "banco", "herreria"]
   };
-  const PESOS_CLASE = { guerrero: 3, cazador: 2.2, picaro: 1, paladin: 1.4, arcanista: 1.6, caballero: 2.4, archimago: 2.2, esqueleto: 3, ballestero: 2.4, mercenario: 2.6, sanador: 1.4, eco: 1 };
+  const PESOS_CLASE = { guerrero: 3, cazador: 2.2, picaro: 1, paladin: 1.4, arcanista: 1.6, caballero: 2.4, archimago: 2.2, esqueleto: 3, ballestero: 2.4, mercenario: 2.6, sanador: 1.4, eco: 1,
+    capo: 1.2, maestro: 2.2, berserker: 2.6, barrilero: 1.2, quimera: 2.2, automata: 2.4, condenado: 2.6 };
 
   /* Distancia (con coste de terreno) desde unas casillas objetivo a todo el mapa, ignorando unidades */
   function campo(est, metas) {
@@ -54,6 +66,10 @@
     return v;
   }
 
+  // El alcance de cada unidad no cambia dentro de un turno de la máquina: se calcula una vez
+  let cacheAlc = new Map();
+  const alcanceDe = (est, w) => { let a = cacheAlc.get(w.uid); if (a === undefined) { a = FM.ef(est, w).alc; cacheAlc.set(w.uid, a); } return a; };
+
   function evaluarAtaque(est, u, desde, t) {
     const sx = u.x, sy = u.y, sr = u.recorrido;
     u.x = desde.x; u.y = desde.y;
@@ -64,8 +80,9 @@
     // Riesgo: otros enemigos que lo alcanzarían donde se queda
     let riesgo = 0;
     Object.values(est.unidades).forEach(w => {
-      if (w.dueno === u.dueno || w === t || w.dueno < 0 && !w.errante) return;
-      if (cheb(w, desde) <= FM.ef(est, w).alc + 1) riesgo += 0.6;
+      if (!FM.hostil(est, w.dueno, u.dueno) || w === t || w.dueno < 0 && !w.errante) return;
+      if (cheb(w, desde) > 5) return;
+      if (cheb(w, desde) <= alcanceDe(est, w) + 1) riesgo += 0.6;
     });
     u.x = sx; u.y = sy; u.recorrido = sr;
     const mata = dmg >= t.hp;
@@ -81,13 +98,19 @@
     const e = FM.ef(est, u);
     const info = FM.alcanzables(est, u);
     const posiciones = [{ x: u.x, y: u.y, recorrido: u.recorrido, c: 0 }];
-    info.destinos.forEach(n => posiciones.push({ x: n.x, y: n.y, recorrido: (u.recorrido || 0) + cheb(u, n), c: n.c }));
+    const polvora = FM.usaPolvora(est, u);
+    // Con pólvora no se puede mover y disparar: o dispara desde donde está, o se mueve
+    if (!polvora) info.destinos.forEach(n => posiciones.push({ x: n.x, y: n.y, recorrido: (u.recorrido || 0) + cheb(u, n), c: n.c }));
+    else if (!u.quieto) return null;
     let mejor = null;
-    const enemigos = Object.values(est.unidades).filter(w => w.dueno !== u.dueno);
+    if (FM.enTregua(est) && u.dueno >= 0) { /* durante la tregua solo se ataca a las criaturas */ }
+    const enemigos = Object.values(est.unidades).filter(w => FM.hostil(est, w.dueno, u.dueno) && !(FM.enTregua(est) && w.dueno >= 0));
     posiciones.forEach(p => {
       enemigos.forEach(t => {
         if (cheb(p, t) > e.alc || cheb(p, t) < 1) return;
         if (t.dueno === -1 && !t.guardia && !t.errante) return;
+        if (cheb(p, t) > 2 && t.dueno >= 0 && FACCIONES[est.jugadores[t.dueno].faccion].mods.noche) return;
+        if (cheb(p, t) > 1 && t.dueno >= 0 && !t.heroe && FM.vecinosAliados(est, t).some(w => w.heroe && HEROES[w.heroe].ef.velo)) return;
         const ev = evaluarAtaque(est, u, p, t);
         let puntos = ev.puntos - p.c * 0.15;
         // Preferir quedarse en buen terreno
@@ -103,8 +126,11 @@
 
   function escogerEdificio(est, j, ciudad) {
     const fac = FACCIONES[est.jugadores[j].faccion];
-    const magico = ["academia-arcana-de-dolbred", "peregrinos-del-alba"].includes(est.jugadores[j].faccion);
-    const lista = PREF_EDIFICIO[magico ? "magico" : "militar"];
+    const faccion = est.jugadores[j].faccion;
+    const magico = ["academia-arcana-de-dolbred", "santos-de-asmodeo", "nernib"].includes(faccion);
+    const lista = PREF_EDIFICIO[magico ? "magico" : "militar"].slice();
+    const propios = Object.keys(EDIFICIOS).filter(id => EDIFICIOS[id].solo === faccion);
+    lista.splice(3, 0, ...propios);
     void fac;
     return lista.find(id => !FM.razonNoConstruir(est, j, ciudad.id, id)) || null;
   }
@@ -143,6 +169,11 @@
         if (FM.aplicar(est, { t: "investigar", escuela: esc }).ok) break;
       }
     }
+    // Héroe: en cuanto cumple los requisitos
+    if (!jug.heroeInvocado) {
+      const cap = FM.ciudadesDe(est, j).find(c => c.capital) || FM.ciudadesDe(est, j)[0];
+      if (cap) for (const h of jug.heroes) { if (FM.requisitosHeroe(est, j, h.id, cap.id).ok && FM.aplicar(est, { t: "invocar", ciudad: cap.id, heroe: h.id }).ok) break; }
+    }
     // Construcción y crecimiento
     FM.ciudadesDe(est, j).forEach(c => {
       if (est.turno >= 2 || c.capital) {
@@ -171,10 +202,32 @@
     const fmAplicar = FM.aplicar;
     void fmAplicar;
 
+    cacheAlc = new Map();
     economia(est, j, azar, nivel);
     if (est.ganador !== null) return pasos;
 
-    const enemigoJ = 1 - j;
+    const esRival = d => d >= 0 && d !== null && FM.hostil(est, d, j);
+    const tregua = FM.enTregua(est);
+    const perfil = PERFIL[jug.faccion] || { odia: [], gusto: "debil" };
+    // Cuánto le apetece ir contra cada rival
+    const ganas = {};
+    const rivales = FM.rivalesDe(est, j);
+    const puntos = rivales.map(q => FM.puntuacion(est, q));
+    const maxP = Math.max.apply(null, puntos.concat([1])), minP = Math.min.apply(null, puntos.concat([maxP]));
+    const yoP = FM.puntuacion(est, j);
+    rivales.forEach((q, i) => {
+      const o = est.jugadores[q];
+      let g = 0;
+      if (perfil.odia.includes(o.faccion)) g += 1.6;
+      if (perfil.gusto === "debil" && puntos[i] === minP) g += 0.8;
+      if (perfil.gusto === "fuerte" && puntos[i] === maxP) g += 0.8;
+      if (perfil.gusto === "rico") g += Math.min(1.2, (o.recursos.oro || 0) / 25);
+      if (perfil.gusto === "monstruos" && FACCIONES[o.faccion].monstruos) g += 0.8;
+      if (perfil.gusto === "invasor" && Object.values(est.unidades).some(w => w.dueno === q && cheb(w, est.capitales[j]) <= 5)) g += 1.4;
+      // Que el que va muy por delante no se escape
+      if (puntos[i] === maxP && puntos[i] > yoP + 6) g += 0.9;
+      ganas[q] = g;
+    });
     const campoCache = new Map();
     const campoDe = (clave, metas) => { if (!campoCache.has(clave)) campoCache.set(clave, campo(est, metas)); return campoCache.get(clave); };
     const w = est.ancho;
@@ -186,13 +239,14 @@
       if (est.ganador !== null || !est.unidades[u.uid]) return;
       // Habilidades
       if (u.clase === "picaro" && !u.atacado) {
-        const ciu = FM.ciudadesDe(est, enemigoJ).find(c => cheb(u, c) <= 1 && c.edificios.some(e => !(c.desh[e] >= est.turno)));
+        const ciu = tregua ? null : Object.values(est.ciudades).find(c => esRival(c.dueno) && cheb(u, c) <= 1 && c.edificios.some(e => !(c.desh[e] >= est.turno)));
         if (ciu) { const ed = ciu.edificios.find(e => !(ciu.desh[e] >= est.turno)); if (aplicar({ t: "habilidad", id: "sabotear", uid: u.uid, x: ciu.x, y: ciu.y, edificio: ed }).ok) return; }
       }
       if (jug.tech.tanato >= 3 && jug.recursos.anima >= 3 && !u.atacado) {
         const tumba = est.tumbas.find(t => cheb(u, t) <= 1 && !FM.unidadEn(est, t.x, t.y));
         if (tumba && aplicar({ t: "habilidad", id: "reanimar", uid: u.uid, x: tumba.x, y: tumba.y }).ok) return;
       }
+      if (habilidadesNuevas(u)) return;
       const e = FM.ef(est, u);
       const ataque = mejorAccionDeAtaque(est, u, azar, nivel);
       const herido = u.hp <= e.hpMax * 0.4;
@@ -225,13 +279,16 @@
       }
       if (!metas) {
         const libres = [];
-        Object.values(est.ciudades).forEach(c => { if (c.dueno !== j) libres.push({ x: c.x, y: c.y, v: c.dueno === null ? 4 : c.capital ? 5 : 3 }); });
-        est.fortalezas.forEach((p, i) => { if (est.fortalezasDueno[i] !== j) libres.push({ x: p.x, y: p.y, v: 2.5 }); });
+        Object.values(est.ciudades).forEach(c => {
+          if (c.dueno === null) libres.push({ x: c.x, y: c.y, v: 4 });
+          else if (esRival(c.dueno) && !tregua) libres.push({ x: c.x, y: c.y, v: (c.capital ? 5 : 3) + (ganas[c.dueno] || 0) });
+        });
+        est.fortalezas.forEach((p, i) => { const d = est.fortalezasDueno[i]; if (d === null || (esRival(d) && !tregua)) libres.push({ x: p.x, y: p.y, v: 2.5 }); });
         est.casillas.forEach((fila, y) => fila.forEach((c, x) => { if (c.est === "ruinas" && !c.saqueada) libres.push({ x, y, v: 2 }); }));
         const nuc = est.nucleo;
         if (est.turno >= 5) libres.push({ x: nuc.x, y: nuc.y, v: 3 });
         // El más valioso por distancia; el rival tiene prioridad si la capital propia está en peligro
-        const amenaza = Object.values(est.unidades).filter(o => o.dueno === enemigoJ && cheb(o, capPropia) <= 4);
+        const amenaza = Object.values(est.unidades).filter(o => esRival(o.dueno) && cheb(o, capPropia) <= 4);
         if (amenaza.length >= 2 && cheb(u, capPropia) <= 6) { metas = [capPropia]; clave = "defensa"; }
         else {
           libres.forEach(l => { l.s = l.v * 3 - cheb(u, l) * 0.9 + azar() * 1.2; });
@@ -246,6 +303,50 @@
     });
     delete est.__ia;
 
+    /* Lo propio de cada ejército: habilidades de héroe, consagrar y sobornar. Devuelve true si la unidad ya gastó su acción. */
+    function habilidadesNuevas(u) {
+      if (u.atacado || !est.unidades[u.uid]) return false;
+      const fac = FACCIONES[jug.faccion];
+      const h = u.heroe ? HEROES[u.heroe] : null;
+      const junto = (x, y) => Object.values(est.unidades).filter(w => cheb(w, { x, y }) <= 1);
+      if (h) {
+        for (const n of [1, 2]) {
+          const ab = n === 2 ? h.ef.activa2 : h.ef.activa;
+          if (!ab || (n === 2 ? u.cd2 : u.cd) > 0 || (ab.coste && !FM.puedePagar(jug, ab.coste))) continue;
+          if (ab.id === "area" && !tregua) {
+            let mejor = null;
+            for (let y = u.y - ab.alc; y <= u.y + ab.alc; y++) for (let x = u.x - ab.alc; x <= u.x + ab.alc; x++) {
+              if (!FM.dentro(est, x, y)) continue;
+              const dianas = junto(x, y).filter(w => FM.hostil(est, w.dueno, j));
+              const v = dianas.length + dianas.filter(w => w.hp <= ab.dano).length;
+              if (v >= 2 && (!mejor || v > mejor.v)) mejor = { x, y, v };
+            }
+            if (mejor && aplicar({ t: "habilidad", id: "heroe", uid: u.uid, n, x: mejor.x, y: mejor.y }).ok) return true;
+          } else if (ab.id === "curar") {
+            const heridos = FM.unidadesDe(est, j).filter(w => cheb(w, u) <= ab.radio && w.hp <= FM.ef(est, w).hpMax - 3);
+            if (heridos.length >= 2 && aplicar({ t: "habilidad", id: "heroe", uid: u.uid, n }).ok) return true;
+          } else if (ab.id === "formar") {
+            const cercaEnemigo = Object.values(est.unidades).some(w => esRival(w.dueno) && cheb(w, u) <= 3);
+            if (cercaEnemigo && FM.vecinosAliados(est, u).length >= 2 && aplicar({ t: "habilidad", id: "heroe", uid: u.uid, n }).ok) return true;
+          } else if (ab.id === "contratar") {
+            const t = junto(u.x, u.y).find(w => w.dueno === -1);
+            if (t && aplicar({ t: "habilidad", id: "heroe", uid: u.uid, n, x: t.x, y: t.y }).ok) return true;
+          } else if (ab.id === "alzar") {
+            if (est.tumbas.some(t => t.dueno === j) && aplicar({ t: "habilidad", id: "heroe", uid: u.uid, n }).ok) return true;
+          }
+        }
+        return false;
+      }
+      if (fac.mods.soborno && jug.recursos.oro >= fac.mods.soborno + 4) {
+        const t = junto(u.x, u.y).find(w => w.dueno === -1);
+        if (t && aplicar({ t: "habilidad", id: "sobornar", uid: u.uid, x: t.x, y: t.y }).ok) return true;
+      }
+      if (u.clase === "sanador" && fac.mods.consagra && !FM.consagradaPara(est, j, u.x, u.y) && est.turno > 1 && azar() < 0.6) {
+        if (aplicar({ t: "habilidad", id: "consagrar", uid: u.uid }).ok) return true;
+      }
+      return false;
+    }
+
     function mover(u, metas, clave) {
       const campoMeta = campoDe(clave || `k${metas[0].x},${metas[0].y}`, metas);
       const info = FM.alcanzables(est, u);
@@ -256,7 +357,7 @@
         if (v >= 1e9) return;
         v -= TERRENOS[est.casillas[n.y][n.x].t].def * 0.3;
         // No acabar junto a muchos enemigos sin motivo
-        const cerca = Object.values(est.unidades).filter(o => o.dueno === enemigoJ && cheb(o, n) <= 1).length;
+        const cerca = Object.values(est.unidades).filter(o => esRival(o.dueno) && cheb(o, n) <= 1).length;
         v += cerca * 1.2;
         if (!mejor || v < mejor.v) mejor = { v, n };
       });

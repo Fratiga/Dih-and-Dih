@@ -2,7 +2,40 @@
 
 Documento de reglas y de trabajo. Todo lo que sigue es plan. Todavía no hay código. Se cierra aquí lo que pueda obligar a rehacer cosas después. Los números son una primera estimación y se ajustan con simulaciones.
 
-Estado: aprobado el concepto el 29-oct-2026. Falta empezar la base común.
+Estado: aprobado el concepto el 29-oct-2026. **La primera versión jugable de la expansión se programó el 11-nov-2026** (ver «Estado de la implementación»). El resto del documento sigue siendo la referencia de diseño.
+
+## Estado de la implementación (11-nov-2026)
+
+Reglas versión 2 (`FRACTURA_DATOS.REGLAS`). Una guerra guardada o un duelo empezados con la versión 1 no se pueden continuar.
+
+Hecho:
+
+- **Trece ejércitos** con sus tropas (nombre y aspecto por ejército sobre los cinco roles), su exclusiva y su mecánica: fortalezas (Brurland), investigación (Dolbred), Ánima (Osses), oro (Compañía), caza mayor (Hijos del Acero), consagración (Santos de Asmodeo), noche y sobornos (Nikaalia), duelo (Seosan), furia (Okran), navegar (Pelgiria), devorar y adaptar (Mravec), taller (Nernib) y tributo (Balutia). Pólvora para las tropas marcadas.
+- **Héroes**: uno por ejército (tres candidatos en Dolbred, con el nombre sorteado por la semilla), con requisitos, coste, efectos pasivos y habilidades. La máquina los invoca y usa sus habilidades.
+- **De 2 a 8 bandos** contra la máquina, todos contra todos o en dos equipos (visión compartida). Tregua de 3 turnos con más de dos bandos, eliminación al perder la capital, Refugio, ejércitos que se deshacen (Osses y Mravec), límite de turnos según los bandos.
+- **Mapas** de tamaño según los bandos (17x13 con 2, hasta 27x25 con 8), con silueta de continente, biomas agrupados, lagos y una provincia alrededor de cada ciudad, fortaleza y el Núcleo.
+- **La máquina** con varios rivales y manías por ejército (a quién odia y a quién prefiere atacar).
+- **Mapa en Phaser**: mar o abismo animado, costa, suelo horneado con biomas fundidos, caminos, bosques y sierras con volumen, provincias con el color del dueño, rótulos, niebla de bordes blandos, figuras por tropa y por héroe, animaciones por tipo de arma y cámara que acompaña el turno de los demás.
+- **Interfaz**: portada con menú, códice de ejércitos, ayuda, ajustes, barra de recursos con desglose, tira de bandos con el orden de turnos, minimapa, tarjeta de selección (tropa, ciudad con huecos de edificios y héroe con requisitos, terreno), árbol del saber, marcador, crónica con filtros, resumen de lo ocurrido en la ronda, pistas, atajos de teclado y sonido sintetizado.
+- **Retratos** por tropa y ejército, a juego con las figuras del mapa.
+- Prueba automática: `node tools/probar-fractura.js` (guerras completas de máquina contra máquina de 2 a 8 bandos, coherencia del estado y repetición con la misma semilla).
+
+Diferencias con el plan:
+
+- Don Ottavio pide controlar 3 ciudades (no hay un «Mercado de las Sombras» en el mapa).
+- El Vigilante pide 12 casillas consagradas (una ciudad consagra 9).
+- La Noche eterna se resuelve así: los rivales de Nikaalia ven una casilla menos y no pueden atacar a sus tropas desde más de 2 casillas.
+- El Duelo de Seosan solo da el +2 de ataque (no anula las ayudas de los adyacentes).
+- La Contención de Rykerd: sin el Maestro Cazador ataca a lo más cercano durante 3 turnos.
+
+Pendiente:
+
+- Pactos y traición entre bandos.
+- Duelos entre jugadores con más de dos bandos (necesita cambios en el servidor). Los duelos siguen siendo de dos.
+- Simulaciones de equilibrio por emparejamiento. Las estadísticas de las exclusivas y de los héroes siguen siendo provisionales.
+- Toda la sección de retención (contratos, rachas, remontada, némesis activo, códice de campaña, Fractura del día).
+- Retratos propios para líderes y héroes (hoy usan su figura del mapa).
+- Repaso en móvil: se puede usar, sin más.
 
 ## 1. Qué cambia
 

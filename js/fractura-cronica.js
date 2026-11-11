@@ -24,6 +24,12 @@
       "La capital de {rival} cayó. {por} plantó allí el estandarte de {bando}.",
       "{ciudad} no resistió. {por} la tomó y terminó la guerra."
     ],
+    // Con más de dos bandos, tomar una capital no acaba la guerra
+    capitalVarios: [
+      "{por} entró en {ciudad}, la capital de {rival}.",
+      "La capital de {rival} cayó. {por} plantó allí el estandarte de {bando}.",
+      "{ciudad} no resistió. {por} la tomó para {bando}."
+    ],
     fortaleza: [
       "{por} se hizo con la fortaleza de {region}.",
       "La fortaleza de {region} cambió de manos con {por} al frente."
@@ -52,6 +58,22 @@
     tecnologia: [
       "{bando} dominó {nombre}, de la escuela {escuela}.",
       "{nombre} quedó al alcance de {bando}."
+    ],
+    heroe: [
+      "{bando} invocó a {nombre} en {ciudad}.",
+      "En {ciudad} apareció {nombre}, llamado por {bando}."
+    ],
+    heroe_cae: [
+      "{nombre} cayó en {region}{por}.",
+      "En {region} se deshizo el eco de {nombre}{por}."
+    ],
+    eliminado: [
+      "{bando} quedó fuera de la guerra.",
+      "Para {bando} la guerra terminó ahí."
+    ],
+    refugio: [
+      "{bando} perdió su capital y se replegó a {ciudad}.",
+      "Sin capital, {bando} siguió la guerra desde su refugio en {ciudad}."
     ],
     nucleo: [
       "{bando} puso un pie sobre el Núcleo del Sueño y empezó a mantener la posición.",
@@ -93,16 +115,16 @@
   /* Texto de un suceso */
   function frase(est, e, ctx, i) {
     const J = est.jugadores;
-    const bandoDe = d => (d === 0 || d === 1 ? J[d].nombre : "las fuerzas del lugar");
-    const rivalDe = d => (d === 0 || d === 1 ? J[1 - d].nombre : "el rival");
+    const bandoDe = d => (J[d] ? J[d].nombre : "las fuerzas del lugar");
+    const rivalDe = d => (e.antes !== null && e.antes !== undefined && J[e.antes] ? J[e.antes].nombre : J.length === 2 && (d === 0 || d === 1) ? J[1 - d].nombre : "el rival");
     const datos = {
       por: e.por ? `${e.por}` : "", ciudad: e.ciudad, region: e.region, bando: bandoDe(e.dueno), rival: rivalDe(e.dueno), nombre: e.nombre, escuela: e.escuela,
       reliquia: e.reliquia, edificio: e.edificio, estado: e.estado, estado_min: e.estado ? e.estado.charAt(0).toLowerCase() + e.estado.slice(1) : "",
       compania: ROMANOS[e.compania] || e.compania || ""
     };
-    let clave = e.tipo === "conquista" && e.capital ? "capital" : e.tipo === "caida" && e.capitan ? "caidaCapitan" : e.tipo;
+    let clave = e.tipo === "conquista" && e.capital ? (J.length > 2 ? "capitalVarios" : "capital") : e.tipo === "caida" && e.capitan ? "caidaCapitan" : e.tipo;
     if (!PLANTILLAS[clave]) return null;
-    if (e.tipo === "caida" || e.tipo === "lider") datos.por = e.por ? ` a manos de ${e.por}` : "";
+    if (e.tipo === "caida" || e.tipo === "lider" || e.tipo === "heroe_cae") datos.por = e.por ? ` a manos de ${e.por}` : "";
     else if (e.tipo === "conquista" || e.tipo === "fortaleza" || e.tipo === "capital") datos.por = e.por || "Un soldado";
     else if (e.tipo === "sabotaje") datos.por = e.por;
     let t = lleno(pick(est.semilla, i, PLANTILLAS[clave]), datos).replace(/\s+\./g, ".").replace(/\s{2,}/g, " ");
@@ -126,7 +148,9 @@
   function narrar(est, ej, resumen, jIdx) {
     jIdx = jIdx || 0;
     const J = est.jugadores;
-    const yo = J[jIdx].nombre, rival = J[1 - jIdx].nombre;
+    const yo = J[jIdx].nombre;
+    const otros = J.filter(o => o.id !== jIdx).map(o => o.nombre);
+    const rival = otros.length === 1 ? otros[0] : `${otros.slice(0, -1).join(", ")} y ${otros[otros.length - 1]}`;
     const tipo = TIPOS_FRACTURA[est.tipo].nombre;
     const vistoNucleo = new Set();
     const eventos = est.cronica.filter(e => (e.tipo !== "suceso" || e.que === "criatura") && !(e.tipo === "nucleo" && (vistoNucleo.has(e.dueno) || !vistoNucleo.add(e.dueno))));

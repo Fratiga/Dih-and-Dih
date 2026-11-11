@@ -344,6 +344,377 @@ const CUERPO = {
 };
 function cuerpoPielCuello(c, S) { c.fillStyle = "#e8e2d0"; for (let i = 0; i < 9; i++) { const x = 70 + i * 20; c.beginPath(); c.moveTo(x, 236 + Math.abs(i - 4) * 4); c.lineTo(x + 10, 262 + Math.abs(i - 4) * 4); c.lineTo(x + 20, 236 + Math.abs(i - 4) * 4); c.fill(); } }
 
+
+/* =============================================================================
+   ASPECTO POR EJÉRCITO. Cada tropa de cada ejército tiene su cabeza y su cuerpo, a juego con su figura
+   del mapa: el sombrero del matón de Nikaalia, el yelmo con cresta del legionario, la cabeza de hormiga
+   de Mravec... Las cabezas siguen la regla de siempre: casi nadie enseña la cara.
+   o: opciones de la receta (colores, adornos).
+============================================================================= */
+const sombraCara = (c, S, o, y0) => { relleno(c, `M112 ${y0 || 122} C112 108 188 108 188 ${y0 || 122} L186 196 C172 222 128 222 114 196 Z`, "#050407"); };
+const dosOjos = (S, y, col, rx, ry) => { ojo(S, 135, y, rx || 6.5, ry || 2.3, col); ojo(S, 165, y, rx || 6.5, ry || 2.3, col); };
+const CABEZA2 = {
+  capacete(c, S, o) {
+    relleno(c, "M100 150 L200 150 L212 236 Q150 262 88 236 Z", cuero(c, 88, 150, 212, 258, "#3b3f46"), "#08080a", 2);
+    c.strokeStyle = "rgba(0,0,0,.45)"; c.lineWidth = 1; for (let i = 0; i < 7; i++) { c.beginPath(); c.moveTo(96 + i * 3, 166 + i * 11); c.lineTo(204 - i * 3, 166 + i * 11); c.stroke(); }
+    relleno(c, "M118 138 L182 138 L178 206 Q150 226 122 206 Z", "#070605"); dosOjos(S, 158, o.ojo || "#ffc86a");
+    relleno(c, "M110 142 Q108 70 150 64 Q192 70 190 142 Z", metal(c, 104, 64, 196, 144, S.acero), "#08080a", 2.5);
+    relleno(c, "M64 150 Q150 112 236 150 L226 160 Q150 136 74 160 Z", metal(c, 64, 118, 236, 160, S.acero), "#08080a", 2.2);
+    filo(c, "M116 132 Q116 78 150 70", "rgba(255,244,214,.42)", 1.6); filo(c, "M72 150 Q150 118 228 150", "rgba(255,244,214,.3)", 1.3);
+  },
+  sombreroAla(c, S, o) {
+    const t = o.tela || "#3a2e22";
+    sombraCara(c, S, o); dosOjos(S, 150, o.ojo || "#ffcf6a");
+    relleno(c, "M104 166 C124 156 176 156 196 166 C196 192 190 214 184 228 Q150 248 116 228 C110 214 104 192 104 166 Z", cuero(c, 104, 156, 196, 246, osc(t, 0.25)), "#080605", 2);
+    c.strokeStyle = "rgba(0,0,0,.45)"; c.lineWidth = 1.4; c.beginPath(); c.moveTo(122, 176); c.quadraticCurveTo(150, 190, 178, 176); c.stroke();
+    relleno(c, "M28 128 Q150 86 272 128 Q260 146 150 122 Q40 146 28 128 Z", cuero(c, 28, 90, 272, 146, t), "#070504", 2.4);
+    relleno(c, "M100 116 Q104 44 150 40 Q196 44 200 116 Q150 100 100 116 Z", cuero(c, 100, 40, 200, 118, cla(t, 0.07)), "#070504", 2.4);
+    relleno(c, "M100 104 Q150 88 200 104 L200 116 Q150 100 100 116 Z", S.ban, "#120406", 1);
+    filo(c, "M38 126 Q150 92 262 126", "rgba(255,240,210,.22)", 1.4);
+    if (o.pluma) relleno(c, "M186 100 C214 60 250 40 276 44 C250 62 232 84 206 112 Z", cuero(c, 186, 40, 276, 112, S.col), "#120406", 1.5);
+  },
+  plumas(c, S, o) {
+    sombraCara(c, S, o); dosOjos(S, 150, o.ojo || "#ffd24a");
+    relleno(c, "M104 166 C124 156 176 156 196 166 C196 192 190 214 184 228 Q150 248 116 228 C110 214 104 192 104 166 Z", cuero(c, 104, 156, 196, 246, "#2e2622"), "#080605", 2);
+    relleno(c, "M46 122 C70 84 230 70 262 110 C240 132 80 150 46 122 Z", cuero(c, 46, 76, 262, 146, S.ban), "#0a0504", 2.4);
+    relleno(c, "M92 114 C96 66 204 56 212 104 C180 118 124 124 92 114 Z", cuero(c, 92, 60, 212, 122, S.col), "#0a0504", 2.2);
+    [112, 134, 158, 182].forEach(x => linea(c, osc(S.col, 0.55), 3, x, 76, x - 4, 114));
+    relleno(c, "M96 96 C60 60 30 20 34 -6 C56 22 84 52 116 84 Z", metal(c, 30, -6, 116, 96, "#f2ead6"), "#2a251c", 1.5);
+    relleno(c, "M108 90 C84 50 78 16 90 -10 C98 24 112 54 128 82 Z", cuero(c, 78, -10, 128, 90, S.col), "#120406", 1.5);
+  },
+  morrion(c, S, o) {
+    const m = o.metal || S.acero;
+    sombraCara(c, S, o, 132); dosOjos(S, 154, o.ojo || "#ffd24a");
+    relleno(c, "M104 170 C124 160 176 160 196 170 C196 194 190 214 184 228 Q150 248 116 228 C110 214 104 194 104 170 Z", cuero(c, 104, 160, 196, 246, "#2e2622"), "#080605", 2);
+    relleno(c, "M104 140 Q102 62 150 54 Q198 62 196 140 Z", metal(c, 100, 54, 200, 142, m), "#08080a", 2.5);
+    relleno(c, "M52 154 Q150 104 248 154 Q150 132 52 154 Z", metal(c, 52, 108, 248, 156, m), "#08080a", 2.2);
+    relleno(c, "M142 58 Q150 20 158 58 L156 134 L144 134 Z", metal(c, 142, 20, 158, 134, cla(m, 0.1)), "#08080a", 1.5);
+    filo(c, "M110 132 Q110 72 148 60", "rgba(255,244,214,.42)", 1.6);
+  },
+  granYelmo(c, S, o) {
+    const m = o.metal || "#c9ccd0";
+    if (o.halo) { c.strokeStyle = "rgba(240,210,120,.75)"; c.lineWidth = 5; c.beginPath(); c.ellipse(150, 52, 76, 18, 0, 0, 7); c.stroke(); }
+    relleno(c, "M102 74 L198 74 L204 214 Q150 240 96 214 Z", metal(c, 96, 74, 204, 236, m), "#09090b", 2.5);
+    relleno(c, "M106 56 L194 56 L198 76 L102 76 Z", metal(c, 102, 56, 198, 76, cla(m, 0.12)), "#09090b", 2);
+    relleno(c, "M110 132 L190 132 L190 144 L110 144 Z", NEGRO); relleno(c, "M144 96 L156 96 L156 206 L144 206 Z", NEGRO);
+    ojo(S, 128, 138, 8, 2.6, o.ojo || "#ffe08a"); ojo(S, 172, 138, 8, 2.6, o.ojo || "#ffe08a");
+    [[120, 170], [128, 184], [120, 198], [180, 170], [172, 184], [180, 198]].forEach(p => disco(c, NEGRO, p[0], p[1], 2.2));
+    c.strokeStyle = S.oro; c.lineWidth = 2; c.strokeRect(108, 130, 84, 16);
+    filo(c, "M108 84 L104 204", "rgba(255,255,255,.4)", 1.6);
+  },
+  cogulla(c, S, o) {
+    const t = o.tela || "#2a2622";
+    relleno(c, "M84 232 C76 122 116 60 150 48 C184 60 224 122 216 232 C190 258 110 258 84 232 Z", cuero(c, 80, 48, 220, 256, t), "#060505", 2.5);
+    relleno(c, "M112 212 C104 136 128 100 150 90 C172 100 196 136 188 212 Q150 234 112 212 Z", "#040305");
+    dosOjos(S, 156, o.ojo || "#ffb86a", 6, 2.2);
+    filo(c, "M96 204 C92 126 124 76 150 58", "rgba(255,244,214,.2)", 1.5);
+    if (o.cuerda) { linea(c, "#8a7a5a", 3.5, 108, 240, 192, 240); linea(c, "#8a7a5a", 3, 150, 240, 146, 262); }
+    if (o.sol) { disco(c, S.oro, 150, 76, 5); for (let i = 0; i < 8; i++) linea(c, S.oro, 1.4, 150 + Math.cos(i * 0.785) * 8, 76 + Math.sin(i * 0.785) * 8, 150 + Math.cos(i * 0.785) * 13, 76 + Math.sin(i * 0.785) * 13); }
+  },
+  fedora(c, S, o) {
+    const t = o.tela || "#1d1b24";
+    // cuello del abrigo subido
+    relleno(c, "M92 250 L112 178 L150 214 L188 178 L208 250 Q150 270 92 250 Z", cuero(c, 92, 178, 208, 266, cla(t, 0.08)), "#050407", 2);
+    sombraCara(c, S, o, 126);
+    ojo(S, 135, 152, 6.5, 2, o.ojo || "#ff9a5a"); ojo(S, 165, 152, 6.5, 2, o.ojo || "#ff9a5a");
+    if (o.bufanda) relleno(c, "M106 168 C126 160 174 160 194 168 L190 226 Q150 246 110 226 Z", cuero(c, 106, 160, 194, 244, S.col), "#120406", 1.8);
+    relleno(c, "M30 132 Q150 96 270 124 Q262 144 150 128 Q44 150 30 132 Z", cuero(c, 30, 98, 270, 148, t), "#040305", 2.4);
+    relleno(c, "M98 120 C96 60 124 44 140 52 Q150 62 160 50 C180 42 204 62 202 118 Q150 106 98 120 Z", cuero(c, 96, 44, 204, 120, cla(t, 0.06)), "#040305", 2.4);
+    relleno(c, "M98 106 Q150 92 202 104 L202 118 Q150 106 98 120 Z", S.col, "#120406", 1);
+    filo(c, "M40 130 Q150 100 262 124", "rgba(255,240,220,.2)", 1.4);
+    if (o.cigarro) { linea(c, "#e9e4da", 3, 168, 196, 196, 204); disco(c, "#ff8a3a", 198, 205, 3.2); S.ojos.push({ x: 198, y: 205, rx: 3, ry: 3, col: "#ff8a3a" }); }
+  },
+  gafas(c, S, o) {
+    const cuero0 = o.cuero || "#4a3722";
+    relleno(c, "M94 150 C92 84 120 62 150 62 C180 62 208 84 206 150 C208 196 196 226 150 240 C104 226 92 196 94 150 Z", cuero(c, 92, 62, 208, 240, cuero0), "#0a0705", 2.5);
+    linea(c, osc(cuero0, 0.5), 8, 94, 142, 206, 142);
+    [[130, 142], [170, 142]].forEach(p => { disco(c, "#17130f", p[0], p[1], 20); c.strokeStyle = "#c79a44"; c.lineWidth = 4; c.beginPath(); c.arc(p[0], p[1], 20, 0, 7); c.stroke(); disco(c, "#06100f", p[0], p[1], 14); });
+    ojo(S, 130, 142, 9, 9, o.ojo || "#9be8ff"); ojo(S, 170, 142, 9, 9, o.ojo || "#9be8ff");
+    relleno(c, "M118 178 L182 178 L176 226 Q150 240 124 226 Z", cuero(c, 118, 178, 182, 238, "#2a241e"), "#070504", 2);
+    [[136, 198], [150, 204], [164, 198]].forEach(p => disco(c, "#0a0806", p[0], p[1], 3));
+    disco(c, "#5a4a36", 118, 204, 9); disco(c, "#5a4a36", 182, 204, 9);
+    filo(c, "M102 132 C104 92 124 72 150 68", "rgba(255,230,190,.28)", 1.5);
+  },
+  kasa(c, S, o) {
+    const p = o.paja || "#c9a964";
+    sombraCara(c, S, o, 130); dosOjos(S, 164, o.ojo || "#ffd98a", 6, 2);
+    relleno(c, "M106 180 C126 172 174 172 194 180 L188 230 Q150 248 112 230 Z", cuero(c, 106, 172, 194, 246, osc(S.ban, 0.1)), "#080605", 2);
+    relleno(c, "M22 154 L150 44 L278 154 Q150 128 22 154 Z", metal(c, 22, 44, 278, 156, p), "#1a1408", 2.5);
+    c.strokeStyle = "rgba(60,40,10,.4)"; c.lineWidth = 1.2; for (let i = 0; i < 9; i++) { c.beginPath(); c.moveTo(150, 46); c.lineTo(40 + i * 27.5, 148 - Math.abs(i - 4) * 2); c.stroke(); }
+    c.strokeStyle = "rgba(60,40,10,.3)"; [0.35, 0.6, 0.82].forEach(f => { c.beginPath(); c.moveTo(150 - 128 * f, 44 + 110 * f); c.quadraticCurveTo(150, 44 + 110 * f - 22 * f, 150 + 128 * f, 44 + 110 * f); c.stroke(); });
+    disco(c, osc(p, 0.4), 150, 46, 5);
+  },
+  cinta(c, S, o) {
+    relleno(c, "M100 150 C98 92 122 70 150 70 C178 70 202 92 200 150 C200 192 184 226 150 238 C116 226 100 192 100 150 Z", cuero(c, 100, 70, 200, 238, "#17131a"), "#050407", 2.5);
+    relleno(c, "M112 136 L188 136 L186 160 L114 160 Z", cuero(c, 112, 136, 188, 160, "#5a3d2c"), "#150c07", 1.2);
+    relleno(c, "M118 144 Q134 138 146 146 Q134 154 118 150 Z M182 144 Q166 138 154 146 Q166 154 182 150 Z", "#0a0705");
+    ojo(S, 133, 146, 6, 2.2, o.ojo || "#ffe0a0"); ojo(S, 167, 146, 6, 2.2, o.ojo || "#ffe0a0");
+    relleno(c, "M110 166 C130 158 170 158 190 166 L184 222 Q150 240 116 222 Z", cuero(c, 110, 158, 190, 238, osc(S.ban, 0.05)), "#080605", 2);
+    relleno(c, "M98 112 Q150 96 202 112 L202 128 Q150 112 98 128 Z", S.col, "#120406", 1.4);
+    relleno(c, "M98 116 C74 116 56 128 46 150 C66 144 82 140 100 130 Z", S.col, "#120406", 1.2); relleno(c, "M98 124 C84 144 78 162 82 178 C92 164 100 148 104 132 Z", osc(S.col, 0.2), "#120406", 1.2);
+    relleno(c, "M136 72 C130 44 142 26 158 24 C170 30 172 52 164 72 Z", "#17131a", "#050407", 2);
+    linea(c, S.col, 3, 138, 62, 164, 62);
+  },
+  kabuto(c, S, o) {
+    const m = o.metal || "#2b2a30", mas = o.mascara || "#8a1f1f";
+    c.strokeStyle = S.oro; c.lineWidth = 7; c.lineCap = "round"; c.beginPath(); c.moveTo(126, 78); c.quadraticCurveTo(70, 50, 82, -6); c.moveTo(174, 78); c.quadraticCurveTo(230, 50, 218, -6); c.stroke();
+    relleno(c, "M98 150 Q96 68 150 60 Q204 68 202 150 Z", metal(c, 96, 60, 204, 152, m), "#050506", 2.5);
+    [[96, 150, 60, 214, 100, 226], [204, 150, 240, 214, 200, 226]].forEach(p => relleno(c, `M${p[0]} ${p[1]} L${p[2]} ${p[3]} L${p[4]} ${p[5]} Z`, metal(c, p[2], p[1], p[4], p[5], m), "#050506", 2));
+    relleno(c, "M96 136 Q150 118 204 136 L204 152 Q150 136 96 152 Z", S.oro, "#2c2006", 1);
+    relleno(c, "M110 152 L190 152 L186 214 Q150 244 114 214 Z", metal(c, 110, 152, 190, 240, mas), "#1a0505", 2);
+    relleno(c, "M118 158 L144 166 L142 176 L120 170 Z M182 158 L156 166 L158 176 L180 170 Z", NEGRO);
+    ojo(S, 132, 168, 7, 2.6, o.ojo || "#ffd24a"); ojo(S, 168, 168, 7, 2.6, o.ojo || "#ffd24a");
+    relleno(c, "M128 206 Q150 196 172 206 L168 220 Q150 212 132 220 Z", NEGRO);
+    c.fillStyle = "#e8e0cb"; [[134, 207], [144, 205], [156, 205], [166, 207]].forEach(p => { c.beginPath(); c.moveTo(p[0] - 3, p[1]); c.lineTo(p[0], p[1] + 10); c.lineTo(p[0] + 3, p[1]); c.fill(); });
+    filo(c, "M104 140 Q104 80 148 66", "rgba(255,244,214,.35)", 1.6);
+  },
+  barbaro(c, S, o) {
+    const piel = o.cara || "#b08a68", pelo = o.pelo || "#3a2c20";
+    relleno(c, "M82 240 C70 150 92 84 150 62 C208 84 230 150 218 240 C200 262 100 262 82 240 Z", cuero(c, 80, 62, 220, 260, pelo), "#050304", 2.5);
+    relleno(c, "M106 150 C106 104 194 104 194 150 C194 196 176 222 150 230 C124 222 106 196 106 150 Z", cuero(c, 106, 104, 194, 230, piel), "#150c07", 1.8);
+    relleno(c, "M108 138 Q150 128 192 138 L192 158 Q150 148 108 158 Z", S.col, null);
+    relleno(c, "M116 142 Q134 136 146 146 Q134 156 116 150 Z M184 142 Q166 136 154 146 Q166 156 184 150 Z", "#0a0705");
+    ojo(S, 132, 147, 6, 2.4, o.ojo || "#ffd24a"); ojo(S, 168, 147, 6, 2.4, o.ojo || "#ffd24a");
+    linea(c, osc(piel, 0.55), 2, 150, 156, 146, 180);
+    linea(c, osc(piel, 0.6), 2.4, 132, 200, 168, 200);
+    if (o.barba !== false) relleno(c, "M116 204 C132 196 168 196 184 204 C186 236 170 262 150 270 C130 262 114 236 116 204 Z", cuero(c, 116, 196, 184, 268, pelo), "#050304", 2);
+    [[92, 150, 78, 250], [208, 150, 222, 250]].forEach(p => { linea(c, osc(pelo, 0.3), 9, p[0], p[1], p[2], p[3]); linea(c, S.oro, 3, p[2] - 5, p[3] - 22, p[2] + 5, p[3] - 22); });
+    if (o.cuernos) { relleno(c, "M100 96 Q150 78 200 96 L200 116 Q150 98 100 116 Z", metal(c, 100, 80, 200, 116, S.acero), "#08080a", 2); relleno(c, "M106 96 C72 78 62 40 78 8 C88 44 106 66 124 84 Z M194 96 C228 78 238 40 222 8 C212 44 194 66 176 84 Z", metal(c, 60, 8, 240, 96, "#e8e0cb"), "#1a1810", 1.8); }
+    filo(c, "M96 200 C92 130 116 84 150 70", "rgba(255,244,214,.14)", 1.4);
+  },
+  craneoCiervo(c, S, o) {
+    const h = "#d6cdb4";
+    c.strokeStyle = h; c.lineWidth = 7; c.lineCap = "round"; c.lineJoin = "round";
+    c.beginPath(); c.moveTo(128, 92); c.lineTo(104, 40); c.lineTo(70, 22); c.moveTo(104, 40); c.lineTo(110, 0); c.moveTo(88, 31); c.lineTo(64, 52); c.moveTo(172, 92); c.lineTo(196, 40); c.lineTo(230, 22); c.moveTo(196, 40); c.lineTo(190, 0); c.moveTo(212, 31); c.lineTo(236, 52); c.stroke();
+    relleno(c, "M84 236 C76 150 96 96 150 84 C204 96 224 150 216 236 C196 258 104 258 84 236 Z", cuero(c, 80, 84, 220, 256, "#3a2c20"), "#050304", 2.5);
+    relleno(c, "M116 94 C116 80 184 80 184 94 L178 170 L164 246 L150 262 L136 246 L122 170 Z", metal(c, 116, 80, 184, 262, h), "#1a1810", 2);
+    relleno(c, "M122 124 C122 108 146 108 146 126 C146 142 124 142 122 124 Z M154 126 C154 108 178 108 178 124 C176 142 154 142 154 126 Z", "#030205");
+    ojo(S, 134, 126, 5.5, 5.5, o.ojo || "#9af27a"); ojo(S, 166, 126, 5.5, 5.5, o.ojo || "#9af27a");
+    relleno(c, "M144 196 L150 226 L156 196 Z", "#030205"); linea(c, "#5c5546", 1.4, 150, 150, 150, 190);
+    [[126, 176], [174, 176]].forEach(p => linea(c, "#5c5546", 1.3, p[0], p[1], p[0] + (p[0] < 150 ? 8 : -8), p[1] + 30));
+  },
+  bestia(c, S, o) {
+    const p = o.pelo || "#4a3626";
+    c.strokeStyle = "#e8e0cb"; c.lineWidth = 12; c.lineCap = "round"; c.beginPath(); c.moveTo(110, 96); c.quadraticCurveTo(44, 84, 40, 22); c.moveTo(190, 96); c.quadraticCurveTo(256, 84, 260, 22); c.stroke();
+    c.strokeStyle = "rgba(0,0,0,.25)"; c.lineWidth = 3; c.beginPath(); c.moveTo(112, 100); c.quadraticCurveTo(50, 90, 44, 30); c.stroke();
+    relleno(c, "M84 150 C80 88 116 62 150 62 C184 62 220 88 216 150 C214 206 186 252 150 262 C114 252 86 206 84 150 Z", cuero(c, 80, 62, 220, 262, p), "#050304", 2.5);
+    c.fillStyle = cla(p, 0.14); for (let i = 0; i < 9; i++) { const x = 106 + i * 11; c.beginPath(); c.moveTo(x, 70 + Math.abs(i - 4) * 3); c.lineTo(x + 5, 96 + Math.abs(i - 4) * 3); c.lineTo(x + 10, 70 + Math.abs(i - 4) * 3); c.fill(); }
+    relleno(c, "M116 188 C116 170 184 170 184 188 C186 226 170 254 150 258 C130 254 114 226 116 188 Z", cuero(c, 116, 170, 184, 258, cla(p, 0.2)), "#080506", 1.6);
+    relleno(c, "M132 216 Q150 206 168 216 L164 232 Q150 240 136 232 Z", NEGRO); disco(c, "#c79a44", 150, 244, 9); disco(c, cla(p, 0.2), 150, 241, 6);
+    relleno(c, "M112 138 L142 150 L140 160 L110 148 Z M188 138 L158 150 L160 160 L190 148 Z", NEGRO);
+    ojo(S, 128, 149, 8, 3, o.ojo || "#ffb03a"); ojo(S, 172, 149, 8, 3, o.ojo || "#ffb03a");
+  },
+  tricornio(c, S, o) {
+    const t = o.tela || "#22242c";
+    sombraCara(c, S, o, 130); dosOjos(S, 156, o.ojo || "#ffcf6a");
+    relleno(c, "M104 172 C124 162 176 162 196 172 C196 196 190 216 184 230 Q150 250 116 230 C110 216 104 196 104 172 Z", cuero(c, 104, 162, 196, 248, o.panuelo ? S.col : "#2e2622"), "#080605", 2);
+    relleno(c, "M24 136 C70 150 110 104 150 60 C190 104 230 150 276 136 C236 168 64 168 24 136 Z", cuero(c, 24, 60, 276, 166, t), "#040305", 2.5);
+    c.strokeStyle = o.galon || S.oro; c.lineWidth = 3; c.lineCap = "round"; c.beginPath(); c.moveTo(32, 138); c.quadraticCurveTo(100, 140, 150, 68); c.quadraticCurveTo(200, 140, 268, 138); c.stroke();
+    disco(c, S.col, 150, 122, 9); disco(c, o.galon || S.oro, 150, 122, 4);
+    if (o.pluma) relleno(c, "M176 92 C204 50 244 30 270 34 C246 52 226 76 198 108 Z", cuero(c, 176, 30, 270, 108, S.col), "#120406", 1.5);
+  },
+  hormiga(c, S, o) {
+    const q = o.quitina || "#6b4a2a";
+    c.strokeStyle = osc(q, 0.25); c.lineWidth = 6; c.lineCap = "round"; c.beginPath(); c.moveTo(126, 86); c.quadraticCurveTo(96, 30, 54, 28); c.moveTo(174, 86); c.quadraticCurveTo(204, 30, 246, 28); c.stroke();
+    relleno(c, "M88 140 C88 86 122 66 150 66 C178 66 212 86 212 140 C212 190 188 226 150 232 C112 226 88 190 88 140 Z", metal(c, 84, 66, 216, 232, q), "#050304", 2.5);
+    [[124, 138, -0.25], [176, 138, 0.25]].forEach(p => { c.fillStyle = "#050304"; c.beginPath(); c.ellipse(p[0], p[1], 20, 30, p[2], 0, 7); c.fill(); c.strokeStyle = "rgba(255,255,255,.08)"; c.lineWidth = 1; for (let i = -2; i <= 2; i++) { c.beginPath(); c.moveTo(p[0] - 16, p[1] + i * 9); c.lineTo(p[0] + 16, p[1] + i * 9); c.stroke(); } });
+    ojo(S, 124, 136, 9, 13, o.ojo || "#ffb03a"); ojo(S, 176, 136, 9, 13, o.ojo || "#ffb03a");
+    c.strokeStyle = osc(q, 0.45); c.lineWidth = 12; c.beginPath(); c.moveTo(126, 214); c.quadraticCurveTo(110, 262, 146, 276); c.moveTo(174, 214); c.quadraticCurveTo(190, 262, 154, 276); c.stroke();
+    c.strokeStyle = cla(q, 0.25); c.lineWidth = 2; c.beginPath(); c.moveTo(124, 220); c.quadraticCurveTo(112, 258, 142, 272); c.stroke();
+    filo(c, "M98 126 C100 92 124 74 150 72", "rgba(255,240,200,.3)", 1.6);
+    if (o.velo) { c.save(); c.globalAlpha = 0.55; relleno(c, "M70 120 C70 60 230 60 230 120 L244 280 L56 280 Z", S.col, null); c.restore(); }
+  },
+  mantis(c, S, o) {
+    const q = o.quitina || "#7a8a3a";
+    c.strokeStyle = osc(q, 0.3); c.lineWidth = 4; c.lineCap = "round"; c.beginPath(); c.moveTo(134, 80); c.quadraticCurveTo(120, 30, 84, 6); c.moveTo(166, 80); c.quadraticCurveTo(180, 30, 216, 6); c.stroke();
+    relleno(c, "M64 96 Q150 60 236 96 L162 240 Q150 252 138 240 Z", metal(c, 64, 64, 236, 250, q), "#050304", 2.5);
+    [[96, 116, -0.5], [204, 116, 0.5]].forEach(p => { c.fillStyle = "#050304"; c.beginPath(); c.ellipse(p[0], p[1], 26, 18, p[2], 0, 7); c.fill(); });
+    ojo(S, 96, 116, 12, 8, o.ojo || "#e8ff7a"); ojo(S, 204, 116, 12, 8, o.ojo || "#e8ff7a");
+    linea(c, osc(q, 0.5), 2, 150, 92, 150, 220); linea(c, osc(q, 0.5), 5, 142, 232, 132, 258); linea(c, osc(q, 0.5), 5, 158, 232, 168, 258);
+    if (o.velo) { c.save(); c.globalAlpha = 0.5; relleno(c, "M58 104 Q150 30 242 104 L250 280 L50 280 Z", S.col, null); c.restore(); disco(c, "#f0b84a", 150, 84, 7); }
+  },
+  escarabajo(c, S, o) {
+    const q = o.quitina || "#3a3440";
+    relleno(c, "M138 96 C120 40 150 -4 196 -10 C174 16 172 52 166 96 Z", metal(c, 120, -10, 196, 96, cla(q, 0.18)), "#050304", 2.5);
+    relleno(c, "M78 150 C78 90 116 72 150 72 C184 72 222 90 222 150 C222 206 192 240 150 246 C108 240 78 206 78 150 Z", metal(c, 74, 72, 226, 246, q), "#050304", 2.5);
+    linea(c, "rgba(0,0,0,.5)", 2.5, 150, 96, 150, 244); filo(c, "M90 140 C92 100 120 82 148 78", "rgba(210,200,255,.3)", 1.8);
+    relleno(c, "M104 150 L140 160 L138 174 L102 164 Z M196 150 L160 160 L162 174 L198 164 Z", NEGRO);
+    ojo(S, 122, 162, 9, 3, o.ojo || "#ff8a3a"); ojo(S, 178, 162, 9, 3, o.ojo || "#ff8a3a");
+    c.strokeStyle = osc(q, 0.4); c.lineWidth = 10; c.lineCap = "round"; c.beginPath(); c.moveTo(128, 232); c.lineTo(120, 262); c.moveTo(172, 232); c.lineTo(180, 262); c.stroke();
+  },
+  lente(c, S, o) {
+    const m = o.metal || "#c79a44";
+    if (o.antena) { linea(c, osc(m, 0.4), 4, 120, 70, 104, 14); disco(c, "#ff6a4a", 104, 12, 6); S.ojos.push({ x: 104, y: 12, rx: 3, ry: 3, col: "#ff6a4a" }); }
+    relleno(c, "M92 84 L208 84 L214 210 Q150 244 86 210 Z", metal(c, 86, 84, 214, 240, m), "#0a0806", 2.5);
+    relleno(c, "M100 62 L200 62 L208 86 L92 86 Z", metal(c, 92, 62, 208, 86, cla(m, 0.1)), "#0a0806", 2);
+    disco(c, "#0a0806", 150, 144, 44); c.strokeStyle = osc(m, 0.4); c.lineWidth = 6; c.beginPath(); c.arc(150, 144, 44, 0, 7); c.stroke();
+    disco(c, "#06100f", 150, 144, 32); ojo(S, 150, 144, 16, 16, o.ojo || "#7fe3ff");
+    c.strokeStyle = "rgba(255,255,255,.14)"; c.lineWidth = 2; c.beginPath(); c.arc(150, 144, 26, 3.6, 4.9); c.stroke();
+    [[104, 98], [196, 98], [100, 196], [200, 196]].forEach(p => disco(c, osc(m, 0.55), p[0], p[1], 4.5));
+    relleno(c, "M122 204 L178 204 L174 226 L126 226 Z", "#0a0806"); [132, 142, 152, 162].forEach(x => linea(c, osc(m, 0.2), 2, x, 206, x, 224));
+    filo(c, "M98 92 L92 204", "rgba(255,244,214,.35)", 1.6);
+  },
+  galea(c, S, o) {
+    const m = o.metal || "#b07a3c";
+    if (o.cresta === "t") relleno(c, "M40 86 Q150 18 260 86 L244 104 Q150 52 56 104 Z", cuero(c, 40, 20, 260, 104, S.col), "#120406", 2);
+    else if (o.cresta) relleno(c, "M126 76 C120 20 150 -8 190 -2 C214 20 208 56 186 80 Z", cuero(c, 120, -8, 214, 80, S.col), "#120406", 2);
+    sombraCara(c, S, o, 132); dosOjos(S, 154, o.ojo || "#ffd27a");
+    relleno(c, "M102 140 Q100 66 150 58 Q200 66 198 140 Z", metal(c, 98, 58, 202, 142, m), "#0a0806", 2.5);
+    relleno(c, "M98 132 L202 132 L204 148 L96 148 Z", metal(c, 96, 132, 204, 148, cla(m, 0.12)), "#0a0806", 1.6);
+    relleno(c, "M100 148 L126 148 L132 214 L118 238 L98 204 Z", metal(c, 98, 148, 132, 238, m), "#0a0806", 2); relleno(c, "M200 148 L174 148 L168 214 L182 238 L202 204 Z", metal(c, 202, 148, 168, 238, osc(m, 0.15)), "#0a0806", 2);
+    relleno(c, "M84 150 L60 196 L98 176 Z M216 150 L240 196 L202 176 Z", metal(c, 60, 150, 240, 196, osc(m, 0.1)), "#0a0806", 1.8);
+    filo(c, "M108 132 Q108 76 148 64", "rgba(255,244,214,.42)", 1.6);
+  },
+  zombi(c, S, o) {
+    const carne = o.carne || "#7d8a72", hueso = "#d6cdb4";
+    relleno(c, "M98 150 C96 92 122 70 150 70 C178 70 204 92 202 150 C202 196 184 232 150 242 C116 232 98 196 98 150 Z", metal(c, 96, 70, 204, 242, carne), "#0b0d09", 2.5);
+    relleno(c, "M98 120 C100 86 126 70 150 70 C140 84 124 96 112 104 L116 124 Z", cuero(c, 98, 70, 150, 124, "#2a2622"), "#050506", 1.5);
+    relleno(c, "M154 110 C170 96 196 110 198 136 L190 168 L168 172 L158 150 Z", metal(c, 154, 100, 198, 172, hueso), "#1a1810", 1.5);
+    relleno(c, "M160 132 C162 118 186 118 186 134 C186 148 162 148 160 132 Z", "#030205"); ojo(S, 173, 134, 6, 6, o.ojo || "#c9f25a");
+    relleno(c, "M114 132 Q130 126 144 136 Q130 146 114 142 Z", "#0a0705"); ojo(S, 129, 137, 5, 2.2, o.ojo || "#c9f25a");
+    relleno(c, "M146 162 L140 182 L150 178 L158 184 Z", "#030205");
+    relleno(c, "M124 200 Q150 192 176 200 L172 218 Q150 228 128 218 Z", "#030205");
+    c.fillStyle = hueso; for (let i = 0; i < 6; i++) c.fillRect(128 + i * 8, 200 + Math.abs(i - 2.5) * 0.8, 5.4, o.colmillos && (i === 1 || i === 4) ? 16 : 8);
+    linea(c, "#0b0d09", 1.8, 112, 170, 132, 190); for (let i = 0; i < 4; i++) linea(c, "#0b0d09", 1.3, 114 + i * 5, 176 + i * 4.6, 119 + i * 5, 171 + i * 4.6);
+    if (o.grillete) { relleno(c, "M104 232 L196 232 L198 256 L102 256 Z", metal(c, 102, 232, 198, 256, "#5d5f66"), "#08080a", 2); disco(c, "#2a2c30", 150, 244, 6); }
+  },
+  capirote(c, S, o) {
+    const t = o.tela || "#14121a";
+    relleno(c, "M82 240 C80 150 130 60 150 -20 C170 60 220 150 218 240 C196 262 104 262 82 240 Z", cuero(c, 80, -20, 220, 260, t), "#040305", 2.5);
+    relleno(c, "M116 132 C116 104 184 104 184 132 C184 170 176 196 166 214 L134 214 C124 196 116 170 116 132 Z", metal(c, 116, 104, 184, 214, "#d6cdb4"), "#1a1810", 1.8);
+    relleno(c, "M122 138 C122 122 146 122 146 140 C146 154 124 154 122 138 Z M154 140 C154 122 178 122 178 138 C176 154 154 154 154 140 Z", "#030205");
+    ojo(S, 134, 140, 5.5, 5.5, o.ojo || "#b6f26a"); ojo(S, 166, 140, 5.5, 5.5, o.ojo || "#b6f26a");
+    relleno(c, "M146 164 L150 180 L154 164 Z", "#030205"); c.fillStyle = "#030205"; for (let i = 0; i < 5; i++) c.fillRect(134 + i * 7, 196, 1.6, 16);
+    filo(c, "M96 220 C96 150 136 70 149 -6", "rgba(200,255,200,.14)", 1.5);
+  },
+  cosido(c, S, o) {
+    const carne = o.carne || "#6d7a62";
+    relleno(c, "M84 160 C80 96 112 66 150 62 C196 66 224 100 216 164 C214 214 190 250 150 256 C110 250 88 214 84 160 Z", metal(c, 80, 62, 220, 256, carne), "#0b0d09", 2.5);
+    relleno(c, "M150 62 C196 66 224 100 216 164 L190 150 L170 98 Z", metal(c, 150, 62, 224, 164, osc(carne, 0.22)), "#0b0d09", 1.5);
+    relleno(c, "M92 96 L160 80 L164 108 L96 126 Z", metal(c, 92, 80, 164, 126, "#5d5f66"), "#08080a", 2); [[104, 108], [150, 96]].forEach(p => disco(c, "#2a2c30", p[0], p[1], 4));
+    relleno(c, "M160 132 C162 116 192 116 192 134 C192 150 162 152 160 132 Z", "#030205"); ojo(S, 176, 134, 8, 8, o.ojo || "#ff5a3a");
+    relleno(c, "M110 140 Q126 134 140 144 Q126 152 110 148 Z", "#0a0705"); ojo(S, 125, 144, 4.5, 2, o.ojo || "#ff5a3a");
+    c.strokeStyle = "#1a1210"; c.lineWidth = 2.4; c.lineCap = "round"; c.beginPath(); c.moveTo(170, 98); c.lineTo(150, 168); c.lineTo(162, 240); c.stroke();
+    for (let i = 0; i < 9; i++) { const t = i / 8, x = i < 4 ? 170 - (i / 4) * 20 : 150 + ((i - 4) / 4) * 12, y = 98 + t * 142; linea(c, "#1a1210", 1.8, x - 7, y - 2, x + 7, y + 2); }
+    relleno(c, "M116 204 Q150 194 180 206 L176 226 Q150 236 120 224 Z", "#030205"); c.fillStyle = "#d6cdb4"; for (let i = 0; i < 6; i++) c.fillRect(122 + i * 9, 206, 6, i % 2 ? 9 : 13);
+  },
+  vacia(c, S, o) {
+    const m = o.metal || "#6b6f8a", luz = o.ojo || "#b98cff";
+    c.save(); c.globalAlpha = 0.5; const g = c.createLinearGradient(150, 20, 150, 150); g.addColorStop(0, "rgba(185,140,255,0)"); g.addColorStop(1, luz); c.fillStyle = g; c.beginPath(); c.moveTo(128, 138); c.quadraticCurveTo(110, 60, 150, 4); c.quadraticCurveTo(190, 60, 172, 138); c.fill(); c.restore();
+    relleno(c, "M104 104 Q104 62 150 56 Q196 62 196 104 L196 198 Q196 222 150 232 Q104 222 104 198 Z", metal(c, 98, 56, 202, 232, m), "#07070c", 2.5);
+    relleno(c, "M112 124 L188 124 L188 156 L112 156 Z", "#040308");
+    S.ojos.push({ x: 150, y: 140, rx: 30, ry: 10, col: luz });
+    [[124, 176], [136, 176], [164, 176], [176, 176], [130, 190], [170, 190]].forEach(p => disco(c, "#040308", p[0], p[1], 2.4));
+    linea(c, "rgba(0,0,0,.5)", 2.5, 150, 160, 150, 230); c.strokeStyle = luz; c.globalAlpha = 0.5; c.lineWidth = 1.5; c.beginPath(); c.moveTo(120, 100); c.lineTo(132, 84); c.lineTo(144, 100); c.moveTo(156, 100); c.lineTo(168, 84); c.lineTo(180, 100); c.stroke(); c.globalAlpha = 1;
+    filo(c, "M110 104 Q110 68 148 62", "rgba(220,210,255,.45)", 1.6);
+  },
+  mascaraLisa(c, S, o) {
+    relleno(c, "M84 234 C76 124 116 62 150 52 C184 62 224 124 216 234 C190 258 110 258 84 234 Z", cuero(c, 80, 52, 220, 256, mix(S.col, "#201830", 0.55)), "#060509", 2.5);
+    relleno(c, "M112 150 C112 104 188 104 188 150 C188 196 172 226 150 232 C128 226 112 196 112 150 Z", metal(c, 112, 104, 188, 232, "#e9e4da"), "#2a251c", 2);
+    relleno(c, "M124 146 Q134 140 144 146 Q134 152 124 146 Z M156 146 Q166 140 176 146 Q166 152 156 146 Z", "#0a0806");
+    ojo(S, 134, 146, 4.5, 1.8, o.ojo || "#c9a6ff"); ojo(S, 166, 146, 4.5, 1.8, o.ojo || "#c9a6ff");
+    linea(c, "rgba(0,0,0,.18)", 1.4, 150, 112, 150, 228); filo(c, "M118 150 C118 116 136 108 148 108", "rgba(255,255,255,.6)", 1.6);
+  },
+  mitra(c, S, o) {
+    relleno(c, "M108 110 L150 -6 L192 110 Q150 96 108 110 Z", metal(c, 108, -6, 192, 112, "#efe6cf"), "#2a251c", 2.5);
+    linea(c, S.ban, 6, 150, 6, 150, 100); linea(c, S.oro, 2, 150, 6, 150, 100); relleno(c, "M106 100 Q150 86 194 100 L194 116 Q150 102 106 116 Z", S.oro, "#2c2006", 1);
+    CABEZA2.cogulla(c, S, { tela: "#d9d2c0", ojo: o.ojo || "#fff0b0" });
+  }
+};
+
+/* Cuerpos que no existían */
+function cuerpoAbrigo(c, S, base) {
+  relleno(c, "M40 268 Q150 224 260 268 L282 380 L18 380 Z", cuero(c, 30, 230, 270, 380, base), "#050407", 2.4);
+  relleno(c, "M112 250 L150 320 L188 250 L204 380 L96 380 Z", cuero(c, 96, 250, 204, 380, "#e4ddcc"), "#1a1814", 1.4);
+  relleno(c, "M146 262 L154 262 L158 380 L142 380 Z", S.col, "#120406", 1);
+  relleno(c, "M70 256 L118 246 L150 322 L112 380 L84 380 Z", cuero(c, 70, 246, 150, 380, cla(base, 0.08)), "#050407", 2); relleno(c, "M230 256 L182 246 L150 322 L188 380 L216 380 Z", cuero(c, 230, 246, 150, 380, osc(base, 0.12)), "#050407", 2);
+  filo(c, "M46 268 Q150 228 254 268", "rgba(255,240,220,.16)");
+}
+function cuerpoQuitina(c, S, base) {
+  relleno(c, "M40 276 C44 220 110 204 150 232 C190 204 256 220 260 276 L276 380 L24 380 Z", metal(c, 30, 210, 270, 380, base), "#050304", 2.4);
+  for (let i = 0; i < 4; i++) { c.strokeStyle = "rgba(0,0,0,.5)"; c.lineWidth = 2.4; c.beginPath(); c.moveTo(56 - i * 4, 286 + i * 26); c.quadraticCurveTo(150, 262 + i * 26, 244 + i * 4, 286 + i * 26); c.stroke(); c.strokeStyle = "rgba(255,240,200,.12)"; c.lineWidth = 1.2; c.beginPath(); c.moveTo(56 - i * 4, 289 + i * 26); c.quadraticCurveTo(150, 265 + i * 26, 244 + i * 4, 289 + i * 26); c.stroke(); }
+  linea(c, S.col, 4, 110, 248, 190, 248);
+}
+function cuerpoMaquina(c, S, base) {
+  hombrerasPlaca(c, S, base, true);
+  [[70, 270], [98, 262], [230, 270], [202, 262], [130, 296], [170, 296]].forEach(p => disco(c, osc(base, 0.55), p[0], p[1], 3.4));
+  disco(c, "#0a0806", 150, 330, 20); c.strokeStyle = osc(base, 0.4); c.lineWidth = 4; c.beginPath(); c.arc(150, 330, 20, 0, 7); c.stroke();
+  S.ojos.push({ x: 150, y: 330, rx: 9, ry: 9, col: "#7fe3ff" });
+}
+function cuerpoLegion(c, S, base) {
+  relleno(c, "M30 380 L44 268 Q150 232 256 268 L270 380 Z", cuero(c, 30, 240, 270, 380, mix(S.col, "#2a0a0a", 0.4)), "#120406", 2);
+  relleno(c, "M84 250 Q150 232 216 250 L226 380 L74 380 Z", metal(c, 74, 240, 226, 380, base), "#0a0806", 2.2);
+  for (let i = 0; i < 5; i++) { linea(c, "rgba(0,0,0,.5)", 2.2, 80 - i, 272 + i * 24, 220 + i, 272 + i * 24); linea(c, "rgba(255,244,214,.18)", 1.1, 80 - i, 275 + i * 24, 220 + i, 275 + i * 24); }
+  [[52, 262, 104, 244], [248, 262, 196, 244]].forEach(p => { relleno(c, `M${p[0] - 22} 300 C${p[0] - 24} ${p[1] - 26} ${p[2]} ${p[3] - 16} ${p[2] + (p[0] < 150 ? 10 : -10)} ${p[3] + 14} L${p[2]} 320 L${p[0] - 14} 322 Z`, metal(c, p[0] - 24, p[1] - 30, p[2], 322, base), "#0a0806", 2); });
+}
+
+/* Receta de cada tropa: [cabeza, cuerpo, opciones]. Lo que no está aquí usa la cabeza y el cuerpo de su clase. */
+const T = (cabeza, cuerpo, o) => Object.assign({ cabeza, cuerpo }, o || {});
+const VIS = {
+  "caballeros-del-reino": { guerrero: T("capacete", "cuero", { cuero: "#6a5a46" }) },
+  "academia-arcana-de-dolbred": {
+    guerrero: T("guerrero", "tunica", { tela: "#3a3560", acero: "#8f93b8", ojo: "#b98cff" }), cazador: T("sombreroAla", "cuero", { tela: "#2d2a4a", cuero: "#3d3a52", grupo: "arcano" }),
+    paladin: T("vacia", "placas", { acero: "#6b6f8a", pesado: true, grupo: "arcano" }), picaro: T("mascaraLisa", "tunica", { tela: "#2a2440", grupo: "arcano" })
+  },
+  "trono-de-ceniza": {
+    guerrero: T("zombi", "harapos", { grupo: "cripta" }), cazador: T("zombi", "harapos", { colmillos: true, carne: "#8a927a", grupo: "cripta" }), arcanista: T("capirote", "tunica", { tela: "#14121a", grupo: "cripta" }),
+    paladin: T("cosido", "piel", { piel: "#5a6652", grupo: "cripta", ancho: 1.2, cuerpoAncho: 1.3 }), picaro: T("zombi", "harapos", { colmillos: true, carne: "#8a927a", ojo: "#ff8a5a", grupo: "cripta" })
+  },
+  "compania-dorada": {
+    guerrero: T("plumas", "jubon"), cazador: T("morrion", "jubon"), arcanista: T("plumas", "tunica", { tela: "#4a3a1e" }), paladin: T("morrion", "placas", { acero: "#c9a23a", metal: "#c9a23a", pesado: true }),
+    picaro: T("picaro", "cuero", { cuero: "#3a2e22" })
+  },
+  "hijos-del-acero": {
+    guerrero: T("sombreroAla", "cuero", { cuero: "#4a3e30" }), cazador: T("sombreroAla", "cuero", { pluma: true, grupo: "bosque" }), arcanista: T("gafas", "cuero", { cuero: "#3a3d33", ojo: "#9af27a" }),
+    paladin: T("capacete", "placas", { pesado: true }), picaro: T("cazador", "piel", { piel: "#5a4a36" })
+  },
+  "santos-de-asmodeo": {
+    guerrero: T("granYelmo", "sobreveste"), cazador: T("capacete", "cuero", { cuero: "#7a6a52", grupo: "bosque" }), arcanista: T("cogulla", "tunica", { tela: "#d9d2c0", ojo: "#fff0b0", sol: true, grupo: "arcano" }),
+    paladin: T("granYelmo", "placas", { halo: true, metal: "#e2e5e8", acero: "#d9dce0", pesado: true }), picaro: T("cogulla", "tunica", { tela: "#2a2622", cuerda: true }), sanador: T("sanador", "tunica", { tela: "#d9d2c0" })
+  },
+  nikaalia: {
+    guerrero: T("fedora", "abrigo"), cazador: T("fedora", "abrigo", { tela: "#1a1820", cigarro: true }), arcanista: T("gafas", "cuero", { cuero: "#3a2e2a", ojo: "#c08aff" }),
+    paladin: T("fedora", "abrigo", { tela: "#15141a", ancho: 1.26, cuerpoAncho: 1.3 }), picaro: T("fedora", "abrigo", { tela: "#18171c", bufanda: true }), capo: T("fedora", "abrigo", { tela: "#2a2630", abrigo: "#34303c", ojo: "#ffd27a", cigarro: true })
+  },
+  seosan: {
+    guerrero: T("cinta", "tunica", { tela: "#24302a" }), cazador: T("kasa", "tunica", { tela: "#3a4a42", grupo: "bosque" }), arcanista: T("kasa", "tunica", { tela: "#c9862e", grupo: "arcano" }),
+    paladin: T("kabuto", "placas", { acero: "#4a2a2a", pesado: true }), picaro: T("picaro", "tunica", { tela: "#15141a" }), maestro: T("cinta", "tunica", { tela: "#e9e4da", ojo: "#fff0b0" })
+  },
+  okran: {
+    guerrero: T("barbaro", "piel", { piel: "#5a4632" }), cazador: T("barbaro", "piel", { piel: "#5a4632", barba: false, grupo: "bosque" }), arcanista: T("craneoCiervo", "piel", { piel: "#3a2c20", grupo: "bosque" }),
+    paladin: T("bestia", "piel", { piel: "#4a3626", ancho: 1.2, cuerpoAncho: 1.34 }), picaro: T("salvaje", "piel", { piel: "#5a5650", grupo: "bosque" }), berserker: T("barbaro", "piel", { piel: "#8a6a4e", ojo: "#ff5a3a", pelo: "#7a2a1a" })
+  },
+  pelgiria: {
+    guerrero: T("mercenario", "cuero", { cuero: "#3d4a52" }), cazador: T("tricornio", "cuero", { cuero: "#3a3340" }), arcanista: T("gafas", "cuero", { cuero: "#3d4a52", ojo: "#ffb03a" }),
+    paladin: T("morrion", "placas", { acero: "#5a7a72", metal: "#5a7a72" }), picaro: T("tricornio", "abrigo", { panuelo: true, abrigo: "#2a3238" }), barrilero: T("mercenario", "cuero", { cuero: "#4a3a2a" })
+  },
+  mravec: {
+    guerrero: T("hormiga", "quitina", { grupo: "cripta" }), cazador: T("hormiga", "quitina", { quitina: "#7a6a2a", ojo: "#b6f23a", grupo: "cripta" }), arcanista: T("mantis", "quitina", { quitina: "#6a7a32", grupo: "arcano" }),
+    paladin: T("escarabajo", "quitina", { quitina: "#3a3440", ancho: 1.2, cuerpoAncho: 1.3, grupo: "cripta" }), picaro: T("hormiga", "quitina", { quitina: "#b08a4a", grupo: "cripta" }), quimera: T("hormiga", "quitina", { quitina: "#5a4a3a", ojo: "#ff5a3a", grupo: "cripta" })
+  },
+  nernib: {
+    guerrero: T("gafas", "maquina", { metal: "#7a7468" }), cazador: T("gafas", "cuero", { cuero: "#4a4038" }), arcanista: T("gafas", "cuero", { cuero: "#3a4450", ojo: "#ffe36a", grupo: "arcano" }),
+    paladin: T("lente", "maquina", { metal: "#8a7a5a" }), picaro: T("lente", "maquina", { metal: "#c79a44", antena: true }), automata: T("lente", "maquina", { metal: "#c79a44", antena: true })
+  },
+  balutia: {
+    guerrero: T("galea", "legion", { metal: "#9aa0a8" }), cazador: T("galea", "cuero", { metal: "#8a7a5a", cuero: "#6a5a46" }), arcanista: T("galea", "cuero", { metal: "#5a5046", cuero: "#4a3a2a" }),
+    paladin: T("galea", "legion", { metal: "#c9a23a", cresta: true, ancho: 1.2 }), picaro: T("cogulla", "tunica", { tela: "#5a5a60", ojo: "#ffe0a0" }), condenado: T("zombi", "harapos", { carne: "#b08a68", ojo: "#ffd24a", grillete: true })
+  }
+};
+const CUERPO2 = {
+  placas(c, S, o) { hombrerasPlaca(c, S, o.acero || S.acero, !!o.pesado); tabardo(c, S, o.pesado ? 22 : 14); },
+  cuero(c, S, o) { cuerpoCuero(c, S, o.cuero || "#4a3722"); },
+  tunica(c, S, o) { cuerpoTunica(c, S, o.tela || mix(S.ban, "#0c0a16", 0.25), 7); },
+  piel(c, S, o) { cuerpoPiel(c, S, o.piel || "#463a2e"); linea(c, S.col, 6, 78, 262, 222, 330); },
+  harapos(c, S, o) { cuerpoCuero(c, S, "#3a342c"); relleno(c, "M126 250 L174 250 L166 300 L134 300 Z", metal(c, 126, 250, 174, 300, o.carne || "#7d8a72"), "#0b0d09", 1.5); },
+  jubon(c, S, o) { cuerpoTunica(c, S, S.col, 0); [70, 98, 126, 174, 202, 230].forEach(x => linea(c, S.ban, 7, x, 262, x + (x < 150 ? -10 : 10), 380)); disco(c, S.col, 56, 282, 30); disco(c, S.col, 244, 282, 30); [-12, 0, 12].forEach(d => { linea(c, S.ban, 4, 56 + d, 258, 56 + d, 306); linea(c, S.ban, 4, 244 + d, 258, 244 + d, 306); }); },
+  sobreveste(c, S, o) { hombrerasPlaca(c, S, S.acero, false); relleno(c, "M96 250 L204 250 L214 380 L86 380 Z", cuero(c, 86, 250, 214, 380, "#e2dccb"), "#2a251c", 1.6); disco(c, S.ban, 150, 312, 20); for (let i = 0; i < 8; i++) linea(c, S.ban, 3, 150 + Math.cos(i * 0.785) * 24, 312 + Math.sin(i * 0.785) * 24, 150 + Math.cos(i * 0.785) * 34, 312 + Math.sin(i * 0.785) * 34); },
+  abrigo(c, S, o) { cuerpoAbrigo(c, S, o.abrigo || o.tela || "#22202a"); },
+  quitina(c, S, o) { cuerpoQuitina(c, S, o.quitina || "#6b4a2a"); },
+  maquina(c, S, o) { cuerpoMaquina(c, S, o.metal || "#c79a44"); },
+  legion(c, S, o) { cuerpoLegion(c, S, o.metal || "#b07a3c"); }
+};
+
 const GRUPO = { guerrero: "ruinas", caballero: "ruinas", paladin: "ruinas", lider: "ruinas", mercenario: "ruinas", ballestero: "ruinas", cazador: "bosque", picaro: "bosque", salvaje: "bosque", arcanista: "arcano", archimago: "arcano", sanador: "arcano", eco: "arcano", esqueleto: "cripta" };
 const ACEROS = ["#8a939e", "#7b8791", "#8f8d86", "#6f7d7a", "#948873"];
 const OJOS = { guerrero: "#e6b04a", paladin: "#ffd27a", caballero: "#ffb84a" };
@@ -365,23 +736,30 @@ const OJOS = { guerrero: "#e6b04a", paladin: "#ffd27a", caballero: "#ffb84a" };
     const [kb, cb] = mk(), [kf, cf] = mk(), [ko, co] = mk();
     const fac = FACCIONES[o.faccion] || FACCIONES[Object.keys(FACCIONES)[0]];
     const r = rng(hashStr(String(s.id)));
-    const cl = CABEZA[s.clase] ? s.clase : "guerrero";
+    // La receta de esta tropa en su ejército; si no tiene, la cabeza y el cuerpo de su clase
+    const facId = D.faccionReal ? D.faccionReal(o.faccion) : o.faccion;
+    const vis = (VIS[facId] && VIS[facId][s.clase]) || null;
+    const BASE = { capo: "picaro", maestro: "guerrero", berserker: "guerrero", barrilero: "mercenario", quimera: "salvaje", automata: "paladin", condenado: "esqueleto", heroe: "lider" };
+    const cl = CABEZA[s.clase] ? s.clase : BASE[s.clase] || "guerrero";
     const victorias = s.victorias || 0;
     let rango = 0; RANGOS.forEach((x, i) => { if (victorias >= x.desde) rango = i; });
     const S = {
-      col: fac.color, ban: fac.bandera, oro: mix(fac.color, "#6b5010", 0.35), cl, grupo: GRUPO[cl] || "ruinas", ojos: [], r,
-      ojoCol: OJOS[cl] || "#ffcf6a", ojoOrigen: s.reanimado ? "#c9f0c9" : OJO_ORIGEN[s.origen] || null,
+      col: fac.color, ban: fac.bandera, oro: mix(fac.color, "#6b5010", 0.35), cl, grupo: (vis && vis.grupo) || GRUPO[cl] || "ruinas", ojos: [], r,
+      ojoCol: (vis && vis.ojo) || OJOS[cl] || "#ffcf6a", ojoOrigen: s.reanimado ? "#c9f0c9" : OJO_ORIGEN[s.origen] || null,
       acero: ACEROS[Math.floor(r() * ACEROS.length)], pelaje: ["#4a3c40", "#5a4630", "#3c4650", "#5a3a30"][Math.floor(r() * 4)], fase: r() * 6
     };
-    if (cl === "esqueleto") S.ban = "#4a3a30";
+    if (cl === "esqueleto" && !vis) S.ban = "#4a3a30";
+    if (vis && vis.acero) S.acero = vis.acero;
     escena(cb, S);
-    const kcu = CUERPO_ANCHO[cl] || 1.2;
+    const kcu = vis ? vis.cuerpoAncho || 1.16 : CUERPO_ANCHO[cl] || 1.2;
     cf.save(); cf.translate(150, 0); cf.scale(kcu, 1); cf.translate(-150, 0);
-    (CUERPO[cl] || CUERPO.guerrero)(cf, S);
+    if (vis) CUERPO2[vis.cuerpo](cf, S, vis); else (CUERPO[cl] || CUERPO.guerrero)(cf, S);
     cf.restore();
-    S.k = ANCHO[cl] || 1.15; S.ky = ALTO[cl] || 1;
+    const propia = vis && CABEZA2[vis.cabeza];
+    S.k = vis ? vis.ancho || (propia ? 1.12 : ANCHO[vis.cabeza] || 1.15) : ANCHO[cl] || 1.15;
+    S.ky = vis ? (propia ? 1 : ALTO[vis.cabeza] || 1) : ALTO[cl] || 1;
     cf.save(); cf.translate(150, 226); cf.scale(S.k, S.ky); cf.translate(-150, -226);
-    (CABEZA[cl] || CABEZA.guerrero)(cf, S);
+    if (vis) (CABEZA2[vis.cabeza] || CABEZA[vis.cabeza] || CABEZA.guerrero)(cf, S, vis); else (CABEZA[cl] || CABEZA.guerrero)(cf, S);
     cf.restore();
     // cicatrices: marcas en el yelmo o la capucha
     const nCic = Math.min(4, s.cicatrices || 0);

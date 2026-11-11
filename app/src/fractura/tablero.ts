@@ -2,10 +2,9 @@ import Phaser from "phaser";
 import { EscenaGuerra, type Ganchos } from "./escena";
 
 /* =============================================================================
-   LA FRACTURA en Phaser: punto de entrada. Expone window.FracturaTableroPhaser.crear(canvas, ganchos),
-   con la misma interfaz que el tablero de canvas (js/fractura-tablero.js): poner, estado, redibujar,
-   instantanea, reproducir, saltar, ocupado, alTerminar, onda, efecto, reservar, pantallaDe y ajustar.
-   js/fractura.js elige este o el de canvas (con ?renderer=canvas se fuerza el de canvas).
+   LA FRACTURA en Phaser: punto de entrada. Expone window.FracturaTableroPhaser.crear(canvas, ganchos).
+   Devuelve el tablero de la guerra: poner el estado, marcar resaltes, reproducir las animaciones de lo
+   que resolvió el motor y mover la vista (zoom, arrastre, ir a una casilla, qué trozo se ve).
 ============================================================================= */
 
 export interface Tablero {
@@ -25,6 +24,10 @@ export interface Tablero {
   zoom(factor: number): void;
   centrar(): void;
   verTodo(): void;
+  irA(x: number, y: number, suave?: boolean): void;
+  vista(): { x0: number; y0: number; x1: number; y1: number };
+  ajustes(a: { rapidez?: number; seguir?: boolean }): void;
+  dormir(si: boolean): void;
 }
 
 /* Phaser 4 exige elegir el renderizador cuando se le da un canvas propio. */
@@ -32,21 +35,35 @@ function tieneWebGL(): boolean {
   try { return !!document.createElement("canvas").getContext("webgl2"); } catch { return false; }
 }
 
+/* Cuántos píxeles de dibujo por píxel de pantalla. Dibujar a toda la resolución de una pantalla grande ahoga a las
+   gráficas integradas, así que hay un tope de píxeles totales: en pantallas grandes se dibuja a 1:1 o algo menos. */
+const TOPE_PIXELES = 1.9e6;
+function escalaDibujo(): number {
+  const px = Math.max(1, window.innerWidth * window.innerHeight);
+  return Math.max(0.6, Math.min(window.devicePixelRatio || 1, 1.5, Math.sqrt(TOPE_PIXELES / px)));
+}
+
 function crear(canvas: HTMLCanvasElement, ganchos: Ganchos): Tablero {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let dpr = escalaDibujo();
   const escena = new EscenaGuerra(ganchos, dpr);
   const juego = new Phaser.Game({
     type: tieneWebGL() ? Phaser.WEBGL : Phaser.CANVAS,
     canvas,
     width: Math.round(window.innerWidth * dpr),
     height: Math.round(window.innerHeight * dpr),
-    backgroundColor: "#050304",
+    backgroundColor: "#05060c",
     scale: { mode: Phaser.Scale.NONE, zoom: 1 / dpr },
-    render: { antialias: true, roundPixels: false },
+    // antialiasGL apagado: el suavizado de bordes del contexto (MSAA) cuesta mucho y aquí casi todo son texturas
+    render: { antialias: true, antialiasGL: false, roundPixels: false, powerPreference: "default" },
+    fps: { limit: 60 },
+    audio: { noAudio: true },
     input: { windowEvents: false },
+    banner: false,
     scene: [escena],
   });
   const medir = (): void => {
+    const d = escalaDibujo();
+    if (Math.abs(d - dpr) > 0.01) { dpr = d; escena.ponerEscala(d); juego.scale.setZoom(1 / d); }
     juego.scale.resize(Math.round(window.innerWidth * dpr), Math.round(window.innerHeight * dpr));
     escena.alCambiarTamano();
   };
@@ -69,6 +86,11 @@ function crear(canvas: HTMLCanvasElement, ganchos: Ganchos): Tablero {
     zoom: f => escena.zoom(f),
     centrar: () => escena.centrar(),
     verTodo: () => escena.verTodo(),
+    irA: (x, y, suave) => escena.irA(x, y, suave),
+    vista: () => escena.vista(),
+    ajustes: a => escena.ajustes(a),
+    // Con la guerra fuera de la vista (cuartel, portada) el bucle se para del todo
+    dormir: si => { if (si) juego.loop.sleep(); else { juego.loop.wake(); medir(); } },
   };
   return api;
 }
