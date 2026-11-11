@@ -6,36 +6,58 @@ Estado: aprobado el concepto el 29-oct-2026. **La primera versión jugable de la
 
 ## Estado de la implementación (11-nov-2026)
 
-Reglas versión 2 (`FRACTURA_DATOS.REGLAS`). Una guerra guardada o un duelo empezados con la versión 1 no se pueden continuar.
+Reglas versión 3 (`FRACTURA_DATOS.REGLAS`). Una guerra guardada o un duelo empezados con otra versión no se pueden continuar.
 
 Hecho:
 
-- **Trece ejércitos** con sus tropas (nombre y aspecto por ejército sobre los cinco roles), su exclusiva y su mecánica: fortalezas (Brurland), investigación (Dolbred), Ánima (Osses), oro (Compañía), caza mayor (Hijos del Acero), consagración (Santos de Asmodeo), noche y sobornos (Nikaalia), duelo (Seosan), furia (Okran), navegar (Pelgiria), devorar y adaptar (Mravec), taller (Nernib) y tributo (Balutia). Pólvora para las tropas marcadas.
+- **Trece ejércitos** con sus tropas (nombre y aspecto por ejército sobre los cinco roles), su exclusiva y su mecánica: fortalezas (Brurland), investigación (Dolbred), Ánima (Osses), oro (Compañía), caza mayor (Hijos del Acero), consagración (Santos de Asmodeo), noche y sobornos (Nikaalia), duelo (Seosan), furia (Okran), el mar (Pelgiria), devorar y adaptar (Mravec), taller (Nernib) y tributo (Balutia). Pólvora para las tropas marcadas.
 - **Héroes**: uno por ejército (tres candidatos en Dolbred, con el nombre sorteado por la semilla), con requisitos, coste, efectos pasivos y habilidades. La máquina los invoca y usa sus habilidades.
-- **De 2 a 8 bandos** contra la máquina, todos contra todos o en dos equipos (visión compartida). Tregua de 3 turnos con más de dos bandos, eliminación al perder la capital, Refugio, ejércitos que se deshacen (Osses y Mravec), límite de turnos según los bandos.
-- **Mapas** de tamaño según los bandos (17x13 con 2, hasta 27x25 con 8), con silueta de continente, biomas agrupados, lagos y una provincia alrededor de cada ciudad, fortaleza y el Núcleo.
-- **La máquina** con varios rivales y manías por ejército (a quién odia y a quién prefiere atacar).
-- **Mapa en Phaser**: mar o abismo animado, costa, suelo horneado con biomas fundidos, caminos, bosques y sierras con volumen, provincias con el color del dueño, rótulos, niebla de bordes blandos, figuras por tropa y por héroe, animaciones por tipo de arma y cámara que acompaña el turno de los demás.
-- **Interfaz**: portada con menú, códice de ejércitos, ayuda, ajustes, barra de recursos con desglose, tira de bandos con el orden de turnos, minimapa, tarjeta de selección (tropa, ciudad con huecos de edificios y héroe con requisitos, terreno), árbol del saber, marcador, crónica con filtros, resumen de lo ocurrido en la ronda, pistas, atajos de teclado y sonido sintetizado.
+- **De 2 a 8 bandos** contra la máquina, todos contra todos o en dos equipos (visión compartida). Tregua de 3 turnos con más de dos bandos, eliminación al perder la capital, Refugio, ejércitos que se deshacen (Osses y Mravec), límite de turnos según los bandos (35 con 2, 5 más por cada bando, 10 más en los mapas de mar).
+- **Mapas** de tamaño según los bandos (17x13 con 2, hasta 27x25 con 8; 4 casillas más de ancho y de alto en los mapas de mar), con biomas agrupados y una provincia alrededor de cada ciudad, fortaleza y el Núcleo.
+- **Formas de mapa** (ver «El mar»): continente, tierra de lagos, ríos, continentes, archipiélago y mar interior.
+- **El mar** (ver más abajo): agua navegable, embarque, muelles en tres niveles, ocho barcos y una marina distinta para cada ejército.
+- **Pactos y traición** en las guerras de más de dos bandos (sección 13), con desertores que otros bandos pueden reclutar.
+- **Mercado de las Sombras**: si Nikaalia está en la guerra, una ciudad sin dueño cercana a su capital (la segunda más cercana) es el Mercado. Da 2 de oro por turno a quien la tenga y es el requisito de Don Ottavio.
+- **Noche eterna** de verdad: a las tropas de Nikaalia no se las ve hasta tener a alguien al lado. Sí se las ve en ciudades, fortalezas y sobre el Núcleo, y la que ataca queda a la vista hasta su siguiente turno.
+- **Duelo de Seosan** completo: +2 de ataque contra una unidad sola y, en ese combate, nadie recibe ayuda de los de al lado (ni auras, ni formación, ni el guerrero que cubre).
+- **La máquina** con varios rivales y manías por ejército. Hace muelles y barcos según lo marinero que sea y lo que pese el agua en el mapa, cruza embarcando, propone pactos y, según su carácter, los traiciona.
+- **Mapa en Phaser**: mar abierto o abismo animado, agua navegable más clara con su borde, costa, suelo horneado, caminos, bosques y sierras con volumen, provincias con el color del dueño, niebla de bordes blandos, figuras por tropa, por héroe y por barco, barca bajo las tropas embarcadas, animaciones por tipo de arma.
+- **Interfaz**: portada, códice (con la marina y la palabra de cada ejército), ayuda, ajustes, pantalla completa, recursos con desglose, tira de bandos, minimapa, tarjeta de selección, ciudad con tropas, flota, edificios y héroe, árbol del saber, marcador con pactos, crónica, resumen de ronda, atajos y sonido.
 - **Retratos** por tropa y ejército, a juego con las figuras del mapa.
-- Prueba automática: `node tools/probar-fractura.js` (guerras completas de máquina contra máquina de 2 a 8 bandos, coherencia del estado y repetición con la misma semilla).
+- Prueba automática: `node tools/probar-fractura.js [guerras] [bandos]`. Recorre los tipos de Fractura y las formas de mapa, comprueba la coherencia del estado y que la misma semilla da la misma guerra, y cuenta barcos, embarques, pactos y traiciones.
 
 Diferencias con el plan:
 
-- Don Ottavio pide controlar 3 ciudades (no hay un «Mercado de las Sombras» en el mapa).
-- El Vigilante pide 12 casillas consagradas (una ciudad consagra 9).
-- La Noche eterna se resuelve así: los rivales de Nikaalia ven una casilla menos y no pueden atacar a sus tropas desde más de 2 casillas.
-- El Duelo de Seosan solo da el +2 de ataque (no anula las ayudas de los adyacentes).
+- El Vigilante pide la Catedral y 12 casillas consagradas. El plan decía 3, pero la capital ya consagra 9 al empezar, así que 3 se cumplían en el turno 1. Con 12 hay que consagrar algo fuera de la capital.
 - La Contención de Rykerd: sin el Maestro Cazador ataca a lo más cercano durante 3 turnos.
+- Los pactos son de dos bandos y cada bando solo puede tener uno. El porcentaje de desertores (25 %) es fijo.
+- El efecto de la traición en la campaña es más sencillo que en el plan: los que desertan se retiran del ejército del traidor, sea la guerra del tipo que sea.
 
 Pendiente:
 
-- Pactos y traición entre bandos.
-- Duelos entre jugadores con más de dos bandos (necesita cambios en el servidor). Los duelos siguen siendo de dos.
-- Simulaciones de equilibrio por emparejamiento. Las estadísticas de las exclusivas y de los héroes siguen siendo provisionales.
+- Duelos entre jugadores con más de dos bandos (necesita cambios en el servidor). Los duelos siguen siendo de dos y en mapa de continente.
+- Simulaciones de equilibrio por emparejamiento. Las estadísticas de las exclusivas, los héroes y los barcos siguen siendo provisionales.
 - Toda la sección de retención (contratos, rachas, remontada, némesis activo, códice de campaña, Fractura del día).
-- Retratos propios para líderes y héroes (hoy usan su figura del mapa).
-- Repaso en móvil: se puede usar, sin más.
+- Retratos propios para líderes y héroes (hoy usan su figura del mapa). Adam y Rykerd ya tienen figura propia según las referencias del autor.
+- El móvil queda fuera por decisión del autor (11-nov-2026).
+
+### El mar
+
+- **Agua navegable y mar abierto.** El agua clara (`agua`) se navega. El mar oscuro de fuera (`vacio`) no. Alrededor de toda la tierra hay dos casillas de agua navegable. El Horizonte Roto no tiene mar.
+- **Formas de mapa** (`FORMAS_MAPA`, opción `forma` al crear la guerra): continente (una masa de tierra), tierra de lagos, ríos (bajan del centro al mar, con vados cada pocas casillas), continentes (cada bando en su tierra, con el Núcleo en una isla), archipiélago y mar interior (anillo de tierra con el Núcleo en una isla). En las tres últimas hace falta el mar para llegar a los demás y todos empiezan con un muelle.
+- **Embarcar.** Con un Muelle en cualquiera de tus ciudades (o de un aliado), todas tus tropas pueden entrar en el agua desde cualquier orilla. Entrar gasta el movimiento. Embarcada, una tropa mueve 3, no ataca y no tiene defensa. Desembarcar cuesta 1 y gasta lo que quede.
+- **Combate.** A lo que está en el agua solo le llegan las tropas con alcance 2 o más y los barcos. Una tropa embarcada no responde a los golpes.
+- **Muelles.** Muelle (botar galeras, +1 de alimento y +1 de oro), Astillero (brulotes y barcos propios de nivel 2) y Atarazana (galeones de bombardas). Piden agua a dos casillas de la ciudad y no ocupan hueco. Los barcos salen al agua de al lado y se reparan junto a un muelle propio.
+- **Barcos comunes.** Galera (11 de vida, 3 de ataque, alcance 2, mueve 4), Brulote (+3 contra lo que está en el agua, rápido y frágil) y Galeón de bombardas (alcance 3, +2 contra ciudades y fortalezas, no puede moverse y disparar).
+- **Barcos propios.** Bergantín (Pelgiria, dispara y sigue navegando), Trirreme (Balutia, embiste con +3 si avanza dos casillas), Acorazado de vapor (Nernib, muy duro, no come), Nave de los ahogados (Osses, se paga con Ánima, se cura al matar) y Carraca mercante (Compañía, da 2 de oro por turno).
+- **Cada ejército, a su manera** (`FACCIONES[f].naval`):
+  - Maestros: Pelgiria. Embarcan sin muelle y sin perder el turno ni la defensa, pelean embarcados, muelles a mitad de precio, barcos con +1 de movimiento y +1 de ataque.
+  - Buenos: Compañía Dorada (cada muelle rinde 2 de oro más), Nikaalia, Seosan (barcos con +1 de movimiento), Nernib (barcos con +1 de defensa), Balutia.
+  - Corrientes: Caballeros del Reino, Dolbred (sus arcanistas pueden secar una casilla de agua con Transmutación), Santos de Asmodeo.
+  - Flojos: Hijos del Acero (no pasan del Astillero).
+  - Torpes: Okran (muelles al doble, solo galeras, embarcados mueven 2).
+  - A su manera: Osses. Cruzan por el fondo sin muelle, despacio y con su defensa. Solo galeras y la Nave de los ahogados.
+  - Negados: Mravec. Ni muelles ni barcos. Cruzan en balsas, despacio y sin defensa.
 
 ## 1. Qué cambia
 
@@ -418,7 +440,7 @@ Decisiones del 2-nov-2026. Todo plan. Es un trabajo de la talla de la propia exp
 ### Alianzas y traición
 
 - **Equipos:** los aliados son fijos. Comparten visión y no se atacan.
-- **Todos contra todos:** los jugadores pueden proponerse **pactos**: alianza temporal con visión compartida y sin ataques entre ellos. Es una propuesta mía, por confirmar.
+- **Todos contra todos:** los bandos pueden proponerse **pactos**: alianza temporal con visión compartida y sin ataques entre ellos. Cada bando, un pacto a la vez. No comparte la victoria: si solo quedan los que pactaron, el pacto se rompe sin castigo. Hecho el 11-nov-2026.
 - **Traicionar** es una acción que se puede hacer una vez por guerra y no durante la tregua inicial. Reglas:
   1. **Coste:** una porción de tu ejército **se retira y lo pierdes**. Por defecto el 25 % de tus unidades (redondeado hacia arriba, mínimo 1), sin contar al Líder ni al héroe. El porcentaje se puede cambiar al crear la partida.
   2. **Quién se va:** las unidades más cercanas a las de tus aliados, porque se niegan a combatir contra sus antiguos compañeros. Así traicionar también tiene un coste táctico.

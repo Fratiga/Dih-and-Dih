@@ -58,19 +58,20 @@ export function hornearSuelo(est: any, P: number): Suelo {
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const tt = t(x, y);
     if (tt === "vacio") continue;
-    const base = tt === "agua" ? SUELO.llanura : SUELO[tt] || SUELO.llanura;
+    // El agua navegable no es tierra: va en su propia máscara y se pinta como mar claro
+    if (tt === "agua") { gl.fillStyle = "#fff"; gl.fillRect(x + 1, y + 1, 1, 1); continue; }
+    const base = SUELO[tt] || SUELO.llanura;
     gm.fillStyle = mezcla(base, hash(x, y, semilla) > 0.5 ? "#ffffff" : "#000000", hash(x, y, semilla + 3) * 0.1);
     gm.fillRect((x + 1) * R, (y + 1) * R, R, R);
     gt.fillStyle = "#fff"; gt.fillRect(x + 1, y + 1, 1, 1);
-    if (tt === "agua") { gl.fillStyle = "#fff"; gl.fillRect(x + 1, y + 1, 1, 1); }
   }
   // Las casillas de tierra pegadas al vacío llevan su color un poco hacia fuera para que la orilla no salga negra
   const [cm2, gm2] = lienzo((w + 2) * R, (h + 2) * R);
   gm2.drawImage(cm, 0, 0);
   for (let y = -1; y <= h; y++) for (let x = -1; x <= w; x++) {
-    if (t(x, y) !== "vacio") continue;
+    if (t(x, y) !== "vacio" && t(x, y) !== "agua") continue;
     let col: string | null = null;
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) { const v = t(x + dx, y + dy); if (v !== "vacio") { col = v === "agua" ? SUELO.llanura : SUELO[v]; break; } }
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) { const v = t(x + dx, y + dy); if (v !== "vacio" && v !== "agua") { col = SUELO[v]; break; } }
     if (col) { gm2.fillStyle = col; gm2.fillRect((x + 1) * R, (y + 1) * R, R, R); }
   }
   const [gc, g] = lienzo(W, H);
@@ -82,8 +83,9 @@ export function hornearSuelo(est: any, P: number): Suelo {
   };
   const col = estirar(cm2), tierra = estirar(mt), lago = estirar(ml);
   const img = g.createImageData(W, H), d = img.data;
-  const arena = hex("#d2bd8a"), orillaLago = hex("#3d8a94"), fondoLago = hex("#1f5a7a");
-  const estilo = MAR[estiloMar(est.tipo)], somero = hex(estilo[2]);
+  const arena = hex("#d2bd8a");
+  const estilo = MAR[estiloMar(est.tipo)], somero = hex(estilo[2]), medio = hex(estilo[1]);
+  const nav = [(somero[0] + medio[0]) / 2, (somero[1] + medio[1]) / 2, (somero[2] + medio[2]) / 2];
   const k1 = semilla + 11, k2 = semilla + 29, k3 = semilla + 53;
   for (let py = 0; py < H; py++) {
     for (let px = 0; px < W; px++) {
@@ -98,22 +100,23 @@ export function hornearSuelo(est: any, P: number): Suelo {
         r *= luz; gg *= luz; b *= luz;
         const playa = 1 - Math.min(1, (a - umbral) / 0.1);
         if (playa > 0) { r += (arena[0] - r) * playa * 0.85; gg += (arena[1] - gg) * playa * 0.85; b += (arena[2] - b) * playa * 0.85; }
-        // lagos y ríos interiores
-        const l = lago[i + 3] / 255, ul = 0.5 + (n - 0.5) * 0.3;
-        if (l > ul) {
-          const hondo = Math.min(1, (l - ul) / 0.35);
-          r = orillaLago[0] + (fondoLago[0] - orillaLago[0]) * hondo; gg = orillaLago[1] + (fondoLago[1] - orillaLago[1]) * hondo; b = orillaLago[2] + (fondoLago[2] - orillaLago[2]) * hondo;
-          const brillo = 0.9 + grano * 0.2; r *= brillo; gg *= brillo; b *= brillo;
-          if (l - ul < 0.04) { r = r * 0.5 + 120; gg = gg * 0.5 + 125; b = b * 0.5 + 120; }
-        } else if (l > ul - 0.1) { const hum = (l - (ul - 0.1)) / 0.1; r *= 1 - hum * 0.28; gg *= 1 - hum * 0.2; b *= 1 - hum * 0.16; }
         d[i] = r; d[i + 1] = gg; d[i + 2] = b; d[i + 3] = 255;
-      } else if (a > umbral - 0.3) {
-        // aguas someras alrededor de la costa, con una línea de espuma pegada a la tierra
-        const f = (a - (umbral - 0.3)) / 0.3;
+      } else {
+        // Agua. La navegable se ve más clara que el mar abierto, con una línea tenue donde se acaba.
+        // Pegadas a la tierra, aguas someras y una raya de espuma.
+        const l = lago[i + 3] / 255, ul = 0.46 + (n - 0.5) * 0.12;
+        const dentro = l <= ul ? 0 : Math.min(1, (l - ul) / 0.1);
+        const f = a > umbral - 0.3 ? (a - (umbral - 0.3)) / 0.3 : 0;
         const espuma = a > umbral - 0.03 ? 1 : 0;
-        d[i] = somero[0] + espuma * (235 - somero[0]); d[i + 1] = somero[1] + espuma * (240 - somero[1]); d[i + 2] = somero[2] + espuma * (235 - somero[2]);
-        d[i + 3] = Math.min(255, (f * f * 0.75 + espuma * 0.5) * 255);
-      } else d[i + 3] = 0;
+        const raya = dentro > 0 && dentro < 1 ? 0.16 : 0;
+        const alfa = Math.max(dentro * (0.46 + grano * 0.12), f * f * 0.75) + espuma * 0.5 + raya;
+        if (alfa <= 0.004) { d[i + 3] = 0; continue; }
+        const cf = Math.min(1, f * 1.2);
+        let r = nav[0] + (somero[0] - nav[0]) * cf, gg = nav[1] + (somero[1] - nav[1]) * cf, b = nav[2] + (somero[2] - nav[2]) * cf;
+        if (raya) { r += (somero[0] - r) * 0.6; gg += (somero[1] - gg) * 0.6; b += (somero[2] - b) * 0.6; }
+        if (espuma) { r += (235 - r) * 0.9; gg += (240 - gg) * 0.9; b += (235 - b) * 0.9; }
+        d[i] = r; d[i + 1] = gg; d[i + 2] = b; d[i + 3] = Math.min(255, alfa * 255);
+      }
     }
   }
   g.putImageData(img, 0, 0);
@@ -234,7 +237,8 @@ export function pintarMar(g: Ctx, S: number, estilo: string): void {
 export function pintarTerritorios(c: HTMLCanvasElement, est: any, vis: number[], colores: string[], R: number): void {
   const g = c.getContext("2d") as Ctx, w = est.ancho, h = est.alto;
   g.clearRect(0, 0, c.width, c.height);
-  const regDe = (x: number, y: number): number => (x < 0 || y < 0 || x >= w || y >= h ? -1 : est.casillas[y][x].region);
+  // El agua no se tiñe: las provincias son de tierra y su frontera sigue la costa
+  const regDe = (x: number, y: number): number => (x < 0 || y < 0 || x >= w || y >= h || est.casillas[y][x].t === "agua" ? -1 : est.casillas[y][x].region);
   const rgba = (col: string, a: number): string => { const v = hex(col); return `rgba(${v[0]},${v[1]},${v[2]},${a})`; };
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const r = regDe(x, y);
@@ -464,8 +468,11 @@ export function pintarNiebla(c: HTMLCanvasElement, est: any, vis: number[], R: n
     if (v === 2) continue;
     // El mar no lleva niebla (si no, el borde del mapa se nota como una franja). La tierra nunca vista queda casi
     // negra, así se intuye la silueta del continente; la ya explorada, en penumbra.
-    if (est.casillas[y][x].t === "vacio") continue;
-    g.fillStyle = v === 1 ? "rgba(8,7,16,.5)" : "rgba(7,6,13,.9)";
+    const tt = est.casillas[y][x].t;
+    if (tt === "vacio") continue;
+    // Sobre el agua navegable la niebla es más leve: se sigue viendo que es mar
+    if (tt === "agua") g.fillStyle = v === 1 ? "rgba(8,7,16,.3)" : "rgba(7,6,13,.55)";
+    else g.fillStyle = v === 1 ? "rgba(8,7,16,.5)" : "rgba(7,6,13,.9)";
     g.fillRect(x * R, y * R, R, R);
   }
 }

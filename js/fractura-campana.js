@@ -195,7 +195,9 @@
   function prepararGuerra(ej, ids, opciones) {
     opciones = opciones || {};
     const dif = opciones.dificultad || ej.config.dificultad || "normal";
-    const tipo = TIPOS_FRACTURA[opciones.tipo] ? opciones.tipo : (opciones.tipo === "azar" || !opciones.tipo ? Object.keys(TIPOS_FRACTURA)[ri(ej, 5)] : "reinos");
+    // Si el jugador pidió una forma de mapa, el lugar al azar no puede ser el Horizonte Roto, que no tiene mar ni formas
+    const tiposAzar = Object.keys(TIPOS_FRACTURA).filter(t => !(D.FORMAS_MAPA[opciones.forma] && t === "horizonte"));
+    const tipo = TIPOS_FRACTURA[opciones.tipo] ? opciones.tipo : (opciones.tipo === "azar" || !opciones.tipo ? tiposAzar[ri(ej, tiposAzar.length)] : "reinos");
     const rival = rivalElegido(ej, opciones.rival);
     const bandos = Math.max(2, Math.min(8, opciones.bandos || 2));
     const elegidos = (ids && ids.length ? ids : elegirContingenteAuto(ej)).slice(0, limiteContingente(ej)).map(id => ej.soldados[id]).filter(s => s && disponibles(ej).includes(s));
@@ -246,7 +248,10 @@
     }
     // Por equipos: se alternan alrededor del mapa, así cada bando tiene un enemigo a cada lado
     if (opciones.equipos && bandos >= 4 && bandos % 2 === 0) jugadores.forEach((j, i) => { j.equipo = i % 2; });
-    return { semilla, tipo, dificultad: dif, anio: ej.anio, maxTurnos: 35 + 5 * (bandos - 2), hold: 6, jugadores, rivalFaccion: rival, ids: elegidos.map(s => s.id) };
+    // La forma del mapa: la elegida o una al azar
+    const formas = Object.keys(D.FORMAS_MAPA);
+    const forma = D.FORMAS_MAPA[opciones.forma] ? opciones.forma : formas[ri(ej, formas.length)];
+    return { semilla, tipo, forma, dificultad: dif, anio: ej.anio, hold: 6, jugadores, rivalFaccion: rival, ids: elegidos.map(s => s.id) };
   }
 
   /* --- Cerrar una guerra --- */
@@ -276,6 +281,14 @@
     const resumen = { levasPerdidas: 0, heridos: [], gano, perdio, empate, ascensos: [], muertos: [], nacimientos: [], alistados: [], retirados: [], renacidos: [], reliquiasPerdidas: [], reliquiasHalladas: [], luto: [], nemesisNuevo: [], nemesisCaido: [], vejez: [], sinFamilia: [], ganancias: [] };
     const anioGuerra = ej.anio;
     ej.guerras += 1;
+    // Los que desertaron cuando su bando rompió un pacto no vuelven a filas
+    (est.desertaron || []).filter(d => d.de === jIdx).forEach(d => {
+      const s = ej.soldados[d.id];
+      if (!s || s.estado === "caido") return;
+      s.estado = "retirado"; if (s.capitan) { s.capitan = false; s.compania = null; }
+      hito(s, anioGuerra, "Deserta: se niega a traicionar a sus aliados.");
+      resumen.retirados.push(s);
+    });
     if (gano) { ej.ganadas += 1; ej.victoriasContra[rivalFaccion] = (ej.victoriasContra[rivalFaccion] || 0) + 1; } else if (perdio) ej.perdidas += 1; else ej.empatadas += 1;
 
     // Participantes: los que quedan en pie y los que cayeron

@@ -404,7 +404,10 @@ export class EscenaGuerra extends Phaser.Scene {
         if (!REDUCIDO) { this.tweens.add({ targets: br, alpha: 0.22, duration: 1100 + (x * 131 + y * 71) % 600, yoyo: true, repeat: -1, ease: "Sine.easeInOut" }); this.tweens.add({ targets: cr, y: cr.y - T * 0.03, duration: 1500, yoyo: true, repeat: -1, ease: "Sine.easeInOut", delay: (x * 130 + y * 70) % 900 }); }
       }
     } else if (c.t === "agua") {
-      if (r(2) > 0.55) pon(this.tex("juncos", 48, 48, g => pintarJuncos(g, 48)), 0.12 + r(3) * 0.76, 0.2 + r(4) * 0.7, T * 0.3);
+      // Juncos solo donde el agua toca tierra, y un destello en una de cada cinco casillas: el mar puede ser muy grande
+      const e2 = this.est, orilla = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => { const q = e2.casillas[y + dy] && e2.casillas[y + dy][x + dx]; return q && q.t !== "agua" && q.t !== "vacio"; });
+      if (orilla && r(2) > 0.6) pon(this.tex("juncos", 48, 48, g => pintarJuncos(g, 48)), 0.12 + r(3) * 0.76, 0.2 + r(4) * 0.7, T * 0.3);
+      if (r(9) > 0.2) { this.decor.set(i, lista); return; }
       const br = this.add.image((x + 0.3 + r(5) * 0.4) * T, (y + 0.3 + r(6) * 0.4) * T, "brillo").setDisplaySize(T * 0.5, T * 0.16).setAlpha(0).setBlendMode(Phaser.BlendModes.ADD).setDepth(1);
       lista.push(br);
       if (!REDUCIDO) this.tweens.add({ targets: br, alpha: 0.28, duration: 1400 + r(7) * 1200, yoyo: true, repeat: -1, ease: "Sine.easeInOut", delay: r(8) * 2000 });
@@ -493,17 +496,18 @@ export class EscenaGuerra extends Phaser.Scene {
     const FM = W.FracturaMotor, S = W.FracturaSoldados;
     return {
       uid: u.uid, clase: u.clase, heroe: u.heroe || null, dueno: u.dueno, x: u.x, y: u.y, hp: u.hp, hpMax: FM.ef(this.est, u).hpMax, lider: !!u.lider,
-      faccion: u.dueno >= 0 ? this.est.jugadores[u.dueno].faccion : null,
+      faccion: u.dueno >= 0 ? this.est.jugadores[u.dueno].faccion : null, barco: FM.esBarco(u),
+      fondo: u.dueno >= 0 && !!FM.navalDe(this.est, u.dueno).fondo,
       cap: !!(u.s && u.s.capitan), rango: u.s ? S.rangoIndice(u.s.victorias + (u.vicG || 0)) : 0
     };
   }
 
-  private texFigura(d: any, pose: string): string {
+  private texFigura(d: any, pose: string, barca?: string): string {
     const bando = d.dueno >= 0 ? this.bandos[d.dueno] : { col: "#8c8c8c", ban: "#3a3a3a" };
-    const clave = `u:${d.faccion}:${d.clase}:${d.heroe || ""}:${bando.col}:${pose}:${d.cap ? 1 : 0}`;
+    const clave = `u:${d.faccion}:${d.clase}:${d.heroe || ""}:${bando.col}:${pose}:${d.cap ? 1 : 0}:${barca || ""}`;
     const w = Math.round(FIG * 2.3), h = Math.round(FIG * 2.1), p = POSES[pose];
     this.tex(clave, w, h, g => {
-      W.FracturaFiguras.figura(g, { faccion: d.faccion, clase: d.clase, heroe: d.heroe }, bando, { x: w / 2, y: h * 0.86, s: FIG * 0.95, dir: 1, mov: p.mov, fase: p.fase, sw: p.sw, t: 1.3, cap: d.cap, rango: d.rango });
+      W.FracturaFiguras.figura(g, { faccion: d.faccion, clase: d.clase, heroe: d.heroe }, bando, { x: w / 2, y: h * 0.86, s: FIG * 0.95, dir: 1, mov: p.mov, fase: p.fase, sw: p.sw, t: 1.3, cap: d.cap, rango: d.rango, barca });
     });
     return clave;
   }
@@ -544,7 +548,9 @@ export class EscenaGuerra extends Phaser.Scene {
       const d = it.d, a = it.v || {};
       const X = a.x !== undefined ? a.x : d.x, Y = a.y !== undefined ? a.y : d.y;
       const tx = Math.round(X), ty = Math.round(Y);
-      const visible = (d.dueno >= 0 && FM.mismoEquipo(est, d.dueno, H)) || (ty >= 0 && ty < est.alto && tx >= 0 && tx < est.ancho && vis[ty * est.ancho + tx] === 2);
+      let visible = (d.dueno >= 0 && FM.mismoEquipo(est, d.dueno, H)) || (ty >= 0 && ty < est.alto && tx >= 0 && tx < est.ancho && vis[ty * est.ancho + tx] === 2);
+      // La noche de Nikaalia: no se ve a sus tropas hasta tener a alguien al lado
+      if (visible && est.hayNoche && d.dueno >= 0 && !FM.mismoEquipo(est, d.dueno, H)) { const lg = est.unidades[d.uid]; if (lg && FM.oculta(est, lg, H)) visible = false; }
       if (!visible) return;
       usados.add(d.uid);
       let o = this.unidades.get(d.uid);
@@ -553,20 +559,24 @@ export class EscenaGuerra extends Phaser.Scene {
       if (o) o.spr.setVisible(true);
       if (!o) { o = { spr: this.add.image(0, 0, this.texFigura(d, "idle")).setOrigin(0.5, 0.86), clave: "" }; this.unidades.set(d.uid, o); }
       const hp = a.hp !== undefined ? a.hp : d.hp;
+      // En el agua: los barcos y las barcas no andan, se mecen
+      const enAgua = ty >= 0 && ty < est.alto && tx >= 0 && tx < est.ancho && est.casillas[ty][tx].t === "agua";
+      const barca = enAgua && !d.barco ? (d.fondo ? "fondo" : "barca") : undefined;
       let pose = "idle";
-      if (a.mov) pose = Math.floor(t / 110) % 2 ? "w2" : "w1";
+      if (a.mov && !enAgua) pose = Math.floor(t / 110) % 2 ? "w2" : "w1";
       else if (a.sw > 0.7) pose = "a2"; else if (a.sw > 0.25) pose = "a1"; else if (a.sw < -0.2) pose = "a0";
-      const clave = this.texFigura(d, pose);
+      const clave = this.texFigura(d, pose, barca);
       if (o.clave !== clave) { o.spr.setTexture(clave); o.clave = clave; }
       const elegida = this.ui.sel === d.uid && !this.anim;
-      const idle = REDUCIDO ? 0 : Math.sin(t / 420 + d.uid.length * 1.7 + (d.x * 3 + d.y)) * T * 0.012;
+      const idle = REDUCIDO ? 0 : Math.sin(t / (enAgua ? 620 : 420) + d.uid.length * 1.7 + (d.x * 3 + d.y)) * T * (enAgua ? 0.022 : 0.012);
+      const mece = enAgua && !REDUCIDO ? Math.sin(t / 780 + d.x * 2.1 + d.y) * 0.035 : 0;
       const salto = elegida && !REDUCIDO ? Math.abs(Math.sin(t / 260)) * T * 0.04 : 0;
-      const paso = a.mov ? Math.abs(Math.sin((a.fase || 0) * 2)) * T * 0.04 : 0;
+      const paso = a.mov && !enAgua ? Math.abs(Math.sin((a.fase || 0) * 2)) * T * 0.04 : 0;
       const cxp = (X + 0.5 + (a.dx || 0)) * T, cyp = (Y + 0.86 + (a.dy || 0)) * T - idle - salto - paso;
       // Por defecto cada tropa mira hacia el centro del mapa (hacia donde está la guerra)
       const dir = a.dir || (d.x + 0.5 < est.ancho / 2 ? 1 : -1);
       o.spr.setPosition(cxp, cyp).setScale(T / FIG).setFlipX(dir < 0).setDepth(10 + (Y + 0.86) / 100);
-      o.spr.setRotation(a.rot ? a.rot : 0).setAlpha(a.alfa !== undefined ? a.alfa : 1);
+      o.spr.setRotation(a.rot ? a.rot : mece).setAlpha(a.alfa !== undefined ? a.alfa : 1);
       const logica = est.unidades[d.uid];
       const gastada = !this.anim && logica && d.dueno === est.activo && d.dueno === H && logica.pm <= 0 && logica.atacado;
       if (a.flash > 0.15) o.spr.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
@@ -679,7 +689,7 @@ export class EscenaGuerra extends Phaser.Scene {
       else if (e.k === "golpe") {
         if (e.arma === "salpica") add("golpe", 260, { de: e.de, a: e.a, x: e.x, y: e.y, dmg: e.dmg, arma: e.arma, lejos: false, quieto: true }, true);
         else { ultimoGolpe = cursor; const lejos = e.dist > 1.5 || e.arma === "polvora" || e.arma === "magia"; add("golpe", lejos ? 520 : 440, { de: e.de, a: e.a, x: e.x, y: e.y, dmg: e.dmg, arma: e.arma || (lejos ? "flecha" : "filo"), lejos }); }
-      } else if (e.k === "muerte") add("muerte", 480, { uid: e.uid, x: e.x, y: e.y });
+      } else if (e.k === "muerte" || e.k === "deserta") add("muerte", 480, { uid: e.uid, x: e.x, y: e.y, deserta: e.k === "deserta" });
       else if (e.k === "nuevo") add("nuevo", 300, { uid: e.uid, x: e.x, y: e.y });
       else if (e.k === "heroe") add("heroe", 900, { uid: e.uid, x: e.x, y: e.y, dueno: e.dueno });
       else if (e.k === "captura") add("captura", 420, { x: e.x, y: e.y, dueno: e.dueno });
@@ -784,8 +794,8 @@ export class EscenaGuerra extends Phaser.Scene {
       } else if (it.tipo === "muerte") {
         const v = A.vis.get(it.uid); if (!v) return;
         v.alfa = 1 - p; v.rot = p * 1.35 * (v.dir || 1); v.dy = p * 0.12; v.flash = Math.max(0, 0.6 - p);
-        if (!it.sonado) { it.sonado = true; if (!saltando && this.visibleEn(it.x, it.y)) this.sonar("muerte"); }
-        if (p >= 1 && !it.hecho) { it.hecho = true; if (!saltando) this.texto(it.x, it.y, "✝", "#ffffff"); }
+        if (!it.sonado) { it.sonado = true; if (!saltando && !it.deserta && this.visibleEn(it.x, it.y)) this.sonar("muerte"); }
+        if (p >= 1 && !it.hecho) { it.hecho = true; if (!saltando) this.texto(it.x, it.y, it.deserta ? "deserta" : "✝", "#ffffff"); }
       } else if (it.tipo === "nuevo") {
         const v = A.vis.get(it.uid); if (!v) return;
         v.oculto = false; v.alfa = ease(p); v.dy = (1 - p) * -0.15;

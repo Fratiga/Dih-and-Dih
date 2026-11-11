@@ -18,7 +18,7 @@
     bosque: { nombre: "Bosque", mov: 2, def: 1, rinde: { materiales: 1 }, color: "#3f6b3a" },
     montana: { nombre: "Montaña", mov: 3, def: 2, rinde: { mineral: 1 }, color: "#7d7468" },
     desierto: { nombre: "Desierto", mov: 2, def: 0, rinde: { oro: 1 }, color: "#c9a96a" },
-    agua: { nombre: "Agua", mov: 0, def: 0, rinde: { comida: 1 }, color: "#3b6a9c" },
+    agua: { nombre: "Agua", mov: 0, def: 0, rinde: { comida: 1 }, color: "#3b6a9c", navegable: true },
     magica: { nombre: "Zona mágica", mov: 1, def: 0, rinde: { mana: 2 }, color: "#8f5bc4" },
     huesos: { nombre: "Campo de huesos", mov: 1, def: 0, rinde: { anima: 1 }, color: "#a39c8a" },
     vacio: { nombre: "Vacío", mov: 0, def: 0, rinde: {}, color: "#15101c" }
@@ -90,6 +90,24 @@
     condenado: { nombre: "Condenado de la Ergástula", rol: "Tropa barata", hp: 8, atq: 3, def: 1, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "balutia",
       perfil: { FUE: 5, CON: 5, VEL: 4, INT: 3, VOL: 4, MAG: 1 }, coste: { comida: 1, oro: 1 }, requiere: {},
       texto: "Barato y prescindible." },
+    /* --- Barcos. Solo navegan. Se botan en una ciudad con muelle y aparecen en el agua de al lado. No son soldados:
+           no ganan experiencia ni pasan al ejército. canon: disparan pólvora. pesado: no pueden moverse y disparar. --- */
+    galera: { nombre: "Galera", rol: "Barco de guerra", naval: 1, hp: 11, atq: 3, def: 1, mov: 4, alc: 2, atqEstat: "FUE", noSoldado: true,
+      coste: { materiales: 3, oro: 3 }, requiere: { edificio: "muelle" }, texto: "El barco de siempre. Dispara a otros barcos y a quien esté cerca de la orilla." },
+    brulote: { nombre: "Brulote", rol: "Cazabarcos", naval: 2, hp: 8, atq: 4, def: 0, mov: 5, alc: 1, atqEstat: "FUE", noSoldado: true, atqBarco: 3,
+      coste: { materiales: 2, oro: 3 }, requiere: { edificio: "astillero" }, texto: "Un casco viejo cargado de fuego. +3 de ataque contra barcos y tropas embarcadas. Rápido y frágil." },
+    bombarda: { nombre: "Galeón de bombardas", rol: "Asedio desde el mar", naval: 3, hp: 13, atq: 6, def: 1, mov: 3, alc: 3, atqEstat: "FUE", noSoldado: true, canon: true, pesado: true, atqPlaza: 2,
+      coste: { materiales: 5, oro: 5, mineral: 3 }, requiere: { edificio: "atarazana" }, texto: "Alcance 3 y +2 contra quien se guarece en una ciudad o una fortaleza. No puede moverse y disparar en el mismo turno." },
+    bergantin: { nombre: "Bergantín de la Hermandad", rol: "Corsario", naval: 1, hp: 11, atq: 4, def: 1, mov: 5, alc: 2, atqEstat: "FUE", noSoldado: true, canon: true, exclusiva: "pelgiria", golpeaYSigue: true,
+      coste: { materiales: 3, oro: 3 }, requiere: { edificio: "muelle" }, texto: "Velas negras. Después de disparar puede seguir navegando." },
+    trirreme: { nombre: "Trirreme imperial", rol: "Espolón", naval: 2, hp: 12, atq: 4, def: 1, mov: 4, alc: 1, atqEstat: "FUE", noSoldado: true, exclusiva: "balutia", espolon: 3,
+      coste: { materiales: 4, oro: 3 }, requiere: { edificio: "astillero" }, texto: "Si avanza al menos dos casillas antes de atacar, embiste: +3 de ataque." },
+    acorazado: { nombre: "Acorazado de vapor", rol: "Fortaleza flotante", naval: 3, hp: 16, atq: 5, def: 3, mov: 3, alc: 2, atqEstat: "FUE", noSoldado: true, canon: true, exclusiva: "nernib", sinComida: true,
+      coste: { materiales: 5, mineral: 5, oro: 3 }, requiere: { edificio: "atarazana" }, texto: "Casco de hierro y caldera. Muy difícil de hundir. No come." },
+    nave_ahogados: { nombre: "Nave de los ahogados", rol: "Barco fantasma", naval: 1, hp: 12, atq: 4, def: 1, mov: 3, alc: 2, atqEstat: "VOL", noSoldado: true, exclusiva: "trono-de-ceniza", muertoViviente: true, curaAlMatar: 3,
+      coste: { anima: 4 }, requiere: { edificio: "muelle" }, texto: "Se paga con Ánima y no come. Cada vez que hunde o mata, se cura 3." },
+    carraca: { nombre: "Carraca mercante", rol: "Comercio armado", naval: 1, hp: 12, atq: 2, def: 1, mov: 3, alc: 2, atqEstat: "FUE", noSoldado: true, canon: true, exclusiva: "compania-dorada", oroTurno: 2,
+      coste: { oro: 6 }, requiere: { edificio: "muelle" }, texto: "Pega poco, pero mientras siga a flote da 2 de oro por turno." },
     heroe: { nombre: "Héroe", rol: "Héroe", hp: 20, atq: 5, def: 3, mov: 3, alc: 1, atqEstat: "FUE", noReclutable: true,
       perfil: { FUE: 8, CON: 8, VEL: 6, INT: 7, VOL: 9, MAG: 5 }, coste: {}, requiere: {}, texto: "Un eco de alguien que dejó huella en el mundo." },
     eco: { nombre: "Eco", rol: "Magia única", hp: 10, atq: 6, def: 1, mov: 3, alc: 2, atqEstat: "MAG",
@@ -103,6 +121,10 @@
   };
   // Clases que sale a la venta por defecto (las exclusivas entran según la facción)
   const CLASES_BASE = ["guerrero", "cazador", "arcanista", "paladin", "picaro"];
+  // Barcos que cualquier ejército puede botar, por nivel de muelle (1 muelle, 2 astillero, 3 atarazana)
+  const BARCOS_BASE = ["galera", "brulote", "bombarda"];
+  const NOMBRES_BARCO = ["La Golondrina", "El Tozudo", "La Viuda", "El Buen Viaje", "La Sorda", "El Cormorán", "La Paciencia", "El Tres Hermanos", "La Deuda", "El Malavenido", "La Estrella Baja", "El Rencor",
+    "La Niña del Faro", "El Sinvergüenza", "La Marea", "El Último Trago", "La Costurera", "El Gaviota", "La Zurda", "El Perro Viejo"];
 
   const ESPECIALIZACIONES = {
     guardia: { nombre: "Guardia", texto: "+2 de defensa.", def: 2 },
@@ -143,7 +165,10 @@
     catedral: { nombre: "Catedral", rama: "mag", nivel: 2, coste: { materiales: 5, oro: 5 }, rinde: { mana: 1 }, solo: "santos-de-asmodeo", previo: ["santuario"], texto: "+1 de maná. Consagra dos casillas alrededor de la ciudad en vez de una." },
     dojo: { nombre: "Dojo", rama: "mil", nivel: 2, coste: { materiales: 5, oro: 3 }, rinde: {}, solo: "seosan", previo: ["cuartel"], texto: "Los reclutas de esta ciudad salen con 2 victorias de experiencia." },
     circulo_huesos: { nombre: "Círculo de Huesos", rama: "mag", nivel: 1, coste: { materiales: 3, oro: 2 }, rinde: { anima: 1 }, solo: "okran", texto: "+1 de Ánima. Lugar de los chamanes." },
-    puerto: { nombre: "Puerto", rama: "eco", nivel: 1, coste: { materiales: 4, oro: 2 }, rinde: { oro: 2, comida: 1 }, solo: "pelgiria", terreno: ["agua", "vacio"], texto: "+2 de oro y +1 de alimento. Pide agua o costa cerca." }
+    // El mar: cada nivel de muelle deja botar barcos mejores. Piden agua a dos casillas de la ciudad.
+    muelle: { nombre: "Muelle", rama: "eco", nivel: 1, coste: { materiales: 4, oro: 2 }, rinde: { comida: 1, oro: 1 }, agua: true, texto: "+1 de alimento y +1 de oro. Tus tropas pueden embarcar y la ciudad bota galeras. Pide agua cerca." },
+    astillero: { nombre: "Astillero", rama: "mil", nivel: 2, coste: { materiales: 5, oro: 4 }, rinde: {}, previo: ["muelle"], agua: true, texto: "Permite botar brulotes y los barcos propios de algunos ejércitos." },
+    atarazana: { nombre: "Atarazana", rama: "mil", nivel: 3, coste: { materiales: 6, mineral: 4, oro: 5 }, rinde: {}, previo: ["astillero"], agua: true, texto: "Permite botar galeones de bombardas." }
   };
 
   /* --- Escuelas de desarrollo (cada escalón pide el anterior). coste de maná por escalón (más oro). --- */
@@ -197,6 +222,8 @@
          curva: cuándo es fuerte. heroe: a quién puede invocar (dos o más = sorteo al empezar la guerra). --- */
   const FACCIONES = {
     "caballeros-del-reino": {
+      naval: { nivel: "Corrientes", texto: "Una marina modesta, para vigilar su costa." },
+      diplomacia: { pacta: 0.6, traiciona: 0 },
       nombre: "Los Caballeros del Reino", corto: "Brurland", color: "#c8a24a", bandera: "#7a1f2b", cultura: "comun", origen: "Brurland", curva: "Depende del mapa",
       resumen: "La élite militar de Brurland. Ejército profesional, fortificaciones y caballería pesada.",
       ventaja: "Las fortalezas dan +1 de defensa extra, empiezan con Disciplina y pueden forjar caballeros. Su magia no pasa del segundo escalón.",
@@ -214,6 +241,8 @@
       }
     },
     "academia-arcana-de-dolbred": {
+      naval: { nivel: "Corrientes", texto: "Poca flota. Prefieren cambiar el terreno a cruzar el mar." },
+      diplomacia: { pacta: 0.8, traiciona: 0.05 },
       nombre: "Academia Arcana de Dolbred", corto: "Dolbred", color: "#8f6fd8", bandera: "#2d2a6b", cultura: "comun", origen: "Dolbred", curva: "Tardío",
       resumen: "La mayor concentración de archimagos conocida. Investiga más rápido y juega con el terreno.",
       ventaja: "Empieza dominando Resonancia, investigar cuesta un 25 % menos de maná, los magos tienen +2 de vida y pueden invocar archimagos.",
@@ -231,6 +260,8 @@
       }
     },
     "trono-de-ceniza": {
+      naval: { nivel: "A su manera", barcoMax: 1, barcos: ["nave_ahogados"], embarcaSinMuelle: true, fondo: true, movEmbarcada: 2, texto: "Los muertos no respiran: sus tropas cruzan el agua andando por el fondo, despacio, sin muelle y sin perder su defensa. Solo botan galeras y la Nave de los ahogados." },
+      diplomacia: { pacta: 0.2, traiciona: 0.3 },
       nombre: "El Trono de Ceniza", corto: "Osses", color: "#9a9486", bandera: "#3d3a38", cultura: "sombrio", origen: "Osses", curva: "Desgaste", monstruos: true, irrefugiable: true,
       resumen: "El gobierno de la Unión de Osses: monstruos y no muertos bajo un mismo estandarte.",
       ventaja: "Sin gasto de comida, tropas baratas de Ánima, +2 de Ánima por ciudad y cada baja deja más. Las ciudades dan 1 de oro menos.",
@@ -248,6 +279,8 @@
       }
     },
     "compania-dorada": {
+      naval: { nivel: "Buenos", barcos: ["carraca"], muelleOro: 2, texto: "Compran sus flotas. Cada muelle les rinde 2 de oro más y tienen carracas mercantes." },
+      diplomacia: { pacta: 0.7, traiciona: 0.4 },
       nombre: "Compañía Dorada", corto: "Compañía Dorada", color: "#e0b23a", bandera: "#5a4311", cultura: "comun", origen: "El continente", curva: "Empieza fuerte",
       resumen: "El ejército mercenario más grande del continente. Todo se resuelve con oro.",
       ventaja: "+3 de oro por ciudad, 12 de oro extra al empezar y mercenarios que se contratan al instante sin edificio.",
@@ -265,6 +298,8 @@
       }
     },
     "hijos-del-acero": {
+      naval: { nivel: "Flojos", barcoMax: 2, texto: "Cazadores de tierra firme. No pasan del astillero." },
+      diplomacia: { pacta: 0.6, traiciona: 0 },
       nombre: "Hijos del Acero", corto: "Hijos del Acero", color: "#9fb0bd", bandera: "#2b3a45", cultura: "comun", origen: "Internacional", curva: "Pico",
       resumen: "Mercenarios que solo cazan monstruos. Una ballesta bien puesta vale por un ejército.",
       ventaja: "+2 de ataque contra monstruos y criaturas salvajes, y ballesteros pesados de serie.",
@@ -282,6 +317,8 @@
       }
     },
     "santos-de-asmodeo": {
+      naval: { nivel: "Corrientes", texto: "Flota de cruzada, sin nada propio." },
+      diplomacia: { pacta: 0.6, traiciona: 0.3, soloHumanos: true },
       nombre: "Santos de Asmodeo", corto: "Santos de Asmodeo", color: "#efe2b8", bandera: "#8a1c1c", cultura: "comun", origen: "Ithranor", curva: "Depende del mapa",
       resumen: "El brazo armado de la Iglesia de Asmodeo. Una teocracia de clérigos y paladines en cruzada.",
       ventaja: "Consagran el terreno: en casillas consagradas sus tropas tienen +1 de defensa y se curan. Los paladines son más recios y baratos.",
@@ -299,9 +336,11 @@
       }
     },
     nikaalia: {
+      naval: { nivel: "Buenos", texto: "Contrabandistas. Sus barcos, como sus tropas, no se ven hasta tenerlos encima." },
+      diplomacia: { pacta: 0.8, traiciona: 0.5 },
       nombre: "Natonocturnos de Nikaalia", corto: "Nikaalia", color: "#c05aa8", bandera: "#1c1026", cultura: "nocturno", origen: "Nikaalia", curva: "Empieza fuerte",
       resumen: "Las familias de Umbrathil, criadas bajo la noche eterna del domo. Gánsteres antes que soldados.",
-      ventaja: "Noche eterna: los rivales ven una casilla menos y no pueden dispararles desde lejos. Sobornan criaturas con oro. Tienen pistoleros.",
+      ventaja: "Noche eterna: los rivales ven una casilla menos y sus tropas no se ven hasta tener un enemigo al lado. Sobornan criaturas con oro. Tienen pistoleros.",
       mods: { noche: true, soborno: 4, oroInicial: 6, polvora: { cazador: true } }, escuelaInicial: ["tanato", 1],
       lider: { titulo: "El Don", aura: { oro: 2 }, estado: { nombre: "Guerra de familias", texto: "Sin su Don, todas las unidades ganan +1 de ataque.", atq: 1 } },
       origenes: ["mercenario", "habitante"], clasesExtra: ["capo"], heroe: ["ottavio"],
@@ -316,9 +355,11 @@
       }
     },
     seosan: {
+      naval: { nivel: "Buenos", barcoMov: 1, texto: "Juncos rápidos: sus barcos tienen +1 de movimiento." },
+      diplomacia: { pacta: 0.5, traiciona: 0 },
       nombre: "Escuelas de Seosan", corto: "Seosan", color: "#5fc08f", bandera: "#173528", cultura: "seosan", origen: "Seosan", curva: "Depende del mapa",
       resumen: "Escuelas marciales que se respetan entre sí y resuelven sus asuntos en duelo.",
-      ventaja: "Duelo: +2 de ataque contra una unidad que está sola. Sus maestros de escuela lo aprovechan todavía más.",
+      ventaja: "Duelo: +2 de ataque contra una unidad que está sola, y en ese combate nadie recibe ayuda de los que tiene al lado. Sus maestros de escuela lo aprovechan todavía más.",
       mods: { duelo: 2 }, escuelaInicial: ["militar", 1],
       lider: { titulo: "Gran Maestro de Kaishoto", aura: { auraAtq: 1 }, estado: { nombre: "Los discípulos recuerdan", texto: "Sin su maestro, todas las unidades ganan +1 de defensa.", def: 1 } },
       origenes: ["voluntario", "habitante"], clasesExtra: ["maestro"], heroe: ["kirin"],
@@ -333,6 +374,8 @@
       }
     },
     okran: {
+      naval: { nivel: "Torpes", barcoMax: 1, muelleCoste: 2, movEmbarcada: 2, texto: "Gente de las Tierras Altas. Los muelles les cuestan el doble, solo botan galeras y embarcados van despacio." },
+      diplomacia: { pacta: 0.4, traiciona: 0.4 },
       nombre: "Clanes de Okran", corto: "Okran", color: "#b8672e", bandera: "#33200f", cultura: "okran", origen: "Okran", curva: "Empieza fuerte",
       resumen: "Clanes bárbaros y hombres bestia de las Tierras Altas. Solo respetan la fuerza.",
       ventaja: "Furia: +1 de ataque por cada cuarto de vida perdido, hasta +3. Sus tropas no necesitan edificios para lo básico.",
@@ -350,10 +393,12 @@
       }
     },
     pelgiria: {
+      naval: { nivel: "Maestros", barcos: ["bergantin"], barcoMov: 1, barcoAtq: 1, muelleCoste: 0.5, embarcaSinMuelle: true, marinos: true, movEmbarcada: 4, texto: "El mar es su casa. Embarcan y desembarcan sin perder el turno ni la defensa, pelean embarcados, sus muelles cuestan la mitad y sus barcos son más rápidos y pegan más." },
+      diplomacia: { pacta: 0.7, traiciona: 0.4 },
       nombre: "Hermandad de Cala Ronca", corto: "Pelgiria", color: "#36a9b0", bandera: "#0f3138", cultura: "pelgiria", origen: "Pelgiria", curva: "Depende del mapa",
       resumen: "Piratas del archipiélago de Pelgiria. Pólvora, abordajes y tortugas de mar gigantes.",
-      ventaja: "Navegan: solo sus unidades cruzan el agua. Tienen arcabuceros, cañoneros y barrileros que explotan.",
-      mods: { navega: true, polvora: { cazador: true, arcanista: true } }, escuelaInicial: ["militar", 1],
+      ventaja: "Maestros del mar: embarcan sin muelle y sin perder el turno, pelean embarcados y sus barcos son los mejores. Tienen arcabuceros, cañoneros y barrileros que explotan.",
+      mods: { polvora: { cazador: true, arcanista: true } }, escuelaInicial: ["militar", 1],
       lider: { titulo: "Capitán de la Hermandad", aura: { oro: 2 }, estado: { nombre: "Cada cual a lo suyo", texto: "Sin su capitán, todas las unidades ganan +1 de ataque.", atq: 1 } },
       origenes: ["mercenario", "habitante"], clasesExtra: ["barrilero"], heroe: ["dientesal"],
       tropas: {
@@ -367,6 +412,8 @@
       }
     },
     mravec: {
+      naval: { nivel: "Negados", barcoMax: 0, sinMuelle: true, embarcaSinMuelle: true, movEmbarcada: 2, texto: "Hijos del desierto. No construyen muelles ni barcos. Cruzan el agua en balsas de quitina, despacio y sin defensa." },
+      diplomacia: { pacta: 0, traiciona: 0 },
       nombre: "Satrapía de Mravec", corto: "Mravec", color: "#b4c23a", bandera: "#3d3a10", cultura: "mravec", origen: "Mravec", curva: "Tardío", monstruos: true, irrefugiable: true,
       resumen: "Insectoides del desierto, descendientes de la Reina Hormiga. Lo que devoran, lo aprenden.",
       ventaja: "Devorar y adaptar: tres de sus tropas ganan un rasgo del enemigo que matan (hasta dos por unidad).",
@@ -384,6 +431,8 @@
       }
     },
     nernib: {
+      naval: { nivel: "Buenos", barcos: ["acorazado"], barcoDef: 1, texto: "Ingeniería naval: sus barcos tienen +1 de defensa y construyen acorazados de vapor." },
+      diplomacia: { pacta: 0.6, traiciona: 0.1 },
       nombre: "Oligarquía de Nernib", corto: "Nernib", color: "#6fb6e0", bandera: "#26323e", cultura: "nernib", origen: "Nernib", curva: "Tardío",
       resumen: "Ciudad-estado de gnomos y forjados. Lo que no pueden vencer, lo fabrican.",
       ventaja: "Taller: construyen autómatas que no comen, y el taller entrega uno gratis cada 4 turnos (hasta 3). Tienen fusileros.",
@@ -401,6 +450,8 @@
       }
     },
     balutia: {
+      naval: { nivel: "Buenos", barcos: ["trirreme"], texto: "La flota del Imperio embiste: tienen trirremes." },
+      diplomacia: { pacta: 0.6, traiciona: 0.4 },
       nombre: "Imperio de Balutia", corto: "Balutia", color: "#c23a3a", bandera: "#3a0f14", cultura: "balutia", origen: "Balutia", curva: "Pico",
       resumen: "El imperio de las legiones. Conquista una provincia y pone a su gente en primera fila.",
       ventaja: "Tributo: cada ciudad que conquista le entrega un Auxiliar de provincias (hasta 3). Tropas baratas de la Ergástula.",
@@ -446,7 +497,7 @@
       ef: { llegaCon: ["automata", "automata"], atqClaseAliada: { automata: 1 } },
       texto: "Llega con 2 autómatas. Tus autómatas tienen +1 de ataque.", aspecto: "Forjado antiguo de bronce verdoso con un gran engranaje en el pecho." },
     ottavio: { faccion: "nikaalia", nombre: "Don Ottavio Umbral", titulo: "Dueño del Mercado de las Sombras", nivel: 1, hp: 18, atq: 5, def: 3, mov: 3, alc: 1,
-      coste: { oro: 10 }, req: [{ t: "ciudades", n: 3 }],
+      coste: { oro: 10 }, req: [{ t: "mercado" }],
       ef: { sobornoMitad: true, velo: true, activa: { id: "contratar", nombre: "Una oferta", texto: "Paga 2 de oro: una criatura salvaje a su lado lucha por ti 3 turnos.", cd: 2, coste: { oro: 2 } } },
       texto: "Sus sobornos cuestan la mitad. Los aliados a su lado no pueden ser atacados desde lejos.", aspecto: "Traje blanco, abrigo negro, sombrero y un bastón con pomo de cuervo." },
     brasa: { faccion: "academia-arcana-de-dolbred", nombre: "Ilvaren Brasalba", titulo: "Colegio de la Brasa Viva", nivel: 2, hp: 22, atq: 5, def: 3, mov: 3, alc: 3, magia: true,
@@ -478,7 +529,7 @@
       ef: { furia: 5, curaAlMatar: 4 },
       texto: "Su furia llega a +5 de ataque y se cura 4 cada vez que mata.", aspecto: "Bestia negra de lomo erizado, colmillos de jabalí y ojos rojos." },
     dientesal: { faccion: "pelgiria", nombre: "Capitana Dientesal", titulo: "La voz de Cala Ronca", nivel: 2, hp: 22, atq: 5, def: 3, mov: 3, alc: 2,
-      coste: { oro: 10, materiales: 4 }, req: [{ t: "edificio", id: "puerto" }, { t: "cuenta", k: "saqueos", n: 2, texto: "Tomar 2 ciudades" }],
+      coste: { oro: 10, materiales: 4 }, req: [{ t: "edificio", id: "astillero" }, { t: "cuenta", k: "saqueos", n: 2, texto: "Tomar 2 ciudades" }],
       ef: { activa: { id: "area", nombre: "Andanada de barriles", texto: "3 de daño a todo lo que haya en un cuadro de 3x3, hasta a 3 casillas.", cd: 3, dano: 3, alc: 3 }, activa2: { id: "curar", nombre: "Limonada de a bordo", texto: "Cura 3 a los aliados a 2 casillas.", cd: 3, cura: 3, radio: 2 } },
       texto: "Ataca a 2 casillas con su pistola.", aspecto: "Casaca roja, tricornio, un diente de sal por colmillo y dos pistolas." },
     zaphar: { faccion: "mravec", nombre: "Zaphar", titulo: "Primer vástago de la Reina", nivel: 2, hp: 22, atq: 5, def: 3, mov: 3, alc: 1, bestia: true,
@@ -512,6 +563,16 @@
     horizonte: { nombre: "El Horizonte Roto", texto: "Fragmentos flotantes, conexiones inestables y recursos escasos. Las costuras cambian de sitio.",
       terrenos: { llanura: 30, bosque: 10, montana: 12, desierto: 8, agua: 0, magica: 10, huesos: 2, vacio: 28 }, estab: [20, 60], tiposFragmento: { estable: 15, onirico: 35, imposible: 50 },
       neutrales: 5, fortalezas: 1, ruinas: 4, costuras: 4, costurasMueven: true, vacio: 28, escaso: true }
+  };
+
+  /* Formas del mapa: cómo se reparten la tierra y el agua. maritimo: hace falta el mar para llegar a los demás. */
+  const FORMAS_MAPA = {
+    continente: { nombre: "Continente", texto: "Una sola masa de tierra con algún lago. El mar la rodea y sirve para flanquear." },
+    lagos: { nombre: "Tierra de lagos", texto: "Tierra firme salpicada de lagos grandes. Los pasos entre ellos se defienden bien." },
+    rios: { nombre: "Ríos", texto: "Ríos que bajan de las sierras y parten el mapa. Se cruzan por los vados o embarcando." },
+    continentes: { nombre: "Continentes", texto: "Cada bando en su tierra, con un brazo de mar por medio. El Núcleo, en una isla.", maritimo: true },
+    archipielago: { nombre: "Archipiélago", texto: "Islas pequeñas. Quien manda en el mar, manda en la guerra.", maritimo: true },
+    mar_interior: { nombre: "Mar interior", texto: "Un anillo de tierra alrededor de un mar, con el Núcleo en una isla en el centro.", maritimo: true }
   };
 
   /* Fragmentos: nombres de lugares reales del compendio (estables) o inventados (oníricos e imposibles) */
@@ -603,7 +664,7 @@
 
   raiz.FRACTURA_DATOS = {
     RECURSOS, RECURSO_NOMBRE, TERRENOS, ESTRUCTURAS, CLASES, CLASES_BASE, ESPECIALIZACIONES, RANGOS, EDIFICIOS, ESCUELAS, RELIQUIAS, SLOTS, FACCIONES,
-    TIPOS_FRACTURA, FRAGMENTOS, SUCESOS, DIFICULTADES, NOMBRES, ORIGENES, APODOS, HEROES, ALIAS_FACCION, faccionReal, tropa, REGLAS: 2
+    TIPOS_FRACTURA, FRAGMENTOS, SUCESOS, DIFICULTADES, NOMBRES, ORIGENES, APODOS, HEROES, ALIAS_FACCION, faccionReal, tropa, BARCOS_BASE, NOMBRES_BARCO, FORMAS_MAPA, REGLAS: 3
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FRACTURA_DATOS;
 })(typeof window !== "undefined" ? window : globalThis);

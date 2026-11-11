@@ -5,6 +5,9 @@
    conviene y cada ejército tiene sus manías, sacadas de su historia (a quién odia y a quién prefiere atacar).
    Cada turno: investiga, construye, recluta y mueve unidad por unidad: ataca donde más rinde,
    captura lo que queda libre, retira a los heridos y empuja contra la ciudad enemiga.
+   En el mar: hace muelles y barcos según lo marinero que sea su ejército y lo que pese el agua en el mapa,
+   cruza embarcando cuando el camino lo pide y manda la flota contra lo que tenga a tiro desde el agua.
+   Con más de dos bandos propone pactos y, según su carácter, puede traicionarlos.
 ============================================================================= */
 (function (raiz) {
   const D = raiz.FRACTURA_DATOS || (typeof require !== "undefined" ? require("./fractura-datos.js") : null);
@@ -32,10 +35,31 @@
     magico: ["granja", "santuario", "aserradero", "mina", "biblioteca", "mercado", "cuartel", "torre_magia", "banco", "herreria"]
   };
   const PESOS_CLASE = { guerrero: 3, cazador: 2.2, picaro: 1, paladin: 1.4, arcanista: 1.6, caballero: 2.4, archimago: 2.2, esqueleto: 3, ballestero: 2.4, mercenario: 2.6, sanador: 1.4, eco: 1,
-    capo: 1.2, maestro: 2.2, berserker: 2.6, barrilero: 1.2, quimera: 2.2, automata: 2.4, condenado: 2.6 };
+    capo: 1.2, maestro: 2.2, berserker: 2.6, barrilero: 1.2, quimera: 2.2, automata: 2.4, condenado: 2.6,
+    galera: 1.6, brulote: 1.1, bombarda: 1.5, bergantin: 2.2, trirreme: 1.8, acorazado: 1.9, nave_ahogados: 1.9, carraca: 0.9 };
+  // Cuánto tira cada ejército hacia el mar
+  const GANA_MAR = { Maestros: 1.6, Buenos: 1.15, Corrientes: 0.8, "A su manera": 0.8, Flojos: 0.55, Torpes: 0.4, Negados: 0 };
+  /* Cuánto pesa el mar en este mapa: todo en los marítimos, la mitad con ríos o lagos, poco en un continente */
+  const pesoMar = est => (est.maritimo ? 1 : est.forma === "rios" || est.forma === "lagos" ? 0.5 : 0.3);
+  const marRelevante = est => pesoMar(est) >= 1;
+  /* Tamaño de la masa de agua que toca una ciudad (hasta un tope): no se hacen barcos en una charca */
+  function aguaJunto(est, ciudad, tope) {
+    const ini = FM.aguaLibreCerca(est, ciudad);
+    if (!ini) return 0;
+    const visto = new Set([ini.y * 64 + ini.x]), cola = [ini];
+    while (cola.length && visto.size < tope) {
+      const q = cola.shift();
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const x = q.x + dx, y = q.y + dy;
+        if ((!dx && !dy) || !FM.dentro(est, x, y) || est.casillas[y][x].t !== "agua" || visto.has(y * 64 + x)) continue;
+        visto.add(y * 64 + x); cola.push({ x, y });
+      }
+    }
+    return visto.size;
+  }
 
   /* Distancia (con coste de terreno) desde unas casillas objetivo a todo el mapa, ignorando unidades */
-  function campo(est, metas) {
+  function campo(est, metas, modo) {
     const w = est.ancho, h = est.alto;
     const d = new Array(w * h).fill(1e9);
     const cola = [];
@@ -48,7 +72,10 @@
         if (!dx && !dy) continue;
         const nx = x + dx, ny = y + dy;
         if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-        const c = TERRENOS[est.casillas[ny][nx].t].mov;
+        const tt = est.casillas[ny][nx].t;
+        let c;
+        if (modo === "mar") c = tt === "agua" ? 1 : 0;
+        else { c = TERRENOS[tt].mov; if (!c && tt === "agua" && modo === "anfibio") c = 2; }
         if (!c) continue;
         const nd = d[i] + c;
         if (nd < d[ny * w + nx]) { d[ny * w + nx] = nd; cola.push(ny * w + nx); }
@@ -74,9 +101,10 @@
     const sx = u.x, sy = u.y, sr = u.recorrido;
     u.x = desde.x; u.y = desde.y;
     if (desde.recorrido !== undefined) u.recorrido = desde.recorrido;
+    if (FM.razonAgua(est, u, t)) { u.x = sx; u.y = sy; u.recorrido = sr; return null; }
     const dmg = FM.calcularDano(est, u, t);
     let ret = 0;
-    if (dmg < t.hp && cheb(desde, t) <= FM.ef(est, t).alc && CLASES[t.clase].atq > 1) ret = Math.max(1, Math.ceil(FM.calcularDano(est, t, u) * 0.6));
+    if (dmg < t.hp && cheb(desde, t) <= FM.ef(est, t).alc && CLASES[t.clase].atq > 1 && !FM.razonAgua(est, t, u)) ret = Math.max(1, Math.ceil(FM.calcularDano(est, t, u) * 0.6));
     // Riesgo: otros enemigos que lo alcanzarían donde se queda
     let riesgo = 0;
     Object.values(est.unidades).forEach(w => {
@@ -98,7 +126,7 @@
     const e = FM.ef(est, u);
     const info = FM.alcanzables(est, u);
     const posiciones = [{ x: u.x, y: u.y, recorrido: u.recorrido, c: 0 }];
-    const polvora = FM.usaPolvora(est, u);
+    const polvora = FM.polvoraFac(est, u) || !!CLASES[u.clase].pesado;
     // Con pólvora no se puede mover y disparar: o dispara desde donde está, o se mueve
     if (!polvora) info.destinos.forEach(n => posiciones.push({ x: n.x, y: n.y, recorrido: (u.recorrido || 0) + cheb(u, n), c: n.c }));
     else if (!u.quieto) return null;
@@ -109,9 +137,10 @@
       enemigos.forEach(t => {
         if (cheb(p, t) > e.alc || cheb(p, t) < 1) return;
         if (t.dueno === -1 && !t.guardia && !t.errante) return;
-        if (cheb(p, t) > 2 && t.dueno >= 0 && FACCIONES[est.jugadores[t.dueno].faccion].mods.noche) return;
+        if (cheb(p, t) > 1 && FM.oculta(est, t, u.dueno)) return;
         if (cheb(p, t) > 1 && t.dueno >= 0 && !t.heroe && FM.vecinosAliados(est, t).some(w => w.heroe && HEROES[w.heroe].ef.velo)) return;
         const ev = evaluarAtaque(est, u, p, t);
+        if (!ev) return;
         let puntos = ev.puntos - p.c * 0.15;
         // Preferir quedarse en buen terreno
         puntos += TERRENOS[est.casillas[p.y][p.x].t].def * 0.4;
@@ -131,7 +160,10 @@
     const lista = PREF_EDIFICIO[magico ? "magico" : "militar"].slice();
     const propios = Object.keys(EDIFICIOS).filter(id => EDIFICIOS[id].solo === faccion);
     lista.splice(3, 0, ...propios);
-    void fac;
+    // Muelles: pronto si el mar pesa en el mapa; si no, solo los ejércitos marineros y más tarde
+    const gana = GANA_MAR[(fac.naval || {}).nivel] === undefined ? 0.8 : GANA_MAR[fac.naval.nivel];
+    if (marRelevante(est)) { lista.splice(2, 0, "muelle"); if (gana >= 0.5) { lista.splice(7, 0, "astillero"); lista.splice(11, 0, "atarazana"); } }
+    else if ((gana >= 1.1 || pesoMar(est) >= 0.5) && gana > 0 && aguaJunto(est, ciudad, 14) >= 14) { lista.splice(6, 0, "muelle"); if (gana >= 1.1) lista.push("astillero"); }
     return lista.find(id => !FM.razonNoConstruir(est, j, ciudad.id, id)) || null;
   }
 
@@ -144,7 +176,14 @@
     let mejor = null;
     FM.clasesDisponibles(est, j).forEach(cl => {
       if (FM.razonNoReclutar(est, j, ciudad.id, cl)) return;
-      const peso = (PESOS_CLASE[cl] || 1);
+      let peso = (PESOS_CLASE[cl] || 1);
+      if (CLASES[cl].naval) {
+        const nivelMar = (FACCIONES[jug.faccion].naval || {}).nivel;
+        peso *= (GANA_MAR[nivelMar] === undefined ? 0.8 : GANA_MAR[nivelMar]) * pesoMar(est) * 0.85;
+        if (aguaJunto(est, ciudad, 14) < 14) return;
+        if (cl === "carraca" && (cuenta[cl] || 0) >= 2) return;
+        if ((cuenta[cl] || 0) >= 3) peso *= 0.4;
+      }
       const deseado = peso / 12;
       let puntos = (deseado - (cuenta[cl] || 0) / total) * 10 + azar() * 1.5;
       if (cl === "arcanista" && (cuenta[cl] || 0) >= 3) puntos -= 4;
@@ -205,6 +244,7 @@
     cacheAlc = new Map();
     economia(est, j, azar, nivel);
     if (est.ganador !== null) return pasos;
+    if (!opciones.sinDiplomacia) diplomacia();
 
     const esRival = d => d >= 0 && d !== null && FM.hostil(est, d, j);
     const tregua = FM.enTregua(est);
@@ -229,7 +269,23 @@
       ganas[q] = g;
     });
     const campoCache = new Map();
-    const campoDe = (clave, metas) => { if (!campoCache.has(clave)) campoCache.set(clave, campo(est, metas)); return campoCache.get(clave); };
+    const campoDe = (clave, metas, modo) => { const k = `${modo}:${clave}`; if (!campoCache.has(k)) campoCache.set(k, campo(est, metas, modo)); return campoCache.get(k); };
+    // Por tierra mientras se pueda. Embarcar, solo en los mapas de mar o cuando no hay otro camino.
+    const embarcaYo = FM.puedeEmbarcar(est, j);
+    const modoTierra = embarcaYo && est.maritimo ? "anfibio" : "tierra";
+    // Adónde va la flota: el agua desde la que se alcanza a un rival o a una de sus ciudades
+    let metasMarCache = null;
+    const metasMar = () => {
+      if (metasMarCache) return metasMarCache;
+      const set = new Map();
+      const marca = (cx, cy, r) => { for (let y = cy - r; y <= cy + r; y++) for (let x = cx - r; x <= cx + r; x++) if (FM.dentro(est, x, y) && est.casillas[y][x].t === "agua") set.set(y * 64 + x, { x, y }); };
+      if (!tregua) {
+        Object.values(est.unidades).forEach(o => { if (esRival(o.dueno)) marca(o.x, o.y, 2); });
+        Object.values(est.ciudades).forEach(c => { if (esRival(c.dueno)) marca(c.x, c.y, 2); });
+      }
+      metasMarCache = Array.from(set.values());
+      return metasMarCache;
+    };
     const w = est.ancho;
     const capPropia = est.capitales[j];
 
@@ -247,12 +303,19 @@
         if (tumba && aplicar({ t: "habilidad", id: "reanimar", uid: u.uid, x: tumba.x, y: tumba.y }).ok) return;
       }
       if (habilidadesNuevas(u)) return;
+      // Las carracas mercantes no salen de casa: están para dar oro
+      if (CLASES[u.clase].oroTurno) return;
       const e = FM.ef(est, u);
       const ataque = mejorAccionDeAtaque(est, u, azar, nivel);
       const herido = u.hp <= e.hpMax * 0.4;
       if (ataque && !(herido && !ataque.ev.mata && ataque.ev.ret >= u.hp)) {
         if (ataque.p.x !== u.x || ataque.p.y !== u.y) aplicar({ t: "mover", uid: u.uid, x: ataque.p.x, y: ataque.p.y });
         if (est.unidades[u.uid] && !u.atacado) aplicar({ t: "atacar", uid: u.uid, x: ataque.t.x, y: ataque.t.y });
+        return;
+      }
+      if (est.unidades[u.uid] && FM.esBarco(u)) {
+        const mm = metasMar();
+        if (mm.length) mover(u, mm, "flota", "mar");
         return;
       }
       if (u.lider && est.unidades[u.uid]) {
@@ -280,7 +343,7 @@
       if (!metas) {
         const libres = [];
         Object.values(est.ciudades).forEach(c => {
-          if (c.dueno === null) libres.push({ x: c.x, y: c.y, v: 4 });
+          if (c.dueno === null) libres.push({ x: c.x, y: c.y, v: 4 + (c.mercado && FACCIONES[jug.faccion].mods.noche && !jug.heroeInvocado ? 3 : 0) });
           else if (esRival(c.dueno) && !tregua) libres.push({ x: c.x, y: c.y, v: (c.capital ? 5 : 3) + (ganas[c.dueno] || 0) });
         });
         est.fortalezas.forEach((p, i) => { const d = est.fortalezasDueno[i]; if (d === null || (esRival(d) && !tregua)) libres.push({ x: p.x, y: p.y, v: 2.5 }); });
@@ -302,6 +365,30 @@
       if (metas) mover(u, metas, clave);
     });
     delete est.__ia;
+
+    /* Pactos y traiciones. Solo en guerras de más de dos bandos y sin equipos fijos de por medio. */
+    function diplomacia() {
+      const dip = FACCIONES[jug.faccion].diplomacia || {};
+      const quedan = FM.vivos(est);
+      if (quedan.length < 3 || est.turno < 3) return;
+      const socio = FM.pactoDe(est, j);
+      const pts = q => FM.puntuacion(est, q);
+      if (socio) {
+        // Traiciona quien lo lleva en el carácter, cuando el socio se le escapa o ya casi no queda nadie más
+        if (!dip.traiciona || jug.traiciono || FM.razonNoTraicion(est, j)) return;
+        const otros = quedan.filter(q => q !== j && q !== socio.id);
+        const socioManda = quedan.every(q => pts(socio.id) >= pts(q)) && pts(socio.id) > pts(j) + 4;
+        if ((socioManda || otros.length <= 1) && est.turno >= 8 && azar() < dip.traiciona * 0.35) aplicar({ t: "traicionar" });
+        return;
+      }
+      if (!dip.pacta || jug.traidor || azar() > dip.pacta * 0.14) return;
+      // Busca a alguien que no sea el que va ganando ni a quien le tiene ganas
+      const lider = quedan.slice().sort((a, b) => pts(b) - pts(a))[0];
+      const perfilD = PERFIL[jug.faccion] || { odia: [] };
+      const cand = quedan.filter(q => q !== j && q !== lider && FM.hostil(est, q, j) && !perfilD.odia.includes(est.jugadores[q].faccion) && !FM.razonNoPacto(est, j, q));
+      if (!cand.length) return;
+      aplicar({ t: "pacto", con: cand[Math.floor(azar() * cand.length)] });
+    }
 
     /* Lo propio de cada ejército: habilidades de héroe, consagrar y sobornar. Devuelve true si la unidad ya gastó su acción. */
     function habilidadesNuevas(u) {
@@ -347,8 +434,9 @@
       return false;
     }
 
-    function mover(u, metas, clave) {
-      const campoMeta = campoDe(clave || `k${metas[0].x},${metas[0].y}`, metas);
+    function mover(u, metas, clave, modo) {
+      let campoMeta = campoDe(clave || `k${metas[0].x},${metas[0].y}`, metas, modo || modoTierra);
+      if (!modo && modoTierra === "tierra" && embarcaYo && campoMeta[u.y * w + u.x] >= 1e9) campoMeta = campoDe(clave || `k${metas[0].x},${metas[0].y}`, metas, "anfibio");
       const info = FM.alcanzables(est, u);
       let mejor = null;
       const actual = campoMeta[u.y * w + u.x];
@@ -380,6 +468,6 @@
     return pasos;
   }
 
-  raiz.FracturaIA = { jugarTurno, turnoCompleto, campo };
+  raiz.FracturaIA = { jugarTurno, turnoCompleto, campo, marRelevante };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FracturaIA;
 })(typeof window !== "undefined" ? window : globalThis);

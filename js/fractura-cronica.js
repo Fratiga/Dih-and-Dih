@@ -67,6 +67,14 @@
       "{nombre} cayó en {region}{por}.",
       "En {region} se deshizo el eco de {nombre}{por}."
     ],
+    pacto: [
+      "{bando} y {rival} sellaron un pacto.",
+      "{bando} y {rival} dejaron de atacarse."
+    ],
+    traicion: [
+      "{bando} traicionó a {rival}.",
+      "{bando} rompió su pacto con {rival}. Parte de su tropa se negó a seguirle."
+    ],
     eliminado: [
       "{bando} quedó fuera de la guerra.",
       "Para {bando} la guerra terminó ahí."

@@ -1,6 +1,7 @@
 // Prueba de La Fractura: guerras completas de máquina contra máquina, de 2 a 8 bandos y con los trece ejércitos.
 // Comprueba que no revienta, que el estado se mantiene coherente y que la misma semilla da la misma guerra.
-// Uso: node tools/probar-fractura.js [guerras por tamaño]
+// Recorre también las formas de mapa (ríos, islas, mar interior...) y cuenta barcos, embarques, pactos y traiciones.
+// Uso: node tools/probar-fractura.js [guerras por tamaño] [solo este número de bandos]
 const path = require("path");
 const js = f => require(path.join(__dirname, "..", "js", f));
 const D = js("fractura-datos.js");
@@ -11,6 +12,9 @@ const IA = js("fractura-ia.js");
 const N = parseInt(process.argv[2] || "6", 10);
 const facciones = Object.keys(D.FACCIONES);
 const tipos = Object.keys(D.TIPOS_FRACTURA);
+const formas = Object.keys(D.FORMAS_MAPA);
+const SOLO = parseInt(process.argv[3] || "0", 10);
+const mar = { barcos: 0, embarcadas: 0, pactos: 0, traiciones: 0, muelles: 0, porForma: {} };
 let fallos = 0, comprobaciones = 0;
 const ok = (cond, texto) => { comprobaciones++; if (!cond) { fallos++; console.log("  FALLA:", texto); } };
 
@@ -23,6 +27,8 @@ function invariantes(est, ctx) {
     ok(FM.dentro(est, u.x, u.y), `${ctx}: unidad fuera del mapa`);
     const c = est.casillas[u.y][u.x];
     ok(c.t !== "vacio", `${ctx}: unidad en el vacío`);
+    if (FM.esBarco(u)) ok(c.t === "agua", `${ctx}: barco en tierra (${u.clase})`);
+    else if (c.t === "agua") { ok(u.dueno >= 0, `${ctx}: criatura sin dueño en el agua`); mar.embarcadas++; }
     ok(u.hp > 0 && u.hp <= FM.ef(est, u).hpMax + 2, `${ctx}: vida rara ${u.hp}/${FM.ef(est, u).hpMax} (${u.clase})`);
     ok(est.ganador !== null || u.dueno === -1 || !est.jugadores[u.dueno].eliminado, `${ctx}: unidad de un bando eliminado`);
   });
@@ -33,7 +39,7 @@ function invariantes(est, ctx) {
 function guerra(semilla, bandos, equipos) {
   const jugadores = [];
   for (let i = 0; i < bandos; i++) jugadores.push({ nombre: `Bando ${i + 1}`, faccion: facciones[(semilla * 7 + i * 5) % facciones.length], humano: false, nivelIA: ["facil", "normal", "dificil"][(semilla + i) % 3], equipo: equipos ? i % 2 : undefined });
-  const cfg = { semilla, tipo: tipos[semilla % tipos.length], dificultad: "normal", anio: 1, jugadores };
+  const cfg = { semilla, tipo: tipos[semilla % tipos.length], forma: formas[(semilla >> 1) % formas.length], dificultad: "normal", anio: 1, jugadores };
   const est = FM.crearGuerra(cfg);
   let guard = 0;
   const heroes = new Set();
@@ -41,10 +47,16 @@ function guerra(semilla, bandos, equipos) {
     const j = est.activo;
     IA.turnoCompleto(est, j);
     est.jugadores.forEach(o => { if (o.heroeInvocado) heroes.add(o.heroeInvocado); });
+    est.log.slice(-40).forEach(l => { if (l.__visto) return; l.__visto = true; if (/ bota /.test(l.texto || "")) mar.barcos++; });
     if (guard % 7 === 0) invariantes(est, `semilla ${semilla}, ${bandos} bandos, turno ${est.turno}`);
   }
   ok(est.ganador !== null, `semilla ${semilla}, ${bandos} bandos: la guerra no termina (turno ${est.turno})`);
   invariantes(est, `semilla ${semilla} final`);
+  (est.cronica || []).forEach(c => { if (c.tipo === "pacto") mar.pactos++; if (c.tipo === "traicion") mar.traiciones++; });
+  Object.values(est.ciudades).forEach(c => { if (c.edificios.includes("muelle")) mar.muelles++; });
+  const f = est.forma || "?";
+  mar.porForma[f] = mar.porForma[f] || { guerras: 0, turnos: 0, capital: 0 };
+  mar.porForma[f].guerras++; mar.porForma[f].turnos += est.turno; if (/capital/.test(est.razon || "")) mar.porForma[f].capital++;
   return { est, heroes, cfg };
 }
 
@@ -52,6 +64,7 @@ const firma = est => JSON.stringify([est.turno, est.ganador, est.razon, est.rs, 
 const resumen = {}, heroesVistos = new Set(), finales = {};
 const t0 = Date.now();
 for (let bandos = 2; bandos <= 8; bandos++) {
+  if (SOLO && bandos !== SOLO) continue;
   for (let i = 0; i < N; i++) {
     const semilla = 1000 + bandos * 97 + i * 131;
     const equipos = bandos % 2 === 0 && i % 3 === 2;
@@ -70,6 +83,8 @@ for (let bandos = 2; bandos <= 8; bandos++) {
 }
 for (let b = 2; b <= 8; b++) if (resumen[b]) console.log(`${b} bandos: ${resumen[b].guerras} guerras, ${(resumen[b].turnos / resumen[b].guerras).toFixed(1)} turnos de media`);
 console.log("Cómo terminan:", JSON.stringify(finales));
+console.log("Por forma de mapa:", Object.keys(mar.porForma).map(f => `${f} ${mar.porForma[f].guerras} guerras, ${(mar.porForma[f].turnos / mar.porForma[f].guerras).toFixed(0)} turnos, ${mar.porForma[f].capital} por capital`).join(" | "));
+console.log(`Mar: ${mar.barcos} barcos botados, ${mar.muelles} muelles al final, ${mar.embarcadas} tropas vistas embarcadas. Pactos: ${mar.pactos}. Traiciones: ${mar.traiciones}.`);
 console.log("Victorias por ejército:", JSON.stringify(resumen.gana || {}));
 console.log(`Héroes invocados (${heroesVistos.size} de ${Object.keys(D.HEROES).length}):`, Array.from(heroesVistos).join(", "));
 console.log(`${comprobaciones} comprobaciones, ${fallos} fallos, ${((Date.now() - t0) / 1000).toFixed(1)} s`);

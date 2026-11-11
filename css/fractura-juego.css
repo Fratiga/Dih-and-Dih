@@ -350,3 +350,19 @@ body.fr-pantalla-completa:not(.fr-en-guerra):not(.fr-en-portada) .fr-contenido {
 .fr-salir-completa { position: fixed; top: 6px; right: 8px; z-index: 50; font: inherit; font-size: .76rem; padding: 3px 9px; color: #b8a99c; background: rgba(14, 11, 19, .8); border: 1px solid var(--fr-filete); cursor: pointer; }
 .fr-salir-completa:hover { color: var(--fr-marfil); border-color: var(--accent); }
 .fr-salir-completa.hidden, body.fr-en-guerra .fr-salir-completa { display: none; }
+
+/* --- El mar, las formas de mapa y los pactos --- */
+.fr-formas { grid-template-columns: repeat(3, 1fr); }
+.fr-forma { align-items: center; text-align: center; gap: 5px; padding: 7px 6px; }
+.fr-forma small { font-size: .68rem; color: #9fe3e6; text-transform: uppercase; letter-spacing: .06em; }
+.fr-forma-mini { display: block; width: 66px; height: 54px; border: 1px solid #000; background: #0d2a3d; }
+.fr-forma-azar { display: flex; align-items: center; justify-content: center; width: 66px; height: 54px; background: #0c0a0e; border: 1px solid #000; color: var(--muted); font-size: 1.6rem; }
+.fr-sel-nota { color: #9fd3d8; }
+.fr-h4-flota { margin-top: 10px; }
+.fr-marca-dipl { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+.fr-marca-dipl .fr-btn.no { opacity: .55; }
+.fr-pacto-si { font-style: normal; font-size: .76rem; color: #9fe3e6; border: 1px solid #5fb8bc; padding: 2px 7px; }
+.fr-traidor { font-style: normal; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: #f0a79c; border: 1px solid #7a2a24; padding: 1px 6px; }
+.fr-diplomacia { margin-top: 12px; padding-top: 10px; border-top: 1px solid #3a2f25; }
+.fr-diplomacia .fr-btn.no { opacity: .55; }
+.fr-toast.cian { border-left-color: #5fb8bc; }

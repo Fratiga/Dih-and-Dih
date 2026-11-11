@@ -6,6 +6,8 @@
    De 2 a 8 bandos. Con 2 el mapa es simétrico por giro de 180 grados y con 4, de 90. Con otro número
    no hay simetría exacta: cada bando recibe la misma zona de salida y los mismos sitios a distancias
    parecidas.
+   La forma (opciones.forma) decide cómo se reparten la tierra y el agua: continente, lagos, ríos,
+   continentes, archipiélago o mar interior. El agua ("agua") se navega; el vacío de fuera, no.
 ============================================================================= */
 (function (raiz) {
   const D = raiz.FRACTURA_DATOS || (typeof require !== "undefined" ? require("./fractura-datos.js") : null);
@@ -44,7 +46,8 @@
     };
   }
 
-  function conectado(casillas, w, h, a, b) {
+  function conectado(casillas, w, h, a, b, pasa) {
+    pasa = pasa || pasable;
     const visto = new Set([`${a.x},${a.y}`]);
     const cola = [a];
     while (cola.length) {
@@ -53,7 +56,7 @@
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
         if (!dx && !dy) continue;
         const x = p.x + dx, y = p.y + dy;
-        if (x < 0 || y < 0 || x >= w || y >= h || visto.has(`${x},${y}`) || !pasable(casillas[y][x])) continue;
+        if (x < 0 || y < 0 || x >= w || y >= h || visto.has(`${x},${y}`) || !pasa(casillas[y][x])) continue;
         visto.add(`${x},${y}`);
         cola.push({ x, y });
       }
@@ -65,7 +68,11 @@
     opciones = opciones || {};
     const tipo = TIPOS_FRACTURA[tipoId] || TIPOS_FRACTURA.reinos;
     const N = Math.max(2, Math.min(8, opciones.bandos || 2));
-    const [w, h] = TAMANOS[N];
+    // El Horizonte Roto no tiene mar: son fragmentos flotando en el vacío, sea cual sea la forma pedida
+    const sinMar = tipoId === "horizonte";
+    const forma = !sinMar && D.FORMAS_MAPA[opciones.forma] ? opciones.forma : "continente";
+    const maritimo = !!D.FORMAS_MAPA[forma].maritimo;
+    const w = TAMANOS[N][0] + (maritimo ? 4 : 0), h = TAMANOS[N][1] + (maritimo ? 4 : 0);
     const sim = N === 2 ? 2 : N === 4 ? 4 : 1;
     const r = { s: (semilla >>> 0) || 1 };
     const cx = (w - 1) / 2, cy = (h - 1) / 2;
@@ -84,22 +91,6 @@
     };
     const canonica = (x, y) => orbita(x, y).reduce((m, p) => (p.y < m.y || (p.y === m.y && p.x < m.x) ? p : m));
 
-    // --- Silueta del continente ---
-    const rForma = hacerRuido(ent(r, 1e6)), rHueco = hacerRuido(ent(r, 1e6));
-    const casillas = [];
-    for (let y = 0; y < h; y++) { casillas.push([]); for (let x = 0; x < w; x++) casillas[y].push({ t: "vacio", region: -1, est: null, objetos: [] }); }
-    const poner = (x, y, cambios) => orbita(x, y).forEach(p => Object.assign(casillas[p.y][p.x], cambios));
-    const esTierra = (x, y) => {
-      const c = canonica(x, y);
-      const dx = (c.x - cx) / (w / 2), dy = (c.y - cy) / (h / 2);
-      const rr = Math.sqrt(dx * dx + dy * dy);
-      let lim = 0.9 + (rForma(c.x * 0.3, c.y * 0.3) - 0.5) * 0.5;
-      if (tipo.vacio && rr > 0.2 && rHueco(c.x * 0.45 + 9, c.y * 0.45) < tipo.vacio / 100 * 0.9) return false;
-      if (c.x === 0 || c.y === 0 || c.x === w - 1 || c.y === h - 1) lim -= 0.12;
-      return rr < lim;
-    };
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (esTierra(x, y)) casillas[y][x].t = "llanura";
-
     // --- Capitales: repartidas alrededor del centro ---
     const capitales = [];
     const angulo0 = N === 2 ? -Math.PI * 0.8 : -Math.PI / 2 - Math.PI / N;
@@ -116,15 +107,63 @@
     }
     const centro = { x: Math.round(cx), y: Math.round(cy) };
 
+    // --- Silueta: qué es tierra, qué es agua navegable y qué queda fuera ---
+    const rForma = hacerRuido(ent(r, 1e6)), rHueco = hacerRuido(ent(r, 1e6)), rIsla = hacerRuido(ent(r, 1e6));
+    const casillas = [];
+    for (let y = 0; y < h; y++) { casillas.push([]); for (let x = 0; x < w; x++) casillas[y].push({ t: "vacio", region: -1, est: null, objetos: [] }); }
+    const poner = (x, y, cambios) => orbita(x, y).forEach(p => Object.assign(casillas[p.y][p.x], cambios));
+    const formaDe = (x, y) => {
+      const c = canonica(x, y);
+      const dx = (c.x - cx) / (w / 2), dy = (c.y - cy) / (h / 2);
+      const rr = Math.sqrt(dx * dx + dy * dy);
+      let lim = 0.9 + (rForma(c.x * 0.3, c.y * 0.3) - 0.5) * 0.5;
+      if (c.x === 0 || c.y === 0 || c.x === w - 1 || c.y === h - 1) lim -= 0.12;
+      const dc = dist(c, centro);
+      const dcap = capitales.reduce((m, p) => Math.min(m, dist(p, c)), 99);
+      if (forma === "continentes") {
+        if (rr >= lim + 0.05) return "vacio";
+        if (dc <= 1) return "tierra";                 // la isla del Núcleo
+        if (dc <= 3) return "agua";
+        let d1 = 1e9, d2 = 1e9;
+        capitales.forEach(p => { const d = Math.hypot(c.x - p.x, c.y - p.y); if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d; });
+        if (d2 - d1 < 1.7 + rHueco(c.x * 0.4, c.y * 0.4) * 1.5) return "agua";   // el brazo de mar entre dos tierras
+        return rr < lim ? "tierra" : "agua";
+      }
+      if (forma === "archipielago") {
+        if (rr >= lim + 0.08) return "vacio";
+        if (dc <= 1 || dcap <= 2) return "tierra";
+        // Entre la isla de un bando y la del vecino siempre hay un canal
+        let d1 = 1e9, d2 = 1e9;
+        capitales.forEach(p => { const d = Math.hypot(c.x - p.x, c.y - p.y); if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d; });
+        if (d2 - d1 < 1.5) return "agua";
+        const v = rIsla(c.x * 0.46 + 2.3, c.y * 0.46) * 0.66 + rHueco(c.x * 1.05, c.y * 1.05) * 0.34 + Math.max(0, 0.2 - dcap * 0.04);
+        return v > 0.58 ? "tierra" : "agua";
+      }
+      if (forma === "mar_interior") {
+        if (rr >= lim + 0.04) return "vacio";
+        if (dc <= 1) return "tierra";
+        if (rr < 0.4 + (rHueco(c.x * 0.4, c.y * 0.4) - 0.5) * 0.16 || dc <= 3) return "agua";
+        return "tierra";
+      }
+      if (tipo.vacio && rr > 0.2 && rHueco(c.x * 0.45 + 9, c.y * 0.45) < tipo.vacio / 100 * 0.9) return "vacio";
+      if (forma === "lagos") {
+        if (rr >= lim + 0.05) return "vacio";
+        if (dc > 2 && dcap > 2 && rIsla(c.x * 0.34 + 5.1, c.y * 0.34) > 0.66) return "agua";
+        return "tierra";
+      }
+      return rr < lim ? "tierra" : "vacio";
+    };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const f = formaDe(x, y); if (f !== "vacio") casillas[y][x].t = f === "agua" ? "agua" : "llanura"; }
+
     // --- Biomas: cada terreno tiene su campo de ruido y gana el más alto. El sesgo se ajusta para acercarse al reparto del tipo ---
-    const tipos = Object.keys(tipo.terrenos).filter(t => t !== "vacio" && tipo.terrenos[t] > 0);
+    const tipos = Object.keys(tipo.terrenos).filter(t => t !== "vacio" && tipo.terrenos[t] > 0 && !(maritimo && t === "agua"));
     const ESCALA = { llanura: 0.2, bosque: 0.27, montana: 0.3, desierto: 0.2, agua: 0.33, magica: 0.55, huesos: 0.42 };
     const campos = {}, sesgo = {};
     let totalPeso = 0;
     tipos.forEach(t => { campos[t] = hacerRuido(ent(r, 1e6)); totalPeso += tipo.terrenos[t]; });
     tipos.forEach(t => { sesgo[t] = (tipo.terrenos[t] / totalPeso - 1 / tipos.length) * 0.9; });
     const tierra = [];
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const c = canonica(x, y); if (c.x === x && c.y === y && casillas[y][x].t !== "vacio") tierra.push({ x, y }); }
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const c = canonica(x, y); if (c.x === x && c.y === y && casillas[y][x].t === "llanura") tierra.push({ x, y }); }
     const elegirTerreno = p => {
       let mejor = null, mv = -9;
       tipos.forEach(t => { const v = campos[t](p.x * ESCALA[t] + 3.1, p.y * ESCALA[t] + 7.7) + sesgo[t]; if (v > mv) { mv = v; mejor = t; } });
@@ -137,6 +176,26 @@
     }
     tierra.forEach(p => poner(p.x, p.y, { t: elegirTerreno(p) }));
 
+    // --- Ríos: nacen cerca del centro y bajan hasta el mar serpenteando. Cada pocos pasos dejan un vado. ---
+    if (forma === "rios") {
+      const cuantos = sim === 1 ? N + 1 : sim === 2 ? 2 : 1;
+      for (let i = 0; i < cuantos; i++) {
+        const ang = rnd(r) * Math.PI * 2, rumbo = rnd(r) * 20;
+        let x = Math.round(cx + Math.cos(ang) * 2.6), y = Math.round(cy + Math.sin(ang) * 2.6);
+        let paso = 0, vado = 2 + ent(r, 3);
+        for (let n = 0; n < w + h; n++) {
+          if (!dentro(x, y) || casillas[y][x].t === "vacio") break;
+          if (capitales.every(c => dist(c, { x, y }) > 1) && dist(centro, { x, y }) > 1) {
+            if (paso >= vado) { poner(x, y, { t: "llanura", vado: true }); vado = paso + 4 + ent(r, 3); }
+            else if (!casillas[y][x].vado) poner(x, y, { t: "agua" });
+          }
+          paso++;
+          const a = Math.atan2((y - cy) / h, (x - cx) / w) + (rHueco(x * 0.33 + rumbo, y * 0.33) - 0.5) * 2.5;
+          if (Math.abs(Math.cos(a)) > Math.abs(Math.sin(a))) x += Math.sign(Math.cos(a)); else y += Math.sign(Math.sin(a));
+        }
+      }
+    }
+
     // --- Zona de salida: igual para todos ---
     const patron = [];
     for (let i = 0; i < 9; i++) patron.push(i === 4 ? "llanura" : rnd(r) < 0.55 ? "llanura" : rnd(r) < 0.6 ? "bosque" : "montana");
@@ -145,7 +204,7 @@
         const x = cap.x + dx, y = cap.y + dy;
         if (!dentro(x, y)) continue;
         const borde = Math.max(Math.abs(dx), Math.abs(dy)) === 2;
-        if (borde) { if (casillas[y][x].t === "vacio" && Math.abs(dx) + Math.abs(dy) < 4) casillas[y][x].t = "llanura"; if (casillas[y][x].t === "agua") casillas[y][x].t = "llanura"; continue; }
+        if (borde) { if (casillas[y][x].t === "vacio" && Math.abs(dx) + Math.abs(dy) < 4) casillas[y][x].t = "llanura"; continue; }
         casillas[y][x].t = patron[(dy + 1) * 3 + (dx + 1)];
       }
     };
@@ -195,16 +254,44 @@
     colocar(ruinas, "ruinas", Math.max(1, Math.round(tipo.ruinas / 2)), [3, 6, 5, 7], 3, 2, false);
 
     // --- Comunicación asegurada: todo sitio importante se alcanza desde la primera capital ---
+    const pasa = maritimo ? (c => pasable(c) || c.t === "agua") : pasable;
     const abrir = (a, b) => {
       let x = a.x, y = a.y;
       while (x !== b.x || y !== b.y) {
         if (x !== b.x) x += Math.sign(b.x - x);
         if (y !== b.y) y += Math.sign(b.y - y);
-        if (!pasable(casillas[y][x])) poner(x, y, { t: "llanura" });
+        if (!pasa(casillas[y][x])) poner(x, y, { t: maritimo && casillas[y][x].t === "vacio" ? "agua" : "llanura" });
       }
     };
-    capitales.concat(sitios, fortalezas).forEach(p => { if (!conectado(casillas, w, h, p, centro)) abrir(p, centro); });
-    ruinas.forEach(p => { if (!conectado(casillas, w, h, p, centro)) abrir(p, centro); });
+    capitales.concat(sitios, fortalezas).forEach(p => { if (!conectado(casillas, w, h, p, centro, pasa)) abrir(p, centro); });
+    ruinas.forEach(p => { if (!conectado(casillas, w, h, p, centro, pasa)) abrir(p, centro); });
+
+    // --- El mar de alrededor: dos casillas de agua navegable pegadas a la costa. Más allá, mar abierto. ---
+    if (!sinMar) {
+      const costa = [];
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        if (casillas[y][x].t !== "vacio") continue;
+        let cerca = false;
+        for (let dy = -2; dy <= 2 && !cerca; dy++) for (let dx = -2; dx <= 2; dx++) if (dentro(x + dx, y + dy) && casillas[y + dy][x + dx].t !== "vacio" && casillas[y + dy][x + dx].t !== "agua") { cerca = true; break; }
+        if (cerca) costa.push({ x, y });
+      }
+      costa.forEach(p => { casillas[p.y][p.x].t = "agua"; });
+      // En los mapas marítimos toda capital tiene el agua a dos casillas, para poder hacer su muelle
+      if (maritimo) {
+        const cala = cap => {
+          let m = null;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (casillas[y][x].t === "agua") { const d = dist(cap, { x, y }); if (!m || d < m.d) m = { x, y, d }; }
+          if (!m || m.d <= 2) return;
+          let x = m.x, y = m.y;
+          while (dist(cap, { x, y }) > 2) {
+            x += Math.sign(cap.x - x); y += Math.sign(cap.y - y);
+            if (casillas[y][x].est) break;
+            poner(x, y, { t: "agua" });
+          }
+        };
+        if (sim === 1) capitales.forEach(cala); else cala(capitales[0]);
+      }
+    }
 
     // --- Provincias: cada ciudad, fortaleza y el Núcleo extienden la suya hasta tocar la del vecino ---
     const semillas = capitales.map((p, k) => ({ x: p.x, y: p.y, capital: k })).concat(sitios.map(p => ({ x: p.x, y: p.y })), fortalezas.map(p => ({ x: p.x, y: p.y, fortaleza: true })), [{ x: centro.x, y: centro.y, nucleo: true }]);
@@ -220,7 +307,7 @@
         const nx = x + dx, ny = y + dy;
         if (!dentro(nx, ny) || casillas[ny][nx].t === "vacio") continue;
         const cn = canonica(nx, ny);
-        const nc = coste[i] + 1 + rBorde(cn.x * 0.5, cn.y * 0.5) * 0.9 + (casillas[ny][nx].t === "agua" ? 0.6 : 0);
+        const nc = coste[i] + 1 + rBorde(cn.x * 0.5, cn.y * 0.5) * 0.9 + (casillas[ny][nx].t === "agua" ? 1.6 : 0);
         if (nc < coste[ny * w + nx]) { coste[ny * w + nx] = nc; casillas[ny][nx].region = casillas[y][x].region; abiertos.push(ny * w + nx); }
       }
     }
@@ -260,7 +347,7 @@
       ocupadas.push(a, b);
     });
 
-    return { ancho: w, alto: h, casillas, regiones, costuras, capitales, nucleo: centro, sitios, fortalezas, ruinas, rng: r.s, sim, bandos: N };
+    return { ancho: w, alto: h, casillas, regiones, costuras, capitales, nucleo: centro, sitios, fortalezas, ruinas, rng: r.s, sim, bandos: N, forma, maritimo };
   }
 
   /* Mueve una costura a otras dos casillas (en los mapas inestables). Devuelve true si algo cambió. */
