@@ -107,6 +107,8 @@ function fichasPersonajeVacio() {
       clase: "",
       subclase: "",
       clasesExtra: [], // [{ nombre, nivel }]
+      bibliotecaClase: "", // id de una entrada de la Biblioteca (biblioteca.html), opcional
+      bibliotecaRaza: "",
       nivelTotal: 1,
       trasfondo: "",
       alineamiento: "",

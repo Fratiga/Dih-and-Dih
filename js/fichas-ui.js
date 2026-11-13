@@ -588,6 +588,57 @@
     document.querySelectorAll(".fichas-panel").forEach(p => p.classList.toggle("active", p.dataset.panel === nombre));
   }
 
+  /* Biblioteca: las opciones se cargan una vez por visita; la tabla de la clase elegida se pinta con el nivel marcado. */
+  let bibLista = null, bibCargando = null;
+  const bibDetalle = new Map();
+  async function rellenarBiblioteca() {
+    if (!window.Biblioteca) return;
+    const p = personajeActual;
+    if (!p) return;
+    try {
+      if (!bibLista) bibLista = await (bibCargando = bibCargando || Biblioteca.listar());
+    } catch (err) {
+      bibCargando = null;
+      document.querySelectorAll("[data-bib-opciones]").forEach(s => { s.title = "No se pudo cargar la biblioteca"; if (s.options[0] && s.options[0].textContent === "Cargando…") s.options[0].textContent = "(no disponible)"; });
+      return;
+    }
+    if (p !== personajeActual) return;
+    document.querySelectorAll("[data-bib-opciones]").forEach(sel => {
+      const tipos = sel.dataset.bibOpciones === "clase" ? ["clase", "subclase"] : ["raza"];
+      const valor = sel.dataset.bind === "identidad.bibliotecaClase" ? p.identidad.bibliotecaClase : p.identidad.bibliotecaRaza;
+      const opciones = bibLista.filter(e => tipos.includes(e.tipo));
+      const falta = valor && !opciones.some(e => e.id === valor);
+      sel.innerHTML = `<option value="">Ninguna</option>` + opciones.map(e => `<option value="${esc(e.id)}">${esc(e.nombre)}${e.tipo === "subclase" ? " (subclase)" : ""}${e.fuente ? " · " + esc(e.fuente) : ""}</option>`).join("")
+        + (falta ? `<option value="${esc(valor)}">(ya no está en la biblioteca)</option>` : "");
+      sel.value = valor || "";
+    });
+    pintarTablaBiblioteca();
+  }
+  async function pintarTablaBiblioteca() {
+    const caja = document.querySelector("[data-bib-tabla]");
+    const p = personajeActual;
+    if (!caja || !p || !window.Biblioteca) return;
+    const ids = [p.identidad.bibliotecaClase, p.identidad.bibliotecaRaza].filter(Boolean);
+    if (!ids.length) { caja.innerHTML = ""; return; }
+    const partes = [];
+    for (const id of ids) {
+      try {
+        if (!bibDetalle.has(id)) bibDetalle.set(id, await Biblioteca.obtener(id));
+        const e = bibDetalle.get(id);
+        if (!e) continue;
+        const nivel = e.tipo === "raza" ? null : Number(p.identidad.nivelTotal) || null;
+        partes.push(`<div><strong>${esc(e.nombre)}</strong> <a class="fichas-biblioteca-enlace" href="biblioteca.html#${encodeURIComponent(e.id)}" target="_blank" rel="noopener">Ver en la biblioteca ↗</a>
+          ${e.resumen ? `<p class="fichas-imagenes-ayuda" style="margin:4px 0">${esc(e.resumen)}</p>` : ""}
+          ${Biblioteca.tablaHtml(e.tabla, { nivel })}</div>`);
+      } catch (err) { /* sin conexión: no se muestra */ }
+    }
+    if (p === personajeActual) caja.innerHTML = partes.join("");
+  }
+  document.addEventListener("change", e => {
+    const b = e.target && e.target.dataset && e.target.dataset.bind;
+    if (b === "identidad.bibliotecaClase" || b === "identidad.bibliotecaRaza" || b === "identidad.nivelTotal") setTimeout(pintarTablaBiblioteca, 0);
+  });
+
   function renderTabs() {
     document.getElementById("fichasTabsPaneles").innerHTML = [
       panelResumen(), panelCombate(), panelHabilidades(), panelRasgos(),
@@ -601,6 +652,7 @@
       };
     });
     activarTab("resumen");
+    rellenarBiblioteca();
     aplicarFiltroHechizos();
     aplicarFiltroFilas("rasgo");
     hechizoParaAbrir = null;
@@ -788,9 +840,20 @@
         <div class="fichas-field"><label>Historia resumida</label>${campoTextarea("identidad.historia", p.identidad.historia)}</div>
       </div>`;
 
+    const biblioteca = `
+      <div class="fichas-biblioteca">
+        <p class="fichas-imagenes-ayuda">Enlaza tu clase y tu raza con lo que se subió a la <a href="biblioteca.html">Biblioteca</a>. La tabla de la clase sale aquí con tu nivel marcado. Si no está, súbela tú y así la tenemos todos.</p>
+        <div class="fichas-field-grid">
+          <div class="fichas-field"><label>Clase en la biblioteca</label><select data-bind="identidad.bibliotecaClase" data-bib-opciones="clase"><option value="${esc(p.identidad.bibliotecaClase || "")}">${p.identidad.bibliotecaClase ? "Cargando…" : "Ninguna"}</option></select></div>
+          <div class="fichas-field"><label>Raza en la biblioteca</label><select data-bind="identidad.bibliotecaRaza" data-bib-opciones="raza"><option value="${esc(p.identidad.bibliotecaRaza || "")}">${p.identidad.bibliotecaRaza ? "Cargando…" : "Ninguna"}</option></select></div>
+        </div>
+        <div data-bib-tabla></div>
+      </div>`;
+
     return `
     <section class="fichas-panel" data-panel="resumen">
       ${seccion("identidad", "Identidad", identidad, true)}
+      ${seccion("biblioteca", "Clase y raza de la biblioteca", biblioteca, !!(p.identidad.bibliotecaClase || p.identidad.bibliotecaRaza))}
       ${seccion("atributos", "Atributos", atributos, true)}
       ${seccion("ajustes", "Bonos, feats y competencia", ajustes)}
       ${seccion("clases", "Clases adicionales", clases)}

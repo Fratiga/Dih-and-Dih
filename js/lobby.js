@@ -105,7 +105,7 @@
     ["pergaminos.html", "Pergaminos"], ["armas.html", "Armas"], ["objetos.html", "Objetos"],
     ["bestiario.html", "Bestiario"], ["reglas.html", "Reglas"], ["economia.html", "Economía"],
     ["estadisticas.html", "Estadísticas"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"],
-    ["fichas.html", "Mis personajes"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
+    ["fichas.html", "Mis personajes"], ["biblioteca.html", "Biblioteca"], ["minijuegos.html", "Minijuegos"], ["ajedrez.html", "Ajedrez"],
     ["ritmo.html", "Zarabanda"], ["parranda.html", "Parranda"], ["rocola.html", "Rocola"], ["sacrificio.html", "Hooey"],
     ["arqueria.html", "Arquería"], ["duelo.html", "Duelo", true], ["cartas.html", "Triunfos"], ["habitacion.html", "Mi habitación"], ["corrales.html", "Corrales"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"],
     ["ostelar.html", "Ostelar", true], ["hipodromo.html", "Hipódromo"], ["admin.html", "Admin", true]
