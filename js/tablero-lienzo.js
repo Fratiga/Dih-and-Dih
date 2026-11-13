@@ -5,7 +5,7 @@
 ============================================================================= */
 (function () {
   const COLORES_BARRA = ["#5cb85c", "#4f8fd6", "#d9534f"];
-  const CAPAS = ["mapa", "fichas", "gm", "delantero"];
+  const CAPAS = ["mapa", "fichas", "gm", "delantero", "luz"];
   const SUPA = "supabase.co";
 
   function crear(contenedor, op) {
@@ -32,6 +32,11 @@
       (c === "mapa" ? lMapa : lObj).add(capa);
       grupos[c] = { capa, auras, objetos, deco };
     });
+    // Iluminación dinámica: la oscuridad va encima de las fichas y debajo de los muros (que solo ve el DJ)
+    const sombra = new Konva.Image({ x: 0, y: 0, listening: false, visible: false });
+    lObj.add(sombra);
+    grupos.luz.capa.moveToTop();
+    const pintorLuz = window.TBLuz ? TBLuz.crearPintor() : null;
 
     const tr = new Konva.Transformer({
       rotateEnabled: true, keepRatio: false, ignoreStroke: true, anchorSize: 9, borderStroke: "#d6127e", anchorStroke: "#d6127e",
@@ -140,6 +145,43 @@
       }
     });
     lNiebla.add(niebla);
+    /* ------------------------------------------------------------ iluminación dinámica */
+    const opcLuz = () => (st.escena && st.escena.opciones && st.escena.opciones.luz) || {};
+    function bloqueaMovimiento() { const L = opcLuz(), b = L.bloquear || "luz"; return !!window.TBLuz && (b === "siempre" || (b === "luz" && !!L.activa)); }
+    let luzPendiente = false;
+    function programarLuz() {
+      if (luzPendiente) return;
+      luzPendiente = true;
+      // requestAnimationFrame no corre con la pestaña en segundo plano: el temporizador hace de respaldo
+      const hacer = () => { if (!luzPendiente) return; luzPendiente = false; actualizarLuz(); };
+      requestAnimationFrame(hacer);
+      setTimeout(hacer, 80);
+    }
+    function actualizarLuz() {
+      const L = opcLuz();
+      const antes = st.luzOn;
+      if (!pintorLuz || !L.activa || !st.escena) {
+        st.luzOn = false;
+        if (sombra.visible()) sombra.visible(false);
+        if (antes) st.nodos.forEach(aplicarAtributos);
+        lObj.batchDraw();
+        return;
+      }
+      const m = medidas(), objs = [...st.nodos.values()].map(n => n.o), pxPie = tam() / pies();
+      const comoJugador = !st.esGM || st.vistaJugador;
+      const segs = TBLuz.segmentosDe(objs).vista;
+      // Quién mira: el jugador, sus fichas; el DJ, las de todos los jugadores
+      const viewers = objs.filter(o => o.tipo === "imagen" && o.capa === "fichas" && (st.esGM ? (o.controlan_todos || (o.controladores || []).length > 0) : controla(o)) && !(o.datos && o.datos.vision && o.datos.vision.ve === false))
+        .map(o => ({ x: o.x, y: o.y, oscuridad: (Number(((o.datos || {}).vision || {}).oscuridad) || 0) * pxPie }));
+      const fuentes = objs.filter(o => o.tipo === "luz" || (o.tipo === "imagen" && o.capa !== "mapa" && o.datos && o.datos.luz))
+        .map(o => { const l = (o.datos || {}).luz || {}; return { x: o.x, y: o.y, brillante: (Number(l.brillante) || 0) * pxPie, tenue: (Number(l.tenue) || 0) * pxPie }; });
+      const lienzoOsc = pintorLuz.pintar({ medidas: m, segs, viewers, fuentes, global: !!L.global, explorar: L.explorar !== false, claveExplorado: (st.escena.id || "") + (comoJugador ? "|j" : "|g") });
+      sombra.setAttrs({ image: lienzoOsc, width: m.w, height: m.h, visible: true, opacity: comoJugador ? 1 : (L.opacidadDJ == null ? 0.35 : Number(L.opacidadDJ)) });
+      st.luzOn = true;
+      if (comoJugador || antes !== st.luzOn) st.nodos.forEach(aplicarAtributos);
+      lObj.batchDraw();
+    }
+
     function opacidadNiebla() { lNiebla.opacity(st.esGM && !st.vistaJugador ? 0.42 : 1); }
 
     /* ------------------------------------------------------------ imágenes */
@@ -169,6 +211,23 @@
         if (d.fondo && d.fondo !== "transparent") grp.add(new Konva.Rect({ width: txt.width(), height: txt.height(), fill: d.fondo, cornerRadius: 2 }));
         grp.add(txt);
         return grp;
+      }
+      if (o.tipo === "luz") {
+        const g = new Konva.Group();
+        const l = d.luz || {}, rt = ((Number(l.brillante) || 0) + (Number(l.tenue) || 0)) / pies() * tam();
+        if (rt > 0) g.add(new Konva.Circle({ x: w / 2, y: h / 2, radius: rt, stroke: "#f2c94c", strokeWidth: 1.5, dash: [8, 6], listening: false, opacity: 0.8 }));
+        if (Number(l.brillante) > 0) g.add(new Konva.Circle({ x: w / 2, y: h / 2, radius: Number(l.brillante) / pies() * tam(), stroke: "#f2c94c", strokeWidth: 1, listening: false, opacity: 0.6 }));
+        g.add(new Konva.Circle({ x: w / 2, y: h / 2, radius: Math.min(w, h) / 2, fill: "#ffd84d", stroke: "#a67c00", strokeWidth: 2 }));
+        g.add(new Konva.Path({ x: w / 2 - 7, y: h / 2 - 7, data: "M7 0v3M7 11v3M0 7h3M11 7h3M2 2l2 2M10 10l2 2M2 12l2-2M10 4l2-2", stroke: "#7a5a00", strokeWidth: 1.6, listening: false }));
+        return g;
+      }
+      if (o.tipo === "dibujo" && o.capa === "luz") {
+        const tipo = d.muro || "muro";
+        const color = (window.TBLuz && TBLuz.COLOR_MURO[tipo]) || "#2f80ed";
+        const comun = { stroke: color, strokeWidth: tipo === "puerta" ? 6 : 4, lineCap: "round", lineJoin: "round", hitStrokeWidth: 14, dash: tipo === "puerta" && d.abierta ? [10, 8] : tipo === "ventana" ? [3, 5] : undefined };
+        if (d.forma === "rect") return new Konva.Rect(Object.assign({ width: w, height: h }, comun));
+        if (d.forma === "elipse") return new Konva.Ellipse(Object.assign({ x: w / 2, y: h / 2, radiusX: w / 2, radiusY: h / 2 }, comun));
+        return new Konva.Line(Object.assign({ points: d.puntos || [0, 0, w, h], tension: 0, closed: !!d.cerrado }, comun));
       }
       if (o.tipo === "dibujo") {
         const comun = { stroke: d.trazo || "#000", strokeWidth: d.grosor || 4, fill: d.relleno && d.relleno !== "transparent" ? d.relleno : undefined, lineCap: "round", lineJoin: "round", hitStrokeWidth: Math.max(12, d.grosor || 4) };
@@ -264,12 +323,16 @@
       const o = n.o;
       n.g.setAttrs({ x: o.x, y: o.y, rotation: o.rot || 0, opacity: o.opacidad == null ? 1 : o.opacidad, offsetX: o.ancho / 2, offsetY: o.alto / 2 });
       const gm = o.capa === "gm";
-      n.g.visible(!(gm && st.vistaJugador));
+      // La capa de iluminación solo la ve el DJ; con luz dinámica, el jugador no ve las fichas ajenas que quedan a oscuras
+      const comoJugador = !st.esGM || st.vistaJugador;
+      const deJugador = st.esGM ? (o.controlan_todos || (o.controladores || []).length > 0) : controla(o);
+      const aOscuras = st.luzOn && comoJugador && o.capa === "fichas" && !deJugador && pintorLuz && !pintorLuz.visible(o.x, o.y);
+      n.g.visible(!(gm && st.vistaJugador) && !(o.capa === "luz" && comoJugador) && !aOscuras);
       n.deco.visible(n.g.visible() && (!st.opc.decoHover || o.tipo === "pin" || !!n.encima || st.seleccion.has(o.id)));
       n.aura.visible(n.g.visible());
       if (gm && !st.vistaJugador && st.capa !== "gm") n.g.opacity((o.opacidad == null ? 1 : o.opacidad) * 0.55);
       n.g.draggable(puedeArrastrar(o));
-      n.g.listening(st.herr === "seleccionar" && (puedeSeleccionar(o) || (!st.esGM && o.capa === "fichas")));
+      n.g.listening(st.herr === "seleccionar" && n.g.visible() && (puedeSeleccionar(o) || (!st.esGM && o.capa === "fichas")));
     }
 
     function crearNodo(o) {
@@ -295,7 +358,7 @@
 
     function upsert(o) {
       const n = st.nodos.get(o.id);
-      if (!n) { crearNodo(o); ordenarCapa(o.capa); lObj.batchDraw(); lMapa.batchDraw(); return; }
+      if (!n) { crearNodo(o); ordenarCapa(o.capa); lObj.batchDraw(); lMapa.batchDraw(); programarLuz(); return; }
       if (n.arrastrando || n.transformando) {
         // Mientras se arrastra solo se aceptan los datos, no la posición
         n.o = Object.assign({}, o, { x: n.o.x, y: n.o.y, rot: n.o.rot, ancho: n.o.ancho, alto: n.o.alto });
@@ -312,6 +375,7 @@
       if (cambiaCuerpo) pintarCuerpo(n); else pintarDeco(n);
       aplicarAtributos(n);
       ordenarCapa(o.capa);
+      programarLuz();
       tr.forceUpdate();
       lMapa.batchDraw(); lObj.batchDraw(); lUI.batchDraw();
     }
@@ -323,6 +387,7 @@
       n.g.destroy(); n.deco.destroy(); n.aura.destroy();
       st.nodos.delete(id);
       actualizarTransformer();
+      programarLuz();
       lMapa.batchDraw(); lObj.batchDraw();
     }
 
@@ -330,6 +395,7 @@
       [...st.nodos.keys()].forEach(quitar);
       lista.forEach(o => crearNodo(o));
       CAPAS.forEach(ordenarCapa);
+      programarLuz();
       lMapa.batchDraw(); lObj.batchDraw();
     }
 
@@ -413,6 +479,7 @@
           ultimoMov = ahora;
           st.seleccion.forEach(id => { const m = st.nodos.get(id); if (m && m.o.capa !== "gm" && op.onMovEnCurso) op.onMovEnCurso(id, m.o.x, m.o.y); });
         }
+        if (st.luzOn) programarLuz();
         if (st.opc.moverMide !== false && n.o.capa !== "mapa") {
           dibujarMedida(guiaMedida, "linea", ini, { x: n.g.x(), y: n.g.y() }, "#d6127e", true);
           if (st.opc.transmitir !== false && op.onRegla && n.o.capa !== "gm") op.onRegla({ forma: "linea", a: ini, b: { x: n.g.x(), y: n.g.y() }, mov: true });
@@ -424,16 +491,22 @@
         if (!st.arrastre) return;
         const sinAjuste = e.evt && e.evt.altKey;
         const movidos = [];
+        const muros = !st.esGM && bloqueaMovimiento() ? TBLuz.segmentosDe([...st.nodos.values()].map(x => x.o)).paso : null;
+        let chocan = false;
         st.seleccion.forEach(id => {
           const m = st.nodos.get(id);
           if (!m) return;
-          const p = ajustarPos(m.o, m.g.x(), m.g.y(), sinAjuste);
+          let p = ajustarPos(m.o, m.g.x(), m.g.y(), sinAjuste);
+          const ini = st.arrastre.inicio.get(id);
+          if (muros && ini && TBLuz.cruza(ini, p, muros)) { p = { x: ini.x, y: ini.y }; chocan = true; }
           m.g.position(p); m.o.x = p.x; m.o.y = p.y;
           m.deco.position(p); m.aura.position(p);
           m.arrastrando = false;
           movidos.push(m.o);
         });
         st.arrastre = null;
+        if (chocan && op.onAviso) op.onAviso("Hay un muro en medio: la ficha vuelve a su sitio.");
+        programarLuz();
         guiaMedida.destroyChildren();
         if (op.onRegla) op.onRegla(null);
         tr.forceUpdate();
@@ -469,11 +542,18 @@
         o.x = cambios.x = p.x; o.y = cambios.y = p.y;
         m.transformando = false;
         pintarCuerpo(m); aplicarAtributos(m);
+        programarLuz();
         tr.forceUpdate();
         if (op.onCambiar) op.onCambiar(o.id, cambios);
       });
       n.g.on("dblclick dbltap", () => {
         if (st.herr !== "seleccionar") return;
+        if (n.o.capa === "luz" && st.esGM) {
+          const d = n.o.datos || {};
+          if (n.o.tipo === "dibujo" && d.muro === "puerta" && op.onCambiar) { op.onCambiar(n.o.id, { datos: Object.assign({}, d, { abierta: !d.abierta }) }); return; }
+          if (n.o.tipo === "luz" && op.onAjustesLuz) { op.onAjustesLuz(n.o.id); return; }
+          return;
+        }
         if (n.o.tipo === "texto" && (st.esGM || n.o.autor === st.uid)) { editarTexto(n); return; }
         if (op.onAbrirAjustes && (st.esGM || controla(n.o))) op.onAbrirAjustes(n.o.id);
       });
@@ -889,9 +969,13 @@
 
     return {
       stage,
-      setPermisos(esGM, uid) { st.esGM = esGM; st.uid = uid; opacidadNiebla(); st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); },
+      setPermisos(esGM, uid) { st.esGM = esGM; st.uid = uid; opacidadNiebla(); st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); programarLuz(); },
+      cruzaMuro(a, b) { return !!window.TBLuz && bloqueaMovimiento() && TBLuz.cruza(a, b, TBLuz.segmentosDe([...st.nodos.values()].map(x => x.o)).paso); },
+      reiniciarExplorado() { if (pintorLuz) { pintorLuz.reiniciarExplorado(); programarLuz(); } },
+      actualizarLuz: programarLuz,
       setEscena(escena) {
         st.escena = escena;
+        programarLuz();
         const m = medidas();
         pagina.setAttrs({ width: m.w, height: m.h, fill: (escena && escena.fondo) || "#ffffff", visible: !!escena });
         contenedor.style.background = (escena && escena.opciones && escena.opciones.colorTablero) || "#3d4048";
@@ -907,7 +991,7 @@
       setHerramienta,
       setOpciones(o) { const antes = st.opc.arribaMias; st.opc = Object.assign({}, st.opc, o); if (antes !== st.opc.arribaMias) { CAPAS.forEach(ordenarCapa); lObj.batchDraw(); } },
       opciones: () => st.opc,
-      setVistaJugador(v) { st.vistaJugador = v; opacidadNiebla(); st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); lObj.batchDraw(); lNiebla.batchDraw(); },
+      setVistaJugador(v) { st.vistaJugador = v; opacidadNiebla(); st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); programarLuz(); lObj.batchDraw(); lNiebla.batchDraw(); },
       setTurno(id) { const viejo = st.turno; st.turno = id; [viejo, id].forEach(x => { const n = st.nodos.get(x); if (n) pintarDeco(n); }); lObj.batchDraw(); lMapa.batchDraw(); },
       setEspacio(v) { st.espacio = v; contenedor.classList.toggle("arrastrando-camara", v); },
       moverRemoto(id, x, y) {
@@ -916,6 +1000,7 @@
         n.o.x = x; n.o.y = y;
         n.g.to({ x, y, duration: 0.08 });
         n.deco.to({ x, y, duration: 0.08 }); n.aura.to({ x, y, duration: 0.08 });
+        if (st.luzOn) programarLuz();
         if (st.seleccion.has(id)) setTimeout(() => { tr.forceUpdate(); actualizarTransformer(); }, 100);
       },
       reglaRemota, ping,

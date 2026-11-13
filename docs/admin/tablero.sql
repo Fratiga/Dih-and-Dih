@@ -70,9 +70,9 @@ alter table tablero_objetos add column if not exists controladores uuid[] not nu
 alter table tablero_objetos add column if not exists controlan_todos boolean not null default false;
 alter table tablero_objetos add column if not exists autor uuid default auth.uid() references auth.users(id) on delete set null;
 alter table tablero_objetos drop constraint if exists tablero_objetos_capa_check;
-alter table tablero_objetos add constraint tablero_objetos_capa_check check (capa in ('mapa', 'fichas', 'gm', 'delantero'));
+alter table tablero_objetos add constraint tablero_objetos_capa_check check (capa in ('mapa', 'fichas', 'gm', 'delantero', 'luz'));
 alter table tablero_objetos drop constraint if exists tablero_objetos_tipo_check;
-alter table tablero_objetos add constraint tablero_objetos_tipo_check check (tipo in ('imagen', 'texto', 'forma', 'dibujo', 'pin'));
+alter table tablero_objetos add constraint tablero_objetos_tipo_check check (tipo in ('imagen', 'texto', 'forma', 'dibujo', 'pin', 'luz'));
 create index if not exists tablero_objetos_escena on tablero_objetos (escena, z);
 
 -- Notas del DJ de cada ficha (no las ve ningún jugador)

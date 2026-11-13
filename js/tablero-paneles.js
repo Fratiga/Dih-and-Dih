@@ -12,7 +12,8 @@
     { id: "fichas", nombre: "Fichas", icono: "capaFichas" },
     { id: "gm", nombre: "DJ", icono: "capaDJ" },
     { id: "mapa", nombre: "Mapa", icono: "capaMapa" },
-    { id: "delantero", nombre: "Delantero", icono: "capaDelantero" }
+    { id: "delantero", nombre: "Delantero", icono: "capaDelantero" },
+    { id: "luz", nombre: "Iluminación", icono: "luz" }
   ];
   const DADOS = [["d4", 4], ["d6", 6], ["d8", 8], ["d10", 10], ["d12", 12], ["d20", 20], ["d100", 100], ["Fudge", "f"]];
   const FUENTES = ["Arial", "Georgia", "Times New Roman", "Courier New", "Verdana", "Trebuchet MS", "Comic Sans MS"];
@@ -35,7 +36,7 @@
       btn("ping", "ping", "Señalar (mantén pulsado en cualquier sitio; Mayús para mover la vista de todos)"),
       gm ? btn("niebla", "niebla", "Ocultar/Revelar máscara") : "",
       `<span class="tb-barra-etq">FX</span>`,
-      gm ? btn("luz", "luz", "Iluminación dinámica", "deshabilitado") : "",
+      gm ? btn("luz", "luz", "Iluminación dinámica") : "",
       btn("fx", "fx", "Efectos"),
       gm ? `<div class="tb-barra-pie"><span class="tb-barra-etq">CAPAS</span><button type="button" class="tb-barra-btn tb-barra-capa" data-b="capas" title="Capa activa"></button></div>` : ""
     ].join("");
@@ -316,9 +317,99 @@
   }
 
   function flotLuz(f) {
-    f.appendChild(cabFlot("✦ Iluminación Dinámica"));
-    f.appendChild(el(`<div class="tb-flot-cuerpo"><p style="line-height:1.5;margin-top:0">La iluminación dinámica (muros, luces y lo que ve cada personaje) todavía no está en este tablero.</p>
-      <p style="line-height:1.5">Mientras tanto, usa <b>Ocultar/Revelar máscara</b> para tapar lo que los jugadores no deben ver.</p></div>`));
+    f.appendChild(cabFlot("✦ Iluminación Dinámica", true));
+    const e = TB.escena() || {};
+    const L = Object.assign({ activa: false, global: false, explorar: true, bloquear: "luz", opacidadDJ: 0.35 }, (e.opciones || {}).luz);
+    const tipo = TB.prefs.muroTipo || "muro";
+    const c = el(`<div class="tb-flot-cuerpo">
+      <div class="tb-fila-toggle" style="border:0"><span><b>Iluminación dinámica en esta página</b></span><span data-t="activa"></span></div>
+      <div class="tb-fila-toggle" style="border:0"><span>Luz de día<small class="tb-nota" style="display:block;font-weight:400">Todo está iluminado; solo tapan los muros.</small></span><span data-t="global"></span></div>
+      <div class="tb-fila-toggle" style="border:0"><span>Recordar lo explorado<small class="tb-nota" style="display:block;font-weight:400">Lo que ya vieron queda en penumbra.</small></span><span data-t="explorar"></span></div>
+      <label class="tb-campo"><span style="font-weight:400">Las líneas bloquean el movimiento</span><select data-bloquear><option value="nunca">Siempre desactivado</option><option value="siempre">Siempre activado</option><option value="luz">Cuando la iluminación está activada</option></select></label>
+      <label class="tb-campo"><span style="font-weight:400">Oscuridad que ves tú (los jugadores la ven entera)</span><input type="range" min="0" max="90" data-op></label>
+      <hr class="tb-sep">
+      <p class="tb-flot-titulo-sec">Dibujar muros</p>
+      <div class="tb-segmento" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr" data-tipos>
+        <button type="button" data-m="muro">Muro</button><button type="button" data-m="puerta">Puerta</button><button type="button" data-m="ventana">Ventana</button></div>
+      <div class="tb-fila" style="margin-top:8px"><button type="button" class="tb-btn" data-dib="linea" style="flex:1">${I.linea} Línea</button><button type="button" class="tb-btn" data-dib="rect" style="flex:1">${I.rect} Rectángulo</button></div>
+      <p class="tb-nota">Las líneas se dibujan en la capa Iluminación, que solo ves tú. Una ventana deja ver pero no pasar. Doble clic en una puerta la abre o la cierra.</p>
+      <button type="button" class="tb-btn" data-luz style="width:100%">☀ Poner una luz en el centro de la vista</button>
+      <hr class="tb-sep">
+      <label class="tb-btn" style="width:100%;cursor:pointer">⇪ Importar un mapa de Dungeondraft (.dd2vtt / .uvtt)<input type="file" accept=".dd2vtt,.uvtt,.df2vtt,.json" hidden data-uvtt></label>
+      <button type="button" class="tb-enlace" data-olvidar style="margin-top:10px">Olvidar lo explorado en esta página</button>
+    </div>`);
+    const guardar = cambio => {
+      const e2 = TB.escena();
+      if (!e2) return;
+      Object.assign(L, cambio);
+      TB.guardarEscena(e2.id, { opciones: Object.assign({}, e2.opciones, { luz: Object.assign({}, L) }) });
+    };
+    ["activa", "global", "explorar"].forEach(k => {
+      const t = interruptor(!!L[k]);
+      t.input.addEventListener("change", () => guardar({ [k]: t.valor() }));
+      c.querySelector(`[data-t="${k}"]`).appendChild(t.el);
+    });
+    const blo = c.querySelector("[data-bloquear]");
+    blo.value = L.bloquear;
+    blo.addEventListener("change", () => guardar({ bloquear: blo.value }));
+    const op = c.querySelector("[data-op]");
+    op.value = Math.round(L.opacidadDJ * 100);
+    op.addEventListener("change", () => guardar({ opacidadDJ: op.value / 100 }));
+    const pintarTipos = () => c.querySelectorAll("[data-tipos] button").forEach(b => b.classList.toggle("activo", b.dataset.m === (TB.prefs.muroTipo || "muro")));
+    c.querySelector("[data-tipos]").addEventListener("click", ev => { const b = ev.target.closest("[data-m]"); if (!b) return; TB.prefs.muroTipo = b.dataset.m; TB.guardarPrefs(); pintarTipos(); });
+    pintarTipos();
+    c.querySelectorAll("[data-dib]").forEach(b => b.addEventListener("click", () => { setCapa("luz"); elegirDibujo(b.dataset.dib); }));
+    c.querySelector("[data-luz]").addEventListener("click", () => { const p = TB.L.centroVista(); colocarLuz(p); });
+    c.querySelector("[data-uvtt]").addEventListener("change", ev => { const fl = ev.target.files[0]; ev.target.value = ""; if (fl) importarUVTT(fl); });
+    c.querySelector("[data-olvidar]").addEventListener("click", () => { TB.L.reiniciarExplorado(); aviso("Lo explorado se ha olvidado en tu vista."); });
+    c.querySelectorAll("svg").forEach(s => { s.style.width = "16px"; s.style.height = "16px"; });
+    f.appendChild(c);
+  }
+  async function colocarLuz(p) {
+    const capa = TB.capa;
+    await TB.crearObjetos([{ tipo: "luz", capa: "luz", x: p.x, y: p.y, ancho: 28, alto: 28, datos: { luz: { brillante: 20, tenue: 20 } } }]);
+    if (capa !== "luz") aviso("Luz puesta. Para moverla o cambiarla, pasa a la capa Iluminación (Ctrl + ,).");
+  }
+  function ajustesLuz(id) {
+    const o = TB.L.objeto(id);
+    if (!o) return;
+    const l = Object.assign({ brillante: 20, tenue: 20 }, (o.datos || {}).luz);
+    const c = el(`<div><div class="tb-fila"><label class="tb-campo" style="flex:1"><span>Luz brillante (pies)</span><input type="number" min="0" step="5" data-b></label>
+      <label class="tb-campo" style="flex:1"><span>Luz tenue, más allá (pies)</span><input type="number" min="0" step="5" data-t></label></div>
+      <p class="tb-nota">Una antorcha da 20 pies de luz brillante y 20 más de tenue; una vela, 5 y 5; un farol, 30 y 30.</p></div>`);
+    c.querySelector("[data-b]").value = l.brillante; c.querySelector("[data-t]").value = l.tenue;
+    modal({ titulo: "Ajustes de luz", cuerpo: c, ancho: 440, alAceptar: () => TB.cambiarObjeto(id, { datos: Object.assign({}, o.datos, { luz: { brillante: Math.max(0, Number(c.querySelector("[data-b]").value) || 0), tenue: Math.max(0, Number(c.querySelector("[data-t]").value) || 0) } }) }) });
+  }
+  // Mapa de Dungeondraft (Universal VTT): imagen, tamaño de la página, muros, puertas y luces de una vez
+  const cuantos = (n, uno, varios) => n + " " + (n === 1 ? uno : varios);
+  async function importarUVTT(archivo) {
+    let j;
+    try { j = JSON.parse(await archivo.text()); } catch (e) { aviso("Ese archivo no es un mapa .dd2vtt / .uvtt válido.", true); return; }
+    if (!j || !j.resolution) { aviso("Ese archivo no trae los datos de un mapa Universal VTT.", true); return; }
+    const e = TB.escena();
+    if (!e) return;
+    const t = TB.L.tamCelda(), piesCelda = (e.cuadricula && e.cuadricula.pies) || 5;
+    const u = TBLuz.leerUVTT(j, t, piesCelda);
+    if (!(await confirmar("Importar mapa", `Se va a poner el mapa (${u.ancho} × ${u.alto} casillas) con ${cuantos(u.filas.filter(x => x.datos.muro === "muro").length, "muro", "muros")}, ${cuantos(u.filas.filter(x => x.datos.muro === "puerta").length, "puerta", "puertas")} y ${cuantos(u.filas.filter(x => x.tipo === "luz").length, "luz", "luces")} en esta página, y se activa la iluminación dinámica.`, "Importar"))) return;
+    try {
+      aviso("Importando el mapa…");
+      let src = "";
+      if (u.imagen) {
+        const bin = atob(u.imagen), bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const tipoImg = bytes[0] === 0x89 ? "image/png" : bytes[0] === 0xff ? "image/jpeg" : "image/webp";
+        let f = new File([bytes], archivo.name.replace(/\.[^.]+$/, "") + (tipoImg === "image/png" ? ".png" : tipoImg === "image/jpeg" ? ".jpg" : ".webp"), { type: tipoImg });
+        if (TB.prefs.webp !== false) f = await aWebp(f);
+        src = await TB.red.subirImagen(f);
+      }
+      const luzAntes = Object.assign({ explorar: true, bloquear: "luz", opacidadDJ: 0.35 }, (e.opciones || {}).luz);
+      await TB.guardarEscena(e.id, { ancho: u.ancho, alto: u.alto, opciones: Object.assign({}, e.opciones, { luz: Object.assign(luzAntes, { activa: true, global: u.diurno }) }) });
+      const filas = [];
+      if (src) filas.push({ tipo: "imagen", capa: "mapa", x: u.anchoPx / 2, y: u.altoPx / 2, ancho: u.anchoPx, alto: u.altoPx, datos: { src, nombre: archivo.name.replace(/\.[^.]+$/, "") } });
+      await TB.crearObjetos(filas.concat(u.filas));
+      TB.L.ajustarVista();
+      aviso("Mapa importado con sus muros, puertas y luces.");
+    } catch (err) { aviso(mensajeError(err), true); }
   }
 
   function flotFx(f) {
@@ -350,8 +441,6 @@
       b.addEventListener("click", () => { setCapa(c.id); cerrarFlotante(); });
       f.appendChild(b);
     });
-    f.appendChild(el(`<div class="tb-menu-sep"></div>`));
-    f.appendChild(el(`<div class="tb-menu-item" style="opacity:.45;cursor:default">${I.luz}Luz (próximamente)</div>`));
     f.style.top = "auto";
   }
 
@@ -617,6 +706,22 @@
         aurasEl.querySelector(".tb-aura-cfg").appendChild(caja);
       });
       det.appendChild(aurasEl);
+      det.appendChild(el(`<hr class="tb-sep">`));
+      const vis = Object.assign({ ve: !!(o.controlan_todos || (o.controladores || []).length), oscuridad: 0 }, d.vision);
+      const luz = Object.assign({ brillante: 0, tenue: 0 }, d.luz);
+      const luzEl = el(`<div><h3 style="font-size:19px;margin:6px 0 12px">Visión e iluminación</h3>
+        <div class="tb-fila" style="flex-wrap:wrap;gap:10px 16px">
+          <label class="tb-casilla"><input type="checkbox" data-ve> Tiene visión (los que la controlan ven por sus ojos)</label></div>
+        <div class="tb-fila" style="margin-top:8px">
+          <label class="tb-campo" style="flex:1"><span style="font-weight:400">Visión en la oscuridad (pies)</span><input type="number" min="0" step="5" data-osc></label>
+          <label class="tb-campo" style="flex:1"><span style="font-weight:400">Luz brillante que da (pies)</span><input type="number" min="0" step="5" data-lb></label>
+          <label class="tb-campo" style="flex:1"><span style="font-weight:400">Luz tenue, más allá (pies)</span><input type="number" min="0" step="5" data-lt></label></div>
+        <p class="tb-nota" style="margin:0">Solo cuenta en las páginas con la iluminación dinámica activada. Antorcha: 20 y 20.</p></div>`);
+      luzEl.querySelector("[data-ve]").checked = vis.ve !== false;
+      luzEl.querySelector("[data-osc]").value = vis.oscuridad || 0;
+      luzEl.querySelector("[data-lb]").value = luz.brillante || 0;
+      luzEl.querySelector("[data-lt]").value = luz.tenue || 0;
+      det.appendChild(luzEl);
     }
 
     // Valores iniciales
@@ -667,6 +772,9 @@
         nd.tinte = q("[data-sintinte]").checked ? null : q("[data-tinte]").value;
         nd.barraPos = q("[data-bpos]").value;
         nd.barraEstilo = cuerpo.querySelector("input[name=bestilo]:checked").value;
+        nd.vision = { ve: q("[data-ve]").checked, oscuridad: Math.max(0, Number(q("[data-osc]").value) || 0) };
+        const lb = Math.max(0, Number(q("[data-lb]").value) || 0), lt = Math.max(0, Number(q("[data-lt]").value) || 0);
+        nd.luz = lb || lt ? { brillante: lb, tenue: lt } : null;
         nd.auras = [...cuerpo.querySelectorAll("[data-aura]")].map(c => ({
           radio: Number(c.querySelector("[data-radio]").value) || 0, forma: c.querySelector("[data-forma]").value, color: c.querySelector("[data-color]").value,
           opacidad: Number(c.querySelector("[data-op]").value) / 100, ver: c.querySelector("[data-ver]").checked
@@ -754,6 +862,7 @@
     if (gm) items.push(
       { icono: "grupoPon", texto: "Colocar grupo", accion: () => colocarGrupo(p) },
       { icono: "ping", texto: "Colocar pin", accion: () => colocarPin(p) },
+      { icono: "luz", texto: "Colocar una luz", accion: () => colocarLuz(p) },
       { icono: "pegar", texto: "Pegar", apagado: !(TB.portapapeles && TB.portapapeles().length), accion: () => pegarEn(p) },
       { icono: "deshacer", texto: "Deshacer", apagado: !TB.puedeDeshacer(), accion: () => TB.deshacer() },
       { icono: "rehacer", texto: "Rehacer", apagado: !TB.puedeRehacer(), accion: () => TB.rehacer() }
@@ -785,7 +894,13 @@
     const datosCon = (q, extra) => ({ datos: Object.assign({}, q.datos, extra) });
     const algunoSinAjuste = todos.some(q => q.datos && q.datos.sinAjuste);
     const algunoSinMenu = todos.some(q => q.datos && q.datos.sinMenu);
-    const items = itemsComunes(p, true).concat([
+    const deLuz = o.capa === "luz" ? [
+      o.tipo === "dibujo" ? { icono: "luz", texto: "Tipo de línea", sub: [["muro", "Muro (tapa la vista y el paso)"], ["puerta", "Puerta"], ["ventana", "Ventana (deja ver, no pasar)"]].map(([v, t]) => ({ texto: ((o.datos || {}).muro || "muro") === v ? "✓ " + t : t, accion: () => cambiarTodos(q => datosCon(q, { muro: v, trazo: TBLuz.COLOR_MURO[v] })) })) } : null,
+      o.tipo === "dibujo" && (o.datos || {}).muro === "puerta" ? { icono: "candado", texto: (o.datos || {}).abierta ? "Cerrar la puerta" : "Abrir la puerta", accion: () => cambiarTodos(q => datosCon(q, { abierta: !(o.datos || {}).abierta })) } : null,
+      o.tipo === "luz" ? { icono: "luz", texto: "Ajustes de luz…", accion: () => ajustesLuz(o.id) } : null,
+      "-"
+    ].filter(Boolean) : [];
+    const items = itemsComunes(p, true).concat(deLuz, [
       { icono: "grupoDef", texto: "Definir grupo", accion: () => {
         try { localStorage.setItem(GRUPO_KEY, JSON.stringify({ filas: todos.map(q => Object.assign({}, q)) })); aviso(`Grupo definido con ${todos.length} objeto(s). Colócalo con clic derecho → Colocar grupo.`); } catch (e) { aviso("No se pudo guardar el grupo.", true); }
       } },
@@ -1099,6 +1214,8 @@
   }
   async function soltarEnTablero(dt, p, alt) {
     if (!TB.esGM()) { aviso("Solo el DJ coloca cosas en el tablero."); return; }
+    const uvtt = [...(dt.files || [])].find(f => /\.(dd2vtt|uvtt|df2vtt)$/i.test(f.name));
+    if (uvtt) { importarUVTT(uvtt); return; }
     const archivos = [...(dt.files || [])].filter(f => /^image\//.test(f.type));
     if (archivos.length) {
       for (const f of archivos) {
@@ -1169,5 +1286,5 @@
     setCapa("fichas");
   }
 
-  window.TBPaneles = { iniciar, ajustesFicha, menuFicha, menuVacio, abrirPin, soltarEnTablero, elegirDibujo, setHerramienta, setCapa, alternarPaginas, alternarTurno, configPagina, medirImagen };
+  window.TBPaneles = { iniciar, ajustesLuz, ajustesFicha, menuFicha, menuVacio, abrirPin, soltarEnTablero, elegirDibujo, setHerramienta, setCapa, alternarPaginas, alternarTurno, configPagina, medirImagen };
 })();

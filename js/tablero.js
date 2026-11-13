@@ -535,7 +535,11 @@
         catch (e) { aviso(mensajeError(e), true); cargarEscena(TB.escenaId); }
       },
       onMovEnCurso: (id, x, y) => TB.red.emitir("mov", { id, x, y, escena: TB.escenaId }),
-      onCrear: filas => TB.crearObjetos(filas),
+      // En la capa Iluminación, lo que se dibuja son muros (del tipo elegido en el panel de iluminación)
+      onCrear: filas => TB.crearObjetos(filas.map(f => f.capa === "luz" && f.tipo === "dibujo"
+        ? Object.assign({}, f, { datos: Object.assign({}, f.datos, { muro: TB.prefs.muroTipo || "muro", trazo: TBLuz.COLOR_MURO[TB.prefs.muroTipo || "muro"], relleno: "transparent", grosor: 4 }) }) : f)),
+      onAviso: t => aviso(t),
+      onAjustesLuz: id => TBPaneles.ajustesLuz(id),
       onBorrar: ids => TB.borrarObjetos(ids),
       onSeleccion: ids => TB.lanzar("seleccion", ids),
       onAbrirAjustes: id => TBPaneles.ajustesFicha(id),
@@ -607,7 +611,7 @@
       TBPaneles.setCapa(CAPA_TECLA[k]);
       return;
     }
-    if (ctrl && k === "," ) { e.preventDefault(); aviso("La capa de iluminación dinámica todavía no está."); return; }
+    if (ctrl && k === "," && TB.yo.esGM) { e.preventDefault(); if (e.shiftKey && sel.length) TB.cambiarVarios(sel.map(id => ({ id, cambios: { capa: "luz" } }))); TBPaneles.setCapa("luz"); return; }
     if (e.key === "Escape") { TB.L.deseleccionar(); TB.L.cancelarGesto(); TB.L.limpiarMedida(); TBUI.cerrarMenu(); return; }
     if (e.key === "Enter") { TB.L.terminarPoligono(); return; }
     if ((e.key === "Delete" || e.key === "Backspace") && sel.length) { e.preventDefault(); TB.borrarObjetos(sel); return; }
@@ -621,7 +625,7 @@
       const t = e.shiftKey ? TB.L.tamCelda() / 5 : TB.L.tamCelda();
       const dx = e.key === "ArrowLeft" ? -t : e.key === "ArrowRight" ? t : 0, dy = e.key === "ArrowUp" ? -t : e.key === "ArrowDown" ? t : 0;
       if (TB.yo.esGM) TB.cambiarVarios(sel.map(id => { const o = TB.L.objeto(id); return { id, cambios: { x: o.x + dx, y: o.y + dy } }; }));
-      else for (const id of sel) { const o = TB.L.objeto(id); try { await TB.red.moverPropio(id, o.x + dx, o.y + dy); TB.red.emitir("mov", { id, x: o.x + dx, y: o.y + dy, escena: TB.escenaId }); } catch (err) { aviso(mensajeError(err), true); } }
+      else for (const id of sel) { const o = TB.L.objeto(id); if (TB.L.cruzaMuro({ x: o.x, y: o.y }, { x: o.x + dx, y: o.y + dy })) { aviso("Hay un muro en medio."); continue; } try { await TB.red.moverPropio(id, o.x + dx, o.y + dy); TB.red.emitir("mov", { id, x: o.x + dx, y: o.y + dy, escena: TB.escenaId }); } catch (err) { aviso(mensajeError(err), true); } }
     }
   });
   document.addEventListener("keyup", e => {

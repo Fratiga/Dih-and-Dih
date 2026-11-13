@@ -182,6 +182,15 @@ comprobar "al quitar la pausa vuelve a mover" "280" "$(sql "select x from tabler
 como "$ADMIN" "insert into tablero_objetos (escena, capa, tipo, datos) values ('$S1', 'fichas', 'pin', '{\"titulo\": \"Puerta\"}');" >/dev/null
 comprobar "se pueden poner pines en el mapa" "1" "$(sql "select count(*) from tablero_objetos where tipo = 'pin'")"
 
+echo "== Iluminación dinámica"
+MURO=$(como "$ADMIN" "insert into tablero_objetos (escena, capa, tipo, datos) values ('$S1', 'luz', 'dibujo', '{\"muro\": \"puerta\", \"puntos\": [0, 0, 70, 0]}') returning id;" | head -1)
+como "$ADMIN" "insert into tablero_objetos (escena, capa, tipo, datos) values ('$S1', 'luz', 'luz', '{\"luz\": {\"brillante\": 20, \"tenue\": 20}}');" >/dev/null
+comprobar "el DJ pone muros y luces en la capa de iluminación" "2" "$(sql "select count(*) from tablero_objetos where capa = 'luz'")"
+comprobar "el jugador los lee (su navegador calcula lo que ve)" "2" "$(uno "$U1" "select count(*) from tablero_objetos where capa = 'luz';")"
+como "$U1" "update tablero_objetos set datos = jsonb_set(datos, '{abierta}', 'true') where id = '$MURO';" >/dev/null
+comprobar "el jugador no abre puertas ni toca muros" "" "$(sql "select datos ->> 'abierta' from tablero_objetos where id = '$MURO'")"
+contiene "el jugador no crea luces" "$(como "$U1" "insert into tablero_objetos (escena, capa, tipo) values ('$S1', 'luz', 'luz');")" "row-level security"
+
 echo "== Arte y macros"
 como "$ADMIN" "insert into tablero_arte (src, nombre) values ('x.png', 'Mapa');" >/dev/null
 comprobar "la biblioteca de arte es solo del GM" "0|1" "$(uno "$U1" "select count(*) from tablero_arte;")|$(uno "$ADMIN" "select count(*) from tablero_arte;")"
