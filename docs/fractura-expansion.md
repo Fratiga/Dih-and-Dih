@@ -17,6 +17,9 @@ Hecho:
 - **Formas de mapa** (ver «El mar»): continente, tierra de lagos, ríos, continentes, archipiélago y mar interior.
 - **El mar** (ver más abajo): agua navegable, embarque, muelles en tres niveles, ocho barcos y una marina distinta para cada ejército.
 - **Pactos y traición** en las guerras de más de dos bandos (sección 13), con desertores que otros bandos pueden reclutar.
+- **Frentes** (12-nov-2026): una rotación de guerras ya montadas contra la máquina, la misma para todos (sale de la fecha, `js/fractura-frentes.js`). Tres al día (escaramuza, guerra abierta y frente duro) y una gran guerra a la semana. Solo los frentes dan cartas, una vez cada uno; una guerra libre no da nada. El nivel lo vuelve a calcular el servidor con los bandos y la dificultad: escaramuza (2 bandos en normal, tramo bueno), guerra (3 o 4 bandos, o difícil, tramo excelente) y gran guerra (5 o más, o 4 en difícil, tramo extraordinario). Pasa por el sistema oficial de recompensas, con sus topes y sellos.
+- **Mesas** (12-nov-2026): guerras entre jugadores de 2 a 8, por turnos y cada quien cuando puede, con plazas para la máquina si se quiere. Cada jugador apuesta las cartas que quiera, o ninguna, sin que tengan que parecerse; todos dan su visto bueno a lo que hay en juego antes de empezar. Quien gana se lleva las cartas de los que pierden (si ganan varios, se reparten por turnos de la más rara a la más común). Si a alguien se le pasa el plazo, otro puede pedir que juegue la máquina. El final lo avisa cada navegador y con apuestas hace falta más de la mitad o la confirmación de todos los que pierden; si los avisos chocan, lo resuelve el admin. SQL en `docs/fractura-3_frentes_y_mesas.sql`, repetición de la guerra en `js/fractura-mesa.js`. Sustituyen a los duelos de dos (`fractura_partidas` queda sin uso).
+- **La máquina en los mapas de mar**: ya no cuenta una flota cerca como amenaza a su capital, así que sigue atacando. Se probaron asaltos concentrados y desembarcos en oleadas y no mejoraban nada, así que no se dejaron.
 - **Mercado de las Sombras**: si Nikaalia está en la guerra, una ciudad sin dueño cercana a su capital (la segunda más cercana) es el Mercado. Da 2 de oro por turno a quien la tenga y es el requisito de Don Ottavio.
 - **Noche eterna** de verdad: a las tropas de Nikaalia no se las ve hasta tener a alguien al lado. Sí se las ve en ciudades, fortalezas y sobre el Núcleo, y la que ataca queda a la vista hasta su siguiente turno.
 - **Duelo de Seosan** completo: +2 de ataque contra una unidad sola y, en ese combate, nadie recibe ayuda de los de al lado (ni auras, ni formación, ni el guerrero que cubre).
@@ -24,6 +27,7 @@ Hecho:
 - **Mapa en Phaser**: mar abierto o abismo animado, agua navegable más clara con su borde, costa, suelo horneado, caminos, bosques y sierras con volumen, provincias con el color del dueño, niebla de bordes blandos, figuras por tropa, por héroe y por barco, barca bajo las tropas embarcadas, animaciones por tipo de arma.
 - **Interfaz**: portada, códice (con la marina y la palabra de cada ejército), ayuda, ajustes, pantalla completa, recursos con desglose, tira de bandos, minimapa, tarjeta de selección, ciudad con tropas, flota, edificios y héroe, árbol del saber, marcador con pactos, crónica, resumen de ronda, atajos y sonido.
 - **Retratos** por tropa y ejército, a juego con las figuras del mapa.
+- Pruebas de las mesas: `node tools/probar-fractura-mesa.js [mesas]` (varios navegadores que solo se pasan lo que guarda el servidor tienen que ver la misma guerra) y `BD=fractura_mesas sh docs/pruebas/t_fractura_mesas.sh` (apuestas, reparto, disputas y plazos en la base local).
 - Prueba automática: `node tools/probar-fractura.js [guerras] [bandos]`. Recorre los tipos de Fractura y las formas de mapa, comprueba la coherencia del estado y que la misma semilla da la misma guerra, y cuenta barcos, embarques, pactos y traiciones.
 
 Diferencias con el plan:
@@ -35,7 +39,7 @@ Diferencias con el plan:
 
 Pendiente:
 
-- Duelos entre jugadores con más de dos bandos (necesita cambios en el servidor). Los duelos siguen siendo de dos y en mapa de continente.
+- Pegar `docs/fractura-3_frentes_y_mesas.sql` en Supabase (también enciende las recompensas de La Fractura).
 - Simulaciones de equilibrio por emparejamiento. Las estadísticas de las exclusivas, los héroes y los barcos siguen siendo provisionales.
 - Toda la sección de retención (contratos, rachas, remontada, némesis activo, códice de campaña, Fractura del día).
 - Retratos propios para líderes y héroes (hoy usan su figura del mapa). Adam y Rykerd ya tienen figura propia según las referencias del autor.

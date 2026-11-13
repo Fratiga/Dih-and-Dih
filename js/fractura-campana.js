@@ -198,7 +198,9 @@
     // Si el jugador pidió una forma de mapa, el lugar al azar no puede ser el Horizonte Roto, que no tiene mar ni formas
     const tiposAzar = Object.keys(TIPOS_FRACTURA).filter(t => !(D.FORMAS_MAPA[opciones.forma] && t === "horizonte"));
     const tipo = TIPOS_FRACTURA[opciones.tipo] ? opciones.tipo : (opciones.tipo === "azar" || !opciones.tipo ? tiposAzar[ri(ej, tiposAzar.length)] : "reinos");
-    const rival = rivalElegido(ej, opciones.rival);
+    // Un frente trae sus rivales ya decididos (opciones.rivales); en una guerra libre se elige uno y el resto sale al azar
+    const fijos = (opciones.rivales || []).filter(f => FACCIONES[f] && f !== ej.faccion);
+    const rival = fijos.length ? fijos[0] : rivalElegido(ej, opciones.rival);
     const bandos = Math.max(2, Math.min(8, opciones.bandos || 2));
     const elegidos = (ids && ids.length ? ids : elegirContingenteAuto(ej)).slice(0, limiteContingente(ej)).map(id => ej.soldados[id]).filter(s => s && disponibles(ej).includes(s));
     const soldados = elegidos.map(s => { const c = clon(s); c.victoriasAntes = s.victorias; return c; });
@@ -222,7 +224,7 @@
     const reliquias = [];
     const vistas = new Set();
     soldados.forEach(s => Object.values(s.equipo || {}).forEach(id => { if (ej.reliquias[id] && !vistas.has(id)) { vistas.add(id); reliquias.push(clon(ej.reliquias[id])); } }));
-    const semilla = (Math.floor(rn(ej) * 2147483646) + 1);
+    const semilla = opciones.semilla > 0 ? Math.floor(opciones.semilla) : (Math.floor(rn(ej) * 2147483646) + 1);
     // Un némesis puede volver como capitán del rival
     // El rival crece con tu ejército: más tropas y más curtidas cuanto más has ganado
     const prom = soldados.reduce((a, s) => a + s.victorias, 0) / Math.max(1, soldados.length);
@@ -242,7 +244,8 @@
     const usadas = new Set([ej.faccion, rival]);
     for (let i = 2; i < bandos; i++) {
       const libres = Object.keys(FACCIONES).filter(f => !usadas.has(f));
-      const f = libres[ri(ej, libres.length)];
+      const pedido = fijos.find(x => !usadas.has(x));
+      const f = pedido || libres[ri(ej, libres.length)];
       usadas.add(f);
       jugadores.push({ nombre: `Fuerzas de ${FACCIONES[f].corto}`, faccion: f, humano: false, nivelIA: dif, escala: prom, extraTropas: Math.min(4, Math.floor(ej.ganadas / 4)) });
     }

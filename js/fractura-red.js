@@ -123,5 +123,38 @@ window.FracturaRed = (function () {
   const pvpTerminar = (id, ganador, razon) => pvpRpc("fractura_terminar", { p_id: id, p_ganador: String(ganador), p_razon: razon || "" });
   const pvpRendirse = id => pvpRpc("fractura_rendirse", { p_id: id });
 
-  return { pvpJugadores, pvpListar, pvpGet, pvpRetar, pvpResponder, pvpTurno, pvpTerminar, pvpRendirse, listarEjercitos, guardarEjercito, borrarEjercito, guardarGuerra, cargarGuerra, borrarGuerra, registrarGuerra, pedirPremio, historiaDelMundo, sesion };
+  /* --- Frentes: los que ya cobró el jugador --- */
+  async function frentesCobrados() {
+    const s = await sesion();
+    if (!s) return [];
+    try { return (await pvpRpc("fractura_frentes_cobrados", {})) || []; } catch (e) { return []; }
+  }
+
+  /* --- Mesas: guerras de 2 a 8 jugadores, con apuestas (docs/fractura-3_frentes_y_mesas.sql) --- */
+  const mesasLista = () => pvpRpc("fractura_mesas_lista", {});
+  const mesaCrear = (nombre, config, bando, invitados) => pvpRpc("fractura_mesa_crear", { p_nombre: nombre || "", p_config: config, p_bando: bando, p_invitados: invitados || [] });
+  const mesaUnirse = (id, bando) => pvpRpc("fractura_mesa_unirse", { p_id: id, p_bando: bando });
+  const mesaSalir = id => pvpRpc("fractura_mesa_salir", { p_id: id });
+  const mesaApostar = (id, ejemplares) => pvpRpc("fractura_mesa_apostar", { p_id: id, p_ejemplares: ejemplares || [] });
+  const mesaListo = (id, si) => pvpRpc("fractura_mesa_listo", { p_id: id, p_listo: !!si });
+  const mesaEmpezar = id => pvpRpc("fractura_mesa_empezar", { p_id: id });
+  const mesaTurno = (id, n, tipo, acciones, siguiente, firma) => pvpRpc("fractura_mesa_turno", { p_id: id, p_n: n, p_tipo: tipo, p_acciones: acciones || [], p_siguiente: siguiente, p_firma: firma || "" });
+  const mesaTerminar = (id, ganadores, razon) => pvpRpc("fractura_mesa_terminar", { p_id: id, p_ganadores: ganadores, p_razon: razon || "" });
+  const misCartas = () => pvpRpc("fractura_mis_cartas", {});
+  async function mesaGet(id) {
+    const sb = await cliente();
+    const { data, error } = await sb.from("fractura_mesas").select("*").eq("id", id).single();
+    if (error) throw error;
+    return data;
+  }
+  /* Lo mínimo para saber si la mesa cambió, sin traer toda la guerra cada pocos segundos */
+  async function mesaPulso(id) {
+    const sb = await cliente();
+    const { data, error } = await sb.from("fractura_mesas").select("actualizada, estado, activo, limite").eq("id", id).single();
+    if (error) throw error;
+    return data;
+  }
+
+  return { frentesCobrados, mesasLista, mesaCrear, mesaUnirse, mesaSalir, mesaApostar, mesaListo, mesaEmpezar, mesaTurno, mesaTerminar, misCartas, mesaGet, mesaPulso,
+    pvpJugadores, pvpListar, pvpGet, pvpRetar, pvpResponder, pvpTurno, pvpTerminar, pvpRendirse, listarEjercitos, guardarEjercito, borrarEjercito, guardarGuerra, cargarGuerra, borrarGuerra, registrarGuerra, pedirPremio, historiaDelMundo, sesion };
 })();

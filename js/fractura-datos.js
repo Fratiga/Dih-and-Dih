@@ -260,7 +260,7 @@
       }
     },
     "trono-de-ceniza": {
-      naval: { nivel: "A su manera", barcoMax: 1, barcos: ["nave_ahogados"], embarcaSinMuelle: true, fondo: true, movEmbarcada: 2, texto: "Los muertos no respiran: sus tropas cruzan el agua andando por el fondo, despacio, sin muelle y sin perder su defensa. Solo botan galeras y la Nave de los ahogados." },
+      naval: { nivel: "A su manera", barcoMax: 1, barcos: ["nave_ahogados"], embarcaSinMuelle: true, fondo: true, movEmbarcada: 2, texto: "Sus tropas no respiran. Cruzan el agua andando por el fondo, despacio, sin muelle y sin perder su defensa. Solo botan galeras y la Nave de los ahogados." },
       diplomacia: { pacta: 0.2, traiciona: 0.3 },
       nombre: "El Trono de Ceniza", corto: "Osses", color: "#9a9486", bandera: "#3d3a38", cultura: "sombrio", origen: "Osses", curva: "Desgaste", monstruos: true, irrefugiable: true,
       resumen: "El gobierno de la Unión de Osses: monstruos y no muertos bajo un mismo estandarte.",
@@ -355,7 +355,7 @@
       }
     },
     seosan: {
-      naval: { nivel: "Buenos", barcoMov: 1, texto: "Juncos rápidos: sus barcos tienen +1 de movimiento." },
+      naval: { nivel: "Buenos", barcoMov: 1, texto: "Navegan en juncos ligeros. Sus barcos tienen +1 de movimiento." },
       diplomacia: { pacta: 0.5, traiciona: 0 },
       nombre: "Escuelas de Seosan", corto: "Seosan", color: "#5fc08f", bandera: "#173528", cultura: "seosan", origen: "Seosan", curva: "Depende del mapa",
       resumen: "Escuelas marciales que se respetan entre sí y resuelven sus asuntos en duelo.",
@@ -393,7 +393,7 @@
       }
     },
     pelgiria: {
-      naval: { nivel: "Maestros", barcos: ["bergantin"], barcoMov: 1, barcoAtq: 1, muelleCoste: 0.5, embarcaSinMuelle: true, marinos: true, movEmbarcada: 4, texto: "El mar es su casa. Embarcan y desembarcan sin perder el turno ni la defensa, pelean embarcados, sus muelles cuestan la mitad y sus barcos son más rápidos y pegan más." },
+      naval: { nivel: "Maestros", barcos: ["bergantin"], barcoMov: 1, barcoAtq: 1, muelleCoste: 0.5, embarcaSinMuelle: true, marinos: true, movEmbarcada: 4, texto: "Viven del mar. Embarcan y desembarcan sin perder el turno ni la defensa, pelean embarcados, sus muelles cuestan la mitad y sus barcos son más rápidos y pegan más." },
       diplomacia: { pacta: 0.7, traiciona: 0.4 },
       nombre: "Hermandad de Cala Ronca", corto: "Pelgiria", color: "#36a9b0", bandera: "#0f3138", cultura: "pelgiria", origen: "Pelgiria", curva: "Depende del mapa",
       resumen: "Piratas del archipiélago de Pelgiria. Pólvora, abordajes y tortugas de mar gigantes.",
@@ -412,7 +412,7 @@
       }
     },
     mravec: {
-      naval: { nivel: "Negados", barcoMax: 0, sinMuelle: true, embarcaSinMuelle: true, movEmbarcada: 2, texto: "Hijos del desierto. No construyen muelles ni barcos. Cruzan el agua en balsas de quitina, despacio y sin defensa." },
+      naval: { nivel: "Negados", barcoMax: 0, sinMuelle: true, embarcaSinMuelle: true, movEmbarcada: 2, texto: "Vienen del desierto. No construyen muelles ni barcos. Cruzan el agua en balsas de quitina, despacio y sin defensa." },
       diplomacia: { pacta: 0, traiciona: 0 },
       nombre: "Satrapía de Mravec", corto: "Mravec", color: "#b4c23a", bandera: "#3d3a10", cultura: "mravec", origen: "Mravec", curva: "Tardío", monstruos: true, irrefugiable: true,
       resumen: "Insectoides del desierto, descendientes de la Reina Hormiga. Lo que devoran, lo aprenden.",
@@ -431,7 +431,7 @@
       }
     },
     nernib: {
-      naval: { nivel: "Buenos", barcos: ["acorazado"], barcoDef: 1, texto: "Ingeniería naval: sus barcos tienen +1 de defensa y construyen acorazados de vapor." },
+      naval: { nivel: "Buenos", barcos: ["acorazado"], barcoDef: 1, texto: "Tienen los mejores ingenieros navales. Sus barcos tienen +1 de defensa y construyen acorazados de vapor." },
       diplomacia: { pacta: 0.6, traiciona: 0.1 },
       nombre: "Oligarquía de Nernib", corto: "Nernib", color: "#6fb6e0", bandera: "#26323e", cultura: "nernib", origen: "Nernib", curva: "Tardío",
       resumen: "Ciudad-estado de gnomos y forjados. Lo que no pueden vencer, lo fabrican.",
@@ -450,7 +450,7 @@
       }
     },
     balutia: {
-      naval: { nivel: "Buenos", barcos: ["trirreme"], texto: "La flota del Imperio embiste: tienen trirremes." },
+      naval: { nivel: "Buenos", barcos: ["trirreme"], texto: "La flota del Imperio pelea embistiendo. Tienen trirremes." },
       diplomacia: { pacta: 0.6, traiciona: 0.4 },
       nombre: "Imperio de Balutia", corto: "Balutia", color: "#c23a3a", bandera: "#3a0f14", cultura: "balutia", origen: "Balutia", curva: "Pico",
       resumen: "El imperio de las legiones. Conquista una provincia y pone a su gente en primera fila.",
@@ -571,17 +571,17 @@
     lagos: { nombre: "Tierra de lagos", texto: "Tierra firme salpicada de lagos grandes. Los pasos entre ellos se defienden bien." },
     rios: { nombre: "Ríos", texto: "Ríos que bajan de las sierras y parten el mapa. Se cruzan por los vados o embarcando." },
     continentes: { nombre: "Continentes", texto: "Cada bando en su tierra, con un brazo de mar por medio. El Núcleo, en una isla.", maritimo: true },
-    archipielago: { nombre: "Archipiélago", texto: "Islas pequeñas. Quien manda en el mar, manda en la guerra.", maritimo: true },
+    archipielago: { nombre: "Archipiélago", texto: "Islas pequeñas separadas por canales. Casi todo se decide con barcos.", maritimo: true },
     mar_interior: { nombre: "Mar interior", texto: "Un anillo de tierra alrededor de un mar, con el Núcleo en una isla en el centro.", maritimo: true }
   };
 
   /* Fragmentos: nombres de lugares reales del compendio (estables) o inventados (oníricos e imposibles) */
   const FRAGMENTOS = {
     estable: ["Osses", "Brurland", "Dolbred", "Nernib", "Seosan", "Rasganorte", "Thanea", "Uldum", "Relania", "Kalvia", "Mravec", "Broneland", "Cudbusland", "Galadhel", "Okran", "Genevia", "Chakur", "Merador"],
-    onirico: ["El Sueño del Granero", "La Casa de los Pasos", "El Bosque que Recuerda", "La Plaza Sin Hora", "El Pozo Dormido", "La Feria Olvidada", "La Colina del Eco",
-      "El Camino de Vuelta", "La Orilla de Nadie", "El Huerto de Invierno", "La Torre que Sueña", "El Puente Dormido", "La Era de las Cigarras", "El Patio de las Voces", "La Vega Quieta"],
-    imposible: ["El Mar Vertical", "La Estrella Fortaleza", "La Ciudad Sin Nombre", "El Campo de los Que No Mueren", "La Escalera al Revés", "El Cielo Hundido", "La Biblioteca de Humo",
-      "El Faro Enterrado", "La Lluvia Detenida", "El Reloj de Arena Roto", "La Montaña Hueca", "El Río que Sube", "La Sala de los Espejos", "El Jardín de Sal", "La Costa Doblada"]
+    onirico: ["El Granero de Hojaseca", "La Posada del Caminante", "Los Robles Viejos", "Plaza del Campanario", "Pozo de la Elvira", "La Feria del Ganado", "Alto del Cierzo",
+      "Camino de los Arrieros", "Ribera de las Viudas", "Los Perales Negros", "Torre de los Molineros", "Puente de la Calzada", "Las Eras Altas", "Patio de las Comadres", "Vega de los Sauces"],
+    imposible: ["El Mar de Pared", "Bastión de la Estrella", "Ciudad de las Mil Puertas", "El Llano de las Lanzas", "Los Peldaños del Abismo", "La Bóveda Rota", "La Biblioteca Quemada",
+      "Faro de Piedra Negra", "El Aguacero Suspendido", "La Hora Partida", "Monte de las Cavernas", "Río Contracorriente", "Galería de los Dobles", "Las Salinas Blancas", "El Cabo Torcido"]
   };
 
   /* Sucesos de los fragmentos inestables */

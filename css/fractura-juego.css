@@ -366,3 +366,61 @@ body.fr-pantalla-completa:not(.fr-en-guerra):not(.fr-en-portada) .fr-contenido {
 .fr-diplomacia { margin-top: 12px; padding-top: 10px; border-top: 1px solid #3a2f25; }
 .fr-diplomacia .fr-btn.no { opacity: .55; }
 .fr-toast.cian { border-left-color: #5fb8bc; }
+
+/* --- Frentes (guerras con premio) --- */
+.fr-frentes { display: grid; gap: 6px; margin-bottom: 8px; }
+.fr-frente { flex-direction: row; align-items: stretch; justify-content: flex-start; gap: 10px; padding: 8px; text-align: left; }
+.fr-frente-mini { width: 88px; height: 72px; flex-shrink: 0; align-self: center; }
+.fr-frente-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fr-frente-texto strong { font-family: var(--font-heading); font-size: .92rem; color: #f2ead8; }
+.fr-frente-texto small { font-size: .74rem; color: #b9ad98; line-height: 1.3; }
+.fr-frente-premio { align-self: flex-start; margin-top: 2px; padding: 1px 8px; font-style: normal; font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; border: 1px solid #6a5a3a; color: #e6d7b0; }
+.fr-frente-premio.n-guerra { border-color: #5fb8bc; color: #9fe3e6; }
+.fr-frente-premio.n-gran_guerra { border-color: #b98cff; color: #dcc8ff; }
+.fr-frente.cobrado .fr-frente-premio { opacity: .5; text-decoration: line-through; }
+.fr-frente-queda { color: #8f8498 !important; }
+.fr-libre { margin-bottom: 10px; }
+.fr-libre small { font-size: .74rem; color: #b9ad98; }
+
+/* --- Mesas entre jugadores --- */
+.fractura-tema .fr-entrada { font: inherit; color: #e9dec6; background: #17130f; border: 1px solid #3a2f25; padding: 8px 10px; }
+.fractura-tema .fr-entrada:focus { outline: none; border-color: #8b6a2a; }
+.fr-invitados { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.fr-invitados .fr-opcion { padding: 5px 10px; flex-direction: row; }
+.fr-mesa { position: relative; margin: 0 0 10px; padding: 12px 14px; background: #14110e; border: 1px solid #3a2f25; border-left: 4px solid #5a4a3a; }
+.fr-mesa.mia { border-left-color: var(--accent-soft); }
+.fr-mesa.turno { border-left-color: var(--accent); }
+.fr-mesa.gano { border-left-color: #3f8a34; } .fr-mesa.perdio { border-left-color: #8a1f18; } .fr-mesa.disputa { border-left-color: #c9862e; }
+.fr-mesa header h4 { margin: 0; font: 700 .95rem var(--font-heading); color: #f2ead8; }
+.fr-mesa header p { margin: 2px 0 8px; font-size: .76rem; color: #b9ad98; }
+.fr-mesa .fr-sub { margin: 6px 0; }
+.fr-mesa .fr-fila { flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.fr-mesa .fr-btn.no { opacity: .55; }
+.fr-mesa-asientos { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.fr-mesa-asientos li { display: flex; align-items: center; gap: 10px; padding: 6px 8px; background: #0f0c0a; border-left: 3px solid var(--c, #3a2f25); }
+.fr-mesa-asientos li.listo { background: #121a10; }
+.fr-mesa-asientos li.vacio { border-left-style: dashed; opacity: .7; }
+.fr-mesa-quien { display: flex; flex-direction: column; min-width: 110px; }
+.fr-mesa-quien b { font-size: .86rem; color: #f2ead8; }
+.fr-mesa-quien small { font-size: .7rem; color: #a99d88; }
+.fr-mesa-apuesta, .fr-mesa-pozo span { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.fr-mesa-pozo { display: grid; gap: 4px; margin: 6px 0; font-size: .8rem; color: #d8ccb8; }
+.fr-ap { font-style: normal; font-size: .72rem; padding: 1px 7px; border: 1px solid #5a5148; color: #d8ccb8; background: #1a1613; }
+.fr-ap-infrecuente { border-color: #4f8a52; color: #b6e0b0; }
+.fr-ap-rara { border-color: #4f7fc0; color: #b5d2f5; }
+.fr-ap-legendaria { border-color: #c79a44; color: #f0d9a0; }
+.fr-ap-limitada { border-color: #b98cff; color: #dcc8ff; }
+.fr-ap-nada { font-size: .74rem; color: #8f8498; }
+.fr-mesa-bandos { display: flex; flex-wrap: wrap; gap: 4px; }
+.fr-mesa-bandos i { font-style: normal; font-size: .72rem; padding: 2px 8px; border-left: 4px solid var(--c); background: #0f0c0a; color: #d8ccb8; }
+.fr-mesa-bandos i.ia { opacity: .6; }
+.fr-mesa-bandos i.activo { outline: 1px solid var(--accent); color: #f6e7bb; }
+.fr-apuesta { width: min(520px, calc(100% - 24px)); }
+.fr-apuesta-lista { display: grid; gap: 4px; max-height: 46vh; overflow: auto; margin: 8px 0; }
+.fr-ap-fila { flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; padding: 7px 10px; }
+.fr-ap-fila small { margin-left: auto; font-size: .72rem; color: #8f8498; }
+.fr-esperando { opacity: .6; pointer-events: none; }
+.fr-esperando::before { content: ""; display: inline-block; width: .8em; height: .8em; margin-right: .5em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; vertical-align: -1px; animation: fr-gira .8s linear infinite; }
+@keyframes fr-gira { to { transform: rotate(360deg); } }
+.fr-espera { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 8; display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: rgba(10, 8, 14, .92); border: 1px solid var(--accent-soft); color: #e9dec6; font-size: .86rem; pointer-events: auto; }
+.fr-espera.hidden { display: none; }

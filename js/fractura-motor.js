@@ -16,8 +16,8 @@
   const { TERRENOS, ESTRUCTURAS, CLASES, ESPECIALIZACIONES, EDIFICIOS, ESCUELAS, RELIQUIAS, FACCIONES, TIPOS_FRACTURA, DIFICULTADES, RECURSOS, HEROES } = D;
   const dist = M.dist;
   const MAX_UNIDADES = 18;
-  const NOMBRES_CIUDAD = ["Alba Quebrada", "Paso del Cuervo", "Vado Gris", "Cerro Hueco", "Torre Lenta", "Puerto Seco", "Villa Olvidada", "Los Tres Pozos", "Campo Largo", "San Nadie",
-    "El Altillo", "Peña Roja", "Brasa Fría", "La Última Posada", "Rincón del Eco", "Mesa Rota", "Llano Hondo", "Muelle Vacío", "El Telar", "Hoya Oscura"];
+  const NOMBRES_CIUDAD = ["La Quebrada", "Paso del Cuervo", "Vado Gris", "Cerro Hueco", "Torrequemada", "Puerto Seco", "Villar de Abajo", "Los Tres Pozos", "Campo Largo", "Los Tejares",
+    "El Altillo", "Peña Roja", "Los Hornos", "La Última Posada", "Rincón de la Hoz", "Mesa Rota", "Llano Hondo", "Embarcadero Viejo", "El Telar", "Hoya Oscura"];
   const CAPITALES = { "caballeros-del-reino": "La Plaza del Reino", "academia-arcana-de-dolbred": "El Claustro Arcano", "trono-de-ceniza": "El Osario Mayor",
     "compania-dorada": "El Campamento Dorado", "hijos-del-acero": "El Fuerte del Acero", "santos-de-asmodeo": "La Catedral de la Vigilia", nikaalia: "Umbrathil",
     seosan: "Kaishoto", okran: "Vornhaal", pelgiria: "Cala Ronca", mravec: "Zaphara", nernib: "La Ciudadela de Nernib", balutia: "El Foro de Balutia" };
@@ -1328,6 +1328,24 @@
     est.jugadores.forEach((o, k) => { if (!o.eliminado) actualizarVision(est, k); });
   }
 
+  /* Huella corta del estado: sirve para comprobar que dos navegadores ven la misma guerra */
+  function firma(est) {
+    let h = 2166136261;
+    const mete = n => { h ^= (n | 0); h = Math.imul(h, 16777619); };
+    mete(est.turno); mete(est.activo); mete(est.rs); mete(est.ganador === null ? -9 : est.ganador === "empate" ? -8 : est.ganador);
+    Object.keys(est.unidades).sort().forEach(k => { const u = est.unidades[k]; mete(parseInt(k.slice(1), 10)); mete(u.x * 64 + u.y); mete(u.hp); mete(u.dueno + 2); });
+    est.jugadores.forEach(j => { Object.keys(j.recursos).sort().forEach(k => mete(j.recursos[k])); mete(j.eliminado ? 1 : 0); });
+    Object.keys(est.ciudades).sort().forEach(k => { const c = est.ciudades[k]; mete(c.dueno === null ? -1 : c.dueno); mete(c.nivel); mete(c.edificios.length); });
+    return (h >>> 0).toString(16);
+  }
+
+  /* Un jugador se rinde en su turno (guerras de varios jugadores): queda fuera y el turno pasa al siguiente */
+  function rendir(est, j) {
+    if (est.ganador !== null || !est.jugadores[j] || est.jugadores[j].eliminado) return;
+    eliminar(est, j, null, `${est.jugadores[j].nombre} se rinde.`);
+    if (est.ganador === null && est.activo === j) terminarTurno(est);
+  }
+
   /* --- Acciones --- */
   function error(texto) { return { ok: false, error: texto }; }
 
@@ -1827,7 +1845,7 @@
     veCasilla, actualizarVision, reliquiaNueva, nuevaUnidad, casillaLibreCerca, terminarTurno, bonoReliquias, generarContingenteIA, terminarGuerra, matar, terrenoCerca,
     mismoEquipo, hostil, vivos, rivalesDe, equipoDe, heroeDe, heroeVivo, usaPolvora, enTregua, ganoJugador, requisitosHeroe, razonNoAtacar, consagradaPara, consagradasDe, comeUnidad, eliminar, RASGO_NOMBRE,
     equipoFijo, hayPacto, pactoDe, razonNoPacto, razonNoTraicion, desertoresDe, navalDe, esBarco, enAgua, embarcada, puedeEmbarcar, oculta, veUnidad, razonAgua, esDuelo,
-    costeEdificio, aguaCerca, aguaLibreCerca, polvoraFac
+    costeEdificio, aguaCerca, aguaLibreCerca, polvoraFac, firma, rendir
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FracturaMotor;
 })(typeof window !== "undefined" ? window : globalThis);

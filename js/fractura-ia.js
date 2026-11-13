@@ -344,14 +344,15 @@
         const libres = [];
         Object.values(est.ciudades).forEach(c => {
           if (c.dueno === null) libres.push({ x: c.x, y: c.y, v: 4 + (c.mercado && FACCIONES[jug.faccion].mods.noche && !jug.heroeInvocado ? 3 : 0) });
-          else if (esRival(c.dueno) && !tregua) libres.push({ x: c.x, y: c.y, v: (c.capital ? 5 : 3) + (ganas[c.dueno] || 0) });
+          else if (esRival(c.dueno) && !tregua) libres.push({ x: c.x, y: c.y, v: (c.capital ? 5 : 3) + (ganas[c.dueno] || 0)  });
         });
         est.fortalezas.forEach((p, i) => { const d = est.fortalezasDueno[i]; if (d === null || (esRival(d) && !tregua)) libres.push({ x: p.x, y: p.y, v: 2.5 }); });
         est.casillas.forEach((fila, y) => fila.forEach((c, x) => { if (c.est === "ruinas" && !c.saqueada) libres.push({ x, y, v: 2 }); }));
         const nuc = est.nucleo;
         if (est.turno >= 5) libres.push({ x: nuc.x, y: nuc.y, v: 3 });
         // El más valioso por distancia; el rival tiene prioridad si la capital propia está en peligro
-        const amenaza = Object.values(est.unidades).filter(o => esRival(o.dueno) && cheb(o, capPropia) <= 4);
+        // Los barcos no toman ciudades: una flota rondando la capital no es motivo para encerrarse
+        const amenaza = Object.values(est.unidades).filter(o => esRival(o.dueno) && cheb(o, capPropia) <= 4 && !FM.esBarco(o));
         if (amenaza.length >= 2 && cheb(u, capPropia) <= 6) { metas = [capPropia]; clave = "defensa"; }
         else {
           libres.forEach(l => { l.s = l.v * 3 - cheb(u, l) * 0.9 + azar() * 1.2; });
