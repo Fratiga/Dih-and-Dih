@@ -524,3 +524,19 @@ body.tb.tb-oscuro .tb-zoom, body.tb.tb-oscuro .tb-zoom button { color: #dedede; 
 .tb-moneda-fila { padding: 8px 12px 0; }
 .tb-moneda-btn { width: 100%; font-weight: 600; }
 .tb-tirada-moneda .tb-tirada-total b { min-width: 76px; }
+
+/* ---------------------------------------------------------------- panel de tiradas */
+.tb-tiradas-controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 8px 0; }
+.tb-tiradas-controles select { width: auto; min-width: 120px; }
+.tb-tiradas-ficha { margin-bottom: 6px; }
+.tb-tiradas-nombre { font-size: 17px; font-weight: 700; margin: 4px 0; }
+.tb-tiradas-resumen { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--tb-suave); margin: 2px 0 8px; }
+.tb-tiradas-resumen b { color: var(--tb-texto); }
+.tb-tiradas-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0; }
+.tb-tiradas-chips button { border: 1px solid var(--tb-borde-fuerte); background: var(--tb-campo); color: var(--tb-texto); border-radius: 14px; padding: 4px 10px; font-size: 12.5px; cursor: pointer; }
+.tb-tiradas-chips button.activo { background: var(--tb-acento); border-color: var(--tb-acento); color: #fff; }
+.tb-tiradas-lista { display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
+.tb-tirada-item { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; border: 1px solid var(--tb-borde); background: var(--tb-campo); color: var(--tb-texto); border-radius: 6px; padding: 7px 10px; cursor: pointer; font-size: 14px; }
+.tb-tirada-item:hover { border-color: var(--tb-acento); }
+.tb-tirada-item small { font-size: 11px; color: var(--tb-suave); text-transform: uppercase; letter-spacing: .04em; }
+.tb-tiradas-texto { white-space: pre-wrap; font-weight: 400; line-height: 1.45; font-size: 13.5px; background: var(--tb-gris-suave); border: 1px solid var(--tb-borde); border-radius: 4px; padding: 8px 10px; max-height: 200px; overflow-y: auto; }

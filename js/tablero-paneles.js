@@ -569,7 +569,7 @@
       const fila = el(`<div class="tb-barra-cfg">
         <span class="tb-bola" style="background:${["#5cb85c", "#4f8fd6", "#d9534f"][i]}"></span><input type="number" data-v ${puede ? "" : "disabled"}>
         <span>/</span><input type="number" data-m ${puede ? "" : "disabled"}>
-        <select disabled title="Pronto podrá enlazarse a un atributo de la ficha"><option>Ninguno</option></select>
+        <select data-enlace ${gm ? "" : "disabled"} title="Atributo: la barra sigue los PV de esa ficha del compendio"><option value="">Ninguno</option>${(TB.fichas || []).map(fc => `<option value="${esc(fc.id)}">PV de ${esc(fc.nombre)}</option>`).join("")}${b.enlace && !(TB.fichas || []).some(fc => fc.id === b.enlace) ? `<option value="${esc(b.enlace)}">PV de una ficha</option>` : ""}</select>
         ${gm ? `<span style="position:relative"><button type="button" class="tb-kebab" data-k>⋮</button>
           <div class="tb-kebab-menu" hidden><b style="display:block;margin-bottom:6px">Permisos de jugadores</b>
             <label><input type="checkbox" data-ver> Ver</label><label><input type="checkbox" data-editar> Editar</label>
@@ -577,6 +577,13 @@
             <select data-texto><option value="oculto">Oculto</option><option value="editores">Visible para los editores</option><option value="todos">Visible para todos</option></select></div></span>` : "<span></span>"}
       </div>`);
       fila.querySelector("[data-v]").value = b.valor; fila.querySelector("[data-m]").value = b.max;
+      const selEnl = fila.querySelector("[data-enlace]");
+      selEnl.value = b.enlace || "";
+      // Al enlazar, la barra toma los PV de la ficha
+      selEnl.addEventListener("change", () => {
+        const fc = (TB.fichas || []).find(x => x.id === selEnl.value), c = fc && fc.combate;
+        if (c) { fila.querySelector("[data-v]").value = Number(c.pvActual) || 0; fila.querySelector("[data-m]").value = Number(c.pvMax) || 0; }
+      });
       if (gm) {
         fila.querySelector("[data-ver]").checked = b.ver !== false; fila.querySelector("[data-editar]").checked = !!b.editar; fila.querySelector("[data-texto]").value = b.texto || "editores";
         const k = fila.querySelector("[data-k]"), km = fila.querySelector(".tb-kebab-menu");
@@ -652,7 +659,7 @@
       nd.barras = [...cuerpo.querySelectorAll(".tb-barra-cfg")].map((f, i) => {
         const v = f.querySelector("[data-v]").value, m = f.querySelector("[data-m]").value;
         const b = Object.assign({}, barras[i], { valor: v === "" ? "" : Number(v), max: m === "" ? "" : Number(m) });
-        if (gm) { b.ver = f.querySelector("[data-ver]").checked; b.editar = f.querySelector("[data-editar]").checked; b.texto = f.querySelector("[data-texto]").value; }
+        if (gm) { b.ver = f.querySelector("[data-ver]").checked; b.editar = f.querySelector("[data-editar]").checked; b.texto = f.querySelector("[data-texto]").value; b.enlace = f.querySelector("[data-enlace]").value || null; }
         return b;
       });
       if (gm) {
@@ -673,6 +680,17 @@
       alAceptar: async () => {
         const nd = leerDatos();
         if (plantilla) { await TB.red.actualizarDiario(plantilla.diario, { token: { ancho: o.ancho, alto: o.alto, datos: nd } }); return; }
+        // Una barra enlazada que se cambia aquí también cambia los PV de la ficha (el servidor comprueba que sea tuya o que seas el DJ)
+        for (let i = 0; i < 3; i++) {
+          const b = nd.barras[i], antes = barras[i];
+          if (b.enlace && (gm || b.editar) && (b.valor !== antes.valor || b.max !== antes.max || b.enlace !== antes.enlace)) {
+            try {
+              await TB.red.fichaPV(b.enlace, { actual: b.valor === "" ? null : Number(b.valor), max: b.max === "" ? null : Number(b.max), temp: null });
+              const fc = (TB.fichas || []).find(x => x.id === b.enlace);
+              if (fc) fc.combate = Object.assign({}, fc.combate, { pvActual: Number(b.valor) || 0, pvMax: Number(b.max) || 0 });
+            } catch (e) { aviso("La barra cambió, pero la ficha no: " + mensajeError(e), true); }
+          }
+        }
         if (!gm) {
           // El jugador solo cambia las barras que el DJ le deja editar
           for (let i = 0; i < 3; i++) {

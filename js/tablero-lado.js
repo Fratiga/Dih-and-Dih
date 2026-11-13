@@ -10,6 +10,7 @@
 
   const PESTANAS = [
     { id: "chat", icono: "chat", titulo: "Chat de texto" },
+    { id: "tiradas", icono: "dado", titulo: "Tiradas de tu ficha" },
     { id: "arte", icono: "arte", titulo: "Biblioteca de arte", gm: true },
     { id: "diario", icono: "diario", titulo: "Diario" },
     { id: "compendio", icono: "compendio", titulo: "Compendio" },
@@ -36,6 +37,7 @@
     document.body.classList.toggle("lado-plegado", !!TB.prefs.ladoPlegado);
     document.getElementById("tbCompendioBtn").addEventListener("click", () => { if (TB.prefs.ladoPlegado) document.getElementById("tbLadoPlegar").click(); abrirPestana("compendio"); });
     construirChat();
+    if (window.TBTiradas) TBTiradas.iniciar(TB);
     // Las tiradas con dados 3D aparecen en el chat cuando los dados se paran, como en Roll20
     let colaChat = Promise.resolve();
     TB.on("mensaje", m => {
@@ -75,6 +77,7 @@
     if (id === "diario") pintarDiario();
     if (id === "compendio") pintarCompendio();
     if (id === "gramola") pintarGramola();
+    if (id === "tiradas" && window.TBTiradas) TBTiradas.pintar(cuerpos.tiradas);
     if (id === "colecciones") pintarColecciones();
     if (id === "ajustes") pintarAjustes();
     if (id === "chat") { const l = cuerpos.chat.querySelector(".tb-chat-lista"); if (l) l.scrollTop = l.scrollHeight; }

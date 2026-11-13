@@ -151,7 +151,7 @@
       async fichas() {
         const { data, error } = await sb.from("fichas_personajes").select("id, owner_id, data").eq("archivado", false);
         if (error) return [];
-        return (data || []).map(f => ({ id: f.id, owner: f.owner_id, nombre: (f.data && f.data.identidad && f.data.identidad.nombre) || "Sin nombre" }));
+        return (data || []).map(f => ({ id: f.id, owner: f.owner_id, nombre: (f.data && f.data.identidad && f.data.identidad.nombre) || "Sin nombre", combate: f.data && f.data.combate }));
       },
       emitir(evento, datos) { if (canal && conectado) canal.send({ type: "broadcast", event: evento, payload: datos }).catch(() => {}); },
       presencia(extra) { extraPresencia = Object.assign({}, extraPresencia, extra); if (canal && conectado) canal.track(Object.assign({ uid: yo.uid, nombre: yo.nombre, gm: yo.esGM }, extraPresencia)).catch(() => {}); },
@@ -341,7 +341,7 @@
       async borrarMacro(id) { d.macros = d.macros.filter(m => m.id !== id); guardar(); },
       async subirImagen(archivo) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(archivo); }); },
       async jugadores() { return jugadores.slice(); },
-      async fichas() { return [{ id: "local-ficha", owner: JUG, nombre: "Jugador de prueba" }]; },
+      async fichas() { return [{ id: "local-ficha", owner: JUG, nombre: "Jugador de prueba", combate: { pvActual: 18, pvMax: 24, pvTemp: 0 } }]; },
       emitir(evento, x) { if (bc) bc.postMessage({ evento, x }); },
       presencia(extra) { setTimeout(() => ev.lanzar("presencia", [Object.assign({ uid: yo.uid, nombre: yo.nombre, gm: yo.esGM }, extra)]), 0); },
       async fichaCompleta() { return null; },

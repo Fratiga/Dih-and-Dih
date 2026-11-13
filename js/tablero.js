@@ -78,7 +78,10 @@
     TB.macros = macros || [];
     if (TB.yo.esGM) {
       TB.red.jugadores().then(j => { TB.jugadores = j; TB.lanzar("jugadores"); }).catch(() => {});
-      TB.red.fichas().then(f => { TB.fichas = f; }).catch(() => {});
+      TB.red.fichas().then(f => { TB.fichas = f; sincronizarPV(); }).catch(() => {});
+      setInterval(() => { if (!document.hidden) refrescarPV(); }, 30000);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) refrescarPV(); });
+      TB.on("escena", () => sincronizarPV());
     }
 
     TB.L = TBLienzo.crear(document.getElementById("tbLienzo"), callbacksLienzo());
@@ -126,6 +129,32 @@
     if (!escena && !TB.yo.esGM) aviso("El DJ todavía no ha abierto ninguna página.");
   }
   TB.cargarEscena = cargarEscena;
+
+  /* Barras enlazadas a los PV de una ficha del compendio (opcional, lo elige el DJ en Ajustes de ficha).
+     Lo que diga la ficha manda: el navegador del DJ copia sus PV a la barra cada poco. Cambiar la barra desde
+     el tablero también cambia la ficha. Una barra sin enlace va por libre. */
+  async function refrescarPV() {
+    try { TB.fichas = await TB.red.fichas(); } catch (e) { return; }
+    sincronizarPV();
+  }
+  function sincronizarPV() {
+    if (!TB.yo.esGM || !TB.L) return;
+    const porId = new Map((TB.fichas || []).map(f => [f.id, f]));
+    TB.L.objetos().forEach(o => {
+      const barras = (o.datos && o.datos.barras) || [];
+      let cambia = false;
+      const nuevas = barras.map(b => {
+        const f = b && b.enlace && porId.get(b.enlace), c = f && f.combate;
+        if (!c) return b;
+        const valor = Number(c.pvActual) || 0, max = Number(c.pvMax) || 0;
+        if (Number(b.valor) === valor && Number(b.max) === max) return b;
+        cambia = true;
+        return Object.assign({}, b, { valor, max });
+      });
+      if (cambia) TB.cambiarObjeto(o.id, { datos: Object.assign({}, o.datos, { barras: nuevas }) }, { sinDeshacer: true });
+    });
+  }
+  TB.sincronizarPV = sincronizarPV;
   function leerCamara(id) { try { return JSON.parse(sessionStorage.getItem("tbCam:" + id) || "null"); } catch (e) { return null; } }
   function guardarCamara() {
     if (!TB.escenaId || !TB.L) return;
@@ -401,12 +430,50 @@
     return { expr: resto.trim(), etiqueta: "" };
   }
   TB.enviarChat = async function (texto, como) {
+    texto = await resolverConsultas(String(texto || ""));
+    if (texto === null) return;
     const lineas = String(texto || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     for (const linea of lineas) {
       try { await procesarLinea(linea, como || null); }
       catch (e) { aviso(mensajeError(e), true); }
     }
   };
+  // ?{Pregunta} / ?{Pregunta|valor por defecto} / ?{Pregunta|Etiqueta,valor|Otra,valor}. Una misma pregunta se
+  // contesta una sola vez aunque salga varias veces. Si se cancela, no se manda nada.
+  function resolverConsultas(texto) {
+    const re = /\?\{([^{}]*)\}/g, preguntas = new Map();
+    let m;
+    while ((m = re.exec(texto))) {
+      const partes = m[1].split("|"), p = partes[0].trim() || "Valor";
+      if (!preguntas.has(p)) preguntas.set(p, partes.slice(1));
+    }
+    if (!preguntas.size) return Promise.resolve(texto);
+    const { el, esc, modal } = TBUI;
+    return new Promise(res => {
+      const cuerpo = el(`<div></div>`);
+      const campos = [];
+      preguntas.forEach((ops, p) => {
+        let campo;
+        if (ops.length > 1) {
+          campo = el(`<select>${ops.map(o => { const i = o.indexOf(","); const etq = i >= 0 ? o.slice(0, i) : o, val = i >= 0 ? o.slice(i + 1) : o; return `<option value="${esc(val)}">${esc(etq.trim())}</option>`; }).join("")}</select>`);
+        } else { campo = el(`<input type="text">`); campo.value = ops[0] || ""; }
+        const f = el(`<label class="tb-campo"><span>${esc(p)}</span></label>`);
+        f.appendChild(campo);
+        cuerpo.appendChild(f);
+        campos.push([p, campo]);
+      });
+      let hecho = false;
+      modal({ titulo: "Antes de tirar", cuerpo, aceptar: "Lanzar", ancho: 440,
+        alAceptar: () => {
+          hecho = true;
+          const r = new Map(campos.map(([p, c]) => [p, c.value]));
+          res(texto.replace(re, (t, dentro) => r.get(dentro.split("|")[0].trim() || "Valor") || "0"));
+        },
+        alCerrar: () => { if (!hecho) res(null); } });
+      setTimeout(() => { const c = campos[0] && campos[0][1]; if (c) { c.focus(); if (c.select) c.select(); } }, 30);
+      cuerpo.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") { e.preventDefault(); const b = document.querySelector(".tb-modal [data-aceptar]"); if (b) b.click(); } });
+    });
+  }
   async function procesarLinea(linea, como) {
     let m;
     if ((m = linea.match(/^\/(r|roll|gr|gmroll)\s+(.+)$/i))) {
