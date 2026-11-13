@@ -16,7 +16,7 @@
     consejos: true, volumen: 0.7, volumenEfectos: 0.8, pestana: "chat", ladoPlegado: false, barraPlegada: false, tamChat: 14.5,
     avatares: { ver: true, tam: 56, nombres: true }, oscuro: false, verZoom: true, ruedaZoom: true,
     decoHover: false, arribaMias: false, centrarMia: true, mapaSinEncajar: false, sinFx: false, calidad: "media", webp: true,
-    pitido: false, avataresChat: true, horas: false, escalaUI: "auto"
+    pitido: false, avataresChat: true, horas: false, escalaUI: "0.8"
   };
   function leerPrefs() {
     try { const p = JSON.parse(localStorage.getItem("tbPrefs") || "{}"); return Object.assign({}, PREFS_DEF, p, Object.fromEntries(["medida", "dibujo", "texto", "niebla", "fx", "dados", "avatares"].map(k => [k, Object.assign({}, PREFS_DEF[k], p[k])]))); }
@@ -35,11 +35,10 @@
     lanzar(ev, d) { (oyentes[ev] || []).forEach(f => { try { f(d); } catch (e) { console.error("[tablero]", ev, e); } }); },
     guardarPrefs() { try { localStorage.setItem("tbPrefs", JSON.stringify(TB.prefs)); } catch (e) { /* sin almacenamiento */ } },
     esGM: () => !!(TB.yo && TB.yo.esGM),
-    // Tamaño de la interfaz (no del lienzo). En «auto» compensa el zoom del navegador: si la página está al 125 %,
-    // la interfaz se dibuja al 80 % y queda como en Roll20 al 100 %.
+    // Tamaño de la interfaz (no del lienzo). El 80 % deja las barras, el panel y las letras del tamaño de Roll20.
     escalaUI() {
-      const e = TB.prefs.escalaUI || "auto";
-      if (e !== "auto") return Math.max(0.5, Math.min(1.5, Number(e) || 1));
+      const e = !TB.prefs.escalaUI || TB.prefs.escalaUI === "auto" ? "0.8" : TB.prefs.escalaUI;
+      if (e !== "zoom") return Math.max(0.5, Math.min(1.5, Number(e) || 0.8));
       // El zoom de la página se nota en dos sitios a la vez: en la relación entre la ventana y la página y en
       // devicePixelRatio. Si los dos coinciden es zoom del navegador (y no la escala de Windows ni un panel incrustado).
       const z = window.outerWidth && window.innerWidth ? window.outerWidth / window.innerWidth : 1;

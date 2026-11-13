@@ -59,7 +59,14 @@ body.tb { font-family: var(--tb-fuente); font-size: calc(14px * var(--tb-k)); co
 .tb input:focus, .tb select:focus, .tb textarea:focus { outline: none; border-color: var(--tb-acento); box-shadow: 0 0 0 calc(2px * var(--tb-k)) var(--tb-acento-suave); }
 .tb textarea { resize: vertical; min-height: calc(70px * var(--tb-k)); }
 .tb input[type=color] { width: calc(34px * var(--tb-k)); height: calc(30px * var(--tb-k)); padding: calc(2px * var(--tb-k)); border: 1px solid var(--tb-borde-fuerte); border-radius: calc(4px * var(--tb-k)); background: var(--tb-campo); cursor: pointer; }
-.tb input[type=range] { accent-color: var(--tb-acento); width: 100%; }
+/* Deslizadores planos (los nativos salían como dos barras grises) */
+.tb input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: calc(18px * var(--tb-k)); min-height: 0; padding: 0; margin: 0; border: 0; background: transparent; box-shadow: none; cursor: pointer; }
+.tb input[type=range]:focus { box-shadow: none; }
+.tb input[type=range]::-webkit-slider-runnable-track { height: calc(4px * var(--tb-k)); border-radius: 2px; background: var(--tb-gris-2); }
+.tb input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: calc(14px * var(--tb-k)); height: calc(14px * var(--tb-k)); margin-top: calc(-5px * var(--tb-k)); border-radius: 50%; background: var(--tb-campo); border: calc(2px * var(--tb-k)) solid var(--tb-acento); }
+.tb input[type=range]::-moz-range-track { height: calc(4px * var(--tb-k)); border-radius: 2px; background: var(--tb-gris-2); }
+.tb input[type=range]::-moz-range-progress { height: calc(4px * var(--tb-k)); border-radius: 2px; background: var(--tb-acento); }
+.tb input[type=range]::-moz-range-thumb { width: calc(12px * var(--tb-k)); height: calc(12px * var(--tb-k)); border-radius: 50%; background: var(--tb-campo); border: calc(2px * var(--tb-k)) solid var(--tb-acento); }
 .tb-casilla { display: inline-flex; align-items: center; gap: calc(7px * var(--tb-k)); cursor: pointer; user-select: none; }
 .tb-casilla input { width: calc(16px * var(--tb-k)); height: calc(16px * var(--tb-k)); accent-color: var(--tb-acento); margin: 0; }
 /* Interruptor (toggle) rosa como en Roll20 */

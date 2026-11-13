@@ -1070,7 +1070,7 @@
     const selector = (caja, ruta, texto, opciones, alCambiar) => {
       const f = el(`<label class="tb-campo"><span style="font-weight:400">${texto}</span><select>${opciones.map(([v, t]) => `<option value="${v}">${t}</option>`).join("")}</select></label>`);
       const s = f.querySelector("select");
-      s.value = String(leer(ruta));
+      s.value = String(leer(ruta) === "auto" ? "0.8" : leer(ruta));
       s.addEventListener("change", () => { escribir(ruta, s.value); if (alCambiar) alCambiar(s.value); });
       caja.appendChild(f);
     };
@@ -1110,7 +1110,7 @@
     toggle(jug, "avatares.nombres", "Mostrar los nombres debajo de los avatares", pintarAvatares);
 
     const acc = seccion("Accesibilidad");
-    selector(acc, "escalaUI", "Tamaño de la interfaz (barras, panel, ventanas y letras; no el lienzo)", [["auto", "Automático (compensa el zoom del navegador)"], ["0.7", "70 %"], ["0.8", "80 %"], ["0.9", "90 %"], ["1", "100 %"], ["1.1", "110 %"], ["1.25", "125 %"]], () => TB.aplicarEscala());
+    selector(acc, "escalaUI", "Tamaño de la interfaz (barras, panel, ventanas y letras; no el lienzo)", [["0.7", "70 %"], ["0.8", "80 % (como Roll20)"], ["0.9", "90 %"], ["1", "100 %"], ["1.1", "110 %"], ["1.25", "125 %"], ["zoom", "Compensar el zoom del navegador"]], () => TB.aplicarEscala());
     toggle(acc, "oscuro", "Modo oscuro", aplicarAjustes);
     toggle(acc, "verZoom", "Mostrar los controles de zoom", aplicarAjustes);
     toggle(acc, "ruedaZoom", "La rueda del ratón hace zoom", aplicarAjustes, "Si lo apagas, la rueda mueve la vista y el zoom va con Ctrl + rueda.");
