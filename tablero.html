@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tablero — Compendio del Mundo</title>
+  <link rel="icon" type="image/png" href="assets/cosas/gorro-bufon.png">
+  <link rel="stylesheet" href="css/tablero.css?v=20271201">
+</head>
+<body class="tb">
+  <div class="tb-carga" id="tbCarga"><div class="tb-carga-caja"><div class="tb-carga-rueda"></div><p id="tbCargaTexto">Abriendo el tablero…</p></div></div>
+
+  <!-- Barra de herramientas (izquierda) -->
+  <nav class="tb-barra" id="tbBarra" aria-label="Herramientas"></nav>
+  <div class="tb-flotante" id="tbFlotante" hidden></div>
+  <div class="tb-opciones" id="tbOpciones" hidden></div>
+
+  <!-- Tablero -->
+  <main class="tb-lienzo" id="tbLienzo" tabindex="0" aria-label="Tablero"></main>
+  <div class="tb-zoom" id="tbZoom"></div>
+  <div class="tb-macros" id="tbMacros"></div>
+  <button type="button" class="tb-compendio-btn" id="tbCompendioBtn">Compendio</button>
+  <div class="tb-avisos" id="tbAvisos" aria-live="polite"></div>
+
+  <!-- Panel lateral (derecha) -->
+  <aside class="tb-lado" id="tbLado">
+    <button type="button" class="tb-lado-plegar" id="tbLadoPlegar" title="Ocultar el panel">»</button>
+    <nav class="tb-pestanas" id="tbPestanas"></nav>
+    <div class="tb-lado-cuerpo" id="tbLadoCuerpo"></div>
+  </aside>
+
+  <div class="tb-paginas" id="tbPaginas" hidden></div>
+  <div id="tbVentanas"></div>
+  <div class="tb-fondo-modal" id="tbFondoModal" hidden></div>
+  <div class="tb-menu" id="tbMenu" hidden></div>
+  <audio id="tbAudio" preload="none"></audio>
+
+  <script src="https://cdn.jsdelivr.net/npm/konva@9.3.18/konva.min.js"></script>
+  <script src="js/fichas-supabase.js?v=20271111"></script>
+  <script src="data/musica.js?v=20271111"></script>
+  <script src="data/stats.js?v=20271154"></script>
+  <script src="js/tablero-dados.js?v=20271201"></script>
+  <script src="js/tablero-red.js?v=20271201"></script>
+  <script src="js/tablero-iconos.js?v=20271201"></script>
+  <script src="js/tablero-lienzo.js?v=20271201"></script>
+  <script src="js/tablero-fx.js?v=20271201"></script>
+  <script src="js/tablero-ventanas.js?v=20271201"></script>
+  <script src="js/tablero-paneles.js?v=20271201"></script>
+  <script src="js/tablero-lado.js?v=20271201"></script>
+  <script src="js/tablero.js?v=20271201"></script>
+</body>
+</html>

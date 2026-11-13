@@ -1,0 +1,439 @@
+/* =============================================================================
+   TABLERO — la app: estado, carga, sincronización y acciones. La interfaz está en tablero-paneles.js y el
+   dibujo en tablero-lienzo.js. Solo el GM navega entre páginas; los jugadores ven todos a la vez la que él elige.
+============================================================================= */
+(function () {
+  const { aviso, mensajeError, confirmar } = TBUI;
+  const params = new URLSearchParams(location.search);
+  const LOCAL = params.has("local");
+  const PREFS_DEF = {
+    medida: { forma: "linea", ajuste: "centro", persistente: false, moverMide: true, transmitir: true },
+    dibujo: { modo: "mano", trazo: "#d6127e", relleno: "transparent", grosor: "mediano" },
+    texto: { color: "#000000", fondo: "transparent", fuente: "Arial", tam: 26, negrita: false, cursiva: false },
+    niebla: { modo: "revelar", forma: "rect" },
+    fx: { tipo: "aliento", color: "fuego" },
+    dados: { modo: "todos", avanzado: false, explota: "" },
+    consejos: true, volumen: 0.7, pestana: "chat", ladoPlegado: false, barraPlegada: false, tamChat: 14.5
+  };
+  function leerPrefs() {
+    try { const p = JSON.parse(localStorage.getItem("tbPrefs") || "{}"); return Object.assign({}, PREFS_DEF, p, Object.fromEntries(["medida", "dibujo", "texto", "niebla", "fx", "dados"].map(k => [k, Object.assign({}, PREFS_DEF[k], p[k])]))); }
+    catch (e) { return JSON.parse(JSON.stringify(PREFS_DEF)); }
+  }
+
+  const oyentes = {};
+  const TB = window.TB = {
+    local: LOCAL,
+    yo: null, red: null, L: null, fx: null,
+    escenas: new Map(), escenaId: null, estado: null,
+    mensajes: [], diario: new Map(), macros: [], jugadores: [], fichas: [], presencia: [], arte: null,
+    capa: "fichas", herr: "seleccionar", vistaJugador: false,
+    prefs: leerPrefs(),
+    on(ev, f) { (oyentes[ev] = oyentes[ev] || []).push(f); },
+    lanzar(ev, d) { (oyentes[ev] || []).forEach(f => { try { f(d); } catch (e) { console.error("[tablero]", ev, e); } }); },
+    guardarPrefs() { try { localStorage.setItem("tbPrefs", JSON.stringify(TB.prefs)); } catch (e) { /* sin almacenamiento */ } },
+    esGM: () => !!(TB.yo && TB.yo.esGM),
+    escena: () => TB.escenas.get(TB.escenaId) || null,
+    controla: o => !!o && !!TB.yo && (o.controlan_todos || (o.controladores || []).includes(TB.yo.uid)),
+    colorJugador(uid) {
+      let h = 0; String(uid || "").split("").forEach(c => { h = (h * 31 + c.charCodeAt(0)) >>> 0; });
+      return `hsl(${h % 360}, 62%, 48%)`;
+    },
+    nombreJugador(uid) { const j = TB.jugadores.find(x => x.uid === uid) || TB.presencia.find(x => x.uid === uid); return j ? j.nombre : "Jugador"; }
+  };
+
+  /* ------------------------------------------------------------ arranque */
+  async function iniciar() {
+    const carga = document.getElementById("tbCarga"), texto = document.getElementById("tbCargaTexto");
+    TB.red = LOCAL ? TableroRed.local(params.has("jugador")) : TableroRed.supabase();
+    try {
+      TB.yo = await TB.red.iniciar();
+    } catch (e) {
+      carga.classList.add("sin-rueda");
+      if (e.codigo === "sin-sesion") texto.innerHTML = `Inicia sesión en el compendio para entrar al tablero.<br><br><a href="index.html">Ir al compendio</a>`;
+      else if (e.codigo === "sin-sql") texto.innerHTML = `El tablero todavía no está instalado en el servidor.<br>Falta correr <code>docs/admin/tablero.sql</code> en Supabase.<br><br><a href="tablero.html?local=1">Probar en este navegador sin conexión</a>`;
+      else texto.innerHTML = `No se pudo abrir el tablero: ${TBUI.esc(mensajeError(e))}<br><br><a href="tablero.html">Reintentar</a>`;
+      return;
+    }
+    document.body.classList.toggle("es-gm", TB.yo.esGM);
+    TB.estado = await TB.red.estado();
+    const escenas = await TB.red.escenas();
+    escenas.forEach(e => TB.escenas.set(e.id, e));
+    if (TB.yo.esGM && !escenas.length) {
+      const e = await TB.red.crearEscena({ nombre: "Start" });
+      TB.escenas.set(e.id, e);
+      await TB.red.actualizarEstado({ escena_jugadores: e.id });
+      TB.estado.escena_jugadores = e.id;
+    }
+    if (TB.yo.esGM && !TB.estado.escena_jugadores && TB.escenas.size) {
+      const primera = [...TB.escenas.keys()][0];
+      await TB.red.actualizarEstado({ escena_jugadores: primera });
+      TB.estado.escena_jugadores = primera;
+    }
+    const [diario, mensajes, macros] = await Promise.all([TB.red.diario().catch(() => []), TB.red.mensajes().catch(() => []), TB.red.macros().catch(() => [])]);
+    (diario || []).forEach(e => TB.diario.set(e.id, e));
+    TB.mensajes = mensajes || [];
+    TB.macros = macros || [];
+    if (TB.yo.esGM) {
+      TB.red.jugadores().then(j => { TB.jugadores = j; TB.lanzar("jugadores"); }).catch(() => {});
+      TB.red.fichas().then(f => { TB.fichas = f; }).catch(() => {});
+    }
+
+    TB.L = TBLienzo.crear(document.getElementById("tbLienzo"), callbacksLienzo());
+    TB.L.setPermisos(TB.yo.esGM, TB.yo.uid);
+    TB.fx = TBFx.crear(TB.L.capaUI);
+    aplicarOpcionesLienzo();
+    escucharRed();
+    TBPaneles.iniciar(TB);
+    const guardada = TB.yo.esGM && localStorage.getItem("tbEscenaGM");
+    await cargarEscena(TB.yo.esGM && guardada && TB.escenas.has(guardada) ? guardada : TB.estado.escena_jugadores);
+    actualizarTurno();
+    TB.lanzar("estado", TB.estado);
+    carga.remove();
+  }
+
+  async function cargarEscena(id) {
+    TB.escenaId = id || null;
+    if (TB.yo.esGM && id) try { localStorage.setItem("tbEscenaGM", id); } catch (e) { /* nada */ }
+    if (!TB.yo.esGM) {
+      const lista = await TB.red.escenas().catch(() => []);
+      TB.escenas.clear(); lista.forEach(e => TB.escenas.set(e.id, e));
+    }
+    const escena = TB.escena();
+    TB.L.setEscena(escena);
+    TB.L.setObjetos(id ? await TB.red.objetos(id).catch(e => { aviso(mensajeError(e), true); return []; }) : []);
+    const cam = leerCamara(id);
+    if (cam) TB.L.centrarEn(cam.x, cam.y, cam.z); else TB.L.ajustarVista();
+    TB.lanzar("escena", escena);
+    if (!escena && !TB.yo.esGM) aviso("El DJ todavía no ha abierto ninguna página.");
+  }
+  TB.cargarEscena = cargarEscena;
+  function leerCamara(id) { try { return JSON.parse(sessionStorage.getItem("tbCam:" + id) || "null"); } catch (e) { return null; } }
+  function guardarCamara() {
+    if (!TB.escenaId || !TB.L) return;
+    const c = TB.L.centroVista();
+    try { sessionStorage.setItem("tbCam:" + TB.escenaId, JSON.stringify({ x: c.x, y: c.y, z: TB.L.zoom() })); } catch (e) { /* nada */ }
+  }
+  window.addEventListener("beforeunload", guardarCamara);
+
+  function aplicarOpcionesLienzo() {
+    const p = TB.prefs;
+    TB.L.setOpciones({ moverMide: p.medida.moverMide, transmitir: p.medida.transmitir, ajusteMedida: p.medida.ajuste, formaMedida: p.medida.forma,
+      persistente: p.medida.persistente, dibujo: p.dibujo, texto: p.texto, niebla: p.niebla });
+  }
+  TB.aplicarOpcionesLienzo = aplicarOpcionesLienzo;
+
+  /* ------------------------------------------------------------ red */
+  function escucharRed() {
+    const r = TB.red;
+    r.on("objeto", o => {
+      if (o.escena === TB.escenaId) TB.L.upsert(o);
+      else if (TB.L.objeto(o.id)) TB.L.quitar(o.id);
+    });
+    r.on("objetoBorrado", id => TB.L.quitar(id));
+    r.on("escena", e => {
+      if (!TB.yo.esGM && e.id !== TB.escenaId) return;
+      TB.escenas.set(e.id, e);
+      if (e.id === TB.escenaId) TB.L.setEscena(e);
+      TB.lanzar("escenas");
+    });
+    r.on("escenaBorrada", id => {
+      TB.escenas.delete(id);
+      if (id === TB.escenaId && TB.yo.esGM) cargarEscena(TB.estado.escena_jugadores || [...TB.escenas.keys()][0]);
+      TB.lanzar("escenas");
+    });
+    r.on("estado", s => {
+      const antes = TB.estado || {};
+      TB.estado = s;
+      if (!TB.yo.esGM && s.escena_jugadores !== TB.escenaId) { guardarCamara(); cargarEscena(s.escena_jugadores); }
+      actualizarTurno();
+      if (JSON.stringify(antes.musica) !== JSON.stringify(s.musica)) TB.lanzar("musica", s.musica);
+      TB.lanzar("estado", s);
+    });
+    r.on("mensaje", m => {
+      if (TB.mensajes.some(x => x.id === m.id)) return;
+      TB.mensajes.push(m);
+      if (TB.mensajes.length > 400) TB.mensajes.shift();
+      TB.lanzar("mensaje", m);
+    });
+    r.on("mensajeBorrado", id => { TB.mensajes = TB.mensajes.filter(m => m.id !== id); TB.lanzar("mensajes"); });
+    r.on("diario", e => { TB.diario.set(e.id, e); TB.lanzar("diario"); });
+    r.on("diarioBorrado", id => { TB.diario.delete(id); TB.lanzar("diario"); });
+    r.on("mov", d => { if (d && d.escena === TB.escenaId) TB.L.moverRemoto(d.id, d.x, d.y); });
+    r.on("quitar", d => { if (d && !TB.yo.esGM) (d.ids || []).forEach(id => TB.L.quitar(id)); });
+    r.on("ping", d => {
+      if (!d || d.escena !== TB.escenaId) return;
+      TB.L.ping(d.x, d.y, d.color);
+      if (d.centrar) TB.L.centrarEn(d.x, d.y);
+    });
+    r.on("regla", d => { if (d && (!d.escena || d.escena === TB.escenaId)) TB.L.reglaRemota(d); });
+    r.on("fx", d => { if (d && d.escena === TB.escenaId) TB.fx.reproducir(d); });
+    r.on("presencia", lista => { TB.presencia = lista || []; TB.lanzar("presencia"); });
+    r.on("conexion", s => { if (s === "CHANNEL_ERROR" || s === "TIMED_OUT") aviso("Se perdió la conexión en tiempo real. Recarga si no vuelve.", true); });
+  }
+
+  function actualizarTurno() {
+    const ini = (TB.estado && TB.estado.iniciativa) || {};
+    const lista = ini.lista || [];
+    const actual = lista.length ? lista[Math.min(ini.turno | 0, lista.length - 1)] : null;
+    TB.L && TB.L.setTurno(actual && (ini.visible || TB.yo.esGM) ? actual.id : null);
+  }
+
+  /* ------------------------------------------------------------ deshacer (GM) */
+  const historial = [];
+  function apuntar(paso) { historial.push(paso); if (historial.length > 60) historial.shift(); }
+  async function deshacer() {
+    const p = historial.pop();
+    if (!p) { aviso("Nada que deshacer."); return; }
+    try {
+      if (p.tipo === "cambiar") { for (const c of p.cambios) { await TB.red.actualizarObjeto(c.id, c.antes); const o = TB.L.objeto(c.id); if (o) TB.L.upsert(Object.assign({}, o, c.antes)); } }
+      else if (p.tipo === "crear") { await TB.red.borrarObjetos(p.ids); p.ids.forEach(id => TB.L.quitar(id)); }
+      else if (p.tipo === "borrar") { const filas = await TB.red.crearObjetos(p.filas); (filas || p.filas).forEach(o => { if (o.escena === TB.escenaId) TB.L.upsert(o); }); }
+    } catch (e) { aviso(mensajeError(e), true); }
+  }
+
+  /* ------------------------------------------------------------ acciones sobre objetos */
+  const zSiguiente = () => Math.max(0, ...TB.L.objetos().map(o => o.z || 0)) + 1;
+  TB.crearObjetos = async function (filas, { sinDeshacer } = {}) {
+    if (!TB.escenaId) return [];
+    if (TB.yo.esGM) {
+      let z = zSiguiente();
+      const completas = filas.map(f => Object.assign({ escena: TB.escenaId, capa: TB.capa, rot: 0, opacidad: 1, bloqueado: false, controladores: [], controlan_todos: false, datos: {} }, f, { z: z++ }));
+      try {
+        const creadas = await TB.red.crearObjetos(completas);
+        (creadas || []).forEach(o => TB.L.upsert(o));
+        if (!sinDeshacer) apuntar({ tipo: "crear", ids: (creadas || []).map(o => o.id) });
+        return creadas || [];
+      } catch (e) { aviso(mensajeError(e), true); return []; }
+    }
+    const ids = [];
+    for (const f of filas) {
+      if (f.tipo !== "dibujo" && f.tipo !== "texto") continue;
+      try { ids.push(await TB.red.crearPropio(TB.escenaId, f.tipo, f.x, f.y, f.ancho, f.alto, f.datos || {})); }
+      catch (e) { aviso(mensajeError(e), true); }
+    }
+    return ids;
+  };
+  TB.cambiarObjeto = async function (id, cambios, { sinDeshacer } = {}) {
+    const o = TB.L.objeto(id);
+    if (!o) return;
+    if (!TB.yo.esGM) {
+      // Un jugador solo reescribe su texto: se borra y se crea de nuevo
+      if (o.tipo === "texto" && o.autor === TB.yo.uid) {
+        const nuevo = Object.assign({}, o, cambios);
+        try { await TB.red.borrarPropio([id]); await TB.red.crearPropio(TB.escenaId, "texto", nuevo.x, nuevo.y, nuevo.ancho, nuevo.alto, nuevo.datos); }
+        catch (e) { aviso(mensajeError(e), true); }
+      }
+      return;
+    }
+    const antes = {};
+    Object.keys(cambios).forEach(k => { antes[k] = o[k]; });
+    if (!sinDeshacer) apuntar({ tipo: "cambiar", cambios: [{ id, antes }] });
+    TB.L.upsert(Object.assign({}, o, cambios));
+    if (cambios.capa === "gm" && o.capa !== "gm") TB.red.emitir("quitar", { ids: [id] });
+    try { await TB.red.actualizarObjeto(id, cambios); } catch (e) { aviso(mensajeError(e), true); }
+  };
+  TB.cambiarVarios = async function (lista) {
+    // lista: [{id, cambios}]
+    apuntar({ tipo: "cambiar", cambios: lista.map(({ id, cambios }) => { const o = TB.L.objeto(id) || {}; const antes = {}; Object.keys(cambios).forEach(k => { antes[k] = o[k]; }); return { id, antes }; }) });
+    const aGM = lista.filter(({ id, cambios }) => cambios.capa === "gm" && (TB.L.objeto(id) || {}).capa !== "gm").map(x => x.id);
+    if (aGM.length) TB.red.emitir("quitar", { ids: aGM });
+    for (const { id, cambios } of lista) {
+      const o = TB.L.objeto(id);
+      if (o) TB.L.upsert(Object.assign({}, o, cambios));
+      try { await TB.red.actualizarObjeto(id, cambios); } catch (e) { aviso(mensajeError(e), true); }
+    }
+  };
+  TB.borrarObjetos = async function (ids) {
+    if (!ids.length) return;
+    if (TB.yo.esGM) {
+      apuntar({ tipo: "borrar", filas: ids.map(id => TB.L.objeto(id)).filter(Boolean).map(o => Object.assign({}, o)) });
+      ids.forEach(id => TB.L.quitar(id));
+      try { await TB.red.borrarObjetos(ids); } catch (e) { aviso(mensajeError(e), true); }
+    } else {
+      try { const n = await TB.red.borrarPropio(ids); if (!n) aviso("Solo puedes borrar lo que dibujaste o escribiste tú."); } catch (e) { aviso(mensajeError(e), true); }
+    }
+  };
+  TB.deshacer = deshacer;
+
+  /* ------------------------------------------------------------ escenas (GM) */
+  TB.verEscena = async id => { guardarCamara(); await cargarEscena(id); };
+  TB.llevarJugadores = async id => {
+    try { await TB.red.actualizarEstado({ escena_jugadores: id }); TB.estado.escena_jugadores = id; TB.lanzar("estado", TB.estado); aviso("Los jugadores ven ahora esta página."); }
+    catch (e) { aviso(mensajeError(e), true); }
+  };
+  TB.crearEscena = async (campos) => {
+    try {
+      const e = await TB.red.crearEscena(Object.assign({ nombre: "Nueva página " + (TB.escenas.size + 1), orden: TB.escenas.size }, campos || {}));
+      TB.escenas.set(e.id, e); TB.lanzar("escenas");
+      return e;
+    } catch (err) { aviso(mensajeError(err), true); return null; }
+  };
+  TB.duplicarEscena = async id => {
+    const e = TB.escenas.get(id);
+    if (!e) return;
+    const nueva = await TB.crearEscena({ nombre: e.nombre + " (copia)", cuadricula: e.cuadricula, fondo: e.fondo, niebla: e.niebla, miniatura: e.miniatura, carpeta: e.carpeta });
+    if (!nueva) return;
+    const objs = await TB.red.objetos(id);
+    await TB.red.crearObjetos(objs.map(o => { const c = Object.assign({}, o); delete c.id; delete c.actualizado; c.escena = nueva.id; return c; }));
+    aviso("Página duplicada.");
+  };
+  TB.borrarEscena = async id => {
+    const e = TB.escenas.get(id);
+    if (!e) return;
+    if (TB.escenas.size <= 1) { aviso("Necesitas al menos una página."); return; }
+    if (!(await confirmar("Borrar página", `¿Borrar «${e.nombre}» con todo lo que tiene? No se puede deshacer.`, "Borrar"))) return;
+    try {
+      if (TB.estado.escena_jugadores === id) await TB.llevarJugadores([...TB.escenas.keys()].find(x => x !== id));
+      await TB.red.borrarEscena(id);
+      TB.escenas.delete(id);
+      if (TB.escenaId === id) await cargarEscena(TB.estado.escena_jugadores);
+      TB.lanzar("escenas");
+    } catch (err) { aviso(mensajeError(err), true); }
+  };
+  TB.guardarEscena = async (id, cambios) => {
+    const e = TB.escenas.get(id);
+    if (!e) return;
+    const nueva = Object.assign({}, e, cambios);
+    TB.escenas.set(id, nueva);
+    if (id === TB.escenaId) TB.L.setEscena(nueva);
+    TB.lanzar("escenas");
+    try { await TB.red.actualizarEscena(id, cambios); } catch (err) { aviso(mensajeError(err), true); }
+  };
+
+  /* ------------------------------------------------------------ chat y tiradas */
+  function separarTirada(resto) {
+    // La expresión es el trozo más largo del principio que se pueda tirar; lo que sigue es la etiqueta
+    const palabras = resto.trim().split(/\s+/);
+    for (let k = palabras.length; k >= 1; k--) {
+      const expr = palabras.slice(0, k).join("");
+      try { TBDados.tirar(expr); return { expr, etiqueta: palabras.slice(k).join(" ") }; } catch (e) { /* sigue probando */ }
+    }
+    return { expr: resto.trim(), etiqueta: "" };
+  }
+  TB.enviarChat = async function (texto, como) {
+    const lineas = String(texto || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    for (const linea of lineas) {
+      try { await procesarLinea(linea, como || null); }
+      catch (e) { aviso(mensajeError(e), true); }
+    }
+  };
+  async function procesarLinea(linea, como) {
+    let m;
+    if ((m = linea.match(/^\/(r|roll|gr|gmroll)\s+(.+)$/i))) {
+      const modo = /^g/i.test(m[1]) ? "dj" : "todos";
+      let resto = m[2];
+      const tracker = /&\{tracker\}/i.test(resto);
+      resto = resto.replace(/&\{tracker\}/ig, "").trim();
+      const { expr, etiqueta } = separarTirada(resto);
+      if (tracker) {
+        const mt = expr.replace(/\s/g, "").toLowerCase().match(/^1?d20([+-]\d+)?$/);
+        const sel = TB.L.seleccion().map(id => TB.L.objeto(id)).find(o => o && (TB.yo.esGM || TB.controla(o)));
+        if (mt && sel) { await TB.red.tirarIniciativa(sel.id, parseInt(mt[1] || "0", 10)); return; }
+        aviso(sel ? "Para el orden de turno usa una tirada como 1d20+3." : "Selecciona tu ficha para añadirla al orden de turno.", true);
+      }
+      await TB.red.tirar(expr, etiqueta, modo, como);
+      return;
+    }
+    if ((m = linea.match(/^\/w\s+(?:"([^"]+)"|(\S+))\s+([\s\S]+)$/i))) {
+      const quien = m[1] || m[2], texto = m[3];
+      if (quien.toLowerCase() === "gm") await TB.red.decir(texto, "dj", null, como);
+      else await TB.red.decir(texto, "susurro", quien, como);
+      return;
+    }
+    if (/^\/desc\s/i.test(linea) && !TB.yo.esGM) { aviso("Solo el DJ puede usar /desc.", true); return; }
+    await TB.red.decir(linea, "todos", null, como);
+  }
+  TB.tirar = async (expr, etiqueta, modo) => {
+    try { return await TB.red.tirar(expr, etiqueta, modo || TB.prefs.dados.modo); } catch (e) { aviso(mensajeError(e), true); return null; }
+  };
+
+  /* ------------------------------------------------------------ orden de turno */
+  TB.guardarIniciativa = async ini => {
+    TB.estado.iniciativa = ini;
+    actualizarTurno();
+    TB.lanzar("estado", TB.estado);
+    try { await TB.red.actualizarEstado({ iniciativa: ini }); } catch (e) { aviso(mensajeError(e), true); }
+  };
+  TB.pasarTurno = async paso => { try { await TB.red.turno(paso); } catch (e) { aviso(mensajeError(e), true); } };
+  TB.tirarIniciativa = async (id, mod) => { try { await TB.red.tirarIniciativa(id, mod | 0); } catch (e) { aviso(mensajeError(e), true); } };
+  TB.anadirAlTurno = async ids => {
+    const ini = Object.assign({ lista: [], turno: 0, ronda: 1, visible: true }, TB.estado.iniciativa);
+    const lista = (ini.lista || []).slice();
+    ids.forEach(id => {
+      const o = TB.L.objeto(id);
+      if (!o || lista.some(e => e.id === id)) return;
+      lista.push({ id, nombre: (o.datos && o.datos.nombre) || "", valor: 0, oculto: o.capa === "gm", src: (o.datos && o.datos.src) || "" });
+    });
+    await TB.guardarIniciativa(Object.assign(ini, { lista, visible: true }));
+  };
+
+  /* ------------------------------------------------------------ lienzo → app */
+  let ultimaRegla = 0, reglaPendiente = null;
+  function callbacksLienzo() {
+    return {
+      onCambiar: (id, cambios) => TB.cambiarObjeto(id, cambios),
+      onMovido: async o => {
+        if (TB.yo.esGM) { TB.cambiarObjeto(o.id, { x: o.x, y: o.y }); return; }
+        try { await TB.red.moverPropio(o.id, o.x, o.y); }
+        catch (e) { aviso(mensajeError(e), true); cargarEscena(TB.escenaId); }
+      },
+      onMovEnCurso: (id, x, y) => TB.red.emitir("mov", { id, x, y, escena: TB.escenaId }),
+      onCrear: filas => TB.crearObjetos(filas),
+      onBorrar: ids => TB.borrarObjetos(ids),
+      onSeleccion: ids => TB.lanzar("seleccion", ids),
+      onAbrirAjustes: id => TBPaneles.ajustesFicha(id),
+      onMenu: (id, x, y) => TBPaneles.menuFicha(id, x, y),
+      onRegla: d => {
+        const datos = d ? Object.assign({ de: TB.yo.uid, color: TB.colorJugador(TB.yo.uid), escena: TB.escenaId }, d) : { de: TB.yo.uid, escena: TB.escenaId };
+        const ahora = Date.now();
+        if (!d || ahora - ultimaRegla > 70) { ultimaRegla = ahora; clearTimeout(reglaPendiente); TB.red.emitir("regla", datos); }
+        else { clearTimeout(reglaPendiente); reglaPendiente = setTimeout(() => { ultimaRegla = Date.now(); TB.red.emitir("regla", datos); }, 80); }
+      },
+      onPing: (x, y, centrar) => TB.red.emitir("ping", { x, y, color: TB.colorJugador(TB.yo.uid), centrar: !!centrar && TB.yo.esGM, escena: TB.escenaId }),
+      onFx: (a, b) => {
+        const t = TBFx.TIPOS.find(x => x.id === TB.prefs.fx.tipo) || TBFx.TIPOS[0];
+        const d = { tipo: t.id, color: TB.prefs.fx.color, a, b: t.modo === "apuntar" ? b : a, escala: TB.L.tamCelda() / 70, escena: TB.escenaId };
+        TB.fx.reproducir(d);
+        TB.red.emitir("fx", d);
+      },
+      onNiebla: n => { if (TB.yo.esGM && TB.escenaId) TB.guardarEscena(TB.escenaId, { niebla: n }); },
+      onZoom: z => TB.lanzar("zoom", z),
+      onSoltar: (dt, p, alt) => TBPaneles.soltarEnTablero(dt, p, alt)
+    };
+  }
+
+  /* ------------------------------------------------------------ portapapeles y teclado */
+  let portapapeles = [];
+  function enCampo(e) { const t = e.target; return t && (t.closest("input, textarea, select, [contenteditable=true]")); }
+  document.addEventListener("keydown", async e => {
+    if (!TB.L || enCampo(e)) return;
+    const ctrl = e.ctrlKey || e.metaKey;
+    const sel = TB.L.seleccion();
+    if (e.key === " " && !e.repeat) { TB.L.setEspacio(true); e.preventDefault(); return; }
+    if (e.key === "Escape") { TB.L.deseleccionar(); TB.L.cancelarGesto(); TB.L.limpiarMedida(); TBUI.cerrarMenu(); return; }
+    if (e.key === "Enter") { TB.L.terminarPoligono(); return; }
+    if ((e.key === "Delete" || e.key === "Backspace") && sel.length) { e.preventDefault(); TB.borrarObjetos(sel); return; }
+    if (ctrl && e.key.toLowerCase() === "z" && TB.yo.esGM) { e.preventDefault(); deshacer(); return; }
+    if (ctrl && e.key.toLowerCase() === "c" && sel.length) { portapapeles = sel.map(id => Object.assign({}, TB.L.objeto(id))); aviso(`Copiado: ${portapapeles.length}`); return; }
+    if (ctrl && e.key.toLowerCase() === "v" && portapapeles.length && TB.yo.esGM) {
+      e.preventDefault();
+      const p = TB.L.punteroMundo();
+      const cx = portapapeles.reduce((s, o) => s + o.x, 0) / portapapeles.length, cy = portapapeles.reduce((s, o) => s + o.y, 0) / portapapeles.length;
+      const creadas = await TB.crearObjetos(portapapeles.map(o => { const c = Object.assign({}, o); delete c.id; delete c.actualizado; return Object.assign(c, TB.L.ajustarPos(c, p.x + o.x - cx, p.y + o.y - cy)); }));
+      TB.L.seleccionar(creadas.map(o => o.id));
+      return;
+    }
+    if (ctrl && e.key.toLowerCase() === "f") { e.preventDefault(); TBPaneles.elegirDibujo("mano"); return; }
+    if (ctrl && e.key.toLowerCase() === "d") { e.preventDefault(); TBPaneles.elegirDibujo("rect"); return; }
+    if (e.key.startsWith("Arrow") && sel.length) {
+      e.preventDefault();
+      const t = e.shiftKey ? TB.L.tamCelda() / 5 : TB.L.tamCelda();
+      const dx = e.key === "ArrowLeft" ? -t : e.key === "ArrowRight" ? t : 0, dy = e.key === "ArrowUp" ? -t : e.key === "ArrowDown" ? t : 0;
+      if (TB.yo.esGM) TB.cambiarVarios(sel.map(id => { const o = TB.L.objeto(id); return { id, cambios: { x: o.x + dx, y: o.y + dy } }; }));
+      else for (const id of sel) { const o = TB.L.objeto(id); try { await TB.red.moverPropio(id, o.x + dx, o.y + dy); TB.red.emitir("mov", { id, x: o.x + dx, y: o.y + dy, escena: TB.escenaId }); } catch (err) { aviso(mensajeError(err), true); } }
+    }
+  });
+  document.addEventListener("keyup", e => { if (e.key === " " && TB.L) TB.L.setEspacio(false); });
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar); else iniciar();
+})();
