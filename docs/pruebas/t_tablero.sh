@@ -14,7 +14,7 @@ uno() { como "$1" "$2" | tail -1; }
 echo "== Instalación"
 cargar admin/tablero.sql
 cargar admin/tablero.sql          # se puede repetir sin romper nada
-comprobar "las nueve tablas existen" "9" "$(sql "select count(*) from pg_tables where tablename like 'tablero\_%'")"
+comprobar "las once tablas existen" "11" "$(sql "select count(*) from pg_tables where tablename like 'tablero\_%'")"
 comprobar "hay una sola fila de estado" "1" "$(sql "select count(*) from tablero_estado")"
 
 sql "delete from tablero_escenas; delete from tablero_diario; delete from tablero_macros; delete from tablero_arte; truncate tablero_mensajes; insert into tablero_estado (id) values (1) on conflict (id) do nothing; update tablero_estado set escena_jugadores = null, iniciativa = '{\"lista\": [], \"turno\": 0, \"ronda\": 1, \"visible\": false}'" >/dev/null
@@ -194,6 +194,19 @@ comprobar "el jugador abre una puerta con su tirador" "t|true" "$(uno "$U1" "sel
 como "$ADMIN" "update tablero_objetos set datos = datos || '{\"llave\": true}' where id = '$MURO';" >/dev/null
 contiene "con llave no la abre" "$(como "$U1" "select tablero_puerta('$MURO');")" "cerrada con llave"
 contiene "un muro no es una puerta" "$(como "$U1" "select tablero_puerta('$F1');")" "no es una puerta"
+
+echo "== Perfil y GIFs"
+sql "delete from tablero_perfil; delete from tablero_gifs" >/dev/null
+como "$U1" "insert into tablero_perfil (avatar) values ('https://ejemplo.com/yo.png');" >/dev/null
+comprobar "cada uno pone su avatar y lo ven los demás" "https://ejemplo.com/yo.png" "$(uno "$U2" "select avatar from tablero_perfil where uid = '$U1';")"
+como "$U2" "update tablero_perfil set avatar = 'https://malo.com/x.png' where uid = '$U1';" >/dev/null
+comprobar "nadie cambia el avatar de otro" "https://ejemplo.com/yo.png" "$(sql "select avatar from tablero_perfil where uid = '$U1'")"
+contiene "el avatar tiene que ser un enlace https" "$(como "$U2" "insert into tablero_perfil (avatar) values ('javascript:alert(1)');")" "check"
+como "$U1" "select tablero_decir('hola', 'todos', null, null);" >/dev/null
+comprobar "el chat usa el avatar de quien escribe" "https://ejemplo.com/yo.png" "$(sql "select avatar from tablero_mensajes order by id desc limit 1")"
+como "$U1" "insert into tablero_gifs (url, nombre) values ('https://media.tenor.com/a.gif', 'gato');" >/dev/null
+comprobar "los GIFs favoritos son solo de su dueño" "1|0" "$(uno "$U1" "select count(*) from tablero_gifs;")|$(uno "$U2" "select count(*) from tablero_gifs;")"
+contiene "sin sesión no se ve nada" "$(anonimo "select count(*) from tablero_perfil;")" "denied"
 
 echo "== Arte y macros"
 como "$ADMIN" "insert into tablero_arte (src, nombre) values ('x.png', 'Mapa');" >/dev/null

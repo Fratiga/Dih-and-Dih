@@ -108,17 +108,19 @@
     actualizarTurno();
     TB.L.setPausa(!!TB.estado.pausa);
     TB.lanzar("estado", TB.estado);
+    TB.miPerfil = await TB.red.perfil().catch(() => ({ avatar: "" }));
     anunciarAvatar();
     TB.on("diario", anunciarAvatar);
     carga.remove();
   }
 
-  // El avatar de cada uno en la barra de jugadores: el de su personaje del grupo, si lo tiene
+  TB.anunciarAvatar = () => anunciarAvatar();
+  // El avatar de cada uno en la barra de jugadores: el suyo si lo puso; si no, el de su personaje del grupo
   let avatarAnunciado = null;
   function anunciarAvatar() {
     const mio = [...TB.diario.values()].filter(e => e.tipo === "personaje" && !e.archivado && (e.controladores || []).includes(TB.yo.uid) && e.imagen)
       .sort((a, b) => (b.grupo ? 1 : 0) - (a.grupo ? 1 : 0))[0];
-    const avatar = mio ? mio.imagen : "";
+    const avatar = (TB.miPerfil && TB.miPerfil.avatar) || (mio ? mio.imagen : "");
     if (avatar === avatarAnunciado) return;
     avatarAnunciado = avatar;
     TB.red.presencia({ avatar, personaje: mio ? mio.nombre : "" });

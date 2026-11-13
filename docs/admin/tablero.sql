@@ -251,7 +251,8 @@ set search_path = public
 as $$
 begin
   if p_como is null then
-    nombre := tablero_i_nombre(); avatar := '';
+    nombre := tablero_i_nombre();
+    avatar := coalesce((select p.avatar from tablero_perfil p where p.uid = auth.uid()), '');
     return;
   end if;
   select d.nombre, d.imagen into nombre, avatar from tablero_diario d
@@ -713,22 +714,67 @@ begin
 end;
 $$;
 
+-- Perfil de cada uno en el tablero: su avatar (lo ven todos, sale en el chat y en la barra de jugadores) y sus GIFs
+-- favoritos (solo los ve su dueño). Cada uno cambia lo suyo.
+create table if not exists tablero_perfil (
+  uid uuid primary key default auth.uid() references auth.users (id) on delete cascade,
+  avatar text not null default '' check (avatar = '' or (avatar ~ '^https://' and char_length(avatar) <= 1000)),
+  actualizado timestamptz not null default now()
+);
+create table if not exists tablero_gifs (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  url text not null check (url ~ '^https://' and char_length(url) <= 1000),
+  nombre text not null default '' check (char_length(nombre) <= 60),
+  creado timestamptz not null default now()
+);
+create index if not exists tablero_gifs_owner on tablero_gifs (owner, creado desc);
+-- Como mucho 300 GIFs por persona
+create or replace function tablero_i_tope_gifs()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if (select count(*) from tablero_gifs where owner = new.owner) >= 300 then raise exception 'Ya tienes 300 GIFs: borra alguno antes.'; end if;
+  return new;
+end;
+$$;
+drop trigger if exists tablero_tope_gifs on tablero_gifs;
+create trigger tablero_tope_gifs before insert on tablero_gifs for each row execute function tablero_i_tope_gifs();
+revoke all on function tablero_i_tope_gifs() from public, anon, authenticated;
+
+alter table tablero_perfil enable row level security;
+drop policy if exists "tablero_perfil_ver" on tablero_perfil;
+create policy "tablero_perfil_ver" on tablero_perfil for select to authenticated using (true);
+drop policy if exists "tablero_perfil_mio" on tablero_perfil;
+create policy "tablero_perfil_mio" on tablero_perfil for insert to authenticated with check (uid = auth.uid());
+drop policy if exists "tablero_perfil_cambiar" on tablero_perfil;
+create policy "tablero_perfil_cambiar" on tablero_perfil for update to authenticated using (uid = auth.uid()) with check (uid = auth.uid());
+alter table tablero_gifs enable row level security;
+drop policy if exists "tablero_gifs_mios" on tablero_gifs;
+create policy "tablero_gifs_mios" on tablero_gifs for all to authenticated using (owner = auth.uid()) with check (owner = auth.uid());
+revoke all on tablero_perfil, tablero_gifs from anon;
+grant select, insert, update on tablero_perfil to authenticated;
+grant select, insert, delete on tablero_gifs to authenticated;
+
 -- Imágenes del tablero (mapas, fichas, diario) y efectos de sonido del soundboard: bucket público, solo el GM sube o
--- borra. Hasta 15 MB.
+-- borra. Hasta 15 MB. Cada jugador puede subir lo suyo (avatar y GIFs) en su carpeta u/<su id>/.
 do $$
 begin
   if to_regclass('storage.buckets') is null then return; end if;   -- base de pruebas sin Storage
   insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
   values ('tablero', 'tablero', true, 15728640, array['image/png', 'image/jpeg', 'image/webp', 'image/gif',
-    'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/mp4', 'audio/aac'])
+    'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/mp4', 'audio/aac', 'video/mp4', 'video/webm'])
   on conflict (id) do update set public = true, file_size_limit = 15728640,
     allowed_mime_types = array['image/png', 'image/jpeg', 'image/webp', 'image/gif',
-      'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/mp4', 'audio/aac'];
+      'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/mp4', 'audio/aac', 'video/mp4', 'video/webm'];
   execute 'drop policy if exists "tablero_storage_select" on storage.objects';
   execute 'create policy "tablero_storage_select" on storage.objects for select using (bucket_id = ''tablero'')';
   execute 'drop policy if exists "tablero_storage_insert" on storage.objects';
-  execute 'create policy "tablero_storage_insert" on storage.objects for insert to authenticated with check (bucket_id = ''tablero'' and fichas_es_admin())';
+  execute 'create policy "tablero_storage_insert" on storage.objects for insert to authenticated with check (bucket_id = ''tablero'' and (fichas_es_admin() or ((storage.foldername(name))[1] = ''u'' and (storage.foldername(name))[2] = auth.uid()::text)))';
   execute 'drop policy if exists "tablero_storage_delete" on storage.objects';
-  execute 'create policy "tablero_storage_delete" on storage.objects for delete to authenticated using (bucket_id = ''tablero'' and fichas_es_admin())';
+  execute 'create policy "tablero_storage_delete" on storage.objects for delete to authenticated using (bucket_id = ''tablero'' and (fichas_es_admin() or ((storage.foldername(name))[1] = ''u'' and (storage.foldername(name))[2] = auth.uid()::text)))';
 end;
 $$;

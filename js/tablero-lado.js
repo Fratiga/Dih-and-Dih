@@ -111,7 +111,7 @@
     lista.style.fontSize = (TB.prefs.tamChat || 14.5) + "px";
     const entrada = el(`<div class="tb-chat-entrada">
       <textarea placeholder="Escribe aquí. Intro para enviar, Mayús+Intro para otra línea."></textarea>
-      <div class="tb-chat-pie"><label>Como:</label><select data-como></select><button type="button" class="tb-btn" data-enviar>Enviar</button></div></div>`);
+      <div class="tb-chat-pie"><label>Como:</label><select data-como></select><button type="button" class="tb-btn tb-btn-gif" data-gif title="Mis GIFs">GIF</button><button type="button" class="tb-btn" data-enviar>Enviar</button></div></div>`);
     c.append(lista, entrada);
     const ta = entrada.querySelector("textarea");
     const enviar = async () => {
@@ -127,6 +127,15 @@
       if (e.key === "ArrowDown" && posHist >= 0) { e.preventDefault(); posHist--; ta.value = posHist >= 0 ? historialChat[posHist] : ""; }
     });
     entrada.querySelector("[data-enviar]").addEventListener("click", enviar);
+    entrada.querySelector("[data-gif]").addEventListener("click", () => alternarGifs(entrada));
+    // Pegar una imagen (por ejemplo, «Copiar imagen» en Discord): se sube y queda su enlace listo para mandar
+    ta.addEventListener("paste", async e => {
+      const f = [...(e.clipboardData && e.clipboardData.files || [])].find(x => /^(image|video)\//.test(x.type));
+      if (!f) return;
+      e.preventDefault();
+      try { aviso("Subiendo la imagen…"); const url = await TB.red.subirPropio(f); ta.value = (ta.value.trim() ? ta.value.trim() + "\n" : "") + url; ta.focus(); }
+      catch (err) { aviso(mensajeError(err), true); }
+    });
     pintarComo();
     pintarMensajes();
   }
@@ -179,6 +188,8 @@
     const tirada = m.tirada && !m.tirada.enlinea ? m.tirada : null;
     const enlinea = (m.tirada && m.tirada.enlinea) || [];
     let cuerpoTxt = esc(t.replace(/^\/(em|desc)\s+/i, ""));
+    const medio = !m.tirada && !emote && !desc ? medioDe(t) : null;
+    if (medio) cuerpoTxt = medioHtml(medio);
     cuerpoTxt = cuerpoTxt.replace(/⟦(\d+)⟧/g, (x, i) => TBDados.enLineaHtml(enlinea[+i]));
     let etq = "";
     if (m.modo === "dj") etq = m.autor === TB.yo.uid && !TB.esGM() ? "Al DJ" : "Tirada / mensaje al DJ";
@@ -191,6 +202,76 @@
       <div class="tb-msg-cuerpo">${TB.prefs.horas && m.creado ? `<span class="tb-msg-hora">${new Date(m.creado).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}</span>` : ""}${etq ? `<span class="tb-msg-etq">${esc(etq)}</span>` : ""}${seguido ? "" : `<span class="tb-msg-nombre">${esc(m.nombre)}${emote ? "" : ":"}</span>`}${cuerpoTxt}${tirada ? TBDados.tiradaHtml(tirada) : ""}</div></div>`);
     lista.appendChild(nodo);
     if (abajo || (animado && m.autor === TB.yo.uid)) lista.scrollTop = lista.scrollHeight;
+    // Cuando carga el GIF cambia el alto: que el chat siga abajo
+    nodo.querySelectorAll(".tb-msg-medio").forEach(x => x.addEventListener(x.tagName === "VIDEO" ? "loadeddata" : "load", () => { if (abajo || (animado && m.autor === TB.yo.uid)) lista.scrollTop = lista.scrollHeight; }, { once: true }));
+  }
+
+  /* ============================================================ GIFs e imágenes en el chat */
+  /* Un mensaje que es solo un enlace a un GIF, imagen o vídeo corto se ve en el chat. Los enlaces de Tenor (lo que
+     da «Copiar enlace» en Discord) se ven con el reproductor oficial de Tenor; los de Giphy, con su imagen. */
+  function medioDe(t) {
+    const u = String(t || "").trim();
+    if (!/^https:\/\/\S+$/i.test(u) || u.length > 1000) return null;
+    let m = u.match(/^https:\/\/(?:www\.)?tenor\.com\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?view\/\S*?-(\d{5,})(?:[?#]\S*)?$/i);
+    if (m) return { tipo: "tenor", id: m[1] };
+    m = u.match(/^https:\/\/(?:www\.)?giphy\.com\/(?:gifs|stickers)\/(?:\S*-)?([A-Za-z0-9]{8,})\/?(?:[?#]\S*)?$/i);
+    if (m) return { tipo: "img", src: `https://media.giphy.com/media/${m[1]}/giphy.gif` };
+    if (/\.(mp4|webm)(\?\S*)?$/i.test(u)) return { tipo: "video", src: u };
+    if (/\.(gif|png|jpe?g|webp|avif)(\?\S*)?$/i.test(u) || /^https:\/\/(media\.tenor\.com|media\d*\.giphy\.com|i\.giphy\.com|media\.discordapp\.net|cdn\.discordapp\.com|i\.imgur\.com)\//i.test(u)) return { tipo: "img", src: u };
+    return null;
+  }
+  function medioHtml(md) {
+    if (md.tipo === "tenor") return `<iframe class="tb-msg-medio tenor" src="https://tenor.com/embed/${md.id}" loading="lazy" referrerpolicy="no-referrer" allowfullscreen title="GIF de Tenor"></iframe>`;
+    if (md.tipo === "video") return `<video class="tb-msg-medio" src="${esc(md.src)}" autoplay loop muted playsinline></video>`;
+    return `<img class="tb-msg-medio" src="${esc(md.src)}" alt="" loading="lazy" referrerpolicy="no-referrer">`;
+  }
+  // «Mis GIFs»: los favoritos de cada uno (en su cuenta). Se añaden pegando el enlace o subiendo el archivo.
+  let gifs = null, filtroGifs = "";
+  async function alternarGifs(entrada) {
+    let caja = entrada.querySelector(".tb-gifs");
+    if (caja) { caja.remove(); return; }
+    caja = el(`<div class="tb-gifs"><div class="tb-gifs-cab"><b>Mis GIFs</b><input type="search" placeholder="Buscar…" data-buscar><button type="button" class="tb-flot-cerrar" data-cerrar>✕</button></div>
+      <div class="tb-gifs-rejilla" data-rejilla><p class="tb-nota">Cargando…</p></div>
+      <div class="tb-gifs-pie"><input type="text" placeholder="Pega un enlace (Tenor, Giphy, Discord, .gif…)" data-url><button type="button" class="tb-btn tb-btn-mini" data-anadir>＋</button>
+        <label class="tb-btn tb-btn-mini" title="Subir un GIF o una imagen">⇪<input type="file" accept="image/*,video/mp4,video/webm" hidden data-archivo></label></div>
+      <p class="tb-nota tb-gifs-ayuda">En Discord: clic derecho en el GIF → Copiar enlace, y pégalo aquí. Un clic en un GIF lo manda al chat.</p></div>`);
+    entrada.appendChild(caja);
+    const rej = caja.querySelector("[data-rejilla]"), buscar = caja.querySelector("[data-buscar]"), url = caja.querySelector("[data-url]");
+    caja.querySelector("[data-cerrar]").addEventListener("click", () => caja.remove());
+    buscar.value = filtroGifs;
+    const pintar = () => {
+      rej.innerHTML = "";
+      const f = filtroGifs.trim().toLowerCase();
+      const lista = (gifs || []).filter(g => !f || (g.nombre || "").toLowerCase().includes(f) || g.url.toLowerCase().includes(f));
+      if (!lista.length) { rej.appendChild(el(`<p class="tb-nota">${(gifs || []).length ? "Nada con ese nombre." : "Todavía no tienes GIFs. Pega abajo el enlace de uno."}</p>`)); return; }
+      lista.forEach(g => {
+        const md = medioDe(g.url);
+        if (!md) return;
+        const item = el(`<div class="tb-gif" title="${esc(g.nombre || "Mandar al chat")}">${medioHtml(md)}<button type="button" class="tb-gif-quitar" title="Quitar de mis GIFs">✕</button><span class="tb-gif-tapa"></span></div>`);
+        item.querySelector(".tb-gif-tapa").addEventListener("click", () => { TB.enviarChat(g.url, cuerpos.chat.querySelector("[data-como]").value || null); caja.remove(); });
+        item.querySelector(".tb-gif-quitar").addEventListener("click", async ev => {
+          ev.stopPropagation();
+          try { await TB.red.borrarGif(g.id); gifs = gifs.filter(x => x.id !== g.id); pintar(); } catch (e) { aviso(mensajeError(e), true); }
+        });
+        rej.appendChild(item);
+      });
+    };
+    buscar.addEventListener("input", () => { filtroGifs = buscar.value; pintar(); });
+    const anadir = async (u, nombre) => {
+      if (!medioDe(u)) { aviso("Ese enlace no es un GIF ni una imagen que pueda mostrar.", true); return; }
+      try { const g = await TB.red.agregarGif({ url: u, nombre }); gifs = [g].concat(gifs || []); url.value = ""; pintar(); }
+      catch (e) { aviso(mensajeError(e), true); }
+    };
+    caja.querySelector("[data-anadir]").addEventListener("click", () => anadir(url.value.trim(), ""));
+    url.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); anadir(url.value.trim(), ""); } });
+    caja.querySelector("[data-archivo]").addEventListener("change", async e => {
+      const f = e.target.files[0]; e.target.value = "";
+      if (!f) return;
+      if (f.size > 15 * 1024 * 1024) { aviso("Como mucho 15 MB.", true); return; }
+      try { aviso("Subiendo…"); const u = await TB.red.subirPropio(f); await anadir(u, f.name.replace(/\.[^.]+$/, "")); } catch (err) { aviso(mensajeError(err), true); }
+    });
+    if (gifs === null) { try { gifs = await TB.red.gifs(); } catch (e) { gifs = []; aviso(/tablero_gifs/.test(String(e && e.message)) ? "Falta volver a correr tablero.sql para guardar GIFs." : mensajeError(e), true); } }
+    pintar();
   }
 
   /* ============================================================ arte (GM) */
@@ -1084,7 +1165,9 @@
       caja.appendChild(f);
     };
 
-    const sonido = seccion("Sonido", !gm);
+    const perfil = seccion("Mi avatar", true);
+    pintarPerfil(perfil);
+    const sonido = seccion("Sonido", false);
     deslizador(sonido, "volumen", "Mi volumen de la música", 0, 1, 0.05, aplicarVolumen);
     deslizador(sonido, "volumenEfectos", "Mi volumen de los efectos", 0, 1, 0.05);
     if (!gm) sonido.appendChild(el(`<p class="tb-nota">La música y los efectos los pone el DJ.</p>`));
@@ -1201,6 +1284,46 @@
     pintarAvatares();
   }
 
+  /* ============================================================ mi avatar */
+  function pintarPerfil(caja) {
+    const actual = (TB.miPerfil && TB.miPerfil.avatar) || "";
+    const mios = [...TB.diario.values()].filter(e => e.tipo === "personaje" && !e.archivado && e.imagen && (TB.esGM() || (e.controladores || []).includes(TB.yo.uid)));
+    caja.innerHTML = "";
+    const c = el(`<div class="tb-perfil">
+      <span class="tb-perfil-av" style="${actual ? `background-image:url('${esc(actual)}')` : `background-color:${TB.colorJugador(TB.yo.uid)}`}">${actual ? "" : esc(String(TB.yo.nombre || "?")[0].toUpperCase())}</span>
+      <div class="tb-perfil-botones">
+        <label class="tb-btn tb-btn-mini">Subir una imagen<input type="file" accept="image/*" hidden data-archivo></label>
+        <button type="button" class="tb-btn tb-btn-mini" data-enlace>Desde un enlace</button>
+        ${mios.length ? `<button type="button" class="tb-btn tb-btn-mini" data-pj>La de un personaje</button>` : ""}
+        ${actual ? `<button type="button" class="tb-btn tb-btn-mini" data-quitar>Quitar</button>` : ""}</div></div>`);
+    caja.appendChild(c);
+    caja.appendChild(el(`<p class="tb-nota">Sale en el chat y en la barra de quién está en el tablero. Sin avatar propio se usa la imagen de tu personaje.</p>`));
+    const guardar = async avatar => {
+      try {
+        await TB.red.guardarPerfil({ avatar });
+        TB.miPerfil = Object.assign({}, TB.miPerfil, { avatar });
+        TB.anunciarAvatar();
+        pintarPerfil(caja);
+        aviso(avatar ? "Avatar cambiado." : "Avatar quitado.");
+      } catch (e) { aviso(/tablero_perfil/.test(String(e && e.message)) ? "Falta volver a correr tablero.sql para guardar el avatar." : mensajeError(e), true); }
+    };
+    c.querySelector("[data-archivo]").addEventListener("change", async e => {
+      const f = e.target.files[0]; e.target.value = "";
+      if (!f) return;
+      try { aviso("Subiendo…"); guardar(await TB.red.subirPropio(f)); } catch (err) { aviso(mensajeError(err), true); }
+    });
+    c.querySelector("[data-enlace]").addEventListener("click", async () => {
+      const u = await pedir("Avatar desde un enlace", actual, { etiqueta: "Enlace https a una imagen" });
+      if (u === null) return;
+      if (!/^https:\/\/\S+$/i.test(u.trim())) { aviso("Tiene que ser un enlace https.", true); return; }
+      guardar(u.trim());
+    });
+    const pj = c.querySelector("[data-pj]");
+    if (pj) pj.addEventListener("click", ev => menu(ev.clientX, ev.clientY, mios.map(e => ({ texto: esc(e.nombre), accion: () => guardar(e.imagen) }))));
+    const q = c.querySelector("[data-quitar]");
+    if (q) q.addEventListener("click", () => guardar(""));
+  }
+
   /* ============================================================ avatares de los presentes */
   function pintarAvatares() {
     const b = document.getElementById("tbAvatares");
@@ -1213,10 +1336,12 @@
     b.innerHTML = lista.map(p => {
       const nombre = p.personaje ? `${p.personaje} (${p.nombre})` : p.nombre || "?";
       const fondo = p.avatar ? `background-image:url('${esc(p.avatar)}')` : `background-color:${TB.colorJugador(p.uid)}`;
-      return `<div class="tb-av${p.gm ? " gm" : ""}${p.uid === TB.yo.uid ? " yo" : ""}" title="${esc(nombre)}${p.gm ? " · DJ" : ""}">
+      return `<div class="tb-av${p.gm ? " gm" : ""}${p.uid === TB.yo.uid ? " yo" : ""}" title="${esc(nombre)}${p.gm ? " · DJ" : ""}${p.uid === TB.yo.uid ? " · clic para cambiar tu avatar" : ""}">
         <span class="tb-av-img" style="${fondo};border-color:${TB.colorJugador(p.uid)}">${p.avatar ? "" : esc(String(p.nombre || "?")[0].toUpperCase())}</span>
         ${A.nombres ? `<span class="tb-av-nombre">${esc(p.gm ? "DJ" : (p.personaje || p.nombre || ""))}</span>` : ""}</div>`;
     }).join("");
+    const yo = b.querySelector(".tb-av.yo");
+    if (yo) yo.addEventListener("click", () => { if (TB.prefs.ladoPlegado) document.getElementById("tbLadoPlegar").click(); abrirPestana("ajustes"); });
   }
 
   /* ============================================================ reglas (ventana que se abre al pedirla) */

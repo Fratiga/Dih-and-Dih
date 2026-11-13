@@ -145,6 +145,19 @@
         if (error) throw error;
         return `${window.FICHAS_SUPABASE_URL}/storage/v1/object/public/tablero/${ruta}`;
       },
+      async perfil() { const d = ok(await sb.from("tablero_perfil").select("avatar").eq("uid", yo.uid).maybeSingle()); return { avatar: (d && d.avatar) || "" }; },
+      async guardarPerfil(c) { ok(await sb.from("tablero_perfil").upsert(Object.assign({ uid: yo.uid, actualizado: ahora() }, c))); },
+      async gifs() { return ok(await sb.from("tablero_gifs").select("id, url, nombre").order("creado", { ascending: false })) || []; },
+      async agregarGif(g) { return ok(await sb.from("tablero_gifs").insert({ url: g.url, nombre: (g.nombre || "").slice(0, 60) }).select("id, url, nombre").single()); },
+      async borrarGif(id) { ok(await sb.from("tablero_gifs").delete().eq("id", id)); },
+      // Cualquiera sube lo suyo (avatar, GIFs) a su carpeta u/<su id>/ del bucket del tablero
+      async subirPropio(archivo) {
+        const limpio = archivo.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9._-]+/g, "_").replace(/^_+|_+$/g, "") || "archivo";
+        const ruta = `u/${yo.uid}/${uuid()}-${limpio}`;
+        const { error } = await sb.storage.from("tablero").upload(ruta, archivo, { contentType: archivo.type, upsert: false, cacheControl: "31536000" });
+        if (error) throw error;
+        return `${window.FICHAS_SUPABASE_URL}/storage/v1/object/public/tablero/${ruta}`;
+      },
       async jugadores() {
         const { data } = await sb.from("perfiles").select("user_id, username");
         return (data || []).filter(p => p.username).map(p => ({ uid: p.user_id, nombre: p.username }));
@@ -204,8 +217,9 @@
       const m = Object.assign({ id: Date.now() + Math.random(), autor: yo.uid, nombre: yo.nombre, avatar: "", texto: "", tirada: null, modo: "todos", para: null, creado: ahora() }, campos);
       d.mensajes.push(m); if (d.mensajes.length > 300) d.mensajes.shift(); publicar("mensaje", m);
     };
+    const perfilLocal = () => { try { return JSON.parse(localStorage.getItem("tbPerfilLocal:" + yo.uid) || "{}"); } catch (e) { return {}; } };
     const como = id => {
-      if (!id) return { nombre: yo.nombre, avatar: "" };
+      if (!id) return { nombre: yo.nombre, avatar: perfilLocal().avatar || "" };
       const e = d.diario.find(x => x.id === id && x.tipo === "personaje" && (yo.esGM || (x.controladores || []).includes(yo.uid)));
       if (!e) throw new Error("No puedes hablar como ese personaje.");
       return { nombre: e.nombre, avatar: e.imagen || "" };
@@ -348,6 +362,12 @@
         const m = Object.assign({ id: uuid(), autor: yo.uid, en_barra: true, orden: 0 }, f); d.macros.push(m); guardar(); return m;
       },
       async borrarMacro(id) { d.macros = d.macros.filter(m => m.id !== id); guardar(); },
+      async perfil() { return { avatar: perfilLocal().avatar || "" }; },
+      async guardarPerfil(c) { localStorage.setItem("tbPerfilLocal:" + yo.uid, JSON.stringify(Object.assign(perfilLocal(), c))); },
+      async gifs() { try { return JSON.parse(localStorage.getItem("tbGifsLocal:" + yo.uid) || "[]"); } catch (e) { return []; } },
+      async agregarGif(g) { const l = await this.gifs(); const n = { id: uuid(), url: g.url, nombre: g.nombre || "" }; l.unshift(n); localStorage.setItem("tbGifsLocal:" + yo.uid, JSON.stringify(l.slice(0, 300))); return n; },
+      async borrarGif(id) { const l = (await this.gifs()).filter(x => x.id !== id); localStorage.setItem("tbGifsLocal:" + yo.uid, JSON.stringify(l)); },
+      async subirPropio(archivo) { return this.subirImagen(archivo); },
       async subirImagen(archivo) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(archivo); }); },
       async jugadores() { return jugadores.slice(); },
       async fichas() { return [{ id: "local-ficha", owner: JUG, nombre: "Jugador de prueba", combate: { pvActual: 18, pvMax: 24, pvTemp: 0 } }]; },
