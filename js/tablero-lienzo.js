@@ -35,6 +35,9 @@
     // Iluminación dinámica: la oscuridad va encima de las fichas y debajo de los muros (que solo ve el DJ)
     const sombra = new Konva.Image({ x: 0, y: 0, listening: false, visible: false });
     lObj.add(sombra);
+    // Tiradores de las puertas que el jugador ve (clic: abrir o cerrar)
+    const tiradores = new Konva.Group();
+    lObj.add(tiradores);
     grupos.luz.capa.moveToTop();
     const pintorLuz = window.TBLuz ? TBLuz.crearPintor() : null;
 
@@ -163,6 +166,7 @@
       if (!pintorLuz || !L.activa || !st.escena) {
         st.luzOn = false;
         if (sombra.visible()) sombra.visible(false);
+        tiradores.destroyChildren();
         if (antes) st.nodos.forEach(aplicarAtributos);
         lObj.batchDraw();
         return;
@@ -175,11 +179,36 @@
         .map(o => ({ x: o.x, y: o.y, oscuridad: (Number(((o.datos || {}).vision || {}).oscuridad) || 0) * pxPie }));
       const fuentes = objs.filter(o => o.tipo === "luz" || (o.tipo === "imagen" && o.capa !== "mapa" && o.datos && o.datos.luz))
         .map(o => { const l = (o.datos || {}).luz || {}; return { x: o.x, y: o.y, brillante: (Number(l.brillante) || 0) * pxPie, tenue: (Number(l.tenue) || 0) * pxPie }; });
-      const lienzoOsc = pintorLuz.pintar({ medidas: m, segs, viewers, fuentes, global: !!L.global, explorar: L.explorar !== false, claveExplorado: (st.escena.id || "") + (comoJugador ? "|j" : "|g") });
+      const lienzoOsc = pintorLuz.pintar({ medidas: m, segs, viewers, fuentes, global: !!L.global, explorar: L.explorar !== false, claveExplorado: (st.escena.id || "") + (comoJugador ? "|j" : "|g"), alCargar: programarLuz });
+      pintarTiradores(objs, comoJugador);
       sombra.setAttrs({ image: lienzoOsc, width: m.w, height: m.h, visible: true, opacity: comoJugador ? 1 : (L.opacidadDJ == null ? 0.35 : Number(L.opacidadDJ)) });
       st.luzOn = true;
       if (comoJugador || antes !== st.luzOn) st.nodos.forEach(aplicarAtributos);
       lObj.batchDraw();
+    }
+
+    function pintarTiradores(objs, comoJugador) {
+      tiradores.destroyChildren();
+      if (!comoJugador) return;
+      const t = tam();
+      objs.forEach(o => {
+        if (o.capa !== "luz" || o.tipo !== "dibujo" || (o.datos || {}).muro !== "puerta") return;
+        const p = TBLuz.tiradorPuerta(o);
+        if (!p) return;
+        const d = t * 0.3;
+        if (!pintorLuz.visible(p.x + p.nx * d, p.y + p.ny * d) && !pintorLuz.visible(p.x - p.nx * d, p.y - p.ny * d)) return;
+        const llave = !!(o.datos || {}).llave, abierta = !!(o.datos || {}).abierta;
+        const g = new Konva.Group({ x: p.x, y: p.y });
+        const r = Math.max(9, t * 0.17);
+        g.add(new Konva.Circle({ radius: r, fill: abierta ? "#f2994a" : "#fff", stroke: llave ? "#888" : "#f2994a", strokeWidth: 2.5 }));
+        g.add(new Konva.Rect({ x: -r * 0.38, y: -r * 0.55, width: r * 0.76, height: r * 1.1, stroke: abierta ? "#fff" : "#a65a1a", strokeWidth: 1.6, listening: false }));
+        g.add(new Konva.Circle({ x: r * 0.18, y: 0, radius: r * 0.1, fill: abierta ? "#fff" : "#a65a1a", listening: false }));
+        g.on("mouseenter", () => { contenedor.style.cursor = "pointer"; });
+        g.on("mouseleave", () => { contenedor.style.cursor = ""; });
+        g.on("click tap", e => { e.cancelBubble = true; if (op.onPuerta) op.onPuerta(o.id); });
+        g.on("mousedown touchstart", e => { e.cancelBubble = true; });
+        tiradores.add(g);
+      });
     }
 
     function opacidadNiebla() { lNiebla.opacity(st.esGM && !st.vistaJugador ? 0.42 : 1); }
@@ -971,7 +1000,7 @@
       stage,
       setPermisos(esGM, uid) { st.esGM = esGM; st.uid = uid; opacidadNiebla(); st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); programarLuz(); },
       cruzaMuro(a, b) { return !!window.TBLuz && bloqueaMovimiento() && TBLuz.cruza(a, b, TBLuz.segmentosDe([...st.nodos.values()].map(x => x.o)).paso); },
-      reiniciarExplorado() { if (pintorLuz) { pintorLuz.reiniciarExplorado(); programarLuz(); } },
+      reiniciarExplorado() { if (pintorLuz) { pintorLuz.reiniciarExplorado(true); programarLuz(); } },
       actualizarLuz: programarLuz,
       setEscena(escena) {
         st.escena = escena;

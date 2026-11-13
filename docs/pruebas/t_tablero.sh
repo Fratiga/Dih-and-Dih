@@ -190,6 +190,10 @@ comprobar "el jugador los lee (su navegador calcula lo que ve)" "2" "$(uno "$U1"
 como "$U1" "update tablero_objetos set datos = jsonb_set(datos, '{abierta}', 'true') where id = '$MURO';" >/dev/null
 comprobar "el jugador no abre puertas ni toca muros" "" "$(sql "select datos ->> 'abierta' from tablero_objetos where id = '$MURO'")"
 contiene "el jugador no crea luces" "$(como "$U1" "insert into tablero_objetos (escena, capa, tipo) values ('$S1', 'luz', 'luz');")" "row-level security"
+comprobar "el jugador abre una puerta con su tirador" "t|true" "$(uno "$U1" "select tablero_puerta('$MURO');")|$(sql "select datos ->> 'abierta' from tablero_objetos where id = '$MURO'")"
+como "$ADMIN" "update tablero_objetos set datos = datos || '{\"llave\": true}' where id = '$MURO';" >/dev/null
+contiene "con llave no la abre" "$(como "$U1" "select tablero_puerta('$MURO');")" "cerrada con llave"
+contiene "un muro no es una puerta" "$(como "$U1" "select tablero_puerta('$F1');")" "no es una puerta"
 
 echo "== Arte y macros"
 como "$ADMIN" "insert into tablero_arte (src, nombre) values ('x.png', 'Mapa');" >/dev/null

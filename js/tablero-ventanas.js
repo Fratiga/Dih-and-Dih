@@ -18,9 +18,13 @@
   /* ------------------------------------------------------------ ventanas flotantes */
   const ventanas = new Map();
   let zTope = 360;
+  const escalaUI = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tb-k")) || 1;
   function ventana(id, { titulo, ancho, alto, x, y, cuerpo, pie, alCerrar, minimizable = true, redimensionable = true, recordar = true }) {
     if (ventanas.has(id)) { const v = ventanas.get(id); traerAlFrente(v.el); return v; }
     const guardada = recordar ? leerPos(id) : null;
+    const K = escalaUI();
+    if (ancho) ancho = Math.round(ancho * K);
+    if (alto) alto = Math.round(alto * K);
     const w = el(`<section class="tb-ventana" data-ventana="${esc(id)}">
       <header class="tb-ventana-cab"><h3>${titulo || ""}</h3>
         ${minimizable ? `<button type="button" data-min title="Minimizar">—</button>` : ""}<button type="button" data-cerrar title="Cerrar">✕</button></header>
@@ -81,7 +85,7 @@
       <div class="tb-modal-cuerpo"></div>
       <footer class="tb-modal-pie">${cancelar ? `<button type="button" class="tb-btn" data-cancelar>${esc(cancelar)}</button>` : ""}${aceptar ? `<button type="button" class="tb-btn tb-btn-azul" data-aceptar>${esc(aceptar)}</button>` : ""}</footer>
     </div>`);
-    if (ancho) m.style.width = ancho + "px";
+    if (ancho) m.style.width = Math.round(ancho * escalaUI()) + "px";
     m.querySelector(".tb-modal-cuerpo").append(cuerpo);
     if (extraPie) m.querySelector(".tb-modal-pie").prepend(extraPie);
     document.body.appendChild(m);

@@ -16,7 +16,7 @@
     consejos: true, volumen: 0.7, volumenEfectos: 0.8, pestana: "chat", ladoPlegado: false, barraPlegada: false, tamChat: 14.5,
     avatares: { ver: true, tam: 56, nombres: true }, oscuro: false, verZoom: true, ruedaZoom: true,
     decoHover: false, arribaMias: false, centrarMia: true, mapaSinEncajar: false, sinFx: false, calidad: "media", webp: true,
-    pitido: false, avataresChat: true, horas: false
+    pitido: false, avataresChat: true, horas: false, escalaUI: "auto"
   };
   function leerPrefs() {
     try { const p = JSON.parse(localStorage.getItem("tbPrefs") || "{}"); return Object.assign({}, PREFS_DEF, p, Object.fromEntries(["medida", "dibujo", "texto", "niebla", "fx", "dados", "avatares"].map(k => [k, Object.assign({}, PREFS_DEF[k], p[k])]))); }
@@ -35,6 +35,20 @@
     lanzar(ev, d) { (oyentes[ev] || []).forEach(f => { try { f(d); } catch (e) { console.error("[tablero]", ev, e); } }); },
     guardarPrefs() { try { localStorage.setItem("tbPrefs", JSON.stringify(TB.prefs)); } catch (e) { /* sin almacenamiento */ } },
     esGM: () => !!(TB.yo && TB.yo.esGM),
+    // Tamaño de la interfaz (no del lienzo). En «auto» compensa el zoom del navegador: si la página está al 125 %,
+    // la interfaz se dibuja al 80 % y queda como en Roll20 al 100 %.
+    escalaUI() {
+      const e = TB.prefs.escalaUI || "auto";
+      if (e !== "auto") return Math.max(0.5, Math.min(1.5, Number(e) || 1));
+      // El zoom de la página se nota en dos sitios a la vez: en la relación entre la ventana y la página y en
+      // devicePixelRatio. Si los dos coinciden es zoom del navegador (y no la escala de Windows ni un panel incrustado).
+      const z = window.outerWidth && window.innerWidth ? window.outerWidth / window.innerWidth : 1;
+      const dpr = window.devicePixelRatio || 1;
+      if (Math.abs(z - dpr) > 0.09 || z < 1.05) return 1;
+      const zz = [1, 1.1, 1.25, 1.5, 1.75, 2].reduce((x, y) => (Math.abs(y - dpr) < Math.abs(x - dpr) ? y : x));
+      return Math.max(0.5, Math.min(1, 1 / zz));
+    },
+    aplicarEscala() { document.documentElement.style.setProperty("--tb-k", String(Math.round(TB.escalaUI() * 1000) / 1000)); },
     escena: () => TB.escenas.get(TB.escenaId) || null,
     controla: o => !!o && !!TB.yo && (o.controlan_todos || (o.controladores || []).includes(TB.yo.uid)),
     colorJugador(uid) {
@@ -223,6 +237,7 @@
     r.on("presencia", lista => { TB.presencia = lista || []; TB.lanzar("presencia"); });
     r.on("cursor", d => { if (d && d.escena === TB.escenaId) TB.L.cursorRemoto(d); });
     r.on("sonido", d => { if (d && window.TBLado) TBLado.sonar(d); });
+    r.on("explorado", d => { if (d && d.escena === TB.escenaId && !TB.yo.esGM) TB.L.reiniciarExplorado(); });
     r.on("conexion", c => {
       const chip = document.getElementById("tbConexion");
       if (!chip || typeof c !== "object") return;
@@ -539,6 +554,7 @@
       onCrear: filas => TB.crearObjetos(filas.map(f => f.capa === "luz" && f.tipo === "dibujo"
         ? Object.assign({}, f, { datos: Object.assign({}, f.datos, { muro: TB.prefs.muroTipo || "muro", trazo: TBLuz.COLOR_MURO[TB.prefs.muroTipo || "muro"], relleno: "transparent", grosor: 4 }) }) : f)),
       onAviso: t => aviso(t),
+      onPuerta: async id => { try { await TB.red.puerta(id); } catch (e) { aviso(mensajeError(e), true); } },
       onAjustesLuz: id => TBPaneles.ajustesLuz(id),
       onBorrar: ids => TB.borrarObjetos(ids),
       onSeleccion: ids => TB.lanzar("seleccion", ids),
@@ -572,6 +588,9 @@
       onSoltar: (dt, p, alt) => TBPaneles.soltarEnTablero(dt, p, alt)
     };
   }
+
+  TB.aplicarEscala();
+  window.addEventListener("resize", () => TB.aplicarEscala());
 
   /* ------------------------------------------------------------ portapapeles y teclado */
   let portapapeles = [];

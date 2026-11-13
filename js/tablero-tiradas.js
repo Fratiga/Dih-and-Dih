@@ -65,8 +65,8 @@
       ${item.calc ? `<div class="tb-campo"><span>Cálculo</span><div class="tb-tiradas-texto">${esc(item.calc)}</div></div>` : ""}
       ${item.municion ? `<div class="tb-campo"><span>Munición</span>${item.municion.actual > 0 ? `<label class="tb-casilla"><input type="checkbox" data-gastar checked> Gastar 1 (${item.municion.actual} → ${item.municion.actual - 1} de ${item.municion.max})</label>` : `<div class="tb-tiradas-texto">Sin munición (0 / ${item.municion.max}).</div>`}</div>` : ""}
       <label class="tb-campo" data-bloque-nombre hidden><span>Nombre de la tirada</span><input type="text" data-nombre></label>
-      <div class="tb-campo"><span>Tirada (editable)</span><select data-modo style="margin-bottom:6px"><option value="normal">Normal</option><option value="ventaja">Ventaja</option><option value="desventaja">Desventaja</option></select>
-        <textarea rows="5" data-cmd spellcheck="false" style="font-family:Consolas,monospace;font-size:13px"></textarea>
+      <div class="tb-campo"><span>Tirada (editable)</span><select data-modo style="margin-bottom:calc(6px * var(--tb-k))"><option value="normal">Normal</option><option value="ventaja">Ventaja</option><option value="desventaja">Desventaja</option></select>
+        <textarea rows="5" data-cmd spellcheck="false" style="font-family:Consolas,monospace;font-size:calc(13px * var(--tb-k))"></textarea>
         <span class="tb-nota" style="font-weight:400">Cambia los dados o los bonos dentro de [[ ]]. Cada línea se manda como un mensaje.</span></div></div>`);
     const q = s => cuerpo.querySelector(s);
     const area = q("[data-cmd]"), selModo = q("[data-modo]"), campoNombre = q("[data-nombre]");
@@ -100,7 +100,7 @@
     caja.innerHTML = "";
     const cab = el(`<div class="tb-pes-cab"><h2>Tiradas</h2><button type="button" class="tb-btn tb-btn-mini" data-recargar title="Volver a leer las fichas">↻</button></div>`);
     cab.querySelector("[data-recargar]").addEventListener("click", async () => { await cargar(true); pintar(); });
-    const cuerpo = el(`<div class="tb-pes-scroll" style="padding-top:4px"></div>`);
+    const cuerpo = el(`<div class="tb-pes-scroll" style="padding-top:calc(4px * var(--tb-k))"></div>`);
     caja.append(cab, cuerpo);
     if (gm) {
       const pes = el(`<div class="tb-subpestanas" style="margin-top:0"><button type="button" data-v="personaje" class="${est.vista === "personaje" ? "activo" : ""}">Personajes</button><button type="button" data-v="enemigos" class="${est.vista === "enemigos" ? "activo" : ""}">Enemigos</button></div>`);
@@ -144,7 +144,7 @@
     if (est.filtro === "favoritas" && !items.some(i => i.favorita)) est.filtro = "todas";
     const chips = el(`<div class="tb-tiradas-chips">${[["favoritas", "★ Favoritas"], ["todas", "Todas"]].concat(cats.map(c => [c, c])).map(([v, t]) => `<button type="button" data-f="${esc(v)}" class="${est.filtro === v ? "activo" : ""}">${esc(t)}</button>`).join("")}</div>`);
     chips.addEventListener("click", ev => { const b = ev.target.closest("[data-f]"); if (!b) return; est.filtro = b.dataset.f; guardar(); pintar(); });
-    const buscar = el(`<input type="search" placeholder="Buscar tirada…" style="margin:6px 0">`);
+    const buscar = el(`<input type="search" placeholder="Buscar tirada…" style="margin:calc(6px * var(--tb-k)) 0">`);
     buscar.value = est.busqueda;
     const caja = el(`<div class="tb-tiradas-lista"></div>`);
     const pintarLista = () => {
@@ -173,7 +173,7 @@
     const seleccionado = TB.L.seleccion().map(id => TB.L.objeto(id)).map(o => o && porNombre.get(norm(o.datos && o.datos.nombre))).find(Boolean);
     let actual = seleccionado || lista.find(e => e.id === est.enemigo) || enPagina[0] || null;
     if (actual) est.enemigo = actual.id;
-    const buscar = el(`<input type="search" placeholder="Buscar enemigo…" style="margin:6px 0">`);
+    const buscar = el(`<input type="search" placeholder="Buscar enemigo…" style="margin:calc(6px * var(--tb-k)) 0">`);
     buscar.value = est.busqueda;
     const chipsCaja = el(`<div></div>`), detalle = el(`<div></div>`);
     const chip = e => `<button type="button" data-e="${esc(e.id)}" class="${actual && actual.id === e.id ? "activo" : ""}">${esc(e.nombre)}</button>`;
@@ -197,7 +197,7 @@
       const cats = ["Acciones", "Rasgos", "Tiradas"].filter(c => actual.items.some(i => i.categoria === c));
       if (!cats.includes(est.filtroEnemigo)) est.filtroEnemigo = cats[0];
       detalle.appendChild(el(`<div class="tb-tiradas-resumen"><b>${esc(actual.nombre)}</b>${actual.ca !== null ? `<span>CA ${esc(actual.ca)}</span>` : ""}${actual.pv !== null ? `<span>PV ${esc(actual.pv)}</span>` : ""}</div>`));
-      if (actual.rol) detalle.appendChild(el(`<p class="tb-nota" style="margin:0 0 6px">${esc(actual.rol)}</p>`));
+      if (actual.rol) detalle.appendChild(el(`<p class="tb-nota" style="margin:0 0 calc(6px * var(--tb-k))">${esc(actual.rol)}</p>`));
       const cchips = el(`<div class="tb-tiradas-chips">${cats.map(c => `<button type="button" data-c="${c}" class="${est.filtroEnemigo === c ? "activo" : ""}">${c}</button>`).join("")}</div>`);
       cchips.addEventListener("click", ev => { const b = ev.target.closest("[data-c]"); if (!b) return; est.filtroEnemigo = b.dataset.c; guardar(); pintar(); });
       const items = el(`<div class="tb-tiradas-lista"></div>`);

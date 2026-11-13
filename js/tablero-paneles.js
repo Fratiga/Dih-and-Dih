@@ -151,7 +151,7 @@
     op.append(selectorColor(d.trazo, false, v => { d.trazo = v; guardar(); }), selectorColor(d.relleno, true, v => { d.relleno = v; guardar(); }), el(`<span class="tb-sep-v"></span>`));
     const s = el(`<select title="Grosor"><option value="fino">Fino</option><option value="mediano">Mediano</option><option value="grueso">Grueso</option><option value="enorme">Enorme</option></select>`);
     s.value = d.grosor; s.addEventListener("change", () => { d.grosor = s.value; guardar(); });
-    op.append(s, el(`<span class="tb-nota" style="max-width:180px">Relleno: clic derecho para dejarlo vacío</span>`));
+    op.append(s, el(`<span class="tb-nota" style="max-width:calc(180px * var(--tb-k))">Relleno: clic derecho para dejarlo vacío</span>`));
     op.hidden = false;
   }
   function pintarOpcionesTexto() {
@@ -161,7 +161,7 @@
     op.append(selectorColor(t.color, false, v => { t.color = v; guardar(); }), selectorColor(t.fondo, true, v => { t.fondo = v; guardar(); }), el(`<span class="tb-sep-v"></span>`));
     const fuente = el(`<select>${FUENTES.map(x => `<option>${x}</option>`).join("")}</select>`);
     fuente.value = t.fuente; fuente.addEventListener("change", () => { t.fuente = fuente.value; guardar(); });
-    const tam = el(`<select style="min-width:70px">${[10, 14, 18, 22, 26, 32, 40, 56, 72, 100].map(x => `<option>${x}</option>`).join("")}</select>`);
+    const tam = el(`<select style="min-width:calc(70px * var(--tb-k))">${[10, 14, 18, 22, 26, 32, 40, 56, 72, 100].map(x => `<option>${x}</option>`).join("")}</select>`);
     tam.value = String(t.tam); tam.addEventListener("change", () => { t.tam = parseInt(tam.value, 10); guardar(); });
     const neg = el(`<button type="button" class="tb-btn-icono${t.negrita ? " activo" : ""}" title="Negrita"><b>B</b></button>`);
     neg.addEventListener("click", () => { t.negrita = !t.negrita; neg.classList.toggle("activo", t.negrita); guardar(); });
@@ -176,7 +176,7 @@
     const guardar = () => { TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); };
     f.appendChild(cabFlot("Medida", true));
     const c = el(`<div class="tb-flot-cuerpo">
-      <div class="tb-fila" style="gap:12px">
+      <div class="tb-fila" style="gap:calc(12px * var(--tb-k))">
         <label class="tb-campo" style="flex:1"><span style="font-weight:600">Forma</span><select data-forma>
           <option value="linea">Línea</option><option value="cuadrado">Cuadrado</option><option value="circulo">Círculo</option><option value="cono">Cono</option><option value="haz">Haz</option></select></label>
         <label class="tb-campo" style="flex:1.4"><span style="font-weight:600">Ajuste de cuadrícula</span><select data-ajuste>
@@ -184,7 +184,7 @@
       </div>
       <p class="tb-flot-titulo-sec">Retardo de desvanecimiento</p>
       <div class="tb-segmento" data-persistente><button type="button" data-v="0">Instantáneo</button><button type="button" data-v="1">Persistente</button></div>
-      <div class="tb-fila-toggle" style="margin-top:12px"><span>Mide siempre el movimiento de las fichas.</span><span data-t1></span></div>
+      <div class="tb-fila-toggle" style="margin-top:calc(12px * var(--tb-k))"><span>Mide siempre el movimiento de las fichas.</span><span data-t1></span></div>
       <div class="tb-fila-toggle"><span>Transmitir a otros</span><span data-t2></span></div>
     </div>`);
     const forma = c.querySelector("[data-forma]"), ajuste = c.querySelector("[data-ajuste]");
@@ -211,7 +211,7 @@
     const cab = el(`<div class="tb-flot-cab"><h3>Lanzador de Dados</h3><button type="button" class="tb-flot-cerrar">✕</button></div>`);
     cab.querySelector("button").addEventListener("click", cerrarFlotante);
     f.appendChild(cab);
-    const modos = el(`<div style="padding:10px 12px 0"><div class="tb-segmento" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr">
+    const modos = el(`<div style="padding:calc(10px * var(--tb-k)) calc(12px * var(--tb-k)) 0"><div class="tb-segmento" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr">
       <button type="button" data-m="todos">Todo</button><button type="button" data-m="dj">DJ</button><button type="button" data-m="secreta">Secreta</button></div></div>`);
     const pintarModos = () => modos.querySelectorAll("button").forEach(b => b.classList.toggle("activo", b.dataset.m === d.modo));
     modos.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; d.modo = b.dataset.m; TB.guardarPrefs(); pintarModos(); });
@@ -238,16 +238,16 @@
           <p class="tb-flot-titulo-sec">Tirada avanzada</p>
           <div class="tb-fila">
             <span class="tb-giro"><input type="number" data-cant value="1" min="1" max="100"><span><button type="button" data-g="cant" data-d="1">▲</button><button type="button" data-g="cant" data-d="-1">▼</button></span></span>
-            <select data-dado style="width:110px">${DADOS.map(([n, c]) => `<option value="${c}"${c === 20 ? " selected" : ""}>${n.toUpperCase()}</option>`).join("")}</select>
+            <select data-dado style="width:calc(110px * var(--tb-k))">${DADOS.map(([n, c]) => `<option value="${c}"${c === 20 ? " selected" : ""}>${n.toUpperCase()}</option>`).join("")}</select>
             <span>+</span>
             <span class="tb-giro"><input type="number" data-mod value="0"><span><button type="button" data-g="mod" data-d="1">▲</button><button type="button" data-g="mod" data-d="-1">▼</button></span></span>
           </div>
-          <div class="tb-fila" style="margin:12px 0"><span data-obj></span><span>¿Número objetivo?</span><input type="number" data-objetivo value="10" style="width:80px" hidden></div>
-          <button type="button" class="tb-btn tb-btn-acento" data-tirar style="width:100%;max-width:270px">Tirada</button>
+          <div class="tb-fila" style="margin:calc(12px * var(--tb-k)) 0"><span data-obj></span><span>¿Número objetivo?</span><input type="number" data-objetivo value="10" style="width:calc(80px * var(--tb-k))" hidden></div>
+          <button type="button" class="tb-btn tb-btn-acento" data-tirar style="width:100%;max-width:calc(270px * var(--tb-k))">Tirada</button>
           <hr class="tb-sep">
           <p class="tb-flot-titulo-sec">Últimas 10 tiradas</p>
           <table class="tb-historial"><thead><tr><th>Fórmula</th><th>Repetición de tirada</th></tr></thead><tbody>${historialDados.length ? historialDados.map((h, i) => `<tr><td>${esc(h)}</td><td><button type="button" class="tb-btn tb-btn-mini" data-rep="${i}">Repetir</button></td></tr>`).join("") : `<tr><td colspan="2" class="tb-nota" style="text-align:center">Sin datos</td></tr>`}</tbody></table>
-          <p class="tb-nota" style="margin-top:12px">En el chat también puedes escribir <b>/r 2d20kh1+5</b> (ventaja), <b>/gr 1d20</b> (solo al DJ) o tiradas en línea como <b>[[1d8+3]]</b>.</p>
+          <p class="tb-nota" style="margin-top:calc(12px * var(--tb-k))">En el chat también puedes escribir <b>/r 2d20kh1+5</b> (ventaja), <b>/gr 1d20</b> (solo al DJ) o tiradas en línea como <b>[[1d8+3]]</b>.</p>
         </div>`);
         const obj = interruptor(false);
         av.querySelector("[data-obj]").append(obj.el);
@@ -269,7 +269,7 @@
     const moneda = el(`<div class="tb-moneda-fila"><button type="button" class="tb-btn tb-moneda-btn" title="Para decidir algo al 50 %">🪙 Moneda: cara o cruz</button></div>`);
     moneda.querySelector("button").addEventListener("click", () => TB.tirar("1d2", "Moneda", d.modo));
     f.appendChild(moneda);
-    const pie = el(`<div class="tb-flot-pie"><button type="button" class="tb-enlace" data-cambiar style="font-size:17px"></button>
+    const pie = el(`<div class="tb-flot-pie"><button type="button" class="tb-enlace" data-cambiar style="font-size:calc(17px * var(--tb-k))"></button>
       <div class="tb-mods"><button type="button" data-x="!" title="Los dados que sacan el máximo vuelven a tirarse y suman">!</button><button type="button" data-x="!!" title="Igual, pero se acumulan en un solo dado">!!</button><button type="button" data-x="!p" title="Explotan restando 1 a cada repetición">!p</button></div></div>`);
     const cambiar = pie.querySelector("[data-cambiar]");
     const pintarPie = () => { cambiar.textContent = d.avanzado ? "Lanzador simple" : "Lanzador avanzado"; pie.querySelectorAll("[data-x]").forEach(b => b.classList.toggle("activo", b.dataset.x === d.explota)); };
@@ -288,25 +288,25 @@
     const nb = TB.prefs.niebla;
     const guardarNiebla = v => TB.guardarEscena(TB.escenaId, { niebla: v }).then(() => { if (flotanteAbierto === "niebla") { cuerpo.innerHTML = ""; flotanteAbierto = null; abrirFlotante("niebla", document.querySelector('[data-b="niebla"]')); } });
     if (!n.activa) {
-      cuerpo.innerHTML = `<p style="text-align:center;font-weight:600;font-size:16px;margin:0 0 6px">¡Esconde algunas cosas!</p>
-        <p style="text-align:center;margin:0 0 14px;line-height:1.45">Puedes usar esta herramienta para ocultar a los jugadores el mapa entero o partes de él. Las zonas reveladas se dibujan sobre la marcha.</p>
-        <button type="button" class="tb-btn tb-btn-borde" data-todo style="width:100%;min-height:44px;font-size:16px">Ocultar página completa</button>
-        <p style="text-align:center;margin:14px 0 0"><button type="button" class="tb-enlace" data-manual style="font-size:16px;font-weight:600">Dibujar manualmente la máscara</button></p>`;
+      cuerpo.innerHTML = `<p style="text-align:center;font-weight:600;font-size:calc(16px * var(--tb-k));margin:0 0 calc(6px * var(--tb-k))">¡Esconde algunas cosas!</p>
+        <p style="text-align:center;margin:0 0 calc(14px * var(--tb-k));line-height:1.45">Puedes usar esta herramienta para ocultar a los jugadores el mapa entero o partes de él. Las zonas reveladas se dibujan sobre la marcha.</p>
+        <button type="button" class="tb-btn tb-btn-borde" data-todo style="width:100%;min-height:calc(44px * var(--tb-k));font-size:calc(16px * var(--tb-k))">Ocultar página completa</button>
+        <p style="text-align:center;margin:calc(14px * var(--tb-k)) 0 0"><button type="button" class="tb-enlace" data-manual style="font-size:calc(16px * var(--tb-k));font-weight:600">Dibujar manualmente la máscara</button></p>`;
       cuerpo.querySelector("[data-todo]").addEventListener("click", () => { nb.modo = "revelar"; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); guardarNiebla({ activa: true, base: "oculta", zonas: [] }); });
       cuerpo.querySelector("[data-manual]").addEventListener("click", () => { nb.modo = "ocultar"; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); guardarNiebla({ activa: true, base: "visible", zonas: [] }); });
       return;
     }
     cuerpo.innerHTML = `<p class="tb-flot-titulo-sec">Al dibujar sobre el tablero</p>
       <div class="tb-segmento" data-modo><button type="button" data-v="revelar">Revelar</button><button type="button" data-v="ocultar">Ocultar</button></div>
-      <p class="tb-flot-titulo-sec" style="margin-top:12px">Forma</p>
+      <p class="tb-flot-titulo-sec" style="margin-top:calc(12px * var(--tb-k))">Forma</p>
       <div class="tb-segmento" data-forma><button type="button" data-v="rect">Rectángulo</button><button type="button" data-v="poligono">Polígono</button></div>
       <p class="tb-nota">En polígono, cada clic añade un punto. Doble clic o Intro para cerrarlo.</p>
-      <div class="tb-fila" style="flex-wrap:wrap;margin-top:12px">
+      <div class="tb-fila" style="flex-wrap:wrap;margin-top:calc(12px * var(--tb-k))">
         <button type="button" class="tb-btn" data-deshacer>Deshacer la última zona</button>
         <button type="button" class="tb-btn" data-ocultar>Ocultar todo</button>
         <button type="button" class="tb-btn tb-btn-borde" data-quitar>Quitar la máscara</button>
       </div>
-      <p class="tb-nota" style="margin-top:10px">Tú la ves semitransparente. Los jugadores la ven negra.</p>`;
+      <p class="tb-nota" style="margin-top:calc(10px * var(--tb-k))">Tú la ves semitransparente. Los jugadores la ven negra.</p>`;
     const pinta = (sel, val) => cuerpo.querySelectorAll(sel + " button").forEach(b => b.classList.toggle("activo", b.dataset.v === val));
     pinta("[data-modo]", nb.modo); pinta("[data-forma]", nb.forma);
     cuerpo.querySelector("[data-modo]").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; nb.modo = b.dataset.v; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); pinta("[data-modo]", nb.modo); setHerramienta("niebla"); });
@@ -331,12 +331,13 @@
       <p class="tb-flot-titulo-sec">Dibujar muros</p>
       <div class="tb-segmento" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr" data-tipos>
         <button type="button" data-m="muro">Muro</button><button type="button" data-m="puerta">Puerta</button><button type="button" data-m="ventana">Ventana</button></div>
-      <div class="tb-fila" style="margin-top:8px"><button type="button" class="tb-btn" data-dib="linea" style="flex:1">${I.linea} Línea</button><button type="button" class="tb-btn" data-dib="rect" style="flex:1">${I.rect} Rectángulo</button></div>
-      <p class="tb-nota">Las líneas se dibujan en la capa Iluminación, que solo ves tú. Una ventana deja ver pero no pasar. Doble clic en una puerta la abre o la cierra.</p>
+      <div class="tb-fila" style="margin-top:calc(8px * var(--tb-k))"><button type="button" class="tb-btn" data-dib="linea" style="flex:1">${I.linea} Línea</button><button type="button" class="tb-btn" data-dib="rect" style="flex:1">${I.rect} Rectángulo</button></div>
+      <p class="tb-nota">Las líneas se dibujan en la capa Iluminación, que solo ves tú. Una ventana deja ver pero no pasar. Doble clic en una puerta la abre o la cierra; los jugadores la abren con su tirador, salvo que la cierres con llave (clic derecho).</p>
       <button type="button" class="tb-btn" data-luz style="width:100%">☀ Poner una luz en el centro de la vista</button>
       <hr class="tb-sep">
       <label class="tb-btn" style="width:100%;cursor:pointer">⇪ Importar un mapa de Dungeondraft (.dd2vtt / .uvtt)<input type="file" accept=".dd2vtt,.uvtt,.df2vtt,.json" hidden data-uvtt></label>
-      <button type="button" class="tb-enlace" data-olvidar style="margin-top:10px">Olvidar lo explorado en esta página</button>
+      <button type="button" class="tb-enlace" data-olvidartodos style="margin-top:calc(10px * var(--tb-k));display:block">Olvidar lo explorado de esta página para todos</button>
+      <button type="button" class="tb-enlace" data-olvidar style="margin-top:calc(10px * var(--tb-k))">Olvidar lo explorado en esta página</button>
     </div>`);
     const guardar = cambio => {
       const e2 = TB.escena();
@@ -362,7 +363,13 @@
     c.querySelector("[data-luz]").addEventListener("click", () => { const p = TB.L.centroVista(); colocarLuz(p); });
     c.querySelector("[data-uvtt]").addEventListener("change", ev => { const fl = ev.target.files[0]; ev.target.value = ""; if (fl) importarUVTT(fl); });
     c.querySelector("[data-olvidar]").addEventListener("click", () => { TB.L.reiniciarExplorado(); aviso("Lo explorado se ha olvidado en tu vista."); });
-    c.querySelectorAll("svg").forEach(s => { s.style.width = "16px"; s.style.height = "16px"; });
+    c.querySelector("[data-olvidartodos]").addEventListener("click", async () => {
+      if (!(await confirmar("Olvidar lo explorado", "¿Que todos los jugadores vuelvan a ver a oscuras lo que ya exploraron en esta página?", "Olvidar"))) return;
+      TB.red.emitir("explorado", { escena: TB.escenaId });
+      TB.L.reiniciarExplorado();
+      aviso("Lo explorado se ha olvidado para todos los que están conectados.");
+    });
+    c.querySelectorAll("svg").forEach(s => { s.style.width = "calc(16px * var(--tb-k))"; s.style.height = "calc(16px * var(--tb-k))"; });
     f.appendChild(c);
   }
   async function colocarLuz(p) {
@@ -575,9 +582,9 @@
     const esMio = actual && TB.controla(TB.L.objeto(actual.id));
     const pie = el(`<div class="tb-turno-pie">
       <button type="button" class="tb-btn tb-btn-borde" data-atras ${gm ? "" : "disabled"} title="Turno anterior">${I.izquierda}</button>
-      ${gm ? `<button type="button" class="tb-btn" data-cfg style="min-width:40px;border:0;background:none" title="Opciones">${I.engranaje}</button>` : ""}
+      ${gm ? `<button type="button" class="tb-btn" data-cfg style="min-width:calc(40px * var(--tb-k));border:0;background:none" title="Opciones">${I.engranaje}</button>` : ""}
       <button type="button" class="tb-btn tb-btn-acento" data-adelante ${gm || esMio ? "" : "disabled"} title="${gm ? "Siguiente turno" : "Terminar mi turno"}">${I.derecha}</button></div>`);
-    pie.querySelectorAll("svg").forEach(s => { s.style.width = "20px"; s.style.height = "20px"; });
+    pie.querySelectorAll("svg").forEach(s => { s.style.width = "calc(20px * var(--tb-k))"; s.style.height = "calc(20px * var(--tb-k))"; });
     pie.querySelector("[data-atras]").addEventListener("click", () => TB.pasarTurno(-1));
     pie.querySelector("[data-adelante]").addEventListener("click", () => TB.pasarTurno(1));
     if (gm) {
@@ -645,14 +652,14 @@
     const controlSel = chips(jugadores, (o.controlan_todos ? ["*"] : []).concat(o.controladores || []), { todos: "Todos los jugadores" });
 
     const general = el(`<div>
-      <div class="tb-fila" style="justify-content:space-between"><h3 style="margin:4px 0 14px;font-size:19px">General</h3></div>
+      <div class="tb-fila" style="justify-content:space-between"><h3 style="margin:calc(4px * var(--tb-k)) 0 calc(14px * var(--tb-k));font-size:calc(19px * var(--tb-k))">General</h3></div>
       ${gm ? `<label class="tb-campo"><span>Representa a un personaje</span><select data-rep><option value="">Ninguno / Ficha genérica</option>${personajes.map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join("")}</select></label>` : ""}
       <label class="tb-campo"><span>Nombre</span><span class="tb-fila"><input type="text" data-nombre ${gm ? "" : "disabled"}><label class="tb-casilla tb-btn" style="white-space:nowrap"><input type="checkbox" data-vernombre ${gm ? "" : "disabled"}> Nombre</label></span></label>
       ${gm ? `<div class="tb-campo"><span>Controlado por</span><div data-control></div><span class="tb-nota" data-control-nota hidden>(Determinado por los ajustes de personaje)</span></div>
-        <div class="tb-fila" style="flex-wrap:wrap;margin-bottom:12px">${plantilla ? "" : `<button type="button" class="tb-btn tb-btn-azul" data-predet>Actualizar ficha predeterminada</button>`}<button type="button" class="tb-btn tb-btn-azul" data-hoja>Abrir hoja de personaje</button></div>
+        <div class="tb-fila" style="flex-wrap:wrap;margin-bottom:calc(12px * var(--tb-k))">${plantilla ? "" : `<button type="button" class="tb-btn tb-btn-azul" data-predet>Actualizar ficha predeterminada</button>`}<button type="button" class="tb-btn tb-btn-azul" data-hoja>Abrir hoja de personaje</button></div>
         <div class="tb-campo"><span>Color de tinte</span><span class="tb-fila"><input type="color" data-tinte><label class="tb-casilla"><input type="checkbox" data-sintinte> Sin tinte</label></span></div>` : ""}
     </div>`);
-    const derecha = el(`<div><h3 style="margin:4px 0 14px;font-size:19px">Barras De Ficha</h3></div>`);
+    const derecha = el(`<div><h3 style="margin:calc(4px * var(--tb-k)) 0 calc(14px * var(--tb-k));font-size:calc(19px * var(--tb-k))">Barras De Ficha</h3></div>`);
     barras.forEach((b, i) => {
       const puede = gm || b.editar;
       const fila = el(`<div class="tb-barra-cfg">
@@ -660,9 +667,9 @@
         <span>/</span><input type="number" data-m ${puede ? "" : "disabled"}>
         <select data-enlace ${gm ? "" : "disabled"} title="Atributo: la barra sigue los PV de esa ficha del compendio"><option value="">Ninguno</option>${(TB.fichas || []).map(fc => `<option value="${esc(fc.id)}">PV de ${esc(fc.nombre)}</option>`).join("")}${b.enlace && !(TB.fichas || []).some(fc => fc.id === b.enlace) ? `<option value="${esc(b.enlace)}">PV de una ficha</option>` : ""}</select>
         ${gm ? `<span style="position:relative"><button type="button" class="tb-kebab" data-k>⋮</button>
-          <div class="tb-kebab-menu" hidden><b style="display:block;margin-bottom:6px">Permisos de jugadores</b>
+          <div class="tb-kebab-menu" hidden><b style="display:block;margin-bottom:calc(6px * var(--tb-k))">Permisos de jugadores</b>
             <label><input type="checkbox" data-ver> Ver</label><label><input type="checkbox" data-editar> Editar</label>
-            <span style="display:block;margin:8px 0 4px">Texto superpuesto:</span>
+            <span style="display:block;margin:calc(8px * var(--tb-k)) 0 calc(4px * var(--tb-k))">Texto superpuesto:</span>
             <select data-texto><option value="oculto">Oculto</option><option value="editores">Visible para los editores</option><option value="todos">Visible para todos</option></select></div></span>` : "<span></span>"}
       </div>`);
       fila.querySelector("[data-v]").value = b.valor; fila.querySelector("[data-m]").value = b.max;
@@ -683,19 +690,19 @@
       derecha.appendChild(fila);
     });
     if (gm) {
-      derecha.appendChild(el(`<div class="tb-campo" style="margin-top:14px"><span>Opacidad Base</span><input type="range" min="0" max="100" data-opac><span class="tb-nota" data-opac-txt></span></div>`));
+      derecha.appendChild(el(`<div class="tb-campo" style="margin-top:calc(14px * var(--tb-k))"><span>Opacidad Base</span><input type="range" min="0" max="100" data-opac><span class="tb-nota" data-opac-txt></span></div>`));
     }
     det.appendChild(el(`<div class="tb-dos-col"></div>`));
     det.firstChild.append(general, derecha);
     if (gm) {
       det.appendChild(el(`<hr class="tb-sep">`));
-      det.appendChild(el(`<div class="tb-dos-col"><div><h3 style="font-size:19px;margin:6px 0 12px">Opciones De Barra De Ficha</h3>
+      det.appendChild(el(`<div class="tb-dos-col"><div><h3 style="font-size:calc(19px * var(--tb-k));margin:calc(6px * var(--tb-k)) 0 calc(12px * var(--tb-k))">Opciones De Barra De Ficha</h3>
         <label class="tb-campo"><span>Posición</span><select data-bpos><option value="encima">Encima</option><option value="debajo">Debajo</option></select></label></div>
-        <div><h3 style="font-size:19px;margin:6px 0 12px">&nbsp;</h3><div class="tb-campo"><span>Estilo</span><span class="tb-fila"><label class="tb-casilla"><input type="radio" name="bestilo" value="estandar"> Estándar</label><label class="tb-casilla"><input type="radio" name="bestilo" value="compacto"> Compacto</label></span></div></div></div>`));
+        <div><h3 style="font-size:calc(19px * var(--tb-k));margin:calc(6px * var(--tb-k)) 0 calc(12px * var(--tb-k))">&nbsp;</h3><div class="tb-campo"><span>Estilo</span><span class="tb-fila"><label class="tb-casilla"><input type="radio" name="bestilo" value="estandar"> Estándar</label><label class="tb-casilla"><input type="radio" name="bestilo" value="compacto"> Compacto</label></span></div></div></div>`));
       det.appendChild(el(`<hr class="tb-sep">`));
-      const aurasEl = el(`<div><h3 style="font-size:19px;margin:6px 0 12px">Aura De Ficha</h3><div class="tb-aura-cfg"></div></div>`);
+      const aurasEl = el(`<div><h3 style="font-size:calc(19px * var(--tb-k));margin:calc(6px * var(--tb-k)) 0 calc(12px * var(--tb-k))">Aura De Ficha</h3><div class="tb-aura-cfg"></div></div>`);
       auras.forEach((a, i) => {
-        const caja = el(`<div data-aura="${i}"><b style="display:block;margin-bottom:8px">Aura ${i + 1}</b>
+        const caja = el(`<div data-aura="${i}"><b style="display:block;margin-bottom:calc(8px * var(--tb-k))">Aura ${i + 1}</b>
           <div class="tb-fila"><label class="tb-campo" style="flex:1"><span style="font-weight:400">Radio (pies)</span><input type="number" min="0" data-radio></label>
           <label class="tb-campo" style="flex:1.2"><span style="font-weight:400">Forma</span><select data-forma><option value="circulo">Círculo</option><option value="cuadrado">Cuadrado</option></select></label>
           <label class="tb-campo"><span style="font-weight:400">Color</span><input type="color" data-color></label></div>
@@ -709,10 +716,10 @@
       det.appendChild(el(`<hr class="tb-sep">`));
       const vis = Object.assign({ ve: !!(o.controlan_todos || (o.controladores || []).length), oscuridad: 0 }, d.vision);
       const luz = Object.assign({ brillante: 0, tenue: 0 }, d.luz);
-      const luzEl = el(`<div><h3 style="font-size:19px;margin:6px 0 12px">Visión e iluminación</h3>
-        <div class="tb-fila" style="flex-wrap:wrap;gap:10px 16px">
+      const luzEl = el(`<div><h3 style="font-size:calc(19px * var(--tb-k));margin:calc(6px * var(--tb-k)) 0 calc(12px * var(--tb-k))">Visión e iluminación</h3>
+        <div class="tb-fila" style="flex-wrap:wrap;gap:calc(10px * var(--tb-k)) calc(16px * var(--tb-k))">
           <label class="tb-casilla"><input type="checkbox" data-ve> Tiene visión (los que la controlan ven por sus ojos)</label></div>
-        <div class="tb-fila" style="margin-top:8px">
+        <div class="tb-fila" style="margin-top:calc(8px * var(--tb-k))">
           <label class="tb-campo" style="flex:1"><span style="font-weight:400">Visión en la oscuridad (pies)</span><input type="number" min="0" step="5" data-osc></label>
           <label class="tb-campo" style="flex:1"><span style="font-weight:400">Luz brillante que da (pies)</span><input type="number" min="0" step="5" data-lb></label>
           <label class="tb-campo" style="flex:1"><span style="font-weight:400">Luz tenue, más allá (pies)</span><input type="number" min="0" step="5" data-lt></label></div>
@@ -897,6 +904,7 @@
     const deLuz = o.capa === "luz" ? [
       o.tipo === "dibujo" ? { icono: "luz", texto: "Tipo de línea", sub: [["muro", "Muro (tapa la vista y el paso)"], ["puerta", "Puerta"], ["ventana", "Ventana (deja ver, no pasar)"]].map(([v, t]) => ({ texto: ((o.datos || {}).muro || "muro") === v ? "✓ " + t : t, accion: () => cambiarTodos(q => datosCon(q, { muro: v, trazo: TBLuz.COLOR_MURO[v] })) })) } : null,
       o.tipo === "dibujo" && (o.datos || {}).muro === "puerta" ? { icono: "candado", texto: (o.datos || {}).abierta ? "Cerrar la puerta" : "Abrir la puerta", accion: () => cambiarTodos(q => datosCon(q, { abierta: !(o.datos || {}).abierta })) } : null,
+      o.tipo === "dibujo" && (o.datos || {}).muro === "puerta" ? { icono: "candado", texto: (o.datos || {}).llave ? "Quitar la llave (los jugadores podrán abrirla)" : "Cerrar con llave (los jugadores no la abren)", accion: () => cambiarTodos(q => datosCon(q, { llave: !(o.datos || {}).llave })) } : null,
       o.tipo === "luz" ? { icono: "luz", texto: "Ajustes de luz…", accion: () => ajustesLuz(o.id) } : null,
       "-"
     ].filter(Boolean) : [];
@@ -957,7 +965,7 @@
     const d = o.datos || {};
     if (!TB.esGM()) {
       if (d.nota && TB.diario.has(d.nota)) TBLado.abrirEntrada(d.nota);
-      else if (d.titulo || d.texto) { const v = ventana("pin-" + id, { titulo: esc(d.titulo || "Pin"), ancho: 320, recordar: false, x: 260, y: 140 }); v.cuerpo.innerHTML = `<div style="padding:14px;line-height:1.5">${esc(d.texto || "")}</div>`; }
+      else if (d.titulo || d.texto) { const v = ventana("pin-" + id, { titulo: esc(d.titulo || "Pin"), ancho: 320, recordar: false, x: 260, y: 140 }); v.cuerpo.innerHTML = `<div style="padding:calc(14px * var(--tb-k));line-height:1.5">${esc(d.texto || "")}</div>`; }
       return;
     }
     const notas = [...TB.diario.values()].sort((a, b) => a.nombre.localeCompare(b.nombre));
@@ -1004,22 +1012,22 @@
     const mini = miniaturaDe(actual);
     const cab = el(`<div class="tb-paginas-cab">
       <div class="actual">${mini ? `<img src="${esc(mini)}" alt="">` : `<span class="mini"></span>`}<span>${esc(actual.nombre || "")}</span></div>
-      <button type="button" class="tb-enlace" data-config style="font-size:17px;font-weight:600">⚙ Configuración de página</button>
+      <button type="button" class="tb-enlace" data-config style="font-size:calc(17px * var(--tb-k));font-weight:600">⚙ Configuración de página</button>
       <div class="tb-paginas-miembros" title="Arrastra el marcalibros a otra página para llevar allí a los jugadores">
         <span class="marca" draggable="true" data-marca></span>
         <span class="avs">${conectados.slice(0, 4).map(c => c.avatar ? `<span style="background-image:url('${esc(c.avatar)}')"></span>` : `<span style="background-color:${TB.colorJugador(c.uid)}">${esc((c.nombre || "?")[0].toUpperCase())}</span>`).join("")}${conectados.length > 4 ? `<span>+${conectados.length - 4}</span>` : ""}</span>
         <span><b>${esc(deJug ? deJug.nombre : "Ninguna")}</b><small>${conectados.length} ${conectados.length === 1 ? "miembro" : "miembros"}</small></span>
       </div>
-      <button type="button" class="tb-flot-cerrar" data-cerrar style="font-size:26px">✕</button></div>`);
+      <button type="button" class="tb-flot-cerrar" data-cerrar style="font-size:calc(26px * var(--tb-k))">✕</button></div>`);
     cab.querySelector("[data-cerrar]").addEventListener("click", alternarPaginas);
     cab.querySelector("[data-config]").addEventListener("click", () => configPagina(TB.escenaId));
     cab.querySelector("[data-marca]").addEventListener("dragstart", ev => { ev.dataTransfer.setData("text/tablero-marca", "1"); ev.dataTransfer.effectAllowed = "move"; });
     const barra = el(`<div class="tb-paginas-barra">
-      <button type="button" class="tb-btn tb-btn-borde" data-carpeta title="Nueva carpeta" style="width:46px;height:42px;padding:0">${I.carpeta}</button>
-      <input type="search" placeholder="Buscar…" data-buscar style="min-height:42px">
-      <button type="button" class="tb-btn tb-btn-acento" data-crear style="min-height:42px;font-size:16px;font-weight:600">＋ Crear página</button>
-      <button type="button" class="tb-btn tb-btn-acento" data-crear-mas style="min-height:42px;width:40px;padding:0" title="Más opciones">▾</button></div>`);
-    barra.querySelector("svg").style.cssText = "width:22px;height:22px";
+      <button type="button" class="tb-btn tb-btn-borde" data-carpeta title="Nueva carpeta" style="width:calc(46px * var(--tb-k));height:calc(42px * var(--tb-k));padding:0">${I.carpeta}</button>
+      <input type="search" placeholder="Buscar…" data-buscar style="min-height:calc(42px * var(--tb-k))">
+      <button type="button" class="tb-btn tb-btn-acento" data-crear style="min-height:calc(42px * var(--tb-k));font-size:calc(16px * var(--tb-k));font-weight:600">＋ Crear página</button>
+      <button type="button" class="tb-btn tb-btn-acento" data-crear-mas style="min-height:calc(42px * var(--tb-k));width:calc(40px * var(--tb-k));padding:0" title="Más opciones">▾</button></div>`);
+    barra.querySelector("svg").style.cssText = "width:calc(22px * var(--tb-k));height:calc(22px * var(--tb-k))";
     const buscar = barra.querySelector("[data-buscar]");
     buscar.value = filtroPaginas;
     buscar.addEventListener("input", () => { filtroPaginas = buscar.value; pintarRejilla(); });
@@ -1118,17 +1126,17 @@
       <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Fondo</h4>
       <div class="tb-fila-toggle" style="border:0"><span>Color del tablero (fuera de la página)</span><input type="color" data-tablero></div>
       <div class="tb-fila-toggle" style="border:0"><span>Color de fondo de la página</span><input type="color" data-fondo></div>
-      <div class="tb-campo"><span>Miniatura</span><div data-mini style="max-width:220px"></div></div>
+      <div class="tb-campo"><span>Miniatura</span><div data-mini style="max-width:calc(220px * var(--tb-k))"></div></div>
       <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Escala</h4>
-      <div class="tb-fila"><input type="number" min="0.1" step="0.5" data-pies style="width:110px"><select data-unidad style="width:170px"><option value="pies">Pies</option><option value="m">Metros</option><option value="casillas">Casillas</option><option value="millas">Millas</option><option value="km">Kilómetros</option></select></div>
+      <div class="tb-fila"><input type="number" min="0.1" step="0.5" data-pies style="width:calc(110px * var(--tb-k))"><select data-unidad style="width:calc(170px * var(--tb-k))"><option value="pies">Pies</option><option value="m">Metros</option><option value="casillas">Casillas</option><option value="millas">Millas</option><option value="km">Kilómetros</option></select></div>
       <hr class="tb-sep"><div class="tb-fila-toggle" style="border:0"><h4 class="tb-cfgpag-sec" style="margin:0">Cuadrícula</h4><span data-t-visible></span></div>
       <div class="tb-fila"><label class="tb-campo" style="flex:1"><span>Tipo de cuadrícula</span><select data-tipo><option value="cuadrada">Cuadrada</option></select></label>
         <label class="tb-campo" style="flex:1"><span>Medición diagonal</span><select data-diag><option value="5e">D&amp;D 5e / 4e</option><option value="pathfinder">Pathfinder / 3.5e</option><option value="euclidea">Euclídea</option><option value="manhattan">Manhattan</option></select></label></div>
       <div class="tb-fila-toggle" style="border:0"><span>Ajuste a las casillas (las fichas encajan al soltarlas)</span><span data-t-ajustar></span></div>
       <div class="tb-fila-toggle" style="border:0"><span>Ajustamiento preciso a las esquinas y al centro de las celdas</span><span data-t-preciso></span></div>
-      <div class="tb-fila-toggle" style="border:0"><span>Desplazamiento de la cuadrícula</span><span class="tb-fila"><span class="tb-ud"><input type="number" data-dx style="width:70px"><i>px</i></span><span class="tb-ud"><input type="number" data-dy style="width:70px"><i>px</i></span></span></div>
+      <div class="tb-fila-toggle" style="border:0"><span>Desplazamiento de la cuadrícula</span><span class="tb-fila"><span class="tb-ud"><input type="number" data-dx style="width:calc(70px * var(--tb-k))"><i>px</i></span><span class="tb-ud"><input type="number" data-dy style="width:calc(70px * var(--tb-k))"><i>px</i></span></span></div>
       <div class="tb-fila-toggle" style="border:0"><span>Color de cuadrícula</span><input type="color" data-color></div>
-      <label class="tb-campo"><span>Opacidad de la línea de la cuadrícula</span><span class="tb-fila"><input type="range" min="0" max="100" data-op><span class="tb-ud"><input type="number" min="0" max="100" data-opn style="width:70px"><i>%</i></span></span></label>
+      <label class="tb-campo"><span>Opacidad de la línea de la cuadrícula</span><span class="tb-fila"><input type="range" min="0" max="100" data-op><span class="tb-ud"><input type="number" min="0" max="100" data-opn style="width:calc(70px * var(--tb-k))"><i>%</i></span></span></label>
       <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Gestionar audio</h4>
       <label class="tb-campo"><span>Reproducir en carga (empieza cuando el marcalibros llega a esta página)</span><select data-audio><option value="">Ninguno</option>${pistas.map(p => `<option value="${esc(p.src)}">${esc(p.nombre)}</option>`).join("")}</select></label>
       <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Gestionar la zona</h4>
@@ -1164,7 +1172,7 @@
     q("[data-audio]").value = (opc.audio && opc.audio.src) || "";
     q("[data-archivar]").addEventListener("click", async () => { await TB.guardarEscena(id, { archivada: !e.archivada }); v.cerrar(); pintarPaginas(); });
     q("[data-borrar]").addEventListener("click", async () => { v.cerrar(); await TB.borrarEscena(id); pintarPaginas(); });
-    const pie = el(`<div class="tb-cfgpag-pie"><button type="button" class="tb-enlace" data-cancelar style="font-size:17px;font-weight:700">Cancelar</button><button type="button" class="tb-btn tb-btn-acento" data-guardar style="font-size:17px;font-weight:700;min-height:44px;padding:0 22px">Guardar ajustes</button></div>`);
+    const pie = el(`<div class="tb-cfgpag-pie"><button type="button" class="tb-enlace" data-cancelar style="font-size:calc(17px * var(--tb-k));font-weight:700">Cancelar</button><button type="button" class="tb-btn tb-btn-acento" data-guardar style="font-size:calc(17px * var(--tb-k));font-weight:700;min-height:calc(44px * var(--tb-k));padding:0 calc(22px * var(--tb-k))">Guardar ajustes</button></div>`);
     v.el.appendChild(pie);
     pie.querySelector("[data-cancelar]").addEventListener("click", () => v.cerrar());
     pie.querySelector("[data-guardar]").addEventListener("click", async () => {

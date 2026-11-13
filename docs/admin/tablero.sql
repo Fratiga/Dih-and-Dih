@@ -609,6 +609,31 @@ begin
 end;
 $$;
 
+-- Un jugador abre o cierra una puerta de su página, salvo que el DJ la haya cerrado con llave. Solo cambia
+-- datos.abierta: el resto del muro sigue siendo del DJ.
+create or replace function tablero_puerta(p_objeto uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  o tablero_objetos;
+  nuevo boolean;
+begin
+  if auth.uid() is null then raise exception 'Inicia sesión.'; end if;
+  select * into o from tablero_objetos where id = p_objeto;
+  if not found or o.capa <> 'luz' or o.tipo <> 'dibujo' or coalesce(o.datos ->> 'muro', '') <> 'puerta' then raise exception 'Eso no es una puerta.'; end if;
+  if not fichas_es_admin() then
+    if not tablero_escena_visible(o.escena) then raise exception 'Esa puerta no está en tu página.'; end if;
+    if coalesce((o.datos ->> 'llave')::boolean, false) then raise exception 'La puerta está cerrada con llave.'; end if;
+  end if;
+  nuevo := not coalesce((o.datos ->> 'abierta')::boolean, false);
+  update tablero_objetos set datos = jsonb_set(datos, '{abierta}', to_jsonb(nuevo)), actualizado = now() where id = p_objeto;
+  return nuevo;
+end;
+$$;
+
 -- Pasar turno. El GM adelante o atrás; un jugador solo adelante y solo cuando el turno es de una ficha suya.
 create or replace function tablero_turno(p_paso int default 1)
 returns void
@@ -660,6 +685,7 @@ revoke all on function tablero_tirar_iniciativa(uuid, int) from public, anon;
 revoke all on function tablero_turno(int) from public, anon;
 revoke all on function tablero_ficha_pv(uuid, int, int, int) from public, anon;
 revoke all on function tablero_iniciativa_valor(uuid, numeric) from public, anon;
+revoke all on function tablero_puerta(uuid) from public, anon;
 grant execute on function tablero_escena_jugadores() to authenticated;
 grant execute on function tablero_escena_visible(uuid) to authenticated;
 grant execute on function tablero_mover(uuid, double precision, double precision) to authenticated;
@@ -672,6 +698,7 @@ grant execute on function tablero_tirar_iniciativa(uuid, int) to authenticated;
 grant execute on function tablero_turno(int) to authenticated;
 grant execute on function tablero_ficha_pv(uuid, int, int, int) to authenticated;
 grant execute on function tablero_iniciativa_valor(uuid, numeric) to authenticated;
+grant execute on function tablero_puerta(uuid) to authenticated;
 
 -- ============================================================ tiempo real y almacenamiento
 do $$

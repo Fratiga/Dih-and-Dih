@@ -14,7 +14,7 @@
     { id: "arte", icono: "arte", titulo: "Biblioteca de arte", gm: true },
     { id: "diario", icono: "diario", titulo: "Diario" },
     { id: "compendio", icono: "compendio", titulo: "Compendio" },
-    { id: "gramola", icono: "gramola", titulo: "Gramola" },
+    { id: "gramola", icono: "gramola", titulo: "Gramola", gm: true },
     { id: "colecciones", icono: "colecciones", titulo: "Colecciones (macros)" },
     { id: "ajustes", icono: "ajustes", titulo: "Ajustes" }
   ];
@@ -198,11 +198,11 @@
   function pintarArte() {
     const c = cuerpos.arte;
     if (!c || pestana !== "arte") return;
-    if (TB.arte === null) { c.innerHTML = `<p class="tb-nota" style="padding:14px">Cargando…</p>`; TB.arte = []; TB.red.arte().then(a => { TB.arte = a || []; pintarArte(); }).catch(() => { TB.arte = []; pintarArte(); }); return; }
+    if (TB.arte === null) { c.innerHTML = `<p class="tb-nota" style="padding:calc(14px * var(--tb-k))">Cargando…</p>`; TB.arte = []; TB.red.arte().then(a => { TB.arte = a || []; pintarArte(); }).catch(() => { TB.arte = []; pintarArte(); }); return; }
     c.innerHTML = "";
     const cab = el(`<div class="tb-pes-cab" style="display:block">
-      <div class="tb-fila"><b style="font-weight:500">Buscar:</b><span style="flex:1"></span><select data-tipo style="width:150px"><option value="todo">Todo</option><option value="subidas">Mi biblioteca</option><option value="compendio">Del compendio</option></select></div>
-      <input type="search" data-buscar style="margin-top:6px">
+      <div class="tb-fila"><b style="font-weight:500">Buscar:</b><span style="flex:1"></span><select data-tipo style="width:calc(150px * var(--tb-k))"><option value="todo">Todo</option><option value="subidas">Mi biblioteca</option><option value="compendio">Del compendio</option></select></div>
+      <input type="search" data-buscar style="margin-top:calc(6px * var(--tb-k))">
       <p class="tb-arte-ayuda">Arrastra para colocar el arte, <b>arrastra pulsando Alt</b> para mantener las dimensiones. También puedes soltar archivos directamente en el tablero.</p>
       <div class="tb-fila" style="justify-content:flex-end"><input type="file" accept="image/*" multiple hidden data-archivo><button type="button" class="tb-btn" data-cargar>⬆ Cargar</button><button type="button" class="tb-btn" data-url>＋ Añadir URL</button></div></div>`);
     const buscar = cab.querySelector("[data-buscar]"), tipo = cab.querySelector("[data-tipo]"), archivo = cab.querySelector("[data-archivo]");
@@ -260,7 +260,7 @@
     const gm = TB.esGM();
     const cab = el(`<div class="tb-pes-cab" style="display:block">
       <input type="search" placeholder="Buscar por etiqueta o nombre…" data-buscar>
-      ${gm ? `<div class="tb-fila" style="margin-top:8px"><button type="button" class="tb-btn" data-nuevo="personaje">＋ Personaje</button><button type="button" class="tb-btn" data-nuevo="nota">＋ Nota</button><span style="flex:1"></span><label class="tb-casilla tb-nota"><input type="checkbox" data-arch> Archivados</label></div>` : ""}</div>`);
+      ${gm ? `<div class="tb-fila" style="margin-top:calc(8px * var(--tb-k))"><button type="button" class="tb-btn" data-nuevo="personaje">＋ Personaje</button><button type="button" class="tb-btn" data-nuevo="nota">＋ Nota</button><span style="flex:1"></span><label class="tb-casilla tb-nota"><input type="checkbox" data-arch> Archivados</label></div>` : ""}</div>`);
     const buscar = cab.querySelector("[data-buscar]");
     buscar.value = filtroDiario;
     buscar.addEventListener("input", () => { filtroDiario = buscar.value; pintarLista(); });
@@ -311,20 +311,20 @@
     const gm = TB.esGM();
     const v = ventana("diario-" + id, { titulo: esc(e.nombre), ancho: 520, alto: 560, x: Math.max(80, window.innerWidth - 1000), y: 70 });
     v.cuerpo.innerHTML = "";
-    const c = el(`<div style="padding:16px">
-      <div class="tb-fila" style="align-items:flex-start;gap:16px">
+    const c = el(`<div style="padding:calc(16px * var(--tb-k))">
+      <div class="tb-fila" style="align-items:flex-start;gap:calc(16px * var(--tb-k))">
         ${e.imagen ? `<img src="${esc(e.imagen)}" alt="" style="width:${e.tipo === "nota" ? "100%" : "150px"};${e.tipo === "nota" ? "" : "height:150px;border-radius:50%;"}object-fit:cover;flex:none">` : ""}
-        ${e.tipo === "personaje" ? `<div><h2 style="margin:4px 0 6px;font-size:22px">${esc(e.nombre)}</h2>${(e.etiquetas || []).length ? `<p class="tb-nota">${e.etiquetas.map(esc).join(" · ")}</p>` : ""}
+        ${e.tipo === "personaje" ? `<div><h2 style="margin:calc(4px * var(--tb-k)) 0 calc(6px * var(--tb-k));font-size:calc(22px * var(--tb-k))">${esc(e.nombre)}</h2>${(e.etiquetas || []).length ? `<p class="tb-nota">${e.etiquetas.map(esc).join(" · ")}</p>` : ""}
           ${(e.controladores || []).length ? `<p class="tb-nota">Lo controla: ${e.controladores.map(u => esc(TB.nombreJugador(u))).join(", ")}</p>` : ""}</div>` : ""}
       </div>
-      <h4 style="margin:16px 0 6px">${e.tipo === "nota" ? "Contenido" : "Biografía e información"}</h4>
+      <h4 style="margin:calc(16px * var(--tb-k)) 0 calc(6px * var(--tb-k))">${e.tipo === "nota" ? "Contenido" : "Biografía e información"}</h4>
       <div class="tb-contenido-rico">${limpiarHtml(e.texto) || `<p class="tb-nota">Sin texto.</p>`}</div>
-      ${gm ? `<h4 style="margin:16px 0 6px">Notas del DJ</h4><div class="tb-contenido-rico" data-gm><p class="tb-nota">Cargando…</p></div>` : ""}
+      ${gm ? `<h4 style="margin:calc(16px * var(--tb-k)) 0 calc(6px * var(--tb-k))">Notas del DJ</h4><div class="tb-contenido-rico" data-gm><p class="tb-nota">Cargando…</p></div>` : ""}
     </div>`);
     v.cuerpo.appendChild(c);
     if (gm) {
       const pie = el(`<div class="tb-fila"><button type="button" class="tb-btn" data-hablar>Mostrar a los jugadores</button><button type="button" class="tb-btn tb-btn-azul" data-editar>Editar</button></div>`);
-      pie.style.cssText = "padding:10px 16px;border-top:1px solid #ddd;justify-content:flex-end";
+      pie.style.cssText = "padding:calc(10px * var(--tb-k)) calc(16px * var(--tb-k));border-top:1px solid #ddd;justify-content:flex-end";
       v.el.appendChild(pie);
       pie.querySelector("[data-editar]").addEventListener("click", () => { v.cerrar(); editarEntrada(id); });
       pie.querySelector("[data-hablar]").addEventListener("click", async () => {
@@ -349,11 +349,11 @@
     const notasGM = editorRico(gmTexto);
     const esPj = e.tipo === "personaje";
     const cuerpo = el(`<div>
-      <div style="display:grid;grid-template-columns:300px 1fr;gap:24px">
-        <div><div class="tb-etq" style="margin-bottom:6px">${esPj ? "Avatar" : "Imagen"}</div><div data-avatar></div>
-          ${esPj ? `<div class="tb-etq" style="margin:16px 0 6px">Token predeterminado (opcional)</div>
-            <div data-token style="width:150px;height:150px;margin:0 auto 10px;border-radius:50%;background:#eee center/cover"></div>
-            <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:grid;grid-template-columns:calc(300px * var(--tb-k)) 1fr;gap:calc(24px * var(--tb-k))">
+        <div><div class="tb-etq" style="margin-bottom:calc(6px * var(--tb-k))">${esPj ? "Avatar" : "Imagen"}</div><div data-avatar></div>
+          ${esPj ? `<div class="tb-etq" style="margin:calc(16px * var(--tb-k)) 0 calc(6px * var(--tb-k))">Token predeterminado (opcional)</div>
+            <div data-token style="width:calc(150px * var(--tb-k));height:calc(150px * var(--tb-k));margin:0 auto calc(10px * var(--tb-k));border-radius:50%;background:#eee center/cover"></div>
+            <div style="display:flex;flex-direction:column;gap:calc(8px * var(--tb-k))">
               <button type="button" class="tb-btn tb-btn-azul" data-tok="editar">Editar propiedades de token</button>
               <button type="button" class="tb-btn" data-tok="usar">Usar token seleccionado</button>
               <button type="button" class="tb-btn" data-tok="aplicar">Aplicar valores predeterminados de token</button></div>` : ""}
@@ -370,7 +370,7 @@
             <span class="tb-fila"><button type="button" class="tb-btn" data-dup>Duplicar</button><button type="button" class="tb-btn" data-arch>${e.archivado ? "Desarchivar" : "Archivar"}</button></span>
             <button type="button" class="tb-btn tb-btn-rojo" data-quitar>Quitar del juego</button>
           </div>
-          ${esPj ? `<label class="tb-casilla" style="margin-top:16px;justify-content:space-between;width:100%"><span>Miembro del grupo:</span><input type="checkbox" data-grupo></label>` : ""}
+          ${esPj ? `<label class="tb-casilla" style="margin-top:calc(16px * var(--tb-k));justify-content:space-between;width:100%"><span>Miembro del grupo:</span><input type="checkbox" data-grupo></label>` : ""}
         </div>
       </div>
       <hr class="tb-sep">
@@ -470,7 +470,7 @@
   async function pintarCompendio() {
     const c = cuerpos.compendio;
     if (!c.firstChild) {
-      c.innerHTML = `<div class="tb-pes-cab" style="display:block"><h2 style="font-size:21px;font-weight:500;margin:0 0 8px">Compendio</h2><input type="search" placeholder="Buscar criaturas, lugares, objetos, personajes…" data-buscar></div><div class="tb-pes-scroll" data-res><p class="tb-nota">Cargando el compendio…</p></div>`;
+      c.innerHTML = `<div class="tb-pes-cab" style="display:block"><h2 style="font-size:calc(21px * var(--tb-k));font-weight:500;margin:0 0 calc(8px * var(--tb-k))">Compendio</h2><input type="search" placeholder="Buscar criaturas, lugares, objetos, personajes…" data-buscar></div><div class="tb-pes-scroll" data-res><p class="tb-nota">Cargando el compendio…</p></div>`;
       const b = c.querySelector("[data-buscar]");
       b.addEventListener("input", () => { filtroComp = b.value; pintarResultados(); });
     }
@@ -496,7 +496,7 @@
       const fila = el(`<div class="tb-lista-item"><b>${esc(t)}</b><span class="tb-nota">${esc(cat)}</span></div>`);
       fila.addEventListener("click", () => {
         const v = ventana("comp-" + (it.id || t), { titulo: esc(t), ancho: 560, alto: 600, x: 200, y: 60, recordar: false });
-        v.cuerpo.innerHTML = `<div style="padding:16px 20px" class="tb-contenido-rico"><p class="tb-nota">${esc(cat)}${it.summary ? " · " + esc(it.summary) : ""}</p>${it.content || ""}</div>`;
+        v.cuerpo.innerHTML = `<div style="padding:calc(16px * var(--tb-k)) calc(20px * var(--tb-k))" class="tb-contenido-rico"><p class="tb-nota">${esc(cat)}${it.summary ? " · " + esc(it.summary) : ""}</p>${it.content || ""}</div>`;
       });
       res.appendChild(fila);
     });
@@ -606,7 +606,24 @@
     if (cab) cab.textContent = mus.nombre || "";
     pintarGramola();
   }
-  function marcarBloqueo(v) { if (audioBloqueado !== v) { audioBloqueado = v; pintarGramola(); } }
+  function marcarBloqueo(v) {
+    if (audioBloqueado === v) return;
+    audioBloqueado = v;
+    pintarGramola();
+    // El navegador no deja sonar nada hasta que se toca la página: un botón a la vista para activarlo
+    let b = document.getElementById("tbActivarSonido");
+    if (!b) {
+      b = el(`<button type="button" class="tb-activar-sonido" id="tbActivarSonido" hidden>🔊 Activar el sonido</button>`);
+      b.addEventListener("click", activarSonido);
+      document.body.appendChild(b);
+    }
+    b.hidden = !v;
+  }
+  function aplicarVolumen() {
+    const mus = TB.estado.musica || {}, v = volumenDe(mus);
+    document.getElementById("tbAudio").volume = v;
+    if (yt && yt.setVolume && mus.tipo === "youtube") try { yt.setVolume(Math.round(v * 100)); } catch (e) { /* nada */ }
+  }
 
   // Archivos de audio
   let audioPreparado = false;
@@ -616,15 +633,16 @@
     if (!audioPreparado) { audioPreparado = true; a.addEventListener("ended", alTerminar); }
     a.volume = volumenDe(mus);
     a.loop = !!mus.bucle;
-    if (a.getAttribute("src") !== mus.src) a.src = mus.src;
+    if (a.getAttribute("src") !== mus.src) { a.preload = "auto"; a.src = mus.src; a.load(); }
     const colocar = () => {
+      if (a.getAttribute("src") !== mus.src) return;
       let p = posicionDe(mus);
       if (a.duration && isFinite(a.duration)) { if (mus.bucle) p = p % a.duration; else if (p >= a.duration) { a.pause(); return; } }
       if (Math.abs(a.currentTime - p) > 1.5) a.currentTime = p;
-      if (mus.pausado) a.pause();
-      else a.play().then(() => marcarBloqueo(false)).catch(() => marcarBloqueo(true));
     };
     if (a.readyState >= 1) colocar(); else a.addEventListener("loadedmetadata", colocar, { once: true });
+    if (mus.pausado) a.pause();
+    else a.play().then(() => marcarBloqueo(false)).catch(err => { if (err && err.name === "NotAllowedError") marcarBloqueo(true); else if (err && err.name !== "AbortError") aviso("No se pudo reproducir «" + (mus.nombre || "la pista") + "».", true); });
   }
 
   // YouTube (API del reproductor incrustado). El reproductor se ve pequeño abajo a la izquierda.
@@ -694,6 +712,7 @@
         sp = await new Promise(res => api.createController(document.getElementById("tbReproSP"), { uri: mus.uri, width: 300, height: 80 }, c => res(c)));
         sp.addListener("playback_update", e => {
           const d = e.data || {};
+          if (d.duration) spDuracion = d.duration / 1000;
           if (d.isPaused === false) marcarBloqueo(false);
           if (spMus && d.duration && d.position >= d.duration - 400 && d.isPaused) { if (spMus.bucle) { sp.seek(0); sp.resume(); } else alTerminar(); }
         });
@@ -733,6 +752,17 @@
     TB.red.emitir("sonido", d);
   }
 
+  // Duración de lo que suena (archivo, YouTube o Spotify) y formato m:ss
+  let spDuracion = 0;
+  function duracionActual() {
+    const m = TB.estado.musica || {};
+    if (m.tipo === "youtube") return yt && yt.getDuration ? yt.getDuration() || 0 : 0;
+    if (m.tipo === "spotify") return spDuracion;
+    const a = document.getElementById("tbAudio");
+    return a.duration && isFinite(a.duration) ? a.duration : 0;
+  }
+  const mmss = s => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+
   /* ---------- panel */
   let filtroMusica = "", vistaGramola = "canciones", listaAbierta = null;
   function pintarGramola() {
@@ -745,10 +775,10 @@
     c.innerHTML = "";
     const cab = el(`<div class="tb-pes-cab"><h2>Gramola</h2></div>`);
     const cuerpo = el(`<div class="tb-pes-scroll" style="padding-top:0">
-      ${audioBloqueado ? `<button type="button" class="tb-btn tb-btn-acento" data-activar style="width:100%;margin:8px 0">🔊 Activar el sonido en este navegador</button>` : ""}
+      ${audioBloqueado ? `<button type="button" class="tb-btn tb-btn-acento" data-activar style="width:100%;margin:calc(8px * var(--tb-k)) 0">🔊 Activar el sonido en este navegador</button>` : ""}
       <div class="tb-gramola-ahora"><b>${mus.src ? "Reproduciendo" : "Nada sonando"}</b>${mus.src ? `<span class="tb-gramola-origen">${mus.tipo === "youtube" ? "YouTube" : mus.tipo === "spotify" ? "Spotify" : "Archivo"}</span>` : ""}<br>
         <span>${mus.src ? esc(mus.nombre || "Pista") + (mus.pausado ? " (en pausa)" : "") : "El DJ elige la música y suena para todos."}</span>
-        ${l ? `<div class="tb-nota" style="margin-top:4px">Lista «${esc(l.nombre)}» · ${(mus.indice || 0) + 1} de ${l.pistas.length}</div>` : ""}
+        ${l ? `<div class="tb-nota" style="margin-top:calc(4px * var(--tb-k))">Lista «${esc(l.nombre)}» · ${(mus.indice || 0) + 1} de ${l.pistas.length}</div>` : ""}
         ${gm && mus.src ? `<div class="tb-gramola-mandos">
             <button type="button" class="tb-btn tb-btn-mini" data-ant title="Anterior" ${l ? "" : "disabled"}>⏮</button>
             <button type="button" class="tb-btn tb-btn-mini" data-pausa title="${mus.pausado ? "Seguir" : "Pausa"}">${mus.pausado ? "▶" : "❚❚"}</button>
@@ -756,8 +786,10 @@
             <button type="button" class="tb-btn tb-btn-mini" data-parar title="Parar">■</button>
             <label class="tb-casilla"><input type="checkbox" data-bucle${mus.bucle ? " checked" : ""}> Repetir pista</label>
             ${l ? `<label class="tb-casilla"><input type="checkbox" data-aleatorio${mus.aleatorio ? " checked" : ""}> Aleatorio</label><label class="tb-casilla"><input type="checkbox" data-replista${mus.repetirLista ? " checked" : ""}> Repetir lista</label>` : ""}</div>
-          <label class="tb-campo" style="margin:8px 0 0"><span style="font-weight:400">Volumen para todos</span><input type="range" min="0" max="100" data-volgm value="${Math.round((mus.volumen == null ? 0.6 : mus.volumen) * 100)}"></label>` : ""}
-        ${mus.tipo === "spotify" ? `<p class="tb-nota" style="margin:6px 0 0">Spotify suena entero solo si tienes la sesión de Spotify abierta en este navegador; si no, 30 segundos. Su volumen se ajusta en el propio reproductor.</p>` : ""}
+          <div class="tb-gramola-avance"><button type="button" class="tb-btn tb-btn-mini" data-salto="-10" title="Atrás 10 segundos">−10 s</button><span data-t-actual>0:00</span>
+            <input type="range" min="0" max="1" step="0.5" value="0" data-avance><span data-t-total>0:00</span><button type="button" class="tb-btn tb-btn-mini" data-salto="10" title="Adelante 10 segundos">+10 s</button></div>
+          <label class="tb-campo" style="margin:calc(8px * var(--tb-k)) 0 0"><span style="font-weight:400">Volumen para todos</span><input type="range" min="0" max="100" data-volgm value="${Math.round((mus.volumen == null ? 0.6 : mus.volumen) * 100)}"></label>` : ""}
+        ${mus.tipo === "spotify" ? `<p class="tb-nota" style="margin:calc(6px * var(--tb-k)) 0 0">Spotify suena entero solo si tienes la sesión de Spotify abierta en este navegador; si no, 30 segundos. Su volumen se ajusta en el propio reproductor.</p>` : ""}
       </div>
       <div class="tb-fila"><label class="tb-campo" style="flex:1;margin:0"><span style="font-weight:400">Mi volumen de música</span><input type="range" min="0" max="100" data-vol value="${Math.round((TB.prefs.volumen == null ? 0.7 : TB.prefs.volumen) * 100)}"></label>
         <label class="tb-campo" style="flex:1;margin:0"><span style="font-weight:400">Mi volumen de efectos</span><input type="range" min="0" max="100" data-volef value="${Math.round((TB.prefs.volumenEfectos == null ? 0.8 : TB.prefs.volumenEfectos) * 100)}"></label></div>
@@ -766,7 +798,7 @@
           <div class="tb-fila"><input type="text" data-campo="enlace" data-enlace placeholder="Pega aquí el enlace…" style="flex:1"><button type="button" class="tb-btn tb-btn-acento" data-poner>▶</button><button type="button" class="tb-btn" data-alista title="Añadir a una lista">＋</button></div>
           <span class="tb-nota" style="font-weight:400">¿No lo tienes? <a class="tb-enlace" data-buscayt href="#">Buscar en YouTube ↗</a> · <a class="tb-enlace" data-buscasp href="#">Buscar en Spotify ↗</a></span></div>
         <div class="tb-subpestanas">${[["canciones", "Canciones"], ["listas", "Listas"], ["efectos", "Soundboard"]].map(([k, t]) => `<button type="button" data-vista="${k}" class="${vistaGramola === k ? "activo" : ""}">${t}</button>`).join("")}</div>
-        <div data-vistag></div>` : `<p class="tb-nota" style="margin-top:12px">Solo el DJ elige la música y los efectos.</p>`}
+        <div data-vistag></div>` : `<p class="tb-nota" style="margin-top:calc(12px * var(--tb-k))">Solo el DJ elige la música y los efectos.</p>`}
     </div>`);
     c.append(cab, cuerpo);
     const q = s => cuerpo.querySelector(s);
@@ -779,6 +811,32 @@
     });
     q("[data-volef]").addEventListener("input", ev => { TB.prefs.volumenEfectos = ev.target.value / 100; TB.guardarPrefs(); });
     if (!gm) return;
+    const avance = q("[data-avance]");
+    if (avance) {
+      let tocando = false;
+      const irA = s => {
+        const d = duracionActual();
+        s = Math.max(0, d ? Math.min(s, d - 0.5) : s);
+        if (mus.pausado) cambiarMusica({ pos: s });
+        else cambiarMusica({ inicio: Date.now() - s * 1000 });
+      };
+      avance.addEventListener("input", () => { tocando = true; q("[data-t-actual]").textContent = mmss(+avance.value); });
+      avance.addEventListener("change", () => { tocando = false; irA(+avance.value); });
+      cuerpo.querySelectorAll("[data-salto]").forEach(b => b.addEventListener("click", () => irA(posicionDe(TB.estado.musica || {}) + Number(b.dataset.salto))));
+      const refrescar = () => {
+        if (!avance.isConnected) { clearInterval(reloj); return; }
+        if (tocando) return;
+        const d = duracionActual(), m = TB.estado.musica || {};
+        let p = posicionDe(m);
+        if (d) { if (m.bucle) p = p % d; p = Math.min(p, d); }
+        avance.max = d || Math.max(60, p + 30);
+        avance.value = p;
+        q("[data-t-actual]").textContent = mmss(p);
+        q("[data-t-total]").textContent = d ? mmss(d) : "–:––";
+      };
+      const reloj = setInterval(refrescar, 500);
+      refrescar();
+    }
     if (q("[data-pausa]")) q("[data-pausa]").addEventListener("click", () => {
       if (mus.pausado) cambiarMusica({ pausado: false, inicio: Date.now() - (mus.pos || 0) * 1000 });
       else cambiarMusica({ pausado: true, pos: posicionDe(mus) });
@@ -814,7 +872,7 @@
   }
   function pintarCanciones(caja, mus) {
     caja.innerHTML = "";
-    const buscar = el(`<input type="search" data-campo="buscar" placeholder="Buscar entre todas las canciones…" style="margin:8px 0">`);
+    const buscar = el(`<input type="search" data-campo="buscar" placeholder="Buscar entre todas las canciones…" style="margin:calc(8px * var(--tb-k)) 0">`);
     buscar.value = filtroMusica;
     const lista = el(`<div></div>`);
     caja.append(buscar, lista);
@@ -858,7 +916,7 @@
   function pintarListas(caja, mus) {
     caja.innerHTML = "";
     const g = gramola();
-    const nueva = el(`<button type="button" class="tb-btn" style="margin:8px 0;width:100%">＋ Crear lista</button>`);
+    const nueva = el(`<button type="button" class="tb-btn" style="margin:calc(8px * var(--tb-k)) 0;width:100%">＋ Crear lista</button>`);
     nueva.addEventListener("click", async () => {
       const n = await pedir("Lista nueva", "", { etiqueta: "Nombre de la lista" });
       if (!n || !n.trim()) return;
@@ -904,7 +962,7 @@
   function pintarEfectos(caja) {
     caja.innerHTML = "";
     const g = gramola();
-    const cab = el(`<div class="tb-fila" style="margin:8px 0;align-items:center">
+    const cab = el(`<div class="tb-fila" style="margin:calc(8px * var(--tb-k)) 0;align-items:center">
       <label class="tb-campo" style="flex:1;margin:0"><span style="font-weight:400">Volumen de los efectos para todos</span><input type="range" min="0" max="100" data-v value="${Math.round((g.volEfectos == null ? 0.8 : g.volEfectos) * 100)}"></label>
       <button type="button" class="tb-btn tb-btn-mini" data-editar>${editandoEfectos ? "Listo" : "Editar"}</button></div>`);
     cab.querySelector("[data-v]").addEventListener("change", ev => guardarGramola({ volEfectos: ev.target.value / 100 }));
@@ -922,7 +980,7 @@
       });
       rejilla.appendChild(b);
     });
-    const pie = el(`<div class="tb-fila" style="margin-top:10px"><label class="tb-btn" style="flex:1;cursor:pointer">＋ Subir un efecto<input type="file" accept="audio/*" hidden data-archivo></label><button type="button" class="tb-btn" style="flex:1" data-url>＋ Desde un enlace</button></div>`);
+    const pie = el(`<div class="tb-fila" style="margin-top:calc(10px * var(--tb-k))"><label class="tb-btn" style="flex:1;cursor:pointer">＋ Subir un efecto<input type="file" accept="audio/*" hidden data-archivo></label><button type="button" class="tb-btn" style="flex:1" data-url>＋ Desde un enlace</button></div>`);
     const anadir = async (src, nombre) => {
       const n = await pedir("Nombre del efecto", nombre || "", { etiqueta: "Cómo se llama el botón" });
       if (n === null) return;
@@ -968,10 +1026,10 @@
       catch (e) { aviso(mensajeError(e), true); }
     });
     TB.macros.forEach(m => {
-      const caja = el(`<div style="border:1px solid #ddd;border-radius:6px;padding:10px;margin-bottom:10px">
+      const caja = el(`<div style="border:1px solid #ddd;border-radius:calc(6px * var(--tb-k));padding:calc(10px * var(--tb-k));margin-bottom:calc(10px * var(--tb-k))">
         <div class="tb-fila"><input type="text" data-n><label class="tb-casilla" style="white-space:nowrap"><input type="checkbox" data-b> En la barra</label></div>
-        <textarea data-t rows="3" style="margin-top:8px;font-family:Consolas,monospace;font-size:13px"></textarea>
-        <div class="tb-fila" style="justify-content:flex-end;margin-top:8px"><button type="button" class="tb-btn tb-btn-mini" data-probar>Probar</button><button type="button" class="tb-btn tb-btn-mini" data-guardar>Guardar</button><button type="button" class="tb-btn tb-btn-mini tb-btn-rojo" data-borrar>Borrar</button></div></div>`);
+        <textarea data-t rows="3" style="margin-top:calc(8px * var(--tb-k));font-family:Consolas,monospace;font-size:calc(13px * var(--tb-k))"></textarea>
+        <div class="tb-fila" style="justify-content:flex-end;margin-top:calc(8px * var(--tb-k))"><button type="button" class="tb-btn tb-btn-mini" data-probar>Probar</button><button type="button" class="tb-btn tb-btn-mini" data-guardar>Guardar</button><button type="button" class="tb-btn tb-btn-mini tb-btn-rojo" data-borrar>Borrar</button></div></div>`);
       caja.querySelector("[data-n]").value = m.nombre; caja.querySelector("[data-t]").value = m.texto; caja.querySelector("[data-b]").checked = !!m.en_barra;
       const leer = () => ({ id: m.id, nombre: caja.querySelector("[data-n]").value.trim().slice(0, 60) || "Macro", texto: caja.querySelector("[data-t]").value.slice(0, 2000), en_barra: caja.querySelector("[data-b]").checked });
       caja.querySelector("[data-probar]").addEventListener("click", () => ejecutarMacro(leer()));
@@ -1020,17 +1078,39 @@
       const f = el(`<label class="tb-campo"><span style="font-weight:400">${texto} <b data-v></b></span><input type="range" min="${min}" max="${max}" step="${paso}"></label>`);
       const r = f.querySelector("input");
       r.value = leer(ruta);
-      f.querySelector("[data-v]").textContent = r.value;
-      r.addEventListener("input", () => { escribir(ruta, +r.value); f.querySelector("[data-v]").textContent = r.value; if (alCambiar) alCambiar(+r.value); });
+      const mostrar = () => { f.querySelector("[data-v]").textContent = max === 1 ? Math.round(r.value * 100) + " %" : r.value; };
+      mostrar();
+      r.addEventListener("input", () => { escribir(ruta, +r.value); mostrar(); if (alCambiar) alCambiar(+r.value); });
       caja.appendChild(f);
     };
 
-    const jug = seccion("Jugadores en el tablero", true);
+    const sonido = seccion("Sonido", !gm);
+    deslizador(sonido, "volumen", "Mi volumen de la música", 0, 1, 0.05, aplicarVolumen);
+    deslizador(sonido, "volumenEfectos", "Mi volumen de los efectos", 0, 1, 0.05);
+    if (!gm) sonido.appendChild(el(`<p class="tb-nota">La música y los efectos los pone el DJ.</p>`));
+    if (gm) {
+      // Los volúmenes globales del DJ: se aplican a todos (cada jugador ajusta encima el suyo)
+      const glob = el(`<div><p class="tb-nota" style="margin:calc(10px * var(--tb-k)) 0 calc(4px * var(--tb-k));font-weight:700">Para todos (lo que tú pongas suena así en cada jugador)</p>
+        <label class="tb-campo"><span style="font-weight:400">Música para todos <b data-tm></b></span><input type="range" min="0" max="100" data-mg></label>
+        <label class="tb-campo"><span style="font-weight:400">Efectos para todos <b data-te></b></span><input type="range" min="0" max="100" data-eg></label></div>`);
+      const mg = glob.querySelector("[data-mg]"), eg = glob.querySelector("[data-eg]");
+      const mus = TB.estado.musica || {}, g = gramola();
+      mg.value = Math.round((mus.volumen == null ? 0.6 : mus.volumen) * 100);
+      eg.value = Math.round((g.volEfectos == null ? 0.8 : g.volEfectos) * 100);
+      const pintarV = () => { glob.querySelector("[data-tm]").textContent = mg.value + " %"; glob.querySelector("[data-te]").textContent = eg.value + " %"; };
+      pintarV();
+      mg.addEventListener("input", pintarV); eg.addEventListener("input", pintarV);
+      mg.addEventListener("change", () => cambiarMusica({ volumen: mg.value / 100 }));
+      eg.addEventListener("change", () => guardarGramola({ volEfectos: eg.value / 100 }));
+      sonido.appendChild(glob);
+    }
+    const jug = seccion("Jugadores en el tablero", gm);
     toggle(jug, "avatares.ver", "Mostrar los avatares de quien está ahora en el tablero", pintarAvatares);
     deslizador(jug, "avatares.tam", "Tamaño de los avatares", 32, 120, 4, pintarAvatares);
     toggle(jug, "avatares.nombres", "Mostrar los nombres debajo de los avatares", pintarAvatares);
 
     const acc = seccion("Accesibilidad");
+    selector(acc, "escalaUI", "Tamaño de la interfaz (barras, panel, ventanas y letras; no el lienzo)", [["auto", "Automático (compensa el zoom del navegador)"], ["0.7", "70 %"], ["0.8", "80 %"], ["0.9", "90 %"], ["1", "100 %"], ["1.1", "110 %"], ["1.25", "125 %"]], () => TB.aplicarEscala());
     toggle(acc, "oscuro", "Modo oscuro", aplicarAjustes);
     toggle(acc, "verZoom", "Mostrar los controles de zoom", aplicarAjustes);
     toggle(acc, "ruedaZoom", "La rueda del ratón hace zoom", aplicarAjustes, "Si lo apagas, la rueda mueve la vista y el zoom va con Ctrl + rueda.");
@@ -1051,7 +1131,7 @@
     toggle(chat, "avataresChat", "Mostrar los avatares en el chat", aplicarAjustes);
     toggle(chat, "horas", "Mostrar la hora de cada mensaje", pintarMensajes);
     if (gm) {
-      const b = el(`<button type="button" class="tb-btn tb-btn-rojo" style="margin-top:8px">Vaciar el registro del chat</button>`);
+      const b = el(`<button type="button" class="tb-btn tb-btn-rojo" style="margin-top:calc(8px * var(--tb-k))">Vaciar el registro del chat</button>`);
       b.addEventListener("click", async () => {
         if (await confirmar("Vaciar el chat", "¿Borrar todos los mensajes y tiradas del chat para todos?", "Vaciar")) {
           try { await TB.red.vaciarChat(); TB.mensajes = []; pintarMensajes(); } catch (e) { aviso(mensajeError(e), true); }
@@ -1129,7 +1209,7 @@
     b.hidden = !A.ver;
     if (!A.ver) return;
     const lista = (TB.presencia || []).slice().sort((x, y) => (y.gm ? 1 : 0) - (x.gm ? 1 : 0) || String(x.nombre).localeCompare(String(y.nombre)));
-    b.style.setProperty("--tb-av", A.tam + "px");
+    b.style.setProperty("--tb-av", `calc(${A.tam}px * var(--tb-k))`);
     b.innerHTML = lista.map(p => {
       const nombre = p.personaje ? `${p.personaje} (${p.nombre})` : p.nombre || "?";
       const fondo = p.avatar ? `background-image:url('${esc(p.avatar)}')` : `background-color:${TB.colorJugador(p.uid)}`;
@@ -1145,8 +1225,8 @@
     const v = ventana("reglas", { titulo: "Reglas", ancho: 520, alto: Math.min(680, window.innerHeight - 80), x: Math.max(80, window.innerWidth / 2 - 380), y: 50 });
     v.cuerpo.innerHTML = "";
     v.cuerpo.style.display = "flex"; v.cuerpo.style.flexDirection = "column";
-    const buscar = el(`<div style="padding:10px 12px;border-bottom:1px solid var(--tb-borde)"><input type="search" placeholder="Buscar una regla (agarre, derribado, descanso…)"></div>`);
-    const lista = el(`<div class="tb-reglas" style="flex:1;overflow-y:auto;padding:6px 12px 14px"></div>`);
+    const buscar = el(`<div style="padding:calc(10px * var(--tb-k)) calc(12px * var(--tb-k));border-bottom:1px solid var(--tb-borde)"><input type="search" placeholder="Buscar una regla (agarre, derribado, descanso…)"></div>`);
+    const lista = el(`<div class="tb-reglas" style="flex:1;overflow-y:auto;padding:calc(6px * var(--tb-k)) calc(12px * var(--tb-k)) calc(14px * var(--tb-k))"></div>`);
     v.cuerpo.append(buscar, lista);
     const inp = buscar.querySelector("input");
     inp.value = filtroReglas;
@@ -1158,7 +1238,7 @@
         const items = (r.items || []).filter(it => !f || norm(it.label + " " + it.detalle).includes(f) || norm(r.titulo).includes(f));
         if (f && !items.length && !norm(r.descripcion).includes(f)) return;
         const d = el(`<details class="tb-regla"${f ? " open" : ""}><summary>${esc(r.titulo)}</summary>
-          ${r.descripcion ? `<p class="tb-nota" style="margin:6px 0 8px">${esc(r.descripcion)}</p>` : ""}
+          ${r.descripcion ? `<p class="tb-nota" style="margin:calc(6px * var(--tb-k)) 0 calc(8px * var(--tb-k))">${esc(r.descripcion)}</p>` : ""}
           ${items.map(it => `<div class="tb-regla-item"><b>${esc(it.label)}</b><span>${esc(it.detalle)}</span></div>`).join("")}</details>`);
         lista.appendChild(d);
       });

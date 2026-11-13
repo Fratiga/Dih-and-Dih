@@ -96,10 +96,28 @@
       oscuro = lienzo(W, H); revelado = lienzo(W, H); luces = lienzo(W, H); tmp = lienzo(W, H);
       explorado = lienzo(W, H);
     }
-    function reiniciarExplorado() { if (explorado) explorado.getContext("2d").clearRect(0, 0, W, H); }
-    function pintar({ medidas, segs, viewers, fuentes, global, explorar, claveExplorado }) {
+    // Lo explorado se recuerda en este navegador (por página), aunque se recargue
+    let guardarT = null;
+    function reiniciarExplorado(borrar) {
+      if (explorado) explorado.getContext("2d").clearRect(0, 0, W, H);
+      if (borrar !== false && clave) try { localStorage.removeItem("tbExpl:" + clave); } catch (e) { /* nada */ }
+    }
+    function cargarExplorado(alCargar) {
+      let url = null;
+      try { url = localStorage.getItem("tbExpl:" + clave); } catch (e) { /* nada */ }
+      if (!url) return;
+      const img = new Image(), mia = clave;
+      img.onload = () => { if (mia !== clave) return; const ec = explorado.getContext("2d"); ec.setTransform(1, 0, 0, 1, 0, 0); ec.drawImage(img, 0, 0, W, H); if (alCargar) alCargar(); };
+      img.src = url;
+    }
+    function programarGuardado() {
+      clearTimeout(guardarT);
+      const c = clave;
+      guardarT = setTimeout(() => { if (c !== clave || !explorado) return; try { localStorage.setItem("tbExpl:" + c, explorado.toDataURL("image/webp", 0.5)); } catch (e) { /* sin sitio */ } }, 3000);
+    }
+    function pintar({ medidas, segs, viewers, fuentes, global, explorar, claveExplorado, alCargar }) {
       preparar(medidas);
-      if (claveExplorado !== clave) { clave = claveExplorado; reiniciarExplorado(); }
+      if (claveExplorado !== clave) { clave = claveExplorado; reiniciarExplorado(false); cargarExplorado(alCargar); }
       const lim = { w: medidas.w, h: medidas.h };
       const cx = c => { const x = c.getContext("2d", { willReadFrequently: c === revelado }); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, W, H); x.setTransform(k, 0, 0, k, 0, 0); x.globalCompositeOperation = "source-over"; x.globalAlpha = 1; return x; };
       // 1) Zonas iluminadas (cada luz recortada por sus propios muros)
@@ -146,6 +164,7 @@
         const ec = explorado.getContext("2d");
         ec.setTransform(1, 0, 0, 1, 0, 0); ec.globalCompositeOperation = "source-over"; ec.drawImage(revelado, 0, 0);
         oc.globalCompositeOperation = "destination-out"; oc.globalAlpha = 0.5; oc.drawImage(explorado, 0, 0);
+        if (viewers.length) programarGuardado();
       }
       oc.globalCompositeOperation = "destination-out"; oc.globalAlpha = 1; oc.drawImage(revelado, 0, 0);
       oc.globalCompositeOperation = "source-over";
@@ -159,6 +178,15 @@
       return revelado.getContext("2d", { willReadFrequently: true }).getImageData(px, py, 1, 1).data[3] > 70;
     }
     return { pintar, visible, reiniciarExplorado };
+  }
+
+  // Dónde va el tirador de una puerta (centro de su tramo central) y hacia qué lados mirar si se ve
+  function tiradorPuerta(o) {
+    const { pts } = puntosMundo(o);
+    if (pts.length < 2) return null;
+    const i = Math.max(0, Math.floor((pts.length - 2) / 2)), a = pts[i], b = pts[i + 1];
+    const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy) || 1;
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, nx: -dy / l, ny: dx / l };
   }
 
   /* ------------------------------------------------------------ objetos auxiliares */
@@ -190,5 +218,5 @@
       diurno: !!(j.environment && j.environment.baked_lighting && /^f{6}/i.test(String(j.environment.ambient_light || ""))) };
   }
 
-  window.TBLuz = { COLOR_MURO, puntosMundo, segmentosDe, poligono, cruza, crearPintor, polilinea, leerUVTT };
+  window.TBLuz = { COLOR_MURO, tiradorPuerta, puntosMundo, segmentosDe, poligono, cruza, crearPintor, polilinea, leerUVTT };
 })();

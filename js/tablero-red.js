@@ -18,7 +18,7 @@
   const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "x" + Date.now().toString(36) + Math.random().toString(36).slice(2));
   const ahora = () => new Date().toISOString();
   const ESTADO_VACIO = () => ({ id: 1, escena_jugadores: null, iniciativa: { lista: [], turno: 0, ronda: 1, visible: false }, musica: {}, gramola: {} });
-  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "camara", "cursor", "sonido"];
+  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "camara", "cursor", "sonido", "explorado"];
 
   /* ============================================================ Supabase */
   function redSupabase() {
@@ -114,6 +114,7 @@
       async diarioGM(id) { const d = ok(await sb.from("tablero_diario_gm").select("texto").eq("diario", id).maybeSingle()); return d ? d.texto : ""; },
       async guardarDiarioGM(id, texto) { ok(await sb.from("tablero_diario_gm").upsert({ diario: id, texto })); },
       async moverPropio(id, x, y) { ok(await sb.rpc("tablero_mover", { p_id: id, p_x: x, p_y: y })); },
+      async puerta(id) { return ok(await sb.rpc("tablero_puerta", { p_objeto: id })); },
       async barra(id, n, valor, max) { ok(await sb.rpc("tablero_barra", { p_id: id, p_n: n, p_valor: valor, p_max: max })); },
       async crearPropio(escena, tipo, x, y, ancho, alto, datos) {
         return ok(await sb.rpc("tablero_crear_propio", { p_escena: escena, p_tipo: tipo, p_x: x, p_y: y, p_ancho: ancho, p_alto: alto, p_datos: datos }));
@@ -248,6 +249,14 @@
       async guardarNotaGM(objeto, texto) { d.notasGM[objeto] = texto; guardar(); },
       async diarioGM(id) { leer(); return d.diarioGM[id] || ""; },
       async guardarDiarioGM(id, texto) { d.diarioGM[id] = texto; guardar(); },
+      async puerta(id) {
+        const o = d.objetos.find(q => q.id === id);
+        if (!o || o.capa !== "luz" || (o.datos || {}).muro !== "puerta") throw new Error("Eso no es una puerta.");
+        if (!yo.esGM && (o.datos || {}).llave) throw new Error("La puerta está cerrada con llave.");
+        o.datos = Object.assign({}, o.datos, { abierta: !(o.datos || {}).abierta });
+        publicar("objeto", o);
+        return o.datos.abierta;
+      },
       async moverPropio(id, x, y) {
         const o = d.objetos.find(q => q.id === id);
         if (!o || !(yo.esGM || (controla(o) && o.capa === "fichas" && !o.bloqueado && o.escena === d.estado.escena_jugadores))) throw new Error("No puedes mover esa ficha.");
