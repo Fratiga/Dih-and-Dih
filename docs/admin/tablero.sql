@@ -26,6 +26,11 @@ create table if not exists tablero_escenas (
 alter table tablero_escenas add column if not exists niebla jsonb not null default '{"activa": false, "zonas": []}'::jsonb;
 alter table tablero_escenas add column if not exists miniatura text not null default '';
 alter table tablero_escenas add column if not exists carpeta text not null default '';
+-- Tamaño del lienzo en casillas (los mapas se encajan dentro) y el resto de la configuración de la página
+alter table tablero_escenas add column if not exists ancho int not null default 40 check (ancho between 1 and 500);
+alter table tablero_escenas add column if not exists alto int not null default 40 check (alto between 1 and 500);
+alter table tablero_escenas add column if not exists opciones jsonb not null default '{}'::jsonb;   -- colorTablero, audio, ...
+alter table tablero_escenas add column if not exists archivada boolean not null default false;
 
 create table if not exists tablero_estado (
   id int primary key default 1 check (id = 1),
@@ -35,6 +40,8 @@ create table if not exists tablero_estado (
   actualizado timestamptz not null default now()
 );
 alter table tablero_estado add column if not exists musica jsonb not null default '{}'::jsonb;
+-- El DJ pausa el movimiento: ningún jugador mueve fichas hasta que lo quite
+alter table tablero_estado add column if not exists pausa boolean not null default false;
 
 insert into tablero_estado (id) values (1) on conflict (id) do nothing;
 
@@ -63,7 +70,7 @@ alter table tablero_objetos add column if not exists autor uuid default auth.uid
 alter table tablero_objetos drop constraint if exists tablero_objetos_capa_check;
 alter table tablero_objetos add constraint tablero_objetos_capa_check check (capa in ('mapa', 'fichas', 'gm', 'delantero'));
 alter table tablero_objetos drop constraint if exists tablero_objetos_tipo_check;
-alter table tablero_objetos add constraint tablero_objetos_tipo_check check (tipo in ('imagen', 'texto', 'forma', 'dibujo'));
+alter table tablero_objetos add constraint tablero_objetos_tipo_check check (tipo in ('imagen', 'texto', 'forma', 'dibujo', 'pin'));
 create index if not exists tablero_objetos_escena on tablero_objetos (escena, z);
 
 -- Notas del DJ de cada ficha (no las ve ningún jugador)
@@ -261,6 +268,9 @@ as $$
 begin
   if auth.uid() is null then raise exception 'Inicia sesión para mover fichas.'; end if;
   if p_x is null or p_y is null or abs(p_x) > 1000000 or abs(p_y) > 1000000 then raise exception 'Posición no válida.'; end if;
+  if not fichas_es_admin() and coalesce((select pausa from tablero_estado where id = 1), false) then
+    raise exception 'El DJ ha pausado el movimiento.';
+  end if;
   update tablero_objetos o set x = p_x, y = p_y, actualizado = now()
   where o.id = p_id
     and (fichas_es_admin() or ((o.controlan_todos or auth.uid() = any(o.controladores))
@@ -545,6 +555,58 @@ begin
 end;
 $$;
 
+-- El jugador cambia el número de iniciativa de una ficha suya (el GM cambia cualquier cosa directamente).
+create or replace function tablero_iniciativa_valor(p_objeto uuid, p_valor numeric)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  ini jsonb;
+begin
+  if auth.uid() is null then raise exception 'Inicia sesión.'; end if;
+  if p_valor is null or abs(p_valor) > 1000 then raise exception 'Valor no válido.'; end if;
+  if not (fichas_es_admin() or exists (select 1 from tablero_objetos o where o.id = p_objeto
+          and (o.controlan_todos or auth.uid() = any(o.controladores)) and tablero_escena_visible(o.escena))) then
+    raise exception 'Esa ficha no es tuya.';
+  end if;
+  select iniciativa into ini from tablero_estado where id = 1 for update;
+  if not exists (select 1 from jsonb_array_elements(coalesce(ini -> 'lista', '[]'::jsonb)) e where e ->> 'id' = p_objeto::text) then
+    raise exception 'Esa ficha no está en el orden de turno.';
+  end if;
+  update tablero_estado set iniciativa = jsonb_set(ini, '{lista}', (
+      select jsonb_agg(case when e ->> 'id' = p_objeto::text then e || jsonb_build_object('valor', p_valor) else e end order by o)
+      from jsonb_array_elements(ini -> 'lista') with ordinality x(e, o))),
+    actualizado = now()
+  where id = 1;
+end;
+$$;
+
+-- Las barras de una ficha del tablero pueden seguir los PV de una ficha del compendio (opcional). El dueño de la
+-- ficha o el GM cambian ahí los PV actuales, máximos o temporales; lo que llegue en null no se toca.
+create or replace function tablero_ficha_pv(p_ficha uuid, p_actual int default null, p_max int default null, p_temp int default null)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then raise exception 'Inicia sesión.'; end if;
+  if not exists (select 1 from fichas_personajes where id = p_ficha and (owner_id = auth.uid() or fichas_es_admin())) then
+    raise exception 'Esa ficha no es tuya.';
+  end if;
+  if abs(coalesce(p_actual, 0)) > 100000 or abs(coalesce(p_max, 0)) > 100000 or abs(coalesce(p_temp, 0)) > 100000 then raise exception 'Valor no válido.'; end if;
+  update fichas_personajes set
+    data = jsonb_set(jsonb_set(jsonb_set(data,
+      '{combate,pvActual}', to_jsonb(coalesce(p_actual, (data #>> '{combate,pvActual}')::int, 0))),
+      '{combate,pvMax}', to_jsonb(coalesce(p_max, (data #>> '{combate,pvMax}')::int, 0))),
+      '{combate,pvTemp}', to_jsonb(coalesce(p_temp, (data #>> '{combate,pvTemp}')::int, 0))),
+    updated_at = now()
+  where id = p_ficha;
+end;
+$$;
+
 -- Pasar turno. El GM adelante o atrás; un jugador solo adelante y solo cuando el turno es de una ficha suya.
 create or replace function tablero_turno(p_paso int default 1)
 returns void
@@ -594,6 +656,8 @@ revoke all on function tablero_tirar(text, text, text, uuid) from public, anon;
 revoke all on function tablero_decir(text, text, text, uuid) from public, anon;
 revoke all on function tablero_tirar_iniciativa(uuid, int) from public, anon;
 revoke all on function tablero_turno(int) from public, anon;
+revoke all on function tablero_ficha_pv(uuid, int, int, int) from public, anon;
+revoke all on function tablero_iniciativa_valor(uuid, numeric) from public, anon;
 grant execute on function tablero_escena_jugadores() to authenticated;
 grant execute on function tablero_escena_visible(uuid) to authenticated;
 grant execute on function tablero_mover(uuid, double precision, double precision) to authenticated;
@@ -604,6 +668,8 @@ grant execute on function tablero_tirar(text, text, text, uuid) to authenticated
 grant execute on function tablero_decir(text, text, text, uuid) to authenticated;
 grant execute on function tablero_tirar_iniciativa(uuid, int) to authenticated;
 grant execute on function tablero_turno(int) to authenticated;
+grant execute on function tablero_ficha_pv(uuid, int, int, int) to authenticated;
+grant execute on function tablero_iniciativa_valor(uuid, numeric) to authenticated;
 
 -- ============================================================ tiempo real y almacenamiento
 do $$

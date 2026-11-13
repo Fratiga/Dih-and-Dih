@@ -166,6 +166,22 @@ comprobar "al dar la vuelta sube la ronda" "0|2" "$(sql "select (iniciativa->>'t
 como "$ADMIN" "select tablero_turno(-1);" >/dev/null
 comprobar "el GM retrocede y la ronda vuelve" "2|1" "$(sql "select (iniciativa->>'turno') || '|' || (iniciativa->>'ronda') from tablero_estado")"
 
+como "$U1" "select tablero_iniciativa_valor('$F1', 17);" >/dev/null
+comprobar "el jugador cambia el número de iniciativa de su ficha" "17" "$(sql "select e->>'valor' from tablero_estado, jsonb_array_elements(iniciativa->'lista') e where e->>'id' = '$F1'")"
+contiene "no cambia el de una ficha ajena" "$(como "$U1" "select tablero_iniciativa_valor('$F2', 30);")" "no es tuya"
+contiene "ni el de una ficha que no está en el orden" "$(como "$U1" "select tablero_iniciativa_valor('$FB', 3);")" "no está en el orden"
+
+echo "== Pausar el movimiento"
+como "$ADMIN" "update tablero_estado set pausa = true where id = 1;" >/dev/null
+contiene "con el movimiento pausado el jugador no mueve" "$(como "$U1" "select tablero_mover('$F1', 210, 210);")" "pausado el movimiento"
+como "$ADMIN" "select tablero_mover('$F1', 210, 210);" >/dev/null
+comprobar "el GM sí mueve con la pausa puesta" "210" "$(sql "select x from tablero_objetos where id = '$F1'")"
+como "$ADMIN" "update tablero_estado set pausa = false where id = 1;" >/dev/null
+como "$U1" "select tablero_mover('$F1', 280, 280);" >/dev/null
+comprobar "al quitar la pausa vuelve a mover" "280" "$(sql "select x from tablero_objetos where id = '$F1'")"
+como "$ADMIN" "insert into tablero_objetos (escena, capa, tipo, datos) values ('$S1', 'fichas', 'pin', '{\"titulo\": \"Puerta\"}');" >/dev/null
+comprobar "se pueden poner pines en el mapa" "1" "$(sql "select count(*) from tablero_objetos where tipo = 'pin'")"
+
 echo "== Arte y macros"
 como "$ADMIN" "insert into tablero_arte (src, nombre) values ('x.png', 'Mapa');" >/dev/null
 comprobar "la biblioteca de arte es solo del GM" "0|1" "$(uno "$U1" "select count(*) from tablero_arte;")|$(uno "$ADMIN" "select count(*) from tablero_arte;")"

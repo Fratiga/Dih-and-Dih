@@ -17,6 +17,9 @@
     const lNiebla = new Konva.Layer({ listening: false });
     const lUI = new Konva.Layer();
     stage.add(lMapa, lGrid, lObj, lNiebla, lUI);
+    // La página: el lienzo donde van los mapas; fuera de ella se ve el color del tablero
+    const pagina = new Konva.Rect({ x: 0, y: 0, width: 2800, height: 2800, fill: "#ffffff", listening: false, shadowColor: "#000", shadowBlur: 24, shadowOpacity: 0.35 });
+    lMapa.add(pagina);
 
     // Cada capa: auras (debajo), objetos y deco (barras, nombres, encima)
     const grupos = {};
@@ -45,13 +48,16 @@
 
     const st = {
       esGM: false, uid: null, escena: null, capa: "fichas", herr: "seleccionar", opc: {}, vistaJugador: false,
-      nodos: new Map(), seleccion: new Set(), turno: null, espacio: false, imgs: new Map()
+      nodos: new Map(), seleccion: new Set(), turno: null, espacio: false, imgs: new Map(), pausa: false
     };
+    const cuad = () => (st.escena && st.escena.cuadricula) || {};
+    const desp = () => ({ x: Number(cuad().dx) || 0, y: Number(cuad().dy) || 0 });
+    const medidas = () => ({ w: ((st.escena && st.escena.ancho) || 40) * tam(), h: ((st.escena && st.escena.alto) || 40) * tam() });
     const tam = () => (st.escena && st.escena.cuadricula && st.escena.cuadricula.tam) || 70;
     const pies = () => (st.escena && st.escena.cuadricula && st.escena.cuadricula.pies) || 5;
     const controla = o => !!o && (o.controlan_todos || (o.controladores || []).includes(st.uid));
     const puedeSeleccionar = o => st.esGM ? o.capa === st.capa : (o.capa === "fichas" && (controla(o) && !o.bloqueado));
-    const puedeArrastrar = o => puedeSeleccionar(o) && !o.bloqueado && st.herr === "seleccionar";
+    const puedeArrastrar = o => puedeSeleccionar(o) && !o.bloqueado && st.herr === "seleccionar" && (o.tipo !== "pin" || st.esGM) && !(st.pausa && !st.esGM);
 
     /* ------------------------------------------------------------ cámara */
     function aMundo(p) { const t = stage.getAbsoluteTransform().copy().invert(); return t.point(p); }
@@ -74,13 +80,11 @@
       if (op.onZoom) op.onZoom(s);
     }
     function redibujarVista() { lGrid.batchDraw(); lNiebla.batchDraw(); stage.batchDraw(); }
+    // Centra la página entera (Inicio)
     function ajustarVista() {
-      const lista = [...st.nodos.values()].map(n => n.o);
-      if (!lista.length) { centrarEn(tam() * 8, tam() * 5, 1); return; }
-      let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
-      lista.forEach(o => { x1 = Math.min(x1, o.x - o.ancho / 2); y1 = Math.min(y1, o.y - o.alto / 2); x2 = Math.max(x2, o.x + o.ancho / 2); y2 = Math.max(y2, o.y + o.alto / 2); });
-      const z = Math.min(1.5, Math.max(0.1, Math.min(stage.width() / (x2 - x1 + 140), stage.height() / (y2 - y1 + 140))));
-      centrarEn((x1 + x2) / 2, (y1 + y2) / 2, z);
+      const m = medidas();
+      const z = Math.min(1.5, Math.max(0.1, Math.min(stage.width() / (m.w + 80), stage.height() / (m.h + 80))));
+      centrarEn(m.w / 2, m.h / 2, z);
     }
     new ResizeObserver(() => { stage.size({ width: contenedor.clientWidth, height: contenedor.clientHeight }); redibujarVista(); }).observe(contenedor);
 
@@ -92,15 +96,18 @@
         if (!c || c.visible === false) return;
         const t = tam(), z = stage.scaleX();
         if (t * z < 6) return;
-        const a = aMundo({ x: 0, y: 0 }), b = aMundo({ x: stage.width(), y: stage.height() });
+        const m = medidas(), o = desp();
+        const va = aMundo({ x: 0, y: 0 }), vb = aMundo({ x: stage.width(), y: stage.height() });
+        const a = { x: Math.max(0, va.x), y: Math.max(0, va.y) }, b = { x: Math.min(m.w, vb.x), y: Math.min(m.h, vb.y) };
+        if (a.x >= b.x || a.y >= b.y) return;
         const raw = ctx._context;
         raw.save();
         raw.strokeStyle = c.color || "#c0c0c0";
         raw.globalAlpha = c.opacidad == null ? 0.5 : c.opacidad;
         raw.lineWidth = 1 / z;
         raw.beginPath();
-        for (let x = Math.floor(a.x / t) * t; x <= b.x; x += t) { raw.moveTo(x, a.y); raw.lineTo(x, b.y); }
-        for (let y = Math.floor(a.y / t) * t; y <= b.y; y += t) { raw.moveTo(a.x, y); raw.lineTo(b.x, y); }
+        for (let x = Math.ceil((a.x - o.x) / t) * t + o.x; x <= b.x; x += t) { raw.moveTo(x, a.y); raw.lineTo(x, b.y); }
+        for (let y = Math.ceil((a.y - o.y) / t) * t + o.y; y <= b.y; y += t) { raw.moveTo(a.x, y); raw.lineTo(b.x, y); }
         raw.stroke();
         raw.restore();
       }
@@ -173,6 +180,12 @@
         const c = { fill: d.relleno || "rgba(214,18,126,.35)", stroke: d.trazo || "#d6127e", strokeWidth: 2 };
         return d.forma === "circulo" ? new Konva.Ellipse(Object.assign({ x: w / 2, y: h / 2, radiusX: w / 2, radiusY: h / 2 }, c)) : new Konva.Rect(Object.assign({ width: w, height: h }, c));
       }
+      if (o.tipo === "pin") {
+        const g = new Konva.Group();
+        g.add(new Konva.Path({ data: "M12 0C5.4 0 0 5.2 0 11.6 0 20.3 12 32 12 32s12-11.7 12-20.4C24 5.2 18.6 0 12 0z", fill: d.color || "#d6127e", stroke: "#fff", strokeWidth: 1.5, scaleX: w / 24, scaleY: h / 32 }));
+        g.add(new Konva.Circle({ x: w / 2, y: h * 0.36, radius: w * 0.2, fill: "#fff" }));
+        return g;
+      }
       // imagen / ficha
       const e = imagen(d.src, () => { if (st.nodos.get(o.id) === n) pintarCuerpo(n); });
       if (!e || !e.listo) {
@@ -230,7 +243,14 @@
         const verTexto = !compacto && ((b.texto || "editores") === "todos" || ((b.texto || "editores") === "editores" && (st.esGM || controla(o))));
         if (verTexto) n.deco.add(new Konva.Text({ x: -w / 2, y: y + 1, width: w, align: "center", text: `${b.valor}/${b.max}`, fontSize: 7.5, fontStyle: "bold", fill: "#fff" }));
       });
-      if (d.verNombre && d.nombre && o.tipo !== "texto") {
+      if (o.tipo === "pin" && d.titulo) {
+        const etq = new Konva.Label({ y: o.alto / 2 + 3 });
+        etq.add(new Konva.Tag({ fill: "rgba(255,255,255,.95)", cornerRadius: 3, stroke: "#d6127e", strokeWidth: 1 }));
+        etq.add(new Konva.Text({ text: d.titulo, fontSize: 12, fontStyle: "bold", fill: "#333", padding: 3 }));
+        etq.offsetX(etq.width() / 2);
+        n.deco.add(etq);
+      }
+      if (d.verNombre && d.nombre && o.tipo !== "texto" && o.tipo !== "pin") {
         const etq = new Konva.Label({ y: o.alto / 2 + 4 + (debajo ? barras.length * (hb + 2) : 0) });
         etq.add(new Konva.Tag({ fill: "rgba(20,20,20,.72)", cornerRadius: 3 }));
         etq.add(new Konva.Text({ text: d.nombre, fontSize: 12, fill: "#fff", padding: 3 }));
@@ -245,7 +265,7 @@
       n.g.setAttrs({ x: o.x, y: o.y, rotation: o.rot || 0, opacity: o.opacidad == null ? 1 : o.opacidad, offsetX: o.ancho / 2, offsetY: o.alto / 2 });
       const gm = o.capa === "gm";
       n.g.visible(!(gm && st.vistaJugador));
-      n.deco.visible(n.g.visible());
+      n.deco.visible(n.g.visible() && (!st.opc.decoHover || o.tipo === "pin" || !!n.encima || st.seleccion.has(o.id)));
       n.aura.visible(n.g.visible());
       if (gm && !st.vistaJugador && st.capa !== "gm") n.g.opacity((o.opacidad == null ? 1 : o.opacidad) * 0.55);
       n.g.draggable(puedeArrastrar(o));
@@ -258,6 +278,8 @@
       const n = { o, g, deco: new Konva.Group({ listening: false }), aura: new Konva.Group({ listening: false }) };
       destino.objetos.add(g); destino.deco.add(n.deco); destino.auras.add(n.aura);
       st.nodos.set(o.id, n);
+      g.on("mouseenter", () => { n.encima = true; if (st.opc.decoHover) { aplicarAtributos(n); lObj.batchDraw(); } });
+      g.on("mouseleave", () => { n.encima = false; if (st.opc.decoHover) { aplicarAtributos(n); lObj.batchDraw(); } });
       pintarCuerpo(n);
       aplicarAtributos(n);
       enganchar(n);
@@ -324,20 +346,29 @@
       lUI.batchDraw();
       if (op.onSeleccion) op.onSeleccion([...st.seleccion]);
     }
+    // Los objetos agrupados se seleccionan juntos
+    function conGrupo(ids) {
+      const grupos = new Set(ids.map(id => { const n = st.nodos.get(id); return n && n.o.datos && n.o.datos.grupo; }).filter(Boolean));
+      if (!grupos.size) return ids;
+      return [...new Set(ids.concat([...st.nodos.values()].filter(n => grupos.has(n.o.datos && n.o.datos.grupo)).map(n => n.o.id)))];
+    }
     function seleccionar(ids, sumar) {
       if (!sumar) st.seleccion.clear();
-      ids.forEach(id => { const n = st.nodos.get(id); if (n && puedeSeleccionar(n.o)) st.seleccion.add(id); });
+      conGrupo(ids).forEach(id => { const n = st.nodos.get(id); if (n && puedeSeleccionar(n.o)) st.seleccion.add(id); });
+      if (st.opc.decoHover) st.nodos.forEach(aplicarAtributos);
       actualizarTransformer();
     }
-    function deseleccionar(id) { if (id) st.seleccion.delete(id); else st.seleccion.clear(); actualizarTransformer(); }
+    function deseleccionar(id) { if (id) st.seleccion.delete(id); else st.seleccion.clear(); if (st.opc.decoHover) st.nodos.forEach(aplicarAtributos); actualizarTransformer(); }
 
     /* ------------------------------------------------------------ ajuste a la cuadrícula */
     function ajustarPos(o, x, y, sinAjuste) {
       const c = st.escena && st.escena.cuadricula;
-      if (sinAjuste || !c || c.ajustar === false || o.capa === "mapa" && o.tipo !== "imagen") return { x, y };
-      const t = tam();
-      const izq = Math.round((x - o.ancho / 2) / (t / (o.ancho < t ? 2 : 1))) * (t / (o.ancho < t ? 2 : 1));
-      const arr = Math.round((y - o.alto / 2) / (t / (o.alto < t ? 2 : 1))) * (t / (o.alto < t ? 2 : 1));
+      if (sinAjuste || !c || c.ajustar === false || (o.datos && o.datos.sinAjuste) || o.tipo === "pin" || (o.capa === "mapa" && o.tipo !== "imagen")) return { x, y };
+      const t = tam(), d0 = desp();
+      // Con el ajuste preciso, lo que mide menos de una casilla encaja también en medias casillas (esquinas y centros)
+      const pasoX = c.preciso !== false && o.ancho < t ? t / 2 : t, pasoY = c.preciso !== false && o.alto < t ? t / 2 : t;
+      const izq = Math.round((x - o.ancho / 2 - d0.x) / pasoX) * pasoX + d0.x;
+      const arr = Math.round((y - o.alto / 2 - d0.y) / pasoY) * pasoY + d0.y;
       return { x: izq + o.ancho / 2, y: arr + o.alto / 2 };
     }
     function ajustarTam(v, sinAjuste) {
@@ -445,13 +476,7 @@
         if (n.o.tipo === "texto" && (st.esGM || n.o.autor === st.uid)) { editarTexto(n); return; }
         if (op.onAbrirAjustes && (st.esGM || controla(n.o))) op.onAbrirAjustes(n.o.id);
       });
-      n.g.on("contextmenu", e => {
-        e.evt.preventDefault();
-        e.cancelBubble = true;
-        if (!puedeSeleccionar(n.o)) return;
-        if (!st.seleccion.has(n.o.id)) seleccionar([n.o.id]);
-        if (op.onMenu) op.onMenu(n.o.id, e.evt.clientX, e.evt.clientY);
-      });
+      n.g.on("click tap", e => { if (n.o.tipo === "pin" && e.evt.button !== 2 && op.onPin) op.onPin(n.o.id); });
     }
 
     /* ------------------------------------------------------------ medida */
@@ -462,10 +487,17 @@
       return p;
     }
     function textoDistancia(a, b) {
-      const t = tam();
-      const celdas = Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) / t;   // D&D 5e: cada diagonal cuenta una casilla
-      const v = (st.opc.ajusteMedida || "centro") === "ninguno" ? Math.round(celdas * pies() * 10) / 10 : Math.round(celdas) * pies();
-      return v + " pies";
+      const t = tam(), c = cuad(), libre = (st.opc.ajusteMedida || "centro") === "ninguno";
+      let dx = Math.abs(b.x - a.x) / t, dy = Math.abs(b.y - a.y) / t;
+      if (!libre) { dx = Math.round(dx); dy = Math.round(dy); }
+      let celdas;
+      const diag = c.diagonal || "5e";
+      if (diag === "euclidea") celdas = Math.hypot(dx, dy);
+      else if (diag === "manhattan") celdas = dx + dy;
+      else if (diag === "pathfinder") celdas = Math.max(dx, dy) + Math.floor(Math.min(dx, dy) / 2);   // 1-2-1
+      else celdas = Math.max(dx, dy);                                                                      // D&D 5e: cada diagonal, una casilla
+      const v = Math.round(celdas * pies() * 10) / 10;
+      return v + " " + (c.unidad || "pies");
     }
     function dibujarMedida(grupo, forma, a, b, color, limpiar) {
       if (limpiar) grupo.destroyChildren();
@@ -491,6 +523,7 @@
       grupo.add(etq);
     }
     const reglasRemotas = new Map();
+    const cursores = new Map();
     function reglaRemota(d) {
       if (!d || !d.de) return;
       const vieja = reglasRemotas.get(d.de);
@@ -599,7 +632,11 @@
         contenedor.classList.add("arrastrando-camara");
         return;
       }
-      if (boton === 2) return;
+      if (boton === 2) {
+        const tgt = e.target.findAncestor && e.target.findAncestor(".obj", true);
+        gesto = { tipo: "derecho", x: e.evt.clientX, y: e.evt.clientY, pos: stage.position(), id: tgt ? tgt.id() : null, mundo: p };
+        return;
+      }
       const vacio = e.target === stage || !e.target.findAncestor || !e.target.findAncestor(".obj", true);
       if (st.herr === "seleccionar") {
         const sp = stage.getPointerPosition();
@@ -646,7 +683,12 @@
         const sp = stage.getPointerPosition();
         if (Math.hypot(sp.x - pulsacion.sp.x, sp.y - pulsacion.sp.y) > 5) cancelarPulsacion();
       }
+      if (st.cursorB && op.onCursor) op.onCursor(p.x, p.y);
       if (!gesto) return;
+      if (gesto.tipo === "derecho" && Math.hypot(e.evt.clientX - gesto.x, e.evt.clientY - gesto.y) > 5) {
+        gesto = { tipo: "camara", x: gesto.x, y: gesto.y, pos: gesto.pos };
+        contenedor.classList.add("arrastrando-camara");
+      }
       if (gesto.tipo === "camara") {
         stage.position({ x: gesto.pos.x + e.evt.clientX - gesto.x, y: gesto.pos.y + e.evt.clientY - gesto.y });
         redibujarVista();
@@ -721,11 +763,23 @@
       if (!gesto) return;
       const p = punteroMundo(), g = gesto;
       if (g.tipo === "camara") { gesto = null; contenedor.classList.remove("arrastrando-camara"); return; }
+      if (g.tipo === "derecho") {
+        gesto = null;
+        const ev = (e && e.evt) || {};
+        const n = g.id && st.nodos.get(g.id);
+        if (n && puedeSeleccionar(n.o) && (st.esGM || !(n.o.datos && n.o.datos.sinMenu))) {
+          if (!st.seleccion.has(n.o.id)) seleccionar([n.o.id]);
+          if (op.onMenu) op.onMenu(n.o.id, ev.clientX || g.x, ev.clientY || g.y);
+        } else if (op.onMenuVacio) op.onMenuVacio(g.mundo, ev.clientX || g.x, ev.clientY || g.y);
+        return;
+      }
       if (g.tipo === "marco") {
         gesto = null;
         if (marco.visible()) {
           const caja = marco.getClientRect();
-          const ids = [...st.nodos.values()].filter(n => puedeSeleccionar(n.o) && n.g.visible() && Konva.Util.haveIntersection(caja, n.g.getClientRect())).map(n => n.o.id);
+          const ev = (e && e.evt) || {};
+          const ids = [...st.nodos.values()].filter(n => puedeSeleccionar(n.o) && n.g.visible() && Konva.Util.haveIntersection(caja, n.g.getClientRect())
+            && (!ev.ctrlKey || n.o.tipo === "imagen") && (!ev.altKey || n.o.tipo === "texto" || n.o.tipo === "dibujo")).map(n => n.o.id);
           seleccionar(ids, e && e.evt && e.evt.shiftKey);
           marco.visible(false); lUI.batchDraw();
         }
@@ -831,7 +885,10 @@
       setPermisos(esGM, uid) { st.esGM = esGM; st.uid = uid; opacidadNiebla(); st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); },
       setEscena(escena) {
         st.escena = escena;
-        contenedor.style.background = (escena && escena.fondo) || "#ffffff";
+        const m = medidas();
+        pagina.setAttrs({ width: m.w, height: m.h, fill: (escena && escena.fondo) || "#ffffff", visible: !!escena });
+        contenedor.style.background = (escena && escena.opciones && escena.opciones.colorTablero) || "#3d4048";
+        lMapa.batchDraw();
         st.nodos.forEach(pintarDeco);
         redibujarVista();
       },
@@ -863,6 +920,49 @@
       zoom, ponerZoom, centrarEn, ajustarVista, aMundo, punteroMundo,
       centroVista: () => aMundo({ x: stage.width() / 2, y: stage.height() / 2 }),
       tamCelda: tam,
+      pagina: medidas,
+      miniatura(ancho) {
+        const m = medidas();
+        if (!m.w || !m.h) return "";
+        const k = ancho / m.w;
+        const c = document.createElement("canvas");
+        c.width = Math.round(m.w * k); c.height = Math.round(m.h * k);
+        const g = c.getContext("2d");
+        g.fillStyle = (st.escena && st.escena.fondo) || "#ffffff"; g.fillRect(0, 0, c.width, c.height);
+        const vista = { x: stage.x(), y: stage.y(), s: stage.scaleX() };
+        stage.setAttrs({ x: 0, y: 0, scaleX: 1, scaleY: 1 });
+        try {
+          [lMapa, lGrid, lObj].forEach(l => { const cv = l.toCanvas({ x: 0, y: 0, width: m.w, height: m.h, pixelRatio: k }); g.drawImage(cv, 0, 0, c.width, c.height); });
+        } finally { stage.setAttrs({ x: vista.x, y: vista.y, scaleX: vista.s, scaleY: vista.s }); stage.batchDraw(); }
+        return c.toDataURL("image/jpeg", 0.7);
+      },
+      setPausa(v) { st.pausa = !!v; st.nodos.forEach(aplicarAtributos); lObj.batchDraw(); },
+      setMayus(v) { tr.keepRatio(!!v); },
+      setCursorB(v) { st.cursorB = !!v; },
+      // V: las fichas que controlo, arriba del todo mientras se mantiene pulsada
+      setArriba(v) {
+        if (v) st.nodos.forEach(n => { if (controla(n.o) || (st.esGM && st.seleccion.has(n.o.id))) n.g.moveToTop(); });
+        else CAPAS.forEach(ordenarCapa);
+        lObj.batchDraw();
+      },
+      cursorRemoto(d) {
+        if (!d || !d.de) return;
+        let c = cursores.get(d.de);
+        if (!c) {
+          c = { g: new Konva.Group({ listening: false }) };
+          c.g.add(new Konva.Path({ data: "M0 0L0 16L4.5 12L8 19L10.5 18L7 11L13 11Z", fill: d.color || "#2a7de1", stroke: "#fff", strokeWidth: 1 }));
+          const etq = new Konva.Label({ x: 12, y: 16 });
+          etq.add(new Konva.Tag({ fill: d.color || "#2a7de1", cornerRadius: 3 }));
+          etq.add(new Konva.Text({ text: d.nombre || "", fontSize: 11, fill: "#fff", padding: 2 }));
+          c.g.add(etq);
+          pings.add(c.g);
+          cursores.set(d.de, c);
+        }
+        c.g.setAttrs({ x: d.x, y: d.y, scaleX: 1 / zoom(), scaleY: 1 / zoom(), visible: true });
+        clearTimeout(c.t);
+        c.t = setTimeout(() => { c.g.visible(false); lUI.batchDraw(); }, 1800);
+        lUI.batchDraw();
+      },
       ajustarPos,
       capaUI: lUI,
       redibujar() { st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); stage.batchDraw(); }

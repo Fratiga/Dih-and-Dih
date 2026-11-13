@@ -405,3 +405,38 @@ body.tb { font-family: var(--tb-fuente); font-size: 14px; color: var(--tb-texto)
   :root { --tb-lado: 320px; }
   .tb-flotante { width: 340px; }
 }
+
+/* ---------------------------------------------------------------- menús de clic derecho con iconos y submenús */
+.tb-menu-ico { display: inline-grid; place-items: center; width: 18px; height: 18px; flex: none; font-style: normal; color: #444; }
+.tb-menu-ico svg { width: 17px; height: 17px; }
+.tb-menu button span { flex: 1; }
+.tb-menu button:disabled { color: #aaa; cursor: default; background: none; }
+.tb-menu button:disabled .tb-menu-ico { color: #bbb; }
+.tb-submenu { z-index: 701; }
+
+/* ---------------------------------------------------------------- aviso discreto de reconexión */
+.tb-conexion { position: fixed; left: 50%; top: 10px; transform: translateX(-50%); z-index: 650; background: #fff8e1; color: #6b5200; border: 1px solid #e8cf7a; border-radius: 999px; padding: 5px 14px; font-size: 13px; box-shadow: 0 1px 4px rgba(0,0,0,.15); display: flex; align-items: center; gap: 8px; pointer-events: none; }
+.tb-conexion::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #c9a227; border-top-color: transparent; animation: tbGira 0.9s linear infinite; }
+@keyframes tbGira { to { transform: rotate(360deg); } }
+
+/* ---------------------------------------------------------------- orden de turno */
+.tb-turno-fila.sobre { box-shadow: inset 0 3px 0 var(--tb-acento); }
+.tb-turno-valor.editable { cursor: text; border-radius: 4px; padding: 0 4px; }
+.tb-turno-valor.editable:hover { background: rgba(0,0,0,.06); }
+
+/* ---------------------------------------------------------------- marcalibros arrastrable */
+.tb-paginas-miembros .marca[draggable="true"], .tb-pag-marca[draggable="true"] { cursor: grab; }
+.tb-pag.soltando { outline: 3px dashed #f5b41f; outline-offset: 2px; }
+
+/* ---------------------------------------------------------------- configuración de página */
+.tb-cfgpag { padding: 14px 20px 20px; }
+.tb-cfgpag-tit { margin: 0 0 12px; font-size: 18px; }
+.tb-cfgpag-sec { margin: 14px 0 10px; font-size: 16px; }
+.tb-cfgpag-calc { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.tb-cfgpag-calc .tb-etq { width: 120px; font-weight: 600; }
+.tb-cfgpag-calc b { color: #777; }
+.tb-ud { display: inline-flex; align-items: center; border: 1px solid var(--tb-borde-fuerte); border-radius: 4px; overflow: hidden; background: #fff; }
+.tb-ud input { border: 0 !important; width: 70px; min-height: 32px; padding: 2px 6px; box-shadow: none !important; }
+.tb-ud i { font-style: normal; font-size: 12.5px; color: #666; background: var(--tb-gris); padding: 8px 8px; border-left: 1px solid var(--tb-borde); white-space: nowrap; }
+.tb-ud.gris, .tb-ud.gris input { background: var(--tb-gris); color: #777; }
+.tb-cfgpag-pie { display: flex; justify-content: flex-end; align-items: center; gap: 18px; padding: 12px 18px; border-top: 1px solid var(--tb-borde); background: #fff; }

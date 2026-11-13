@@ -122,23 +122,46 @@
   }
 
   /* ------------------------------------------------------------ menú contextual */
-  function menu(x, y, items) {
-    const m = document.getElementById("tbMenu");
-    m.innerHTML = "";
+  // items: "-" (separador), { cab }, o { texto, icono, accion, peligro, apagado, sub: [items] }
+  function llenarMenu(caja, items) {
+    caja.innerHTML = "";
     items.forEach(it => {
-      if (it === "-") { m.appendChild(el("<hr>")); return; }
-      if (it.cab) { m.appendChild(el(`<div class="tb-menu-cab">${esc(it.cab)}</div>`)); return; }
-      const b = el(`<button type="button" class="${it.peligro ? "peligro" : ""}">${it.texto}</button>`);
-      b.addEventListener("click", () => { m.hidden = true; it.accion(); });
-      m.appendChild(b);
+      if (it === "-") { caja.appendChild(el("<hr>")); return; }
+      if (it.cab) { caja.appendChild(el(`<div class="tb-menu-cab">${esc(it.cab)}</div>`)); return; }
+      const b = el(`<button type="button" class="${it.peligro ? "peligro" : ""}${it.sub ? " sub" : ""}"${it.apagado ? " disabled" : ""}>${it.icono && window.TBIcono && TBIcono[it.icono] ? `<i class="tb-menu-ico">${TBIcono[it.icono]}</i>` : ""}<span>${it.texto}</span></button>`);
+      if (it.sub) {
+        const sm = el(`<div class="tb-menu tb-submenu" hidden></div>`);
+        llenarMenu(sm, it.sub);
+        document.body.appendChild(sm);
+        subs.push(sm);
+        const abrir = () => {
+          subs.forEach(x => { if (x !== sm) x.hidden = true; });
+          sm.hidden = false;
+          const r = b.getBoundingClientRect(), rs = sm.getBoundingClientRect();
+          sm.style.left = (r.right + rs.width > window.innerWidth ? r.left - rs.width : r.right) + "px";
+          sm.style.top = Math.min(r.top - 4, window.innerHeight - rs.height - 8) + "px";
+        };
+        b.addEventListener("mouseenter", abrir);
+        b.addEventListener("click", abrir);
+      } else {
+        b.addEventListener("mouseenter", () => { if (caja.id === "tbMenu") subs.forEach(x => { x.hidden = true; }); });
+        if (!it.apagado) b.addEventListener("click", () => { cerrarMenu(); it.accion(); });
+      }
+      caja.appendChild(b);
     });
+  }
+  let subs = [];
+  function menu(x, y, items) {
+    cerrarMenu();
+    const m = document.getElementById("tbMenu");
+    llenarMenu(m, items);
     m.hidden = false;
     const r = m.getBoundingClientRect();
-    m.style.left = Math.min(x, window.innerWidth - r.width - 8) + "px";
-    m.style.top = Math.min(y, window.innerHeight - r.height - 8) + "px";
+    m.style.left = Math.max(4, Math.min(x, window.innerWidth - r.width - 8)) + "px";
+    m.style.top = Math.max(4, Math.min(y, window.innerHeight - r.height - 8)) + "px";
   }
-  function cerrarMenu() { document.getElementById("tbMenu").hidden = true; }
-  document.addEventListener("mousedown", e => { if (!e.target.closest("#tbMenu")) cerrarMenu(); });
+  function cerrarMenu() { document.getElementById("tbMenu").hidden = true; subs.forEach(x => x.remove()); subs = []; }
+  document.addEventListener("mousedown", e => { if (!e.target.closest(".tb-menu")) cerrarMenu(); });
 
   /* ------------------------------------------------------------ selector de jugadores (fichitas) */
   function chips(opciones, elegidos, { todos = null } = {}) {

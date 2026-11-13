@@ -87,8 +87,22 @@
     const guardada = TB.yo.esGM && localStorage.getItem("tbEscenaGM");
     await cargarEscena(TB.yo.esGM && guardada && TB.escenas.has(guardada) ? guardada : TB.estado.escena_jugadores);
     actualizarTurno();
+    TB.L.setPausa(!!TB.estado.pausa);
     TB.lanzar("estado", TB.estado);
+    anunciarAvatar();
+    TB.on("diario", anunciarAvatar);
     carga.remove();
+  }
+
+  // El avatar de cada uno en la barra de jugadores: el de su personaje del grupo, si lo tiene
+  let avatarAnunciado = null;
+  function anunciarAvatar() {
+    const mio = [...TB.diario.values()].filter(e => e.tipo === "personaje" && !e.archivado && (e.controladores || []).includes(TB.yo.uid) && e.imagen)
+      .sort((a, b) => (b.grupo ? 1 : 0) - (a.grupo ? 1 : 0))[0];
+    const avatar = mio ? mio.imagen : "";
+    if (avatar === avatarAnunciado) return;
+    avatarAnunciado = avatar;
+    TB.red.presencia({ avatar, personaje: mio ? mio.nombre : "" });
   }
 
   async function cargarEscena(id) {
@@ -146,6 +160,10 @@
       TB.estado = s;
       if (!TB.yo.esGM && s.escena_jugadores !== TB.escenaId) { guardarCamara(); cargarEscena(s.escena_jugadores); }
       actualizarTurno();
+      if (!!antes.pausa !== !!s.pausa) {
+        TB.L.setPausa(s.pausa);
+        aviso(s.pausa ? "El DJ ha pausado el movimiento." : "El DJ ha reanudado el movimiento.");
+      }
       if (JSON.stringify(antes.musica) !== JSON.stringify(s.musica)) TB.lanzar("musica", s.musica);
       TB.lanzar("estado", s);
     });
@@ -168,8 +186,36 @@
     r.on("regla", d => { if (d && (!d.escena || d.escena === TB.escenaId)) TB.L.reglaRemota(d); });
     r.on("fx", d => { if (d && d.escena === TB.escenaId) TB.fx.reproducir(d); });
     r.on("presencia", lista => { TB.presencia = lista || []; TB.lanzar("presencia"); });
-    r.on("conexion", s => { if (s === "CHANNEL_ERROR" || s === "TIMED_OUT") aviso("Se perdió la conexión en tiempo real. Recarga si no vuelve.", true); });
+    r.on("cursor", d => { if (d && d.escena === TB.escenaId) TB.L.cursorRemoto(d); });
+    r.on("sonido", d => { if (d && window.TBLado) TBLado.sonar(d); });
+    r.on("conexion", c => {
+      const chip = document.getElementById("tbConexion");
+      if (!chip || typeof c !== "object") return;
+      if (c.estado === "reconectando") { chip.hidden = false; chip.textContent = "Reconectando…"; }
+      else {
+        chip.hidden = true;
+        if (c.recuperado) resincronizar();
+      }
+    });
   }
+
+  // Tras una caída de la conexión: se vuelve a leer lo que pudo cambiar mientras tanto
+  async function resincronizar() {
+    try {
+      const est = await TB.red.estado();
+      const cambioEscena = !TB.yo.esGM && est.escena_jugadores !== TB.escenaId;
+      TB.estado = est;
+      if (cambioEscena) await cargarEscena(est.escena_jugadores);
+      else if (TB.escenaId) TB.L.setObjetos(await TB.red.objetos(TB.escenaId));
+      TB.mensajes = await TB.red.mensajes();
+      TB.lanzar("mensajes");
+      (await TB.red.diario()).forEach(e => TB.diario.set(e.id, e));
+      TB.lanzar("diario");
+      actualizarTurno();
+      TB.lanzar("estado", TB.estado);
+    } catch (e) { console.warn("[tablero] resincronizar", e); }
+  }
+  TB.resincronizar = resincronizar;
 
   function actualizarTurno() {
     const ini = (TB.estado && TB.estado.iniciativa) || {};
@@ -179,17 +225,46 @@
   }
 
   /* ------------------------------------------------------------ deshacer (GM) */
-  const historial = [];
-  function apuntar(paso) { historial.push(paso); if (historial.length > 60) historial.shift(); }
+  const historial = [], rehechos = [];
+  function apuntar(paso) { historial.push(paso); if (historial.length > 60) historial.shift(); rehechos.length = 0; }
+  // Aplica un paso al revés y devuelve el paso que lo vuelve a hacer
+  async function aplicarInverso(p) {
+    if (p.tipo === "cambiar") {
+      const vuelta = [];
+      for (const c of p.cambios) {
+        const o = TB.L.objeto(c.id) || {};
+        const ahora = {}; Object.keys(c.antes).forEach(k => { ahora[k] = o[k]; });
+        vuelta.push({ id: c.id, antes: ahora });
+        await TB.red.actualizarObjeto(c.id, c.antes);
+        if (TB.L.objeto(c.id)) TB.L.upsert(Object.assign({}, TB.L.objeto(c.id), c.antes));
+      }
+      return { tipo: "cambiar", cambios: vuelta };
+    }
+    if (p.tipo === "crear") {
+      const filas = p.ids.map(id => TB.L.objeto(id)).filter(Boolean).map(o => Object.assign({}, o));
+      await TB.red.borrarObjetos(p.ids); p.ids.forEach(id => TB.L.quitar(id));
+      return { tipo: "borrar", filas };
+    }
+    if (p.tipo === "borrar") {
+      const filas = await TB.red.crearObjetos(p.filas);
+      (filas || p.filas).forEach(o => { if (o.escena === TB.escenaId) TB.L.upsert(o); });
+      return { tipo: "crear", ids: (filas || p.filas).map(o => o.id) };
+    }
+    return null;
+  }
   async function deshacer() {
     const p = historial.pop();
     if (!p) { aviso("Nada que deshacer."); return; }
-    try {
-      if (p.tipo === "cambiar") { for (const c of p.cambios) { await TB.red.actualizarObjeto(c.id, c.antes); const o = TB.L.objeto(c.id); if (o) TB.L.upsert(Object.assign({}, o, c.antes)); } }
-      else if (p.tipo === "crear") { await TB.red.borrarObjetos(p.ids); p.ids.forEach(id => TB.L.quitar(id)); }
-      else if (p.tipo === "borrar") { const filas = await TB.red.crearObjetos(p.filas); (filas || p.filas).forEach(o => { if (o.escena === TB.escenaId) TB.L.upsert(o); }); }
-    } catch (e) { aviso(mensajeError(e), true); }
+    try { const v = await aplicarInverso(p); if (v) rehechos.push(v); } catch (e) { aviso(mensajeError(e), true); }
   }
+  async function rehacer() {
+    const p = rehechos.pop();
+    if (!p) { aviso("Nada que rehacer."); return; }
+    try { const v = await aplicarInverso(p); if (v) historial.push(v); } catch (e) { aviso(mensajeError(e), true); }
+  }
+  TB.rehacer = rehacer;
+  TB.puedeDeshacer = () => historial.length > 0;
+  TB.puedeRehacer = () => rehechos.length > 0;
 
   /* ------------------------------------------------------------ acciones sobre objetos */
   const zSiguiente = () => Math.max(0, ...TB.L.objetos().map(o => o.z || 0)) + 1;
@@ -256,9 +331,18 @@
   TB.deshacer = deshacer;
 
   /* ------------------------------------------------------------ escenas (GM) */
-  TB.verEscena = async id => { guardarCamara(); await cargarEscena(id); };
+  TB.verEscena = async id => { TB.lanzar("antesDeEscena"); guardarCamara(); await cargarEscena(id); };
   TB.llevarJugadores = async id => {
-    try { await TB.red.actualizarEstado({ escena_jugadores: id }); TB.estado.escena_jugadores = id; TB.lanzar("estado", TB.estado); aviso("Los jugadores ven ahora esta página."); }
+    try {
+      const cambios = { escena_jugadores: id };
+      // «Reproducir en carga»: la pista de la página empieza cuando el marcalibros llega a ella
+      const e = TB.escenas.get(id), au = e && e.opciones && e.opciones.audio;
+      if (au && au.src && (!TB.estado.musica || TB.estado.musica.src !== au.src)) cambios.musica = Object.assign({}, TB.estado.musica || {}, { src: au.src, nombre: au.nombre || "", tipo: au.tipo || "archivo", inicio: Date.now(), pausado: false, pos: 0 });
+      await TB.red.actualizarEstado(cambios);
+      Object.assign(TB.estado, cambios); TB.lanzar("estado", TB.estado);
+      if (cambios.musica) TB.lanzar("musica", TB.estado.musica);
+      aviso("Los jugadores ven ahora esta página.");
+    }
     catch (e) { aviso(mensajeError(e), true); }
   };
   TB.crearEscena = async (campos) => {
@@ -271,7 +355,7 @@
   TB.duplicarEscena = async id => {
     const e = TB.escenas.get(id);
     if (!e) return;
-    const nueva = await TB.crearEscena({ nombre: e.nombre + " (copia)", cuadricula: e.cuadricula, fondo: e.fondo, niebla: e.niebla, miniatura: e.miniatura, carpeta: e.carpeta });
+    const nueva = await TB.crearEscena({ nombre: e.nombre + " (copia)", cuadricula: e.cuadricula, fondo: e.fondo, niebla: e.niebla, miniatura: e.miniatura, carpeta: e.carpeta, ancho: e.ancho, alto: e.alto, opciones: e.opciones });
     if (!nueva) return;
     const objs = await TB.red.objetos(id);
     await TB.red.crearObjetos(objs.map(o => { const c = Object.assign({}, o); delete c.id; delete c.actualizado; c.escena = nueva.id; return c; }));
@@ -368,7 +452,7 @@
   };
 
   /* ------------------------------------------------------------ lienzo → app */
-  let ultimaRegla = 0, reglaPendiente = null;
+  let ultimaRegla = 0, reglaPendiente = null, ultimoCursor = 0;
   function callbacksLienzo() {
     return {
       onCambiar: (id, cambios) => TB.cambiarObjeto(id, cambios),
@@ -398,31 +482,65 @@
       },
       onNiebla: n => { if (TB.yo.esGM && TB.escenaId) TB.guardarEscena(TB.escenaId, { niebla: n }); },
       onZoom: z => TB.lanzar("zoom", z),
+      onMenuVacio: (p, x, y) => TBPaneles.menuVacio(p, x, y),
+      onPin: id => TBPaneles.abrirPin(id),
+      onCursor: (x, y) => {
+        const ahora = Date.now();
+        if (ahora - ultimoCursor < 60) return;
+        ultimoCursor = ahora;
+        const d = { de: TB.yo.uid, nombre: TB.yo.nombre, color: TB.colorJugador(TB.yo.uid), x, y, escena: TB.escenaId };
+        TB.red.emitir("cursor", d);
+        TB.L.cursorRemoto(d);
+      },
       onSoltar: (dt, p, alt) => TBPaneles.soltarEnTablero(dt, p, alt)
     };
   }
 
   /* ------------------------------------------------------------ portapapeles y teclado */
   let portapapeles = [];
+  TB.portapapeles = () => portapapeles;
+  TB.copiar = ids => { portapapeles = ids.map(id => Object.assign({}, TB.L.objeto(id))).filter(o => o.id); aviso(`Copiado: ${portapapeles.length}`); };
+  TB.pegar = async p => {
+    if (!portapapeles.length || !TB.yo.esGM) return;
+    const cx = portapapeles.reduce((s, o) => s + o.x, 0) / portapapeles.length, cy = portapapeles.reduce((s, o) => s + o.y, 0) / portapapeles.length;
+    const creadas = await TB.crearObjetos(portapapeles.map(o => { const c = Object.assign({}, o); delete c.id; delete c.actualizado; return Object.assign(c, TB.L.ajustarPos(c, p.x + o.x - cx, p.y + o.y - cy)); }));
+    TB.L.seleccionar(creadas.map(o => o.id));
+  };
   function enCampo(e) { const t = e.target; return t && (t.closest("input, textarea, select, [contenteditable=true]")); }
   document.addEventListener("keydown", async e => {
     if (!TB.L || enCampo(e)) return;
     const ctrl = e.ctrlKey || e.metaKey;
     const sel = TB.L.seleccion();
     if (e.key === " " && !e.repeat) { TB.L.setEspacio(true); e.preventDefault(); return; }
+    if (e.key === "Shift") TB.L.setMayus(true);
+    if (!ctrl && (e.key === "v" || e.key === "V") && !e.repeat) { TB.L.setArriba(true); return; }
+    if (!ctrl && (e.key === "b" || e.key === "B") && !e.repeat) { TB.L.setCursorB(true); return; }
+    if (!ctrl && e.key === "Home") { TB.L.ajustarVista(); return; }
+    if (!ctrl && (e.key === "p" || e.key === "P") && TB.yo.esGM) { TBPaneles.alternarPaginas(); return; }
+    const k = e.key.toLowerCase();
+    if (ctrl && k === "s") { e.preventDefault(); TBPaneles.setHerramienta("seleccionar"); return; }
+    if (ctrl && k === "g") { e.preventDefault(); TBPaneles.setHerramienta("texto"); return; }
+    if (ctrl && k === "u" && sel.length) { e.preventDefault(); TB.anadirAlTurno(sel); return; }
+    if (ctrl && (k === "y" || (e.shiftKey && k === "z")) && TB.yo.esGM) { e.preventDefault(); rehacer(); return; }
+    if (ctrl && k === "a") {
+      e.preventDefault();
+      TB.L.seleccionar(TB.L.objetos().filter(o => (TB.yo.esGM ? o.capa === TB.capa : TB.controla(o)) && (e.shiftKey || o.tipo !== "pin")).map(o => o.id));
+      return;
+    }
+    const CAPA_TECLA = { m: "mapa", o: "fichas", k: "gm", ".": "delantero" };
+    if (ctrl && CAPA_TECLA[k] && TB.yo.esGM) {
+      e.preventDefault();
+      if (e.shiftKey && sel.length) TB.cambiarVarios(sel.map(id => ({ id, cambios: { capa: CAPA_TECLA[k] } })));
+      TBPaneles.setCapa(CAPA_TECLA[k]);
+      return;
+    }
+    if (ctrl && k === "," ) { e.preventDefault(); aviso("La capa de iluminación dinámica todavía no está."); return; }
     if (e.key === "Escape") { TB.L.deseleccionar(); TB.L.cancelarGesto(); TB.L.limpiarMedida(); TBUI.cerrarMenu(); return; }
     if (e.key === "Enter") { TB.L.terminarPoligono(); return; }
     if ((e.key === "Delete" || e.key === "Backspace") && sel.length) { e.preventDefault(); TB.borrarObjetos(sel); return; }
     if (ctrl && e.key.toLowerCase() === "z" && TB.yo.esGM) { e.preventDefault(); deshacer(); return; }
-    if (ctrl && e.key.toLowerCase() === "c" && sel.length) { portapapeles = sel.map(id => Object.assign({}, TB.L.objeto(id))); aviso(`Copiado: ${portapapeles.length}`); return; }
-    if (ctrl && e.key.toLowerCase() === "v" && portapapeles.length && TB.yo.esGM) {
-      e.preventDefault();
-      const p = TB.L.punteroMundo();
-      const cx = portapapeles.reduce((s, o) => s + o.x, 0) / portapapeles.length, cy = portapapeles.reduce((s, o) => s + o.y, 0) / portapapeles.length;
-      const creadas = await TB.crearObjetos(portapapeles.map(o => { const c = Object.assign({}, o); delete c.id; delete c.actualizado; return Object.assign(c, TB.L.ajustarPos(c, p.x + o.x - cx, p.y + o.y - cy)); }));
-      TB.L.seleccionar(creadas.map(o => o.id));
-      return;
-    }
+    if (ctrl && e.key.toLowerCase() === "c" && sel.length) { TB.copiar(sel); return; }
+    if (ctrl && e.key.toLowerCase() === "v" && portapapeles.length && TB.yo.esGM) { e.preventDefault(); TB.pegar(TB.L.punteroMundo()); return; }
     if (ctrl && e.key.toLowerCase() === "f") { e.preventDefault(); TBPaneles.elegirDibujo("mano"); return; }
     if (ctrl && e.key.toLowerCase() === "d") { e.preventDefault(); TBPaneles.elegirDibujo("rect"); return; }
     if (e.key.startsWith("Arrow") && sel.length) {
@@ -433,7 +551,14 @@
       else for (const id of sel) { const o = TB.L.objeto(id); try { await TB.red.moverPropio(id, o.x + dx, o.y + dy); TB.red.emitir("mov", { id, x: o.x + dx, y: o.y + dy, escena: TB.escenaId }); } catch (err) { aviso(mensajeError(err), true); } }
     }
   });
-  document.addEventListener("keyup", e => { if (e.key === " " && TB.L) TB.L.setEspacio(false); });
+  document.addEventListener("keyup", e => {
+    if (!TB.L) return;
+    if (e.key === " ") TB.L.setEspacio(false);
+    if (e.key === "Shift") TB.L.setMayus(false);
+    if (e.key === "v" || e.key === "V") TB.L.setArriba(false);
+    if (e.key === "b" || e.key === "B") TB.L.setCursorB(false);
+  });
+  window.addEventListener("blur", () => { if (TB.L) { TB.L.setEspacio(false); TB.L.setMayus(false); TB.L.setArriba(false); TB.L.setCursorB(false); } });
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar); else iniciar();
 })();

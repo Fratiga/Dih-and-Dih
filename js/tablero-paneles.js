@@ -398,25 +398,34 @@
   }
 
   /* ============================================================ orden de turno */
+  /* Como el de Roll20: la ficha a la que le toca va arriba (en verde) y el número de la derecha es su iniciativa.
+     El DJ lo abre para todos; los jugadores lo ven mientras esté abierto, pasan su turno y cambian el número de
+     sus fichas. Ordenar, mover filas, quitar y retroceder es del DJ. */
   function alternarTurno() {
     if (ventanas.has("turno")) {
-      if (TB.esGM()) TB.guardarIniciativa(Object.assign({}, TB.estado.iniciativa, { visible: false }));
-      ventanas.get("turno").cerrar();
+      if (TB.esGM()) { TB.guardarIniciativa(Object.assign({}, TB.estado.iniciativa, { visible: false })); ventanas.get("turno").cerrar(); }
+      else ventanas.get("turno").el.classList.toggle("minimizada");
       return;
     }
     if (TB.esGM()) TB.guardarIniciativa(Object.assign({ lista: [], turno: 0, ronda: 1 }, TB.estado.iniciativa, { visible: true }));
     else if (!(TB.estado.iniciativa || {}).visible) { aviso("El DJ no ha abierto el orden de turno."); return; }
     abrirTurno();
   }
-  let ordenDesc = true;
   function abrirTurno() {
     const v = ventana("turno", {
       titulo: "Orden de turno", x: window.innerWidth - (parseInt(getComputedStyle(document.documentElement).getPropertyValue("--tb-lado"), 10) || 410) - 300, y: 150, ancho: 250, alto: 470,
       alCerrar: () => { marcarBarra(); if (TB.esGM() && (TB.estado.iniciativa || {}).visible) TB.guardarIniciativa(Object.assign({}, TB.estado.iniciativa, { visible: false })); }
     });
+    // Los jugadores no lo cierran: lo cierra el DJ para todos (sí pueden minimizarlo)
+    if (!TB.esGM()) { const c = v.el.querySelector("[data-cerrar]"); if (c) c.remove(); }
     v.cuerpo.style.display = "flex"; v.cuerpo.style.flexDirection = "column"; v.cuerpo.style.overflow = "hidden";
     pintarTurno();
     marcarBarra();
+  }
+  function ordenarTurno(desc) {
+    const ini = Object.assign({ lista: [], turno: 0, ronda: 1 }, TB.estado.iniciativa);
+    const lista = (ini.lista || []).slice().sort((a, b) => desc ? (Number(b.valor) || 0) - (Number(a.valor) || 0) : (Number(a.valor) || 0) - (Number(b.valor) || 0));
+    TB.guardarIniciativa(Object.assign({}, ini, { lista, turno: 0 }));
   }
   function pintarTurno() {
     const v = ventanas.get("turno");
@@ -424,66 +433,79 @@
     const ini = Object.assign({ lista: [], turno: 0, ronda: 1 }, TB.estado.iniciativa);
     const gm = TB.esGM();
     const lista = ini.lista || [];
-    const actual = lista[Math.min(ini.turno | 0, Math.max(lista.length - 1, 0))];
+    const n = lista.length;
+    const t = n ? Math.min(Math.max(ini.turno | 0, 0), n - 1) : 0;
+    // Orden de pintado: desde la ficha actual, dando la vuelta (la actual arriba)
+    const vista = lista.map((e, i) => ({ e, i })).slice(t).concat(lista.map((e, i) => ({ e, i })).slice(0, t));
     v.cuerpo.innerHTML = "";
-    const cab = el(`<div class="tb-turno-cab"><span>Contar: <span data-ronda style="${gm ? "cursor:pointer;text-decoration:underline dotted" : ""}">${ini.ronda || 1}</span></span>${gm ? `<button type="button" data-ordenar title="Ordenar">${I.ordenar}</button>` : ""}</div>`);
+    const cab = el(`<div class="tb-turno-cab"><span>Contar: <span data-ronda style="${gm ? "cursor:pointer;text-decoration:underline dotted" : ""}" title="${gm ? "Cambiar el contador de rondas" : "Ronda"}">${ini.ronda || 1}</span></span>
+      ${gm ? `<button type="button" data-ordenar title="Ordenar">${I.ordenar}</button>` : ""}</div>`);
     const filas = el(`<div class="tb-turno-lista" style="flex:1"></div>`);
-    lista.forEach((e, i) => {
+    vista.forEach(({ e, i }, k) => {
       if (e.oculto && !gm) return;
       const o = TB.L.objeto(e.id);
       const src = (o && o.datos && o.datos.src) || e.src || "";
       const nombre = (o && o.datos && o.datos.nombre) || e.nombre || "";
-      const verNombre = gm || (o && o.datos && o.datos.verNombre) || (o && TB.controla(o)) || !o;
-      const f = el(`<div class="tb-turno-fila${e === actual ? " actual" : ""}${e.oculto ? " oculta" : ""}" draggable="${gm}" data-i="${i}">
+      const mio = !!(o && TB.controla(o));
+      const verNombre = gm || mio || (o && o.datos && o.datos.verNombre) || !o;
+      const f = el(`<div class="tb-turno-fila${k === 0 ? " actual" : ""}${e.oculto ? " oculta" : ""}" draggable="${gm}" data-i="${i}">
         <span class="tb-turno-av" style="${src ? `background-image:url('${esc(src)}')` : ""}"></span>
         <span class="tb-turno-nombre">${verNombre ? esc(nombre) : ""}</span>
-        <span class="tb-turno-valor" data-valor>${esc(e.valor)}</span></div>`);
+        <span class="tb-turno-valor${gm || mio ? " editable" : ""}" data-valor title="${gm || mio ? "Clic para cambiar la iniciativa" : "Iniciativa"}">${esc(e.valor)}</span></div>`);
       f.addEventListener("click", ev => {
-        if (ev.target.closest("[data-valor]") && gm) { editarValor(f, i); return; }
-        if (o) { TB.L.centrarEn(o.x, o.y); if (gm || TB.controla(o)) TB.L.seleccionar([o.id]); }
+        if (ev.target.closest("[data-valor]") && (gm || mio)) { editarValor(f, i, mio && !gm); return; }
+        if (o) { TB.L.centrarEn(o.x, o.y); if (gm || mio) TB.L.seleccionar([o.id]); }
       });
       if (gm) {
         f.addEventListener("contextmenu", ev => { ev.preventDefault(); menu(ev.clientX, ev.clientY, [
-          { texto: "Quitar del orden", accion: () => { const l = lista.slice(); l.splice(i, 1); TB.guardarIniciativa(Object.assign({}, ini, { lista: l, turno: Math.min(ini.turno, Math.max(l.length - 1, 0)) })); } },
-          { texto: "Hacer que sea su turno", accion: () => TB.guardarIniciativa(Object.assign({}, ini, { turno: i })) }
+          { texto: "Que sea su turno", accion: () => TB.guardarIniciativa(Object.assign({}, ini, { turno: i })) },
+          { texto: "Subir un puesto", accion: () => moverFila(i, i - 1) },
+          { texto: "Bajar un puesto", accion: () => moverFila(i, i + 1) },
+          "-",
+          { texto: "Quitar del orden", peligro: true, accion: () => { const l = lista.slice(); l.splice(i, 1); TB.guardarIniciativa(Object.assign({}, ini, { lista: l, turno: Math.min(t > i ? t - 1 : t, Math.max(l.length - 1, 0)) })); } }
         ]); });
         f.addEventListener("dragstart", ev => { ev.dataTransfer.setData("text/turno", String(i)); f.classList.add("arrastrando"); });
         f.addEventListener("dragend", () => f.classList.remove("arrastrando"));
-        f.addEventListener("dragover", ev => ev.preventDefault());
-        f.addEventListener("drop", ev => {
-          ev.preventDefault();
-          const de = parseInt(ev.dataTransfer.getData("text/turno"), 10);
-          if (isNaN(de) || de === i) return;
-          const l = lista.slice(); const [x] = l.splice(de, 1); l.splice(i, 0, x);
-          TB.guardarIniciativa(Object.assign({}, ini, { lista: l, turno: l.indexOf(actual) }));
-        });
+        f.addEventListener("dragover", ev => { ev.preventDefault(); f.classList.add("sobre"); });
+        f.addEventListener("dragleave", () => f.classList.remove("sobre"));
+        f.addEventListener("drop", ev => { ev.preventDefault(); f.classList.remove("sobre"); const de = parseInt(ev.dataTransfer.getData("text/turno"), 10); if (!isNaN(de)) moverFila(de, i); });
       }
       filas.appendChild(f);
     });
-    if (!filas.children.length) filas.appendChild(el(`<p class="tb-nota" style="padding:14px">${gm ? "Clic derecho en una ficha → Añadir al orden de turno, o que los jugadores tiren su iniciativa." : "Selecciona tu ficha y tira tu iniciativa desde su menú (clic derecho)."}</p>`));
+    if (!filas.children.length) filas.appendChild(el(`<p class="tb-nota" style="padding:14px">${gm ? "Clic derecho en una ficha → Añadir turno, o que los jugadores tiren su iniciativa." : "Clic derecho en tu ficha → Añadir turno para tirar tu iniciativa."}</p>`));
+    function moverFila(de, a) {
+      if (a < 0 || a >= lista.length || de === a) return;
+      const actual = lista[t];
+      const l = lista.slice(); const [x] = l.splice(de, 1); l.splice(a, 0, x);
+      TB.guardarIniciativa(Object.assign({}, ini, { lista: l, turno: Math.max(0, l.indexOf(actual)) }));
+    }
+    const actual = lista[t];
     const esMio = actual && TB.controla(TB.L.objeto(actual.id));
     const pie = el(`<div class="tb-turno-pie">
-      <button type="button" class="tb-btn tb-btn-borde" data-atras ${gm ? "" : "disabled"}>${I.izquierda}</button>
-      ${gm ? `<button type="button" class="tb-btn" data-cfg style="min-width:40px;border:0;background:none">${I.engranaje}</button>` : ""}
-      <button type="button" class="tb-btn tb-btn-acento" data-adelante ${gm || esMio ? "" : "disabled"}>${I.derecha}</button></div>`);
+      <button type="button" class="tb-btn tb-btn-borde" data-atras ${gm ? "" : "disabled"} title="Turno anterior">${I.izquierda}</button>
+      ${gm ? `<button type="button" class="tb-btn" data-cfg style="min-width:40px;border:0;background:none" title="Opciones">${I.engranaje}</button>` : ""}
+      <button type="button" class="tb-btn tb-btn-acento" data-adelante ${gm || esMio ? "" : "disabled"} title="${gm ? "Siguiente turno" : "Terminar mi turno"}">${I.derecha}</button></div>`);
     pie.querySelectorAll("svg").forEach(s => { s.style.width = "20px"; s.style.height = "20px"; });
     pie.querySelector("[data-atras]").addEventListener("click", () => TB.pasarTurno(-1));
     pie.querySelector("[data-adelante]").addEventListener("click", () => TB.pasarTurno(1));
     if (gm) {
-      cab.querySelector("[data-ordenar]").addEventListener("click", () => {
-        const l = lista.slice().sort((a, b) => ordenDesc ? b.valor - a.valor : a.valor - b.valor);
-        ordenDesc = !ordenDesc;
-        TB.guardarIniciativa(Object.assign({}, ini, { lista: l, turno: actual ? Math.max(0, l.indexOf(actual)) : 0 }));
-      });
+      cab.querySelector("[data-ordenar]").addEventListener("click", ev => menu(ev.clientX - 180, ev.clientY + 10, [
+        { texto: "De mayor a menor", accion: () => ordenarTurno(true) },
+        { texto: "De menor a mayor", accion: () => ordenarTurno(false) }
+      ]));
       cab.querySelector("[data-ronda]").addEventListener("click", async () => {
         const v2 = await pedir("Contador de rondas", String(ini.ronda || 1), { etiqueta: "Ronda" });
-        if (v2 !== null && !isNaN(parseInt(v2, 10))) TB.guardarIniciativa(Object.assign({}, ini, { ronda: Math.max(1, parseInt(v2, 10)) }));
+        if (v2 !== null && !isNaN(parseInt(v2, 10))) TB.guardarIniciativa(Object.assign({}, ini, { ronda: Math.max(0, parseInt(v2, 10)) }));
       });
-      pie.querySelector("[data-cfg]").addEventListener("click", ev => menu(ev.clientX, ev.clientY - 160, [
+      pie.querySelector("[data-cfg]").addEventListener("click", ev => menu(ev.clientX, ev.clientY - 230, [
+        { texto: "Ordenar de mayor a menor", accion: () => ordenarTurno(true) },
+        { texto: "Ordenar de menor a mayor", accion: () => ordenarTurno(false) },
+        "-",
         { texto: "Añadir elemento personalizado", accion: async () => {
-          const n = await pedir("Elemento personalizado", "", { etiqueta: "Nombre (por ejemplo, Trampa o Fin del hechizo)" });
-          if (!n) return;
-          TB.guardarIniciativa(Object.assign({}, ini, { lista: lista.concat([{ id: "x" + Date.now(), nombre: n, valor: 0 }]) }));
+          const nom = await pedir("Elemento personalizado", "", { etiqueta: "Nombre (por ejemplo, Trampa o Fin del hechizo)" });
+          if (!nom) return;
+          const val = await pedir("Elemento personalizado", "0", { etiqueta: "Número de iniciativa" });
+          TB.guardarIniciativa(Object.assign({}, ini, { lista: lista.concat([{ id: "x" + Date.now(), nombre: nom, valor: parseFloat(val) || 0 }]) }));
         } },
         { texto: "Añadir las fichas seleccionadas", accion: () => TB.anadirAlTurno(TB.L.seleccion()) },
         { texto: "Volver a la ronda 1", accion: () => TB.guardarIniciativa(Object.assign({}, ini, { ronda: 1, turno: 0 })) },
@@ -493,16 +515,20 @@
     }
     v.cuerpo.append(cab, filas, pie);
   }
-  function editarValor(fila, i) {
+  function editarValor(fila, i, comoJugador) {
     const ini = TB.estado.iniciativa;
     const celda = fila.querySelector("[data-valor]");
     const inp = el(`<input type="number" value="${esc(ini.lista[i].valor)}">`);
     celda.innerHTML = ""; celda.appendChild(inp); inp.focus(); inp.select();
+    let hecho = false;
     const guardar = () => {
-      const l = ini.lista.slice(); l[i] = Object.assign({}, l[i], { valor: parseFloat(inp.value) || 0 });
+      if (hecho) return; hecho = true;
+      const v = parseFloat(inp.value) || 0;
+      if (comoJugador) { TB.red.iniciativaValor ? TB.red.iniciativaValor(ini.lista[i].id, v).catch(e => aviso(mensajeError(e), true)) : null; return; }
+      const l = ini.lista.slice(); l[i] = Object.assign({}, l[i], { valor: v });
       TB.guardarIniciativa(Object.assign({}, ini, { lista: l }));
     };
-    inp.addEventListener("keydown", e => { if (e.key === "Enter") inp.blur(); if (e.key === "Escape") { inp.value = ini.lista[i].valor; inp.blur(); } });
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") inp.blur(); if (e.key === "Escape") { hecho = true; pintarTurno(); } });
     inp.addEventListener("blur", guardar);
   }
 
@@ -663,72 +689,174 @@
     });
   }
 
-  /* ============================================================ menú de una ficha */
+  /* ============================================================ menús de clic derecho (los de Roll20) */
+  const GRUPO_KEY = "tbGrupoDefinido";
+  function pingTodos(x, y, centrar) {
+    TB.L.ping(x, y, TB.colorJugador(TB.yo.uid));
+    TB.red.emitir("ping", { x, y, color: TB.colorJugador(TB.yo.uid), centrar: !!centrar && TB.esGM(), escena: TB.escenaId });
+    if (centrar && TB.esGM()) TB.L.centrarEn(x, y);
+  }
+  function alternarPausa() {
+    const v = !TB.estado.pausa;
+    TB.red.actualizarEstado({ pausa: v }).then(() => { TB.estado.pausa = v; TB.L.setPausa(v); aviso(v ? "Movimiento de los jugadores en pausa." : "Movimiento reanudado."); }).catch(e => aviso(mensajeError(e), true));
+  }
+  async function colocarGrupo(p) {
+    let g;
+    try { g = JSON.parse(localStorage.getItem(GRUPO_KEY) || "null"); } catch (e) { g = null; }
+    if (!g || !g.filas || !g.filas.length) { aviso("Primero define un grupo: selecciona fichas → clic derecho → Definir grupo."); return; }
+    const cx = g.filas.reduce((s, o) => s + o.x, 0) / g.filas.length, cy = g.filas.reduce((s, o) => s + o.y, 0) / g.filas.length;
+    const nuevas = await TB.crearObjetos(g.filas.map(o => { const c = Object.assign({}, o); delete c.id; delete c.actualizado; delete c.escena; return Object.assign(c, TB.L.ajustarPos(c, p.x + o.x - cx, p.y + o.y - cy)); }));
+    TB.L.seleccionar(nuevas.map(o => o.id));
+  }
+  async function colocarPin(p) {
+    const titulo = await pedir("Colocar pin", "", { etiqueta: "Título del pin (por ejemplo, Puerta secreta)" });
+    if (titulo === null) return;
+    const capaAntes = TB.capa;
+    TB.capa = "fichas";
+    await TB.crearObjetos([{ tipo: "pin", capa: "fichas", x: p.x, y: p.y, ancho: 30, alto: 40, datos: { titulo: titulo.trim().slice(0, 60), color: "#d6127e" } }]);
+    TB.capa = capaAntes;
+  }
+  function pegarEn(p) { TB.pegar && TB.pegar(p); }
+  function itemsComunes(p, gm) {
+    const items = [
+      { icono: "pingTodos", texto: "Ping a todo el mundo", accion: () => pingTodos(p.x, p.y, false) }
+    ];
+    if (gm) items.push(
+      { icono: "pingEnfoque", texto: "Ping de enfoque", accion: () => pingTodos(p.x, p.y, true) },
+      { icono: "candado", texto: TB.estado.pausa ? "Reanudar el movimiento" : "Pausar el movimiento", accion: alternarPausa }
+    );
+    return items;
+  }
+  function menuVacio(p, x, y) {
+    const gm = TB.esGM();
+    const items = itemsComunes(p, gm);
+    if (gm) items.push(
+      { icono: "grupoPon", texto: "Colocar grupo", accion: () => colocarGrupo(p) },
+      { icono: "ping", texto: "Colocar pin", accion: () => colocarPin(p) },
+      { icono: "pegar", texto: "Pegar", apagado: !(TB.portapapeles && TB.portapapeles().length), accion: () => pegarEn(p) },
+      { icono: "deshacer", texto: "Deshacer", apagado: !TB.puedeDeshacer(), accion: () => TB.deshacer() },
+      { icono: "rehacer", texto: "Rehacer", apagado: !TB.puedeRehacer(), accion: () => TB.rehacer() }
+    );
+    menu(x, y, items);
+  }
   function menuFicha(id, x, y) {
     const o = TB.L.objeto(id);
     if (!o) return;
     const gm = TB.esGM();
     const sel = TB.L.seleccion().length ? TB.L.seleccion() : [id];
-    const varias = sel.length > 1;
     const todos = sel.map(s => TB.L.objeto(s)).filter(Boolean);
-    const items = [];
-    const iniciativa = { texto: "Tirar iniciativa…", accion: async () => {
-      const m = await pedir("Tirar iniciativa", localStorage.getItem("tbModIni:" + id) || "0", { etiqueta: "Modificador de iniciativa (se tira 1d20 + esto)" });
+    const p = { x: o.x, y: o.y };
+    const iniciativa = async () => {
+      const m = await pedir("Añadir turno", localStorage.getItem("tbModIni:" + id) || "0", { etiqueta: "Modificador de iniciativa (se tira 1d20 + esto en el servidor)" });
       if (m === null) return;
       try { localStorage.setItem("tbModIni:" + id, m); } catch (e) { /* nada */ }
       for (const s of sel) await TB.tirarIniciativa(s, parseInt(m, 10) || 0);
-    } };
+    };
     if (!gm) {
-      if (o.tipo === "imagen") items.push({ texto: "Ajustes de ficha…", accion: () => ajustesFicha(id) }, iniciativa);
-      if ((o.tipo === "dibujo" || o.tipo === "texto") && o.autor === TB.yo.uid) items.push({ texto: "Eliminar", peligro: true, accion: () => TB.borrarObjetos(sel) });
-      if (!items.length) return;
+      const items = itemsComunes(p, false);
+      if (o.tipo === "imagen" && TB.controla(o)) items.push({ icono: "turno", texto: "Añadir turno", accion: iniciativa }, { icono: "ajustes", texto: "Ajustes de ficha…", accion: () => ajustesFicha(id) });
+      if ((o.tipo === "dibujo" || o.tipo === "texto") && o.autor === TB.yo.uid) items.push("-", { icono: "papeleraR", texto: "Borrar", peligro: true, accion: () => TB.borrarObjetos(sel) });
       menu(x, y, items);
       return;
     }
     const z = TB.L.objetos().map(q => q.z || 0);
-    if (!varias) items.push({ texto: "Ajustes de ficha…", accion: () => ajustesFicha(id) });
-    items.push({ texto: "Añadir al orden de turno", accion: () => TB.anadirAlTurno(sel) }, iniciativa, "-");
-    items.push({ texto: "Al frente", accion: () => TB.cambiarVarios(todos.map((q, i) => ({ id: q.id, cambios: { z: Math.max(...z) + 1 + i } }))) });
-    items.push({ texto: "Al fondo", accion: () => TB.cambiarVarios(todos.map((q, i) => ({ id: q.id, cambios: { z: Math.min(...z) - todos.length + i } }))) });
-    items.push("-", { cab: "Capa" });
-    CAPAS.forEach(c => items.push({ texto: (o.capa === c.id ? "✓ " : "　") + c.nombre, accion: () => TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: { capa: c.id } }))) }));
-    items.push("-");
-    items.push({ texto: o.bloqueado ? "Desbloquear posición" : "Bloquear posición", accion: () => TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: { bloqueado: !o.bloqueado } }))) });
-    if (o.tipo === "imagen") {
-      items.push({ texto: (o.datos && o.datos.verNombre) ? "Ocultar el nombre" : "Mostrar el nombre", accion: () => TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: { datos: Object.assign({}, q.datos, { verNombre: !(o.datos && o.datos.verNombre) }) } }))) });
-      items.push({ texto: "Voltear horizontal", accion: () => TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: { datos: Object.assign({}, q.datos, { voltearH: !(q.datos && q.datos.voltearH) }) } }))) });
-      items.push({ texto: "Voltear vertical", accion: () => TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: { datos: Object.assign({}, q.datos, { voltearV: !(q.datos && q.datos.voltearV) }) } }))) });
-      const t = TB.L.tamCelda();
-      items.push({ texto: "Tamaño: 1×1 casilla", accion: () => TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: { ancho: t, alto: t } }))) });
-      items.push({ texto: "Tamaño: 2×2 casillas", accion: () => TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: { ancho: t * 2, alto: t * 2 } }))) });
-      items.push({ texto: "Tamaño real de la imagen", accion: async () => {
-        for (const q of todos) { const m = await medirImagen(q.datos && q.datos.src); if (m) TB.cambiarObjeto(q.id, { ancho: m.w, alto: m.h }); }
-      } });
-    }
-    items.push("-", { texto: "Duplicar", accion: async () => {
-      const t = TB.L.tamCelda();
-      const nuevas = await TB.crearObjetos(todos.map(q => { const c = Object.assign({}, q); delete c.id; delete c.actualizado; c.x += t; c.y += t; return c; }));
-      TB.L.seleccionar(nuevas.map(n => n.id));
-    } });
-    items.push({ texto: "Eliminar", peligro: true, accion: () => TB.borrarObjetos(sel) });
+    const cambiarTodos = f => TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: f(q) })));
+    const datosCon = (q, extra) => ({ datos: Object.assign({}, q.datos, extra) });
+    const algunoSinAjuste = todos.some(q => q.datos && q.datos.sinAjuste);
+    const algunoSinMenu = todos.some(q => q.datos && q.datos.sinMenu);
+    const items = itemsComunes(p, true).concat([
+      { icono: "grupoDef", texto: "Definir grupo", accion: () => {
+        try { localStorage.setItem(GRUPO_KEY, JSON.stringify({ filas: todos.map(q => Object.assign({}, q)) })); aviso(`Grupo definido con ${todos.length} objeto(s). Colócalo con clic derecho → Colocar grupo.`); } catch (e) { aviso("No se pudo guardar el grupo.", true); }
+      } },
+      { icono: "grupoPon", texto: "Colocar grupo", accion: () => colocarGrupo({ x: o.x + TB.L.tamCelda(), y: o.y }) },
+      { icono: "ping", texto: "Colocar pin", accion: () => colocarPin(p) },
+      { icono: "copiar", texto: "Copiar", accion: () => TB.copiar && TB.copiar(sel) },
+      { icono: "pegar", texto: "Pegar", apagado: !(TB.portapapeles && TB.portapapeles().length), accion: () => pegarEn({ x: o.x + TB.L.tamCelda(), y: o.y + TB.L.tamCelda() }) },
+      { icono: "deshacer", texto: "Deshacer", apagado: !TB.puedeDeshacer(), accion: () => TB.deshacer() },
+      { icono: "rehacer", texto: "Rehacer", apagado: !TB.puedeRehacer(), accion: () => TB.rehacer() },
+      "-",
+      { icono: "turno", texto: "Añadir turno", accion: () => TB.anadirAlTurno(sel) },
+      { icono: "capas", texto: "Cambiar capa", sub: CAPAS.map(c => ({ icono: c.icono, texto: (o.capa === c.id ? "✓ " : "") + c.nombre, accion: () => cambiarTodos(() => ({ capa: c.id })) })) },
+      { icono: "frente", texto: "Traer al frente", accion: () => TB.cambiarVarios(todos.map((q, i) => ({ id: q.id, cambios: { z: Math.max(...z) + 1 + i } }))) },
+      { icono: "fondo", texto: "Enviar al reverso", accion: () => TB.cambiarVarios(todos.map((q, i) => ({ id: q.id, cambios: { z: Math.min(...z) - todos.length + i } }))) },
+      { icono: "candado", texto: o.bloqueado ? "Quitar la cerradura" : "Colocación de la cerradura", accion: () => cambiarTodos(() => ({ bloqueado: !o.bloqueado })) },
+      { icono: "transformar", texto: "Transformación avanzada", sub: [
+        { texto: "Agrupar", apagado: todos.length < 2, accion: () => { const g = "g" + Date.now().toString(36); cambiarTodos(q => datosCon(q, { grupo: g })); } },
+        { texto: "Desagrupar", apagado: !todos.some(q => q.datos && q.datos.grupo), accion: () => cambiarTodos(q => datosCon(q, { grupo: null })) },
+        { texto: algunoSinAjuste ? "Activar el ajuste de cuadrícula" : "Desactivar el ajuste de cuadrícula", accion: () => cambiarTodos(q => datosCon(q, { sinAjuste: !algunoSinAjuste })) },
+        { texto: algunoSinMenu ? "Activar menús de fichas" : "Desactivar menús de fichas", accion: () => cambiarTodos(q => datosCon(q, { sinMenu: !algunoSinMenu })) },
+        { texto: "Enumerar fichas", apagado: todos.length < 2, accion: () => {
+          const orden = todos.slice().sort((a, b) => a.y - b.y || a.x - b.x);
+          TB.cambiarVarios(orden.map((q, i) => ({ id: q.id, cambios: datosCon(q, { nombre: String((q.datos && q.datos.nombre) || "Ficha").replace(/\s+\d+$/, "") + " " + (i + 1), verNombre: true }) })));
+        } },
+        "-",
+        { texto: "Giro horizontal", accion: () => cambiarTodos(q => datosCon(q, { voltearH: !(q.datos && q.datos.voltearH) })) },
+        { texto: "Giro vertical", accion: () => cambiarTodos(q => datosCon(q, { voltearV: !(q.datos && q.datos.voltearV) })) },
+        { texto: "Establecer dimensiones", accion: () => establecerDimensiones(todos) }
+      ] },
+      "-",
+      { icono: "ajustes", texto: "Ajustes de ficha…", apagado: todos.length > 1 || o.tipo !== "imagen", accion: () => ajustesFicha(id) },
+      { icono: "papeleraR", texto: "Borrar", peligro: true, accion: () => TB.borrarObjetos(sel) }
+    ]);
     menu(x, y, items);
+  }
+  function establecerDimensiones(todos) {
+    const t = TB.L.tamCelda(), o = todos[0];
+    const c = el(`<div><div class="tb-fila"><label class="tb-campo" style="flex:1"><span>Ancho</span><input type="number" step="0.5" min="0.1" data-w></label>
+      <label class="tb-campo" style="flex:1"><span>Alto</span><input type="number" step="0.5" min="0.1" data-h></label>
+      <label class="tb-campo" style="flex:1"><span>Unidad</span><select data-u><option value="c">casillas</option><option value="px">píxeles</option></select></label></div></div>`);
+    const w = c.querySelector("[data-w]"), h = c.querySelector("[data-h]"), u = c.querySelector("[data-u]");
+    const pintar = () => { const k = u.value === "c" ? t : 1; w.value = Math.round(o.ancho / k * 100) / 100; h.value = Math.round(o.alto / k * 100) / 100; };
+    pintar(); u.addEventListener("change", pintar);
+    modal({ titulo: "Establecer dimensiones", cuerpo: c, ancho: 460, aceptar: "Aplicar", alAceptar: () => {
+      const k = u.value === "c" ? t : 1;
+      const ancho = Math.max(1, (parseFloat(w.value) || 1) * k), alto = Math.max(1, (parseFloat(h.value) || 1) * k);
+      TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: { ancho, alto } })));
+    } });
+  }
+  /* Pines del mapa: el DJ los edita; todos los abren (si llevan nota del diario, se abre la nota) */
+  function abrirPin(id) {
+    const o = TB.L.objeto(id);
+    if (!o) return;
+    const d = o.datos || {};
+    if (!TB.esGM()) {
+      if (d.nota && TB.diario.has(d.nota)) TBLado.abrirEntrada(d.nota);
+      else if (d.titulo || d.texto) { const v = ventana("pin-" + id, { titulo: esc(d.titulo || "Pin"), ancho: 320, recordar: false, x: 260, y: 140 }); v.cuerpo.innerHTML = `<div style="padding:14px;line-height:1.5">${esc(d.texto || "")}</div>`; }
+      return;
+    }
+    const notas = [...TB.diario.values()].sort((a, b) => a.nombre.localeCompare(b.nombre));
+    const c = el(`<div><label class="tb-campo"><span>Título</span><input type="text" data-t></label>
+      <label class="tb-campo"><span>Texto (lo ven los jugadores al hacer clic)</span><textarea rows="4" data-x></textarea></label>
+      <label class="tb-campo"><span>Abrir una entrada del diario</span><select data-n><option value="">Ninguna</option>${notas.map(n => `<option value="${n.id}">${esc(n.nombre)}</option>`).join("")}</select></label>
+      <label class="tb-campo"><span>Color</span><input type="color" data-c></label></div>`);
+    c.querySelector("[data-t]").value = d.titulo || ""; c.querySelector("[data-x]").value = d.texto || ""; c.querySelector("[data-n]").value = d.nota || ""; c.querySelector("[data-c]").value = d.color || "#d6127e";
+    modal({ titulo: "Pin del mapa", cuerpo: c, ancho: 480, alAceptar: () => TB.cambiarObjeto(id, { datos: Object.assign({}, d, {
+      titulo: c.querySelector("[data-t]").value.trim().slice(0, 60), texto: c.querySelector("[data-x]").value.slice(0, 2000), nota: c.querySelector("[data-n]").value || null, color: c.querySelector("[data-c]").value }) }) });
   }
 
   /* ============================================================ páginas (GM) */
   let filtroPaginas = "";
   function alternarPaginas() {
     const p = document.getElementById("tbPaginas");
+    if (p.hidden) fotografiarPagina();
     p.hidden = !p.hidden;
     if (!p.hidden) pintarPaginas();
     marcarBarra();
   }
   function miniaturaDe(e) {
     if (e.miniatura) return e.miniatura;
+    try { const m = localStorage.getItem("tbMini:" + e.id); if (m) return m; } catch (err) { /* nada */ }
     if (e.id === TB.escenaId) {
       const mapa = TB.L.objetos().filter(o => o.capa === "mapa" && o.tipo === "imagen" && o.datos && o.datos.src).sort((a, b) => b.ancho * b.alto - a.ancho * a.alto)[0];
       if (mapa) return mapa.datos.src;
     }
     return "";
+  }
+  // Foto pequeña de la página que se está viendo (mapa y fichas, sin niebla ni interfaz)
+  function fotografiarPagina() {
+    const e = TB.escena();
+    if (!e || e.miniatura || !TB.L.miniatura) return;
+    try { const url = TB.L.miniatura(320); if (url) localStorage.setItem("tbMini:" + e.id, url); } catch (err) { /* sin sitio o imagen de otro dominio */ }
   }
   function pintarPaginas() {
     const p = document.getElementById("tbPaginas");
@@ -741,14 +869,15 @@
     const cab = el(`<div class="tb-paginas-cab">
       <div class="actual">${mini ? `<img src="${esc(mini)}" alt="">` : `<span class="mini"></span>`}<span>${esc(actual.nombre || "")}</span></div>
       <button type="button" class="tb-enlace" data-config style="font-size:17px;font-weight:600">⚙ Configuración de página</button>
-      <div class="tb-paginas-miembros" title="La página que ven los jugadores">
-        <span class="marca"></span>
-        <span class="avs">${conectados.slice(0, 4).map(c => `<span style="background-color:${TB.colorJugador(c.uid)}">${esc((c.nombre || "?")[0].toUpperCase())}</span>`).join("")}${conectados.length > 4 ? `<span>+${conectados.length - 4}</span>` : ""}</span>
-        <span><b>${esc(deJug ? deJug.nombre : "Ninguna")}</b><small>${conectados.length} ${conectados.length === 1 ? "jugador conectado" : "jugadores conectados"}</small></span>
+      <div class="tb-paginas-miembros" title="Arrastra el marcalibros a otra página para llevar allí a los jugadores">
+        <span class="marca" draggable="true" data-marca></span>
+        <span class="avs">${conectados.slice(0, 4).map(c => c.avatar ? `<span style="background-image:url('${esc(c.avatar)}')"></span>` : `<span style="background-color:${TB.colorJugador(c.uid)}">${esc((c.nombre || "?")[0].toUpperCase())}</span>`).join("")}${conectados.length > 4 ? `<span>+${conectados.length - 4}</span>` : ""}</span>
+        <span><b>${esc(deJug ? deJug.nombre : "Ninguna")}</b><small>${conectados.length} ${conectados.length === 1 ? "miembro" : "miembros"}</small></span>
       </div>
       <button type="button" class="tb-flot-cerrar" data-cerrar style="font-size:26px">✕</button></div>`);
     cab.querySelector("[data-cerrar]").addEventListener("click", alternarPaginas);
     cab.querySelector("[data-config]").addEventListener("click", () => configPagina(TB.escenaId));
+    cab.querySelector("[data-marca]").addEventListener("dragstart", ev => { ev.dataTransfer.setData("text/tablero-marca", "1"); ev.dataTransfer.effectAllowed = "move"; });
     const barra = el(`<div class="tb-paginas-barra">
       <button type="button" class="tb-btn tb-btn-borde" data-carpeta title="Nueva carpeta" style="width:46px;height:42px;padding:0">${I.carpeta}</button>
       <input type="search" placeholder="Buscar…" data-buscar style="min-height:42px">
@@ -774,29 +903,39 @@
     function pintarRejilla() {
       rejilla.innerHTML = "";
       const f = filtroPaginas.trim().toLowerCase();
-      const lista = [...TB.escenas.values()].filter(e => !f || e.nombre.toLowerCase().includes(f)).sort((a, b) => (a.orden || 0) - (b.orden || 0) || String(a.creada).localeCompare(String(b.creada)));
+      const lista = [...TB.escenas.values()].filter(e => !e.archivada && (!f || e.nombre.toLowerCase().includes(f))).sort((a, b) => (a.orden || 0) - (b.orden || 0) || String(a.creada).localeCompare(String(b.creada)));
       const carpetas = [...new Set(lista.map(e => e.carpeta || ""))].sort((a, b) => (a === "" ? -1 : b === "" ? 1 : a.localeCompare(b)));
       carpetas.forEach(c => {
         rejilla.appendChild(el(`<div class="tb-paginas-carpeta">${c ? "📁 " + esc(c) : "Todas las páginas"}</div>`));
         const tarjetas = el(`<div class="tb-paginas-tarjetas"></div>`);
         lista.filter(e => (e.carpeta || "") === c).forEach(e => {
           const m = miniaturaDe(e);
-          const t = el(`<div class="tb-pag${e.id === TB.escenaId ? " viendo" : ""}" title="Ver esta página">
-            ${e.id === TB.estado.escena_jugadores ? `<span class="tb-pag-marca" title="Aquí están los jugadores"></span>` : ""}
+          const t = el(`<div class="tb-pag${e.id === TB.escenaId ? " viendo" : ""}" title="Ver esta página (tú). Arrastra el marcalibros aquí para llevar a los jugadores.">
+            ${e.id === TB.estado.escena_jugadores ? `<span class="tb-pag-marca" draggable="true" title="Aquí están los jugadores: arrástralo a otra página"></span>` : ""}
             <div class="tb-pag-mini" style="${m ? `background-image:url('${esc(m)}')` : ""}">${m ? "" : "Sin miniatura"}</div>
             <div class="tb-pag-nombre">${esc(e.nombre)}</div>
-            <div class="tb-pag-acciones"><button type="button" data-a="jug" title="Llevar a los jugadores a esta página">★ Jugadores aquí</button><button type="button" data-a="cfg" title="Configuración">⚙</button><button type="button" data-a="dup" title="Duplicar">⧉</button><button type="button" data-a="borrar" title="Borrar">🗑</button></div></div>`);
+            <div class="tb-pag-acciones"><button type="button" data-a="cfg" title="Configuración">⚙</button><button type="button" data-a="dup" title="Duplicar">⧉</button><button type="button" data-a="borrar" title="Borrar">🗑</button></div></div>`);
+          const marca = t.querySelector(".tb-pag-marca");
+          if (marca) marca.addEventListener("dragstart", ev => { ev.stopPropagation(); ev.dataTransfer.setData("text/tablero-marca", "1"); ev.dataTransfer.effectAllowed = "move"; });
+          t.addEventListener("dragover", ev => { if ([...ev.dataTransfer.types].includes("text/tablero-marca")) { ev.preventDefault(); t.classList.add("soltando"); } });
+          t.addEventListener("dragleave", () => t.classList.remove("soltando"));
+          t.addEventListener("drop", async ev => {
+            if (!ev.dataTransfer.getData("text/tablero-marca")) return;
+            ev.preventDefault(); t.classList.remove("soltando");
+            await TB.llevarJugadores(e.id);
+            pintarPaginas();
+          });
           t.addEventListener("click", async ev => {
             const a = ev.target.closest("[data-a]");
             if (a) {
               ev.stopPropagation();
-              if (a.dataset.a === "jug") await TB.llevarJugadores(e.id);
               if (a.dataset.a === "cfg") configPagina(e.id);
               if (a.dataset.a === "dup") await TB.duplicarEscena(e.id);
               if (a.dataset.a === "borrar") await TB.borrarEscena(e.id);
               pintarPaginas();
               return;
             }
+            if (ev.target.closest(".tb-pag-marca")) return;
             await TB.verEscena(e.id);
             alternarPaginas();
           });
@@ -804,44 +943,111 @@
         });
         rejilla.appendChild(tarjetas);
       });
+      const archivadas = [...TB.escenas.values()].filter(e => e.archivada);
+      if (archivadas.length) {
+        rejilla.appendChild(el(`<div class="tb-paginas-carpeta">🗄 Archivadas</div>`));
+        const caja = el(`<div class="tb-paginas-tarjetas"></div>`);
+        archivadas.forEach(e => {
+          const t = el(`<div class="tb-pag" title="Desarchivar"><div class="tb-pag-mini" style="${e.miniatura ? `background-image:url('${esc(e.miniatura)}')` : ""};opacity:.5"></div><div class="tb-pag-nombre">${esc(e.nombre)}</div></div>`);
+          t.addEventListener("click", async () => { await TB.guardarEscena(e.id, { archivada: false }); pintarPaginas(); });
+          caja.appendChild(t);
+        });
+        rejilla.appendChild(caja);
+      }
     }
     pintarRejilla();
   }
 
+  /* Configuración de página: la ventana de Roll20 */
   function configPagina(id) {
     const e = TB.escenas.get(id);
     if (!e) return;
-    const c = Object.assign({ tam: 70, visible: true, ajustar: true, color: "#c0c0c0", opacidad: 0.5, pies: 5 }, e.cuadricula);
-    const mini = campoImagen(e.miniatura, f => TB.red.subirImagen(f), { texto: "Miniatura (opcional): suelta una imagen o haz clic" });
-    const cuerpo = el(`<div><div class="tb-dos-col">
-      <div>
-        <label class="tb-campo"><span>Nombre de la página</span><input type="text" data-nombre></label>
-        <label class="tb-campo"><span>Carpeta</span><input type="text" data-carpeta placeholder="Sin carpeta"></label>
-        <label class="tb-campo"><span>Color de fondo</span><input type="color" data-fondo></label>
-        <div class="tb-campo"><span>Miniatura</span><div data-mini style="max-width:260px"></div></div>
-      </div>
-      <div>
-        <h3 style="margin:2px 0 12px;font-size:18px">Cuadrícula</h3>
-        <label class="tb-casilla" style="margin-bottom:10px"><input type="checkbox" data-visible> Mostrar la cuadrícula</label><br>
-        <label class="tb-casilla" style="margin-bottom:14px"><input type="checkbox" data-ajustar> Ajustar las fichas a la cuadrícula (Alt al soltar para no ajustar)</label>
-        <div class="tb-fila"><label class="tb-campo" style="flex:1"><span>Tamaño de casilla (px)</span><input type="number" min="10" max="400" data-tam></label>
-          <label class="tb-campo" style="flex:1"><span>Pies por casilla</span><input type="number" min="1" max="100" data-pies></label></div>
-        <div class="tb-fila"><label class="tb-campo"><span>Color</span><input type="color" data-color></label>
-          <label class="tb-campo" style="flex:1"><span>Opacidad</span><input type="range" min="0" max="100" data-op></label></div>
-      </div></div></div>`);
-    const q = s => cuerpo.querySelector(s);
-    q("[data-nombre]").value = e.nombre; q("[data-carpeta]").value = e.carpeta || ""; q("[data-fondo]").value = e.fondo || "#ffffff";
+    const c = Object.assign({ tam: 70, visible: true, ajustar: true, color: "#c0c0c0", opacidad: 0.5, pies: 5, unidad: "pies", diagonal: "5e", preciso: true, dx: 0, dy: 0 }, e.cuadricula);
+    const opc = Object.assign({ colorTablero: "#3d4048", audio: null }, e.opciones);
+    const carpetas = [...new Set([...TB.escenas.values()].map(x => x.carpeta).filter(Boolean))];
+    const pistas = (window.MUSICA || []).map(s => ({ src: s, nombre: decodeURIComponent(s.split("/").pop()).replace(/\.[^.]+$/, "") }));
+    const mini = campoImagen(e.miniatura, f => TB.red.subirImagen(f), { texto: "Miniatura: suelta una imagen o haz clic (si no, se hace sola)" });
+    if (ventanas.has("pagina-" + id)) ventanas.get("pagina-" + id).cerrar();
+    const v = ventana("pagina-" + id, { titulo: "Configuración de página", ancho: 560, alto: Math.min(760, window.innerHeight - 60), x: 120, y: 20, recordar: false });
+    v.cuerpo.innerHTML = "";
+    const c1 = el(`<div class="tb-cfgpag">
+      <h4 class="tb-cfgpag-tit">Detalles de página</h4>
+      <div class="tb-fila"><label class="tb-campo" style="flex:1"><span>Nombre de la página</span><input type="text" data-nombre></label>
+        <label class="tb-campo" style="flex:1"><span>Carpeta</span><input type="text" data-carpeta list="tbCarpetasPag" placeholder="Todas las páginas"><datalist id="tbCarpetasPag">${carpetas.map(x => `<option value="${esc(x)}">`).join("")}</datalist></label></div>
+      <h4 class="tb-cfgpag-sec">Tamaño del lienzo</h4>
+      <div class="tb-cfgpag-calc"><span class="tb-etq">Ancho</span><span class="tb-ud"><input type="number" min="1" max="500" data-ancho><i>celdas</i></span><b>×</b><span class="tb-ud gris"><input type="number" disabled data-pxa><i>px/celda</i></span><b>=</b><span class="tb-ud"><input type="number" data-anchopx><i>px</i></span></div>
+      <div class="tb-cfgpag-calc"><span class="tb-etq">Alto</span><span class="tb-ud"><input type="number" min="1" max="500" data-alto><i>celdas</i></span><b>×</b><span class="tb-ud gris"><input type="number" disabled data-pxb><i>px/celda</i></span><b>=</b><span class="tb-ud"><input type="number" data-altopx><i>px</i></span></div>
+      <div class="tb-cfgpag-calc"><span class="tb-etq">Tamaño de celda</span><span class="tb-ud gris"><input type="number" value="1" disabled><i>celdas</i></span><b>×</b><span class="tb-ud gris"><input type="number" value="70" disabled><i>px</i></span><b>=</b><span class="tb-ud"><input type="number" min="10" max="400" data-tam><i>px/celda</i></span></div>
+      <p class="tb-nota">Los mapas que sueltas en la capa del mapa se encajan dentro de este lienzo.</p>
+      <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Fondo</h4>
+      <div class="tb-fila-toggle" style="border:0"><span>Color del tablero (fuera de la página)</span><input type="color" data-tablero></div>
+      <div class="tb-fila-toggle" style="border:0"><span>Color de fondo de la página</span><input type="color" data-fondo></div>
+      <div class="tb-campo"><span>Miniatura</span><div data-mini style="max-width:220px"></div></div>
+      <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Escala</h4>
+      <div class="tb-fila"><input type="number" min="0.1" step="0.5" data-pies style="width:110px"><select data-unidad style="width:170px"><option value="pies">Pies</option><option value="m">Metros</option><option value="casillas">Casillas</option><option value="millas">Millas</option><option value="km">Kilómetros</option></select></div>
+      <hr class="tb-sep"><div class="tb-fila-toggle" style="border:0"><h4 class="tb-cfgpag-sec" style="margin:0">Cuadrícula</h4><span data-t-visible></span></div>
+      <div class="tb-fila"><label class="tb-campo" style="flex:1"><span>Tipo de cuadrícula</span><select data-tipo><option value="cuadrada">Cuadrada</option></select></label>
+        <label class="tb-campo" style="flex:1"><span>Medición diagonal</span><select data-diag><option value="5e">D&amp;D 5e / 4e</option><option value="pathfinder">Pathfinder / 3.5e</option><option value="euclidea">Euclídea</option><option value="manhattan">Manhattan</option></select></label></div>
+      <div class="tb-fila-toggle" style="border:0"><span>Ajuste a las casillas (las fichas encajan al soltarlas)</span><span data-t-ajustar></span></div>
+      <div class="tb-fila-toggle" style="border:0"><span>Ajustamiento preciso a las esquinas y al centro de las celdas</span><span data-t-preciso></span></div>
+      <div class="tb-fila-toggle" style="border:0"><span>Desplazamiento de la cuadrícula</span><span class="tb-fila"><span class="tb-ud"><input type="number" data-dx style="width:70px"><i>px</i></span><span class="tb-ud"><input type="number" data-dy style="width:70px"><i>px</i></span></span></div>
+      <div class="tb-fila-toggle" style="border:0"><span>Color de cuadrícula</span><input type="color" data-color></div>
+      <label class="tb-campo"><span>Opacidad de la línea de la cuadrícula</span><span class="tb-fila"><input type="range" min="0" max="100" data-op><span class="tb-ud"><input type="number" min="0" max="100" data-opn style="width:70px"><i>%</i></span></span></label>
+      <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Gestionar audio</h4>
+      <label class="tb-campo"><span>Reproducir en carga (empieza cuando el marcalibros llega a esta página)</span><select data-audio><option value="">Ninguno</option>${pistas.map(p => `<option value="${esc(p.src)}">${esc(p.nombre)}</option>`).join("")}</select></label>
+      <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Gestionar la zona</h4>
+      <div class="tb-fila"><button type="button" class="tb-btn" data-archivar>🗄 ${e.archivada ? "Desarchivar página" : "Archivar página"}</button><button type="button" class="tb-btn tb-btn-rojo" data-borrar>🗑 Borrar página</button></div>
+    </div>`);
+    v.cuerpo.appendChild(c1);
+    v.cuerpo.style.padding = "0";
+    const q = s => c1.querySelector(s);
+    q("[data-nombre]").value = e.nombre; q("[data-carpeta]").value = e.carpeta || "";
+    q("[data-ancho]").value = e.ancho || 40; q("[data-alto]").value = e.alto || 40; q("[data-tam]").value = c.tam;
+    const recalcular = origen => {
+      const t = Math.max(10, parseInt(q("[data-tam]").value, 10) || 70);
+      q("[data-pxa]").value = t; q("[data-pxb]").value = t;
+      if (origen === "px") {
+        q("[data-ancho]").value = Math.max(1, Math.round((parseInt(q("[data-anchopx]").value, 10) || t) / t));
+        q("[data-alto]").value = Math.max(1, Math.round((parseInt(q("[data-altopx]").value, 10) || t) / t));
+      }
+      q("[data-anchopx]").value = (parseInt(q("[data-ancho]").value, 10) || 1) * t;
+      q("[data-altopx]").value = (parseInt(q("[data-alto]").value, 10) || 1) * t;
+    };
+    ["[data-ancho]", "[data-alto]", "[data-tam]"].forEach(s => q(s).addEventListener("input", () => recalcular()));
+    ["[data-anchopx]", "[data-altopx]"].forEach(s => q(s).addEventListener("change", () => recalcular("px")));
+    recalcular();
+    q("[data-tablero]").value = opc.colorTablero; q("[data-fondo]").value = e.fondo || "#ffffff";
     q("[data-mini]").appendChild(mini.el);
-    q("[data-visible]").checked = c.visible !== false; q("[data-ajustar]").checked = c.ajustar !== false;
-    q("[data-tam]").value = c.tam; q("[data-pies]").value = c.pies; q("[data-color]").value = c.color; q("[data-op]").value = Math.round(c.opacidad * 100);
-    modal({ titulo: "Configuración de página", cuerpo, ancho: 820, alAceptar: async () => {
+    q("[data-pies]").value = c.pies; q("[data-unidad]").value = c.unidad || "pies";
+    const tVis = interruptor(c.visible !== false), tAj = interruptor(c.ajustar !== false), tPre = interruptor(c.preciso !== false);
+    q("[data-t-visible]").append(tVis.el); q("[data-t-ajustar]").append(tAj.el); q("[data-t-preciso]").append(tPre.el);
+    q("[data-diag]").value = c.diagonal || "5e"; q("[data-dx]").value = c.dx || 0; q("[data-dy]").value = c.dy || 0; q("[data-color]").value = c.color;
+    q("[data-op]").value = Math.round(c.opacidad * 100); q("[data-opn]").value = Math.round(c.opacidad * 100);
+    q("[data-op]").addEventListener("input", () => { q("[data-opn]").value = q("[data-op]").value; });
+    q("[data-opn]").addEventListener("input", () => { q("[data-op]").value = q("[data-opn]").value; });
+    q("[data-audio]").value = (opc.audio && opc.audio.src) || "";
+    q("[data-archivar]").addEventListener("click", async () => { await TB.guardarEscena(id, { archivada: !e.archivada }); v.cerrar(); pintarPaginas(); });
+    q("[data-borrar]").addEventListener("click", async () => { v.cerrar(); await TB.borrarEscena(id); pintarPaginas(); });
+    const pie = el(`<div class="tb-cfgpag-pie"><button type="button" class="tb-enlace" data-cancelar style="font-size:17px;font-weight:700">Cancelar</button><button type="button" class="tb-btn tb-btn-acento" data-guardar style="font-size:17px;font-weight:700;min-height:44px;padding:0 22px">Guardar ajustes</button></div>`);
+    v.el.appendChild(pie);
+    pie.querySelector("[data-cancelar]").addEventListener("click", () => v.cerrar());
+    pie.querySelector("[data-guardar]").addEventListener("click", async () => {
+      const audioSrc = q("[data-audio]").value;
+      const pista = pistas.find(x => x.src === audioSrc);
+      const miniatura = mini.valor();
       await TB.guardarEscena(id, {
-        nombre: q("[data-nombre]").value.trim().slice(0, 80) || "Página", carpeta: q("[data-carpeta]").value.trim().slice(0, 60), fondo: q("[data-fondo]").value, miniatura: mini.valor(),
-        cuadricula: { tam: Math.max(10, Math.min(400, parseInt(q("[data-tam]").value, 10) || 70)), pies: Math.max(1, parseInt(q("[data-pies]").value, 10) || 5),
-          visible: q("[data-visible]").checked, ajustar: q("[data-ajustar]").checked, color: q("[data-color]").value, opacidad: Number(q("[data-op]").value) / 100 }
+        nombre: q("[data-nombre]").value.trim().slice(0, 80) || "Página", carpeta: q("[data-carpeta]").value.trim().slice(0, 60),
+        ancho: Math.max(1, Math.min(500, parseInt(q("[data-ancho]").value, 10) || 40)), alto: Math.max(1, Math.min(500, parseInt(q("[data-alto]").value, 10) || 40)),
+        fondo: q("[data-fondo]").value, miniatura,
+        opciones: Object.assign({}, opc, { colorTablero: q("[data-tablero]").value, audio: pista ? { src: pista.src, nombre: pista.nombre } : null, miniaturaManual: !!miniatura && miniatura !== e.miniatura ? true : !!opc.miniaturaManual && !!miniatura }),
+        cuadricula: { tam: Math.max(10, Math.min(400, parseInt(q("[data-tam]").value, 10) || 70)), pies: Math.max(0.1, parseFloat(q("[data-pies]").value) || 5), unidad: q("[data-unidad]").value,
+          visible: tVis.valor(), ajustar: tAj.valor(), preciso: tPre.valor(), diagonal: q("[data-diag]").value,
+          dx: parseInt(q("[data-dx]").value, 10) || 0, dy: parseInt(q("[data-dy]").value, 10) || 0,
+          color: q("[data-color]").value, opacidad: (parseInt(q("[data-opn]").value, 10) || 0) / 100 }
       });
+      v.cerrar();
       pintarPaginas();
-    } });
+    });
   }
 
   /* ============================================================ soltar sobre el tablero */
@@ -857,11 +1063,17 @@
   async function crearImagenEn(src, nombre, p, alt) {
     const t = TB.L.tamCelda();
     const m = await medirImagen(src) || { w: t, h: t };
-    let ancho, alto;
-    if (alt || TB.capa === "mapa") { ancho = m.w; alto = m.h; }
+    let ancho, alto, pos = p;
+    if (TB.capa === "mapa" && !TB.prefs.mapaSinEncajar && !alt) {
+      // Un mapa se encaja dentro del lienzo de la página (sin deformarlo) y se centra
+      const pag = TB.L.pagina();
+      const k = Math.min(pag.w / m.w, pag.h / m.h);
+      ancho = Math.round(m.w * k); alto = Math.round(m.h * k);
+      pos = { x: pag.w / 2, y: pag.h / 2 };
+    } else if (alt || TB.capa === "mapa") { ancho = m.w; alto = m.h; }
     else { const k = t / Math.max(m.w, m.h); ancho = Math.max(10, Math.round(m.w * k)); alto = Math.max(10, Math.round(m.h * k)); }
     const fila = { tipo: "imagen", capa: TB.capa, ancho, alto, datos: { src, nombre: nombre || "" } };
-    Object.assign(fila, TB.L.ajustarPos(fila, p.x, p.y, alt));
+    Object.assign(fila, TB.capa === "mapa" ? pos : TB.L.ajustarPos(fila, pos.x, pos.y, alt));
     return TB.crearObjetos([fila]);
   }
   async function soltarEnTablero(dt, p, alt) {
@@ -871,7 +1083,8 @@
       for (const f of archivos) {
         try {
           aviso("Subiendo " + f.name + "…");
-          const src = await TB.red.subirImagen(f);
+          const listo = TB.prefs.webp !== false ? await aWebp(f) : f;
+          const src = await TB.red.subirImagen(listo);
           const nombre = f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
           TB.red.crearArte({ src, nombre }).then(a => { if (TB.arte) { TB.arte.unshift(a); TB.lanzar("arte"); } }).catch(() => {});
           await crearImagenEn(src, nombre, p, alt);
@@ -896,6 +1109,23 @@
     const src = dt.getData("text/tablero-src") || (dt.getData("text/uri-list") || "").split("\n")[0].trim();
     if (src && /^(https?:|data:image\/|assets\/)/i.test(src)) crearImagenEn(src, dt.getData("text/tablero-nombre"), p, alt);
   }
+  /* Optimizar al subir: las imágenes de menos de 16 megapíxeles se pasan a WebP (pesan menos y cargan antes) */
+  function aWebp(f) {
+    return new Promise(res => {
+      if (f.type === "image/webp" || f.type === "image/gif") { res(f); return; }
+      const url = URL.createObjectURL(f), img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        if (img.naturalWidth * img.naturalHeight > 16e6) { res(f); return; }
+        const c = document.createElement("canvas");
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        c.getContext("2d").drawImage(img, 0, 0);
+        c.toBlob(b => res(b && b.size < f.size ? new File([b], f.name.replace(/\.[^.]+$/, "") + ".webp", { type: "image/webp" }) : f), "image/webp", 0.9);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); res(f); };
+      img.src = url;
+    });
+  }
 
   /* ============================================================ arranque */
   function iniciar(tb) {
@@ -911,11 +1141,12 @@
       pintarPaginas();
     });
     TB.on("escenas", pintarPaginas);
+    TB.on("antesDeEscena", fotografiarPagina);
     TB.on("escena", () => { pintarPaginas(); if (flotanteAbierto === "niebla") { flotanteAbierto = null; abrirFlotante("niebla", document.querySelector('[data-b="niebla"]')); } });
     TB.on("presencia", pintarPaginas);
     setHerramienta("seleccionar");
     setCapa("fichas");
   }
 
-  window.TBPaneles = { iniciar, ajustesFicha, menuFicha, soltarEnTablero, elegirDibujo, setHerramienta, medirImagen };
+  window.TBPaneles = { iniciar, ajustesFicha, menuFicha, menuVacio, abrirPin, soltarEnTablero, elegirDibujo, setHerramienta, setCapa, alternarPaginas, alternarTurno, configPagina, medirImagen };
 })();

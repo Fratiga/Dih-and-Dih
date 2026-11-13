@@ -18,12 +18,55 @@
   const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "x" + Date.now().toString(36) + Math.random().toString(36).slice(2));
   const ahora = () => new Date().toISOString();
   const ESTADO_VACIO = () => ({ id: 1, escena_jugadores: null, iniciativa: { lista: [], turno: 0, ronda: 1, visible: false }, musica: {} });
-  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "camara"];
+  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "camara", "cursor", "sonido"];
 
   /* ============================================================ Supabase */
   function redSupabase() {
     const ev = emisor();
     let sb = null, canal = null, yo = null;
+    let conectado = false, intentos = 0, temporizador = null, huboCaida = false, extraPresencia = {};
+
+    /* Un solo canal con los cambios de las tablas, el broadcast y quién está conectado. Si se cae (pestaña dormida,
+       red, servidor), se vuelve a abrir solo con esperas crecientes y, al volver, la app recarga lo que se perdió. */
+    function conectar() {
+      const uid = yo.uid;
+      canal = sb.channel("tablero", { config: { broadcast: { self: false }, presence: { key: uid } } })
+        .on("postgres_changes", { event: "*", schema: "public", table: "tablero_objetos" }, fila("objeto", "objetoBorrado"))
+        .on("postgres_changes", { event: "*", schema: "public", table: "tablero_escenas" }, fila("escena", "escenaBorrada"))
+        .on("postgres_changes", { event: "*", schema: "public", table: "tablero_diario" }, fila("diario", "diarioBorrado"))
+        .on("postgres_changes", { event: "*", schema: "public", table: "tablero_estado" }, p => { if (p.new && p.new.id) ev.lanzar("estado", p.new); })
+        .on("postgres_changes", { event: "*", schema: "public", table: "tablero_mensajes" }, fila("mensaje", "mensajeBorrado"))
+        .on("presence", { event: "sync" }, () => {
+          const st = canal.presenceState();
+          ev.lanzar("presencia", Object.keys(st).map(k => st[k][0]).filter(Boolean));
+        });
+      BROADCAST.forEach(nombre => canal.on("broadcast", { event: nombre }, m => ev.lanzar(nombre, m.payload)));
+      const este = canal;
+      canal.subscribe((estado, err) => {
+        if (este !== canal) return;
+        if (estado === "SUBSCRIBED") {
+          conectado = true; intentos = 0;
+          canal.track(Object.assign({ uid, nombre: yo.nombre, gm: yo.esGM }, extraPresencia)).catch(() => {});
+          ev.lanzar("conexion", { estado: "conectado", recuperado: huboCaida });
+          huboCaida = false;
+        } else if (estado === "CHANNEL_ERROR" || estado === "TIMED_OUT" || estado === "CLOSED") {
+          if (estado === "CLOSED" && !conectado) return;
+          conectado = false; huboCaida = true;
+          if (err) console.warn("[tablero] canal:", estado, err.message || err);
+          ev.lanzar("conexion", { estado: "reconectando", intentos });
+          reconectar(Math.min(30000, 1500 * Math.pow(2, intentos++)));
+        }
+      });
+    }
+    function reconectar(espera) {
+      clearTimeout(temporizador);
+      temporizador = setTimeout(() => {
+        const viejo = canal;
+        canal = null;
+        if (viejo) sb.removeChannel(viejo).catch(() => {});
+        conectar();
+      }, espera);
+    }
     const ok = ({ data, error }) => { if (error) throw error; return data; };
     const fila = (nombre, borrado) => p => {
       if (p.eventType === "DELETE") ev.lanzar(borrado, p.old && p.old.id);
@@ -48,21 +91,10 @@
         const perfil = await sb.from("perfiles").select("username").eq("user_id", uid).maybeSingle();
         yo = { uid, esGM: !!esGM, nombre: (perfil.data && perfil.data.username) || "Jugador" };
 
-        canal = sb.channel("tablero", { config: { broadcast: { self: false }, presence: { key: uid } } })
-          .on("postgres_changes", { event: "*", schema: "public", table: "tablero_objetos" }, fila("objeto", "objetoBorrado"))
-          .on("postgres_changes", { event: "*", schema: "public", table: "tablero_escenas" }, fila("escena", "escenaBorrada"))
-          .on("postgres_changes", { event: "*", schema: "public", table: "tablero_diario" }, fila("diario", "diarioBorrado"))
-          .on("postgres_changes", { event: "*", schema: "public", table: "tablero_estado" }, p => { if (p.new && p.new.id) ev.lanzar("estado", p.new); })
-          .on("postgres_changes", { event: "*", schema: "public", table: "tablero_mensajes" }, fila("mensaje", "mensajeBorrado"))
-          .on("presence", { event: "sync" }, () => {
-            const st = canal.presenceState();
-            ev.lanzar("presencia", Object.keys(st).map(k => st[k][0]).filter(Boolean));
-          });
-        BROADCAST.forEach(nombre => canal.on("broadcast", { event: nombre }, m => ev.lanzar(nombre, m.payload)));
-        canal.subscribe(s => {
-          ev.lanzar("conexion", s);
-          if (s === "SUBSCRIBED") canal.track({ uid, nombre: yo.nombre, gm: yo.esGM }).catch(() => {});
-        });
+        conectar();
+        // Al volver a la pestaña o recuperar la red, se comprueba el canal
+        window.addEventListener("online", () => { if (!conectado) reconectar(0); });
+        document.addEventListener("visibilitychange", () => { if (!document.hidden && !conectado) reconectar(0); });
         return yo;
       },
       async escenas() { return ok(await sb.from("tablero_escenas").select("*").order("orden").order("creada")); },
@@ -91,6 +123,7 @@
       async tirar(expr, etiqueta, modo, como) { return ok(await sb.rpc("tablero_tirar", { p_expr: expr, p_etiqueta: etiqueta || "", p_modo: modo || "todos", p_como: como || null })); },
       async tirarIniciativa(objeto, mod) { return ok(await sb.rpc("tablero_tirar_iniciativa", { p_objeto: objeto, p_mod: mod | 0 })); },
       async turno(paso) { ok(await sb.rpc("tablero_turno", { p_paso: paso })); },
+      async iniciativaValor(objeto, valor) { ok(await sb.rpc("tablero_iniciativa_valor", { p_objeto: objeto, p_valor: valor })); },
       async vaciarChat() { ok(await sb.from("tablero_mensajes").delete().gt("id", 0)); },
       async crearDiario(f) { return ok(await sb.from("tablero_diario").insert(f).select().single()); },
       async actualizarDiario(id, c) { ok(await sb.from("tablero_diario").update(Object.assign({ actualizado: ahora() }, c)).eq("id", id)); },
@@ -120,7 +153,23 @@
         if (error) return [];
         return (data || []).map(f => ({ id: f.id, owner: f.owner_id, nombre: (f.data && f.data.identidad && f.data.identidad.nombre) || "Sin nombre" }));
       },
-      emitir(evento, datos) { if (canal) canal.send({ type: "broadcast", event: evento, payload: datos }).catch(() => {}); }
+      emitir(evento, datos) { if (canal && conectado) canal.send({ type: "broadcast", event: evento, payload: datos }).catch(() => {}); },
+      presencia(extra) { extraPresencia = Object.assign({}, extraPresencia, extra); if (canal && conectado) canal.track(Object.assign({ uid: yo.uid, nombre: yo.nombre, gm: yo.esGM }, extraPresencia)).catch(() => {}); },
+      async fichaCompleta(id) { const d = ok(await sb.from("fichas_personajes").select("id, owner_id, data, roll20").eq("id", id).maybeSingle()); return d; },
+      async fichasRoll20() {
+        const { data, error } = await sb.from("fichas_personajes").select("id, owner_id, roll20, data").eq("archivado", false).not("roll20", "is", null);
+        if (error) return [];
+        return (data || []).map(f => ({ id: f.id, owner: f.owner_id, nombre: (f.data && f.data.identidad && f.data.identidad.nombre) || (f.roll20 && f.roll20.nombre) || "Sin nombre",
+          velocidad: f.roll20 && f.roll20.velocidad, items: (f.roll20 && f.roll20.items) || [], combate: f.data && f.data.combate }));
+      },
+      async gastarMunicion(ficha, ataque) { return ok(await sb.rpc("fichas_gastar_municion", { p_ficha: ficha, p_ataque: ataque })); },
+      async fichaPV(ficha, cambios) { ok(await sb.rpc("tablero_ficha_pv", { p_ficha: ficha, p_actual: cambios.actual, p_max: cambios.max, p_temp: cambios.temp })); },
+      async canciones() {
+        // Las canciones que se subieron a la rocola (tabla rocola_canciones); las del sitio vienen en data/musica.js
+        const { data, error } = await sb.from("rocola_canciones").select("ruta, titulo, artista").order("creada", { ascending: false });
+        if (error) return [];
+        return (data || []).map(c => ({ src: c.ruta, nombre: c.titulo + (c.artista ? " - " + c.artista : "") }));
+      }
     };
   }
 
@@ -254,6 +303,14 @@
         d.estado.iniciativa = ini; publicar("estado", d.estado);
         return t;
       },
+      async iniciativaValor(objeto, valor) {
+        const o = d.objetos.find(q => q.id === objeto);
+        if (!yo.esGM && !(o && controla(o))) throw new Error("Esa ficha no es tuya.");
+        const ini = d.estado.iniciativa || { lista: [] };
+        if (!(ini.lista || []).some(e => e.id === objeto)) throw new Error("Esa ficha no está en el orden de turno.");
+        ini.lista = ini.lista.map(e => e.id === objeto ? Object.assign({}, e, { valor: Number(valor) || 0 }) : e);
+        d.estado.iniciativa = ini; publicar("estado", d.estado);
+      },
       async turno(paso) {
         const ini = d.estado.iniciativa || {}, n = (ini.lista || []).length;
         if (!n) return;
@@ -285,7 +342,18 @@
       async subirImagen(archivo) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(archivo); }); },
       async jugadores() { return jugadores.slice(); },
       async fichas() { return [{ id: "local-ficha", owner: JUG, nombre: "Jugador de prueba" }]; },
-      emitir(evento, x) { if (bc) bc.postMessage({ evento, x }); }
+      emitir(evento, x) { if (bc) bc.postMessage({ evento, x }); },
+      presencia(extra) { setTimeout(() => ev.lanzar("presencia", [Object.assign({ uid: yo.uid, nombre: yo.nombre, gm: yo.esGM }, extra)]), 0); },
+      async fichaCompleta() { return null; },
+      async fichasRoll20() {
+        return [{ id: "local-ficha", owner: JUG, nombre: "Jugador de prueba", velocidad: 30, combate: { pvActual: 18, pvMax: 24, pvTemp: 0 },
+          items: [{ id: "a1", categoria: "Ataques", texto: "Espada larga: +5", cmd: { normal: "/em ataca con la espada larga\nAtaque: [[1d20+5]]\nDaño: [[1d8+3]] cortante", ventaja: "Ataque: [[2d20kh1+5]]\nDaño: [[1d8+3]]", desventaja: "Ataque: [[2d20kl1+5]]\nDaño: [[1d8+3]]" }, favorita: true },
+            { id: "s1", categoria: "Habilidades", texto: "Sigilo: +4", cmd: { normal: "Sigilo: [[1d20+4]]", ventaja: "Sigilo: [[2d20kh1+4]]", desventaja: "Sigilo: [[2d20kl1+4]]" } },
+            { id: "s2", categoria: "Salvaciones", texto: "Destreza: +4", cmd: { normal: "Salvación de Destreza: [[?{Tipo de tirada|Normal,1d20|Ventaja,2d20kh1|Desventaja,2d20kl1}+4+?{Bonificación adicional|0}]]" } }] }];
+      },
+      async gastarMunicion() { return 0; },
+      async fichaPV() {},
+      async canciones() { return []; }
     };
   }
 
