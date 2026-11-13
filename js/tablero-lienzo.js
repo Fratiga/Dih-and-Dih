@@ -290,6 +290,7 @@
       const g = grupos[capa];
       const nodos = [...st.nodos.values()].filter(n => n.o.capa === capa).sort((a, b) => (a.o.z || 0) - (b.o.z || 0));
       nodos.forEach((n, i) => { n.g.zIndex(i); });
+      if (st.opc.arribaMias && !st.esGM) nodos.forEach(n => { if (controla(n.o)) n.g.moveToTop(); });
     }
 
     function upsert(o) {
@@ -600,6 +601,12 @@
     contenedor.addEventListener("contextmenu", e => e.preventDefault());
     stage.on("wheel", e => {
       e.evt.preventDefault();
+      // Con la rueda en modo «mover», la rueda desplaza la vista y Ctrl + rueda hace zoom
+      if (st.opc.ruedaZoom === false && !e.evt.ctrlKey) {
+        stage.position({ x: stage.x() - (e.evt.shiftKey ? e.evt.deltaY : e.evt.deltaX), y: stage.y() - (e.evt.shiftKey ? 0 : e.evt.deltaY) });
+        redibujarVista();
+        return;
+      }
       const factor = e.evt.deltaY > 0 ? 1 / 1.1 : 1.1;
       ponerZoom(zoom() * factor, stage.getPointerPosition());
     });
@@ -898,7 +905,7 @@
       objetos: () => [...st.nodos.values()].map(n => n.o),
       setCapa(c) { st.capa = c; deseleccionar(); st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); lObj.batchDraw(); lMapa.batchDraw(); },
       setHerramienta,
-      setOpciones(o) { st.opc = Object.assign({}, st.opc, o); },
+      setOpciones(o) { const antes = st.opc.arribaMias; st.opc = Object.assign({}, st.opc, o); if (antes !== st.opc.arribaMias) { CAPAS.forEach(ordenarCapa); lObj.batchDraw(); } },
       opciones: () => st.opc,
       setVistaJugador(v) { st.vistaJugador = v; opacidadNiebla(); st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); lObj.batchDraw(); lNiebla.batchDraw(); },
       setTurno(id) { const viejo = st.turno; st.turno = id; [viejo, id].forEach(x => { const n = st.nodos.get(x); if (n) pintarDeco(n); }); lObj.batchDraw(); lMapa.batchDraw(); },
@@ -935,6 +942,13 @@
           [lMapa, lGrid, lObj].forEach(l => { const cv = l.toCanvas({ x: 0, y: 0, width: m.w, height: m.h, pixelRatio: k }); g.drawImage(cv, 0, 0, c.width, c.height); });
         } finally { stage.setAttrs({ x: vista.x, y: vista.y, scaleX: vista.s, scaleY: vista.s }); stage.batchDraw(); }
         return c.toDataURL("image/jpeg", 0.7);
+      },
+      setCalidad(r) {
+        if (st.calidad === r) return;
+        st.calidad = r;
+        Konva.pixelRatio = r;
+        stage.getLayers().forEach(l => { l.getCanvas().setPixelRatio(r); });
+        stage.batchDraw();
       },
       setPausa(v) { st.pausa = !!v; st.nodos.forEach(aplicarAtributos); lObj.batchDraw(); },
       setMayus(v) { tr.keepRatio(!!v); },

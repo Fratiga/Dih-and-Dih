@@ -42,6 +42,8 @@ create table if not exists tablero_estado (
 alter table tablero_estado add column if not exists musica jsonb not null default '{}'::jsonb;
 -- El DJ pausa el movimiento: ningún jugador mueve fichas hasta que lo quite
 alter table tablero_estado add column if not exists pausa boolean not null default false;
+-- Listas de la gramola y efectos del soundboard del DJ
+alter table tablero_estado add column if not exists gramola jsonb not null default '{}'::jsonb;
 
 insert into tablero_estado (id) values (1) on conflict (id) do nothing;
 
@@ -684,14 +686,17 @@ begin
 end;
 $$;
 
--- Imágenes del tablero (mapas, fichas, diario): bucket público, solo el GM sube o borra. Hasta 15 MB.
+-- Imágenes del tablero (mapas, fichas, diario) y efectos de sonido del soundboard: bucket público, solo el GM sube o
+-- borra. Hasta 15 MB.
 do $$
 begin
   if to_regclass('storage.buckets') is null then return; end if;   -- base de pruebas sin Storage
   insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-  values ('tablero', 'tablero', true, 15728640, array['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
+  values ('tablero', 'tablero', true, 15728640, array['image/png', 'image/jpeg', 'image/webp', 'image/gif',
+    'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/mp4', 'audio/aac'])
   on conflict (id) do update set public = true, file_size_limit = 15728640,
-    allowed_mime_types = array['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    allowed_mime_types = array['image/png', 'image/jpeg', 'image/webp', 'image/gif',
+      'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/mp4', 'audio/aac'];
   execute 'drop policy if exists "tablero_storage_select" on storage.objects';
   execute 'create policy "tablero_storage_select" on storage.objects for select using (bucket_id = ''tablero'')';
   execute 'drop policy if exists "tablero_storage_insert" on storage.objects';

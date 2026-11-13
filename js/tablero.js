@@ -12,11 +12,14 @@
     texto: { color: "#000000", fondo: "transparent", fuente: "Arial", tam: 26, negrita: false, cursiva: false },
     niebla: { modo: "revelar", forma: "rect" },
     fx: { tipo: "aliento", color: "fuego" },
-    dados: { modo: "todos", avanzado: false, explota: "" },
-    consejos: true, volumen: 0.7, pestana: "chat", ladoPlegado: false, barraPlegada: false, tamChat: 14.5
+    dados: { modo: "todos", avanzado: false, explota: "", tresD: true, auto3D: true, skin: "marfil", moneda: "oro" },
+    consejos: true, volumen: 0.7, volumenEfectos: 0.8, pestana: "chat", ladoPlegado: false, barraPlegada: false, tamChat: 14.5,
+    avatares: { ver: true, tam: 56, nombres: true }, oscuro: false, verZoom: true, ruedaZoom: true,
+    decoHover: false, arribaMias: false, centrarMia: true, mapaSinEncajar: false, sinFx: false, calidad: "media", webp: true,
+    pitido: false, avataresChat: true, horas: false
   };
   function leerPrefs() {
-    try { const p = JSON.parse(localStorage.getItem("tbPrefs") || "{}"); return Object.assign({}, PREFS_DEF, p, Object.fromEntries(["medida", "dibujo", "texto", "niebla", "fx", "dados"].map(k => [k, Object.assign({}, PREFS_DEF[k], p[k])]))); }
+    try { const p = JSON.parse(localStorage.getItem("tbPrefs") || "{}"); return Object.assign({}, PREFS_DEF, p, Object.fromEntries(["medida", "dibujo", "texto", "niebla", "fx", "dados", "avatares"].map(k => [k, Object.assign({}, PREFS_DEF[k], p[k])]))); }
     catch (e) { return JSON.parse(JSON.stringify(PREFS_DEF)); }
   }
 
@@ -116,7 +119,9 @@
     TB.L.setEscena(escena);
     TB.L.setObjetos(id ? await TB.red.objetos(id).catch(e => { aviso(mensajeError(e), true); return []; }) : []);
     const cam = leerCamara(id);
-    if (cam) TB.L.centrarEn(cam.x, cam.y, cam.z); else TB.L.ajustarVista();
+    // Un jugador que llega a una página nueva ve su ficha en el centro (si lo tiene activado)
+    const mia = !TB.yo.esGM && TB.prefs.centrarMia !== false && TB.L.objetos().find(o => o.tipo === "imagen" && o.capa === "fichas" && TB.controla(o));
+    if (cam) TB.L.centrarEn(cam.x, cam.y, cam.z); else if (mia) { TB.L.ajustarVista(); TB.L.centrarEn(mia.x, mia.y); } else TB.L.ajustarVista();
     TB.lanzar("escena", escena);
     if (!escena && !TB.yo.esGM) aviso("El DJ todavía no ha abierto ninguna página.");
   }
@@ -165,6 +170,7 @@
         aviso(s.pausa ? "El DJ ha pausado el movimiento." : "El DJ ha reanudado el movimiento.");
       }
       if (JSON.stringify(antes.musica) !== JSON.stringify(s.musica)) TB.lanzar("musica", s.musica);
+      if (JSON.stringify(antes.gramola) !== JSON.stringify(s.gramola)) TB.lanzar("gramola", s.gramola);
       TB.lanzar("estado", s);
     });
     r.on("mensaje", m => {
@@ -184,7 +190,7 @@
       if (d.centrar) TB.L.centrarEn(d.x, d.y);
     });
     r.on("regla", d => { if (d && (!d.escena || d.escena === TB.escenaId)) TB.L.reglaRemota(d); });
-    r.on("fx", d => { if (d && d.escena === TB.escenaId) TB.fx.reproducir(d); });
+    r.on("fx", d => { if (d && d.escena === TB.escenaId && !TB.prefs.sinFx) TB.fx.reproducir(d); });
     r.on("presencia", lista => { TB.presencia = lista || []; TB.lanzar("presencia"); });
     r.on("cursor", d => { if (d && d.escena === TB.escenaId) TB.L.cursorRemoto(d); });
     r.on("sonido", d => { if (d && window.TBLado) TBLado.sonar(d); });
