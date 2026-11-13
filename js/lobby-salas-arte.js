@@ -149,9 +149,8 @@ window.LobbySalasArte = (function () {
       R(168, 262, 52, 3, "#8d6a45") + R(214, 258, 10, 10, "#c9cdd6") + R(60, 372, 220, 14, "#8d6a45") + R(70, 386, 14, 18, "#6b4a2f") + R(256, 386, 14, 18, "#6b4a2f") +
       P("100,372 108,332 112,332 106,372", "#6b4a2f") + R(104, 340, 2, 32, "#e9dcc0") + R(236, 352, 12, 20, "#8a3d3d") + R(238, 344, 2, 10, "#e9dcc0") + R(243, 344, 2, 10, "#e9dcc0"), [160, 428]);
     // Máquinas en la pared del fondo
-    const filas = [["ritmo.html", "Zarabanda", "ritmo"], ["parranda.html", "Parranda", "parranda"], ["sacrificio.html", "Hooey", "hooey"]];
-    if (admin) filas.push(["fractura.html", "La Fractura", "fractura", true]);
-    const x0 = admin ? 330 : 380;
+    const filas = [["ritmo.html", "Zarabanda", "ritmo"], ["parranda.html", "Parranda", "parranda"], ["sacrificio.html", "Hooey", "hooey"], ["fractura.html", "La Fractura", "fractura"]];
+    const x0 = 330;
     filas.forEach((f, i) => { s += enlace(f[0], f[1], maquina(x0 + i * 112, 276, f[2]), [x0 + i * 112 + 44, 420], f[3]); });
     // Ajedrez (derecha): mesa con tablero, reloj y dos taburetes
     let aj = R(900, 336, 150, 12, "#8d6a45") + R(908, 348, 14, 54, "#6b4a2f") + R(1028, 348, 14, 54, "#6b4a2f");
