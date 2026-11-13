@@ -36,7 +36,20 @@
     document.body.classList.toggle("lado-plegado", !!TB.prefs.ladoPlegado);
     document.getElementById("tbCompendioBtn").addEventListener("click", () => { if (TB.prefs.ladoPlegado) document.getElementById("tbLadoPlegar").click(); abrirPestana("compendio"); });
     construirChat();
-    TB.on("mensaje", m => { agregarMensaje(m, true); if (pestana !== "chat") marcarNovedad("chat"); if (TB.prefs.pitido && m.autor !== TB.yo.uid) pitido(); });
+    // Las tiradas con dados 3D aparecen en el chat cuando los dados se paran, como en Roll20
+    let colaChat = Promise.resolve();
+    TB.on("mensaje", m => {
+      const P = TB.prefs.dados || {}, mio = m.autor === TB.yo.uid;
+      const con3D = !!window.TBDados3D && m.tirada && !m.tirada.enlinea && !m.tirada.secreta && P.tresD !== false && (mio || P.auto3D !== false);
+      colaChat = colaChat.then(async () => {
+        if (con3D) await Promise.race([TBDados3D.lanzar(m.tirada), new Promise(r => setTimeout(r, 6000))]);
+        agregarMensaje(m, true);
+        if (pestana !== "chat") marcarNovedad("chat");
+        if (TB.prefs.pitido && !mio) pitido();
+      });
+    });
+    // three.js se descarga en segundo plano para que la primera tirada no espere
+    if (window.TBDados3D && (TB.prefs.dados || {}).tresD !== false) setTimeout(() => TBDados3D.precargar(), 4000);
     TB.on("mensajes", pintarMensajes);
     TB.on("diario", () => { pintarDiario(); pintarComo(); });
     TB.on("jugadores", pintarDiario);

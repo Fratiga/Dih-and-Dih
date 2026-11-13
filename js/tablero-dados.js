@@ -105,6 +105,9 @@
   function tiradaHtml(t) {
     if (!t) return "";
     if (t.secreta) return `<div class="tb-tirada"><div class="tb-tirada-expr">Tirada secreta enviada al DJ</div></div>`;
+    // La moneda del lanzador: 1d2 con la etiqueta «Moneda» se lee como cara o cruz
+    if (t.etiqueta === "Moneda" && /^1d2$/i.test(String(t.expr).trim())) return `<div class="tb-tirada tb-tirada-moneda"><div class="tb-tirada-etq">Moneda</div>
+      <div class="tb-tirada-total"><span>=</span><b>${t.total === 1 ? "Cara" : "Cruz"}</b></div></div>`;
     const etiqueta = t.etiqueta ? `<div class="tb-tirada-etq">${esc(t.etiqueta)}</div>` : "";
     return `<div class="tb-tirada ${marcaD20(t)}">${etiqueta}
       <div class="tb-tirada-expr">tirando ${esc(t.expr)}</div>

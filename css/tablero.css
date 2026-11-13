@@ -518,3 +518,9 @@ body.tb.tb-oscuro .tb-btn:not(.tb-btn-acento):not(.tb-btn-rojo) { background: va
 body.tb.tb-oscuro .tb-btn:not(.tb-btn-acento):not(.tb-btn-rojo):hover { background: var(--tb-gris-2); }
 body.tb.tb-oscuro .tb-btn-borde { color: #ff8cc6; }
 body.tb.tb-oscuro .tb-zoom, body.tb.tb-oscuro .tb-zoom button { color: #dedede; }
+
+/* ---------------------------------------------------------------- dados 3D y moneda */
+.tb-dados3d { position: fixed; z-index: 320; pointer-events: none; }
+.tb-moneda-fila { padding: 8px 12px 0; }
+.tb-moneda-btn { width: 100%; font-weight: 600; }
+.tb-tirada-moneda .tb-tirada-total b { min-width: 76px; }

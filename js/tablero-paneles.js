@@ -265,6 +265,9 @@
       }
     }
     pintar();
+    const moneda = el(`<div class="tb-moneda-fila"><button type="button" class="tb-btn tb-moneda-btn" title="Para decidir algo al 50 %">🪙 Moneda: cara o cruz</button></div>`);
+    moneda.querySelector("button").addEventListener("click", () => TB.tirar("1d2", "Moneda", d.modo));
+    f.appendChild(moneda);
     const pie = el(`<div class="tb-flot-pie"><button type="button" class="tb-enlace" data-cambiar style="font-size:17px"></button>
       <div class="tb-mods"><button type="button" data-x="!" title="Los dados que sacan el máximo vuelven a tirarse y suman">!</button><button type="button" data-x="!!" title="Igual, pero se acumulan en un solo dado">!!</button><button type="button" data-x="!p" title="Explotan restando 1 a cada repetición">!p</button></div></div>`);
     const cambiar = pie.querySelector("[data-cambiar]");
