@@ -540,3 +540,15 @@ body.tb.tb-oscuro .tb-zoom, body.tb.tb-oscuro .tb-zoom button { color: #dedede; 
 .tb-tirada-item:hover { border-color: var(--tb-acento); }
 .tb-tirada-item small { font-size: 11px; color: var(--tb-suave); text-transform: uppercase; letter-spacing: .04em; }
 .tb-tiradas-texto { white-space: pre-wrap; font-weight: 400; line-height: 1.45; font-size: 13.5px; background: var(--tb-gris-suave); border: 1px solid var(--tb-borde); border-radius: 4px; padding: 8px 10px; max-height: 200px; overflow-y: auto; }
+
+/* ---------------------------------------------------------------- orden de turno: cabecera y vacío como en Roll20 */
+.tb-turno-cab button svg { width: 20px; height: 20px; display: block; color: var(--tb-texto); }
+.tb-turno-ronda { cursor: pointer; border-radius: 3px; padding: 0 3px; }
+.tb-turno-ronda:hover { background: var(--tb-gris-2); }
+.tb-turno-vacio { text-align: center; padding: 18px 16px; font-size: 14.5px; line-height: 1.5; color: var(--tb-texto); }
+
+/* ---------------------------------------------------------------- borde para cambiar el ancho del panel */
+.tb-lado-asa { position: absolute; left: -3px; top: 40px; bottom: 0; width: 6px; cursor: ew-resize; z-index: 2; }
+.tb-lado-asa:hover, .redimensionando-lado .tb-lado-asa { background: var(--tb-acento-borde); }
+.redimensionando-lado, .redimensionando-lado * { cursor: ew-resize !important; user-select: none !important; }
+.tb.lado-plegado .tb-lado-asa { display: none; }

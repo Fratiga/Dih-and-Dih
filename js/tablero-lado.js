@@ -35,6 +35,21 @@
       document.body.classList.toggle("lado-plegado", TB.prefs.ladoPlegado);
     });
     document.body.classList.toggle("lado-plegado", !!TB.prefs.ladoPlegado);
+    // El ancho del panel se cambia arrastrando su borde izquierdo, como en Roll20, y se recuerda
+    const ponerAncho = w => document.documentElement.style.setProperty("--tb-lado", Math.round(Math.max(260, Math.min(w, Math.min(760, window.innerWidth - 320)))) + "px");
+    if (TB.prefs.anchoLado) ponerAncho(TB.prefs.anchoLado);
+    document.getElementById("tbLadoAsa").addEventListener("mousedown", e => {
+      e.preventDefault();
+      document.body.classList.add("redimensionando-lado");
+      const mover = ev => ponerAncho(window.innerWidth - ev.clientX);
+      const soltar = () => {
+        window.removeEventListener("mousemove", mover); window.removeEventListener("mouseup", soltar);
+        document.body.classList.remove("redimensionando-lado");
+        TB.prefs.anchoLado = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--tb-lado"), 10); TB.guardarPrefs();
+      };
+      window.addEventListener("mousemove", mover); window.addEventListener("mouseup", soltar);
+    });
+    document.getElementById("tbLadoAsa").addEventListener("dblclick", () => { document.documentElement.style.removeProperty("--tb-lado"); TB.prefs.anchoLado = null; TB.guardarPrefs(); });
     document.getElementById("tbCompendioBtn").addEventListener("click", () => { if (TB.prefs.ladoPlegado) document.getElementById("tbLadoPlegar").click(); abrirPestana("compendio"); });
     construirChat();
     if (window.TBTiradas) TBTiradas.iniciar(TB);

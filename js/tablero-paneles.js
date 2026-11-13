@@ -441,7 +441,7 @@
     // Orden de pintado: desde la ficha actual, dando la vuelta (la actual arriba)
     const vista = lista.map((e, i) => ({ e, i })).slice(t).concat(lista.map((e, i) => ({ e, i })).slice(0, t));
     v.cuerpo.innerHTML = "";
-    const cab = el(`<div class="tb-turno-cab"><span>Contar: <span data-ronda style="${gm ? "cursor:pointer;text-decoration:underline dotted" : ""}" title="${gm ? "Cambiar el contador de rondas" : "Ronda"}">${ini.ronda || 1}</span></span>
+    const cab = el(`<div class="tb-turno-cab"><span>Contar: <span data-ronda class="${gm ? "tb-turno-ronda" : ""}" title="${gm ? "Clic para cambiar el contador de rondas" : "Ronda"}">${ini.ronda || 1}</span></span>
       ${gm ? `<button type="button" data-ordenar title="Ordenar">${I.ordenar}</button>` : ""}</div>`);
     const filas = el(`<div class="tb-turno-lista" style="flex:1"></div>`);
     vista.forEach(({ e, i }, k) => {
@@ -475,7 +475,7 @@
       }
       filas.appendChild(f);
     });
-    if (!filas.children.length) filas.appendChild(el(`<p class="tb-nota" style="padding:14px">${gm ? "Clic derecho en una ficha → Añadir turno, o que los jugadores tiren su iniciativa." : "Clic derecho en tu ficha → Añadir turno para tirar tu iniciativa."}</p>`));
+    if (!filas.children.length) filas.appendChild(el(`<p class="tb-turno-vacio">No hay fichas de esta página en el orden de turno.<br><br>${gm ? "Haz clic derecho en una ficha y elige Añadir turno (o usa Ctrl+U)." : "Haz clic derecho en tu ficha y elige Añadir turno (o usa Ctrl+U)."}</p>`));
     function moverFila(de, a) {
       if (a < 0 || a >= lista.length || de === a) return;
       const actual = lista[t];
