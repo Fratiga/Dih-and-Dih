@@ -12,6 +12,7 @@ echo "== Instalación"
 cargar admin/biblioteca.sql
 cargar admin/biblioteca.sql          # se puede repetir
 sql "delete from biblioteca_entradas" >/dev/null
+NOMBRE_U1=$(sql "select username from perfiles where user_id = '$U1'")   # se devuelve al final: otras pruebas lo usan
 sql "insert into perfiles (user_id, username) values ('$U1', 'Exus') on conflict (user_id) do update set username = 'Exus'" >/dev/null
 
 echo "== Subir"
@@ -40,6 +41,8 @@ como "$ADMIN" "delete from biblioteca_entradas where id = '$E2';" >/dev/null
 comprobar "el Admin borra cualquiera" "1" "$(sql "select count(*) from biblioteca_entradas")"
 como "$U1" "delete from biblioteca_entradas where id = '$E1';" >/dev/null
 comprobar "el autor borra lo suyo" "0" "$(sql "select count(*) from biblioteca_entradas")"
+
+sql "update perfiles set username = '$NOMBRE_U1' where user_id = '$U1'" >/dev/null
 
 echo
 if [ "$FALLOS" = 0 ]; then echo "Todo bien."; else echo "$FALLOS fallo(s)."; exit 1; fi
