@@ -835,11 +835,16 @@
 
   /* ---------- soundboard: efectos cortos que el DJ lanza para todos */
   function efectos() { return EFECTOS_BASE.filter(e => !(gramola().ocultos || []).includes(e.id)).concat(gramola().sonidos || []); }
+  const sonando = new Set();
+  function pararEfectos() { sonando.forEach(a => { try { a.pause(); a.currentTime = 0; } catch (e) { /* nada */ } }); sonando.clear(); }
   function sonar(d) {
+    if (d && d.parar) { pararEfectos(); return; }
     // Solo suenan los efectos del soundboard (el de la lista base o los que subió el DJ)
     const ef = (EFECTOS_BASE.concat(gramola().sonidos || [])).find(e => e.src === (d && d.src));
     if (!ef) return;
     const a = new Audio(ef.src);
+    sonando.add(a);
+    a.addEventListener("ended", () => sonando.delete(a));
     a.volume = Math.max(0, Math.min(1, (d.vol == null ? 0.8 : d.vol) * (TB.prefs.volumenEfectos == null ? 0.8 : TB.prefs.volumenEfectos)));
     a.play().catch(() => marcarBloqueo(true));
   }
@@ -1061,7 +1066,9 @@
     const g = gramola();
     const cab = el(`<div class="tb-fila" style="margin:calc(8px * var(--tb-k)) 0;align-items:center">
       <label class="tb-campo" style="flex:1;margin:0"><span style="font-weight:400">Volumen de los efectos para todos</span><input type="range" min="0" max="100" data-v value="${Math.round((g.volEfectos == null ? 0.8 : g.volEfectos) * 100)}"></label>
+      <button type="button" class="tb-btn tb-btn-mini" data-parar title="Parar los efectos que están sonando, para todos">■ Parar</button>
       <button type="button" class="tb-btn tb-btn-mini" data-editar>${editandoEfectos ? "Listo" : "Editar"}</button></div>`);
+    cab.querySelector("[data-parar]").addEventListener("click", () => { pararEfectos(); TB.red.emitir("sonido", { parar: true }); });
     cab.querySelector("[data-v]").addEventListener("change", ev => guardarGramola({ volEfectos: ev.target.value / 100 }));
     cab.querySelector("[data-editar]").addEventListener("click", () => { editandoEfectos = !editandoEfectos; pintarGramola(); });
     const rejilla = el(`<div class="tb-soundboard"></div>`);

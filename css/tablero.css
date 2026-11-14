@@ -628,3 +628,14 @@ body.tb.tb-oscuro .tb-avatares .tb-av-nombre { background: rgba(0,0,0,.7); }
 /* ---------------------------------------------------------------- marcadores de estado en el menú */
 .tb-estado-punto { display: inline-block; width: calc(11px * var(--tb-k)); height: calc(11px * var(--tb-k)); border-radius: 50%; margin-right: calc(6px * var(--tb-k)); vertical-align: -1px; border: 1px solid rgba(0,0,0,.25); }
 .tb-submenu { max-height: calc(100vh - 16px); overflow-y: auto; }
+
+/* ---------------------------------------------------------------- lanzador: solo las flechas de color (sin las del navegador) */
+.tb-giro input::-webkit-outer-spin-button, .tb-giro input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.tb-giro input { -moz-appearance: textfield; appearance: textfield; }
+.tb-dados-iconos button svg { width: calc(26px * var(--tb-k)); height: calc(26px * var(--tb-k)); color: #6d6f75; }
+body.tb.tb-oscuro .tb-dados-iconos button svg { color: #b8bcc4; }
+.tb-dados-iconos button:hover svg { color: var(--tb-acento); }
+
+/* ---------------------------------------------------------------- editar una barra desde su esfera */
+.tb-burbuja-edit { position: absolute; z-index: 30; width: calc(52px * var(--tb-k)); height: calc(30px * var(--tb-k)); border-radius: 999px; border: 3px solid #5cb85c; background: #2b2b2b; color: #fff;
+  text-align: center; font: 700 calc(14px * var(--tb-k)) var(--tb-fuente); outline: none; box-shadow: 0 2px 8px rgba(0,0,0,.45); }

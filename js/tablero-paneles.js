@@ -254,9 +254,19 @@
     const cuerpo = el(`<div></div>`);
     f.appendChild(cuerpo);
     const sufijo = () => d.explota || "";
+    // Las últimas 10 tiradas y lo que había en la tirada avanzada se recuerdan en este navegador
+    if (!historialDados.length && Array.isArray(d.historial)) historialDados.push(...d.historial.slice(0, 10));
     async function tirar(expr) {
       const t = await TB.tirar(expr, "", d.modo);
-      if (t) { historialDados.unshift(expr); if (historialDados.length > 10) historialDados.pop(); if (d.avanzado) pintar(); }
+      if (t) {
+        const i = historialDados.indexOf(expr);
+        if (i >= 0) historialDados.splice(i, 1);
+        historialDados.unshift(expr);
+        if (historialDados.length > 10) historialDados.pop();
+        d.historial = historialDados.slice();
+        TB.guardarPrefs();
+        if (d.avanzado) pintar();
+      }
     }
     function pintar() {
       cuerpo.innerHTML = "";
@@ -267,7 +277,7 @@
       } else {
         const av = el(`<div class="tb-flot-cuerpo">
           <p class="tb-flot-titulo-sec">Tirada básica</p>
-          <div class="tb-dados-iconos">${DADOS.map(([n, c]) => `<button type="button" data-c="${c}">${I.dado}${n.toUpperCase()}</button>`).join("")}</div>
+          <div class="tb-dados-iconos">${DADOS.map(([n, c]) => `<button type="button" data-c="${c}" title="Tirar 1${n === "Fudge" ? "dF" : n}">${(window.TBIconoDado || {})[c === "f" ? "dF" : "d" + c] || I.dado}${n === "Fudge" ? "Fudge" : n.toUpperCase()}</button>`).join("")}</div>
           <hr class="tb-sep">
           <p class="tb-flot-titulo-sec">Tirada avanzada</p>
           <div class="tb-fila">
@@ -283,10 +293,21 @@
           <table class="tb-historial"><thead><tr><th>Fórmula</th><th>Repetición de tirada</th></tr></thead><tbody>${historialDados.length ? historialDados.map((h, i) => `<tr><td>${esc(h)}</td><td><button type="button" class="tb-btn tb-btn-mini" data-rep="${i}">Repetir</button></td></tr>`).join("") : `<tr><td colspan="2" class="tb-nota" style="text-align:center">Sin datos</td></tr>`}</tbody></table>
           <p class="tb-nota" style="margin-top:calc(12px * var(--tb-k))">En el chat también puedes escribir <b>/r 2d20kh1+5</b> (ventaja), <b>/gr 1d20</b> (solo al DJ) o tiradas en línea como <b>[[1d8+3]]</b>.</p>
         </div>`);
-        const obj = interruptor(false);
+        const u = Object.assign({ cant: 1, dado: "20", mod: 0, obj: false, objetivo: 10 }, d.ultima);
+        av.querySelector("[data-cant]").value = u.cant; av.querySelector("[data-dado]").value = String(u.dado); av.querySelector("[data-mod]").value = u.mod;
+        av.querySelector("[data-objetivo]").value = u.objetivo;
+        const obj = interruptor(!!u.obj);
         av.querySelector("[data-obj]").append(obj.el);
-        obj.input.addEventListener("change", () => { av.querySelector("[data-objetivo]").hidden = !obj.valor(); });
-        av.querySelectorAll("[data-g]").forEach(b => b.addEventListener("click", () => { const inp = av.querySelector(`[data-${b.dataset.g}]`); inp.value = (parseInt(inp.value, 10) || 0) + parseInt(b.dataset.d, 10); if (b.dataset.g === "cant" && inp.value < 1) inp.value = 1; }));
+        av.querySelector("[data-objetivo]").hidden = !u.obj;
+        const recordar = () => {
+          d.ultima = { cant: Math.max(1, parseInt(av.querySelector("[data-cant]").value, 10) || 1), dado: av.querySelector("[data-dado]").value, mod: parseInt(av.querySelector("[data-mod]").value, 10) || 0,
+            obj: obj.valor(), objetivo: parseInt(av.querySelector("[data-objetivo]").value, 10) || 0 };
+          TB.guardarPrefs();
+        };
+        av.addEventListener("change", recordar);
+        av.addEventListener("input", recordar);
+        obj.input.addEventListener("change", () => { av.querySelector("[data-objetivo]").hidden = !obj.valor(); recordar(); });
+        av.querySelectorAll("[data-g]").forEach(b => b.addEventListener("click", () => { const inp = av.querySelector(`[data-${b.dataset.g}]`); inp.value = (parseInt(inp.value, 10) || 0) + parseInt(b.dataset.d, 10); if (b.dataset.g === "cant" && inp.value < 1) inp.value = 1; recordar(); }));
         av.querySelector(".tb-dados-iconos").addEventListener("click", e => { const b = e.target.closest("button"); if (b) tirar(`1d${b.dataset.c}${b.dataset.c === "f" ? "" : sufijo()}`); });
         av.querySelector("[data-tirar]").addEventListener("click", () => {
           const n = Math.max(1, parseInt(av.querySelector("[data-cant]").value, 10) || 1), c = av.querySelector("[data-dado]").value, m = parseInt(av.querySelector("[data-mod]").value, 10) || 0;
@@ -459,9 +480,8 @@
     const c = el(`<div class="tb-flot-cuerpo">
       <label class="tb-campo"><span style="font-weight:600">Tipo de efecto:</span><select data-tipo>${TBFx.TIPOS.map(t => `<option value="${t.id}">${t.nombre} · ${t.modo === "apuntar" ? "Apuntar" : t.modo === "clic" ? "Haz clic" : "Espera"}</option>`).join("")}</select></label>
       <p class="tb-nota" data-ayuda></p>
-      <label class="tb-campo"><span style="font-weight:600">Área al lanzar (regla):</span><select data-plantilla>
-        <option value="auto">Automática (según el efecto)</option><option value="linea">Regla (línea)</option><option value="cono">Cono</option><option value="haz">Haz</option><option value="circulo">Círculo</option><option value="cuadrado">Cuadrado</option><option value="ninguna">Sin regla</option></select></label>
-      <div data-extra></div>
+      <div class="tb-fila-toggle" style="border:0"><span>Mostrar el trayecto y el área al apuntar</span><span data-mostrar></span></div>
+      <div data-tamfx></div>
       <div class="tb-colores-fx">${TBFx.COLORES.map(x => `<button type="button" data-c="${x.id}"><i style="background:${x.muestra}"></i>${x.nombre}</button>`).join("")}</div>
     </div>`);
     const tipo = c.querySelector("[data-tipo]"), ayuda = c.querySelector("[data-ayuda]");
@@ -472,11 +492,30 @@
       c.querySelectorAll("[data-c]").forEach(b => b.classList.toggle("activo", b.dataset.c === fx.color));
     };
     tipo.addEventListener("change", () => { fx.tipo = tipo.value; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); pintar(); pintarExtraFx(); setHerramienta("fx"); });
-    const plantilla = c.querySelector("[data-plantilla]"), extraFx = c.querySelector("[data-extra]");
-    plantilla.value = fx.plantilla || "auto";
-    const formaFx = () => { const v = plantilla.value; return v === "auto" ? ({ aliento: "cono", haz: "haz", salpicar: "cono", bomba: "circulo", explotar: "circulo", agrupacion: "circulo", estrella: "circulo", quemar: "circulo", rafaga: "circulo" }[fx.tipo] || "linea") : v; };
-    const pintarExtraFx = () => pintarExtraMedida(extraFx, formaFx, () => { TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); });
-    plantilla.addEventListener("change", () => { fx.plantilla = plantilla.value; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); pintarExtraFx(); });
+    const mostrar = interruptor(fx.plantilla !== "ninguna");
+    mostrar.input.addEventListener("change", () => { fx.plantilla = mostrar.valor() ? "auto" : "ninguna"; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); });
+    c.querySelector("[data-mostrar]").appendChild(mostrar.el);
+    const cajaTam = c.querySelector("[data-tamfx]");
+    // Tamaño del efecto: grados del cono (aliento, salpicar), anchura del haz o radio (área o impacto)
+    const pintarExtraFx = () => {
+      cajaTam.innerHTML = "";
+      const tipoAct = fx.tipo, guardarFx = () => { TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); };
+      const fila = (titulo, valores, unidad, leer, poner) => {
+        const b = el(`<div><p class="tb-flot-titulo-sec">${titulo}</p><div class="tb-fila" style="align-items:center">${valores.map(v => `<button type="button" class="tb-btn tb-btn-mini" data-v="${v}" style="min-width:calc(38px * var(--tb-k))">${v}</button>`).join("")}
+          <span class="tb-ud" style="flex:1"><input type="number" min="1" max="500" data-n style="width:100%"><i>${unidad}</i></span></div></div>`);
+        const n = b.querySelector("[data-n]");
+        const marcar = () => { n.value = leer(); b.querySelectorAll("[data-v]").forEach(x => x.classList.toggle("activo", Number(x.dataset.v) === Number(leer()))); };
+        b.querySelectorAll("[data-v]").forEach(x => x.addEventListener("click", () => { poner(Number(x.dataset.v)); marcar(); guardarFx(); }));
+        n.addEventListener("change", () => { poner(Math.max(1, Math.min(500, Number(n.value) || 1))); marcar(); guardarFx(); });
+        marcar();
+        cajaTam.appendChild(b);
+      };
+      const fpAct = TB.L.opciones().fxPrevia || {};
+      if (tipoAct === "aliento" || tipoAct === "salpicar") fila("Grados del cono", [45, 53, 60, 90], "°", () => fx.grados || 53, v => { fx.grados = Math.min(179, v); });
+      else if (tipoAct === "haz") fila("Anchura del haz", [5, 10, 15], "pies", () => fx.hazPies || 5, v => { fx.hazPies = v; });
+      else fila(fpAct.modo === "apuntar" ? "Radio del impacto" : "Radio del efecto", [5, 10, 15, 20, 30], "pies", () => (fx.radios || {})[tipoAct] || fpAct.radioPies || 10, v => { fx.radios = Object.assign({}, fx.radios, { [tipoAct]: v }); });
+      if (fpAct.modo !== "apuntar") cajaTam.appendChild(el(`<p class="tb-nota" style="margin:calc(4px * var(--tb-k)) 0 0">También puedes arrastrar desde el centro para marcar el radio a ojo.</p>`));
+    };
     pintarExtraFx();
     c.querySelector(".tb-colores-fx").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (!b) return; fx.color = b.dataset.c; TB.guardarPrefs(); pintar(); setHerramienta("fx"); });
     pintar();
@@ -1032,6 +1071,12 @@
       { texto: "Quitar todos", peligro: true, apagado: !objs.some(q => ((q.datos || {}).estados || []).length), accion: () => ponerEstados(objs, () => []) }
     ];
   }
+  function menuEstados(id, x, y) {
+    const o = TB.L.objeto(id);
+    if (!o || !(TB.esGM() || TB.controla(o))) return;
+    const sel = TB.esGM() && TB.L.seleccion().length > 1 ? TB.L.seleccion().map(s => TB.L.objeto(s)).filter(q => q && q.tipo === "imagen") : [o];
+    menu(x, y, itemsEstados(sel));
+  }
   function establecerDimensiones(todos) {
     const t = TB.L.tamCelda(), o = todos[0];
     const c = el(`<div><div class="tb-fila"><label class="tb-campo" style="flex:1"><span>Ancho</span><input type="number" step="0.5" min="0.1" data-w></label>
@@ -1382,5 +1427,5 @@
     setCapa("fichas");
   }
 
-  window.TBPaneles = { iniciar, ajustesLuz, ajustesFicha, menuFicha, menuVacio, abrirPin, soltarEnTablero, elegirDibujo, setHerramienta, setCapa, alternarPaginas, alternarTurno, configPagina, medirImagen };
+  window.TBPaneles = { iniciar, menuEstados, ajustesLuz, ajustesFicha, menuFicha, menuVacio, abrirPin, soltarEnTablero, elegirDibujo, setHerramienta, setCapa, alternarPaginas, alternarTurno, configPagina, medirImagen };
 })();

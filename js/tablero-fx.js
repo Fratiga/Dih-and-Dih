@@ -70,18 +70,20 @@
 
     // Cada emisor: { t, dur, paso(dt) } que añade partículas mientras dura
     const comportamientos = {
-      aliento(c, a, b, s) {
-        const ang = Math.atan2(b.y - a.y, b.x - a.x), L = Math.hypot(b.x - a.x, b.y - a.y);
-        return { dur: 0.9, paso() { for (let i = 0; i < 14; i++) { const d = ang + azar(-0.46, 0.46), v = azar(0.7, 1.1) * L / 0.75; nueva(c, a.x, a.y, Math.cos(d) * v, Math.sin(d) * v, azar(0.6, 0.85), azar(5, 11) * s, { roce: 0.95, crece: 1.5 }); } } };
+      aliento(c, a, b, s, op) {
+        const ang = Math.atan2(b.y - a.y, b.x - a.x), L = Math.hypot(b.x - a.x, b.y - a.y), m = op.grados ? op.grados * Math.PI / 360 : 0.46;
+        return { dur: 0.9, paso() { for (let i = 0; i < 14; i++) { const d = ang + azar(-m, m), v = azar(0.7, 1.1) * L / 0.75; nueva(c, a.x, a.y, Math.cos(d) * v, Math.sin(d) * v, azar(0.6, 0.85), azar(5, 11) * s, { roce: 0.95, crece: 1.5 }); } } };
       },
-      haz(c, a, b, s) {
-        return { dur: 0.6, paso() { for (let i = 0; i < 18; i++) { const t = Math.random(); nueva(c, a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, azar(-20, 20), azar(-20, 20), azar(0.25, 0.5), azar(3, 7) * s); } } };
+      haz(c, a, b, s, op) {
+        const L = Math.hypot(b.x - a.x, b.y - a.y) || 1, px = -(b.y - a.y) / L, py = (b.x - a.x) / L, w = (op.anchoPx || 40) / 2;
+        const n = Math.round(18 * Math.max(1, Math.min(4, w / 20)));
+        return { dur: 0.6, paso() { for (let i = 0; i < n; i++) { const t = Math.random(), o = azar(-w, w) * 0.9; nueva(c, a.x + (b.x - a.x) * t + px * o, a.y + (b.y - a.y) * t + py * o, azar(-20, 20), azar(-20, 20), azar(0.25, 0.5), azar(3, 7) * s); } } };
       },
       cohete(c, a, b, s) { return proyectil(c, a, b, s, 1, 0.7, 5); },
       misil(c, a, b, s) { return proyectil(c, a, b, s, 3, 0.55, 3); },
-      salpicar(c, a, b, s) {
-        const ang = Math.atan2(b.y - a.y, b.x - a.x), L = Math.hypot(b.x - a.x, b.y - a.y);
-        return { dur: 0.15, paso() { for (let i = 0; i < 30; i++) { const d = ang + azar(-0.3, 0.3), v = azar(0.6, 1.2) * L / 0.6; nueva(c, a.x, a.y, Math.cos(d) * v, Math.sin(d) * v, azar(0.6, 0.9), azar(3, 7) * s, { grav: 160 * s, roce: 0.96 }); } } };
+      salpicar(c, a, b, s, op) {
+        const ang = Math.atan2(b.y - a.y, b.x - a.x), L = Math.hypot(b.x - a.x, b.y - a.y), m = op.grados ? op.grados * Math.PI / 360 : 0.3;
+        return { dur: 0.15, paso() { for (let i = 0; i < 30; i++) { const d = ang + azar(-m, m), v = azar(0.6, 1.2) * L / 0.6; nueva(c, a.x, a.y, Math.cos(d) * v, Math.sin(d) * v, azar(0.6, 0.9), azar(3, 7) * s, { grav: 160 * s, roce: 0.96 }); } } };
       },
       quemar(c, a, b, s) {
         return { dur: 2.6, paso() { for (let i = 0; i < 5; i++) nueva(c, a.x + azar(-22, 22) * s, a.y + azar(-8, 10) * s, azar(-10, 10), azar(-90, -40) * s, azar(0.5, 1.0), azar(5, 10) * s); } };
@@ -135,6 +137,7 @@
       } };
     }
     function estallido(c, a, s, n, v) {
+      n = Math.round(n * Math.max(1, Math.min(3, s)));   // más grande, más partículas
       return { dur: 0.05, paso() { for (let i = 0; i < n; i++) { const d = Math.random() * Math.PI * 2, vel = azar(0.2, 1) * v * s; nueva(c, a.x, a.y, Math.cos(d) * vel, Math.sin(d) * vel, azar(0.4, 0.9), azar(3, 8) * s, { roce: 0.93, crece: 0.8 }); } } };
     }
 
@@ -169,7 +172,7 @@
         const c = COLORES.find(x => x.id === d.color) || COLORES[0];
         const f = comportamientos[d.tipo] || comportamientos.explotar;
         const s = d.escala || 1;
-        lanzarEmisor(f(c, d.a, d.b || d.a, s));
+        lanzarEmisor(f(c, d.a, d.b || d.a, s, d));
         if (particulas.length > 2500) particulas.splice(0, particulas.length - 2500);
       }
     };

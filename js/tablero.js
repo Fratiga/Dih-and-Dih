@@ -183,8 +183,12 @@
     // Plantilla de los efectos: la que se elija o, en «automática», la que va con el efecto
     const AUTO = { aliento: "cono", haz: "haz", salpicar: "cono", bomba: "circulo", explotar: "circulo", agrupacion: "circulo", estrella: "circulo", quemar: "circulo", rafaga: "circulo" };
     const pl = !p.fx.plantilla || p.fx.plantilla === "auto" ? (AUTO[p.fx.tipo] || "linea") : p.fx.plantilla;
+    const tfx = TBFx.TIPOS.find(x => x.id === p.fx.tipo) || TBFx.TIPOS[0];
+    const RADIO = { bomba: 10, explotar: 20, destello: 15, estrella: 30, agrupacion: 20, quemar: 5, brillo: 10, escudo: 5, rafaga: 10, burbujeante: 5, cohete: 5, misil: 5 };
+    const fxPrevia = { modo: tfx.modo, tipo: tfx.id, forma: { aliento: "cono", salpicar: "cono", haz: "haz" }[tfx.id] || (tfx.modo === "apuntar" ? "impacto" : "circulo"),
+      radioPies: (p.fx.radios || {})[tfx.id] || RADIO[tfx.id] || 10, conoGrados: p.fx.grados || 53, conoForma: p.medida.conoForma || "plano", hazPies: p.fx.hazPies || 5, mostrar: p.fx.plantilla !== "ninguna" };
     TB.L.setOpciones({ moverMide: p.medida.moverMide, transmitir: p.medida.transmitir, ajusteMedida: p.medida.ajuste, formaMedida: p.medida.forma,
-      persistente: p.medida.persistente, dibujo: p.dibujo, texto: p.texto, niebla: p.niebla, fxPlantilla: pl,
+      persistente: p.medida.persistente, dibujo: p.dibujo, texto: p.texto, niebla: p.niebla, fxPlantilla: pl, fxPrevia,
       medidaExtra: { conoGrados: p.medida.conoGrados || 53, conoForma: p.medida.conoForma || "plano", hazPies: p.medida.hazPies || 5, origen: p.medida.origen || "centro" } });
   }
   TB.aplicarOpcionesLienzo = aplicarOpcionesLienzo;
@@ -361,6 +365,21 @@
     TB.L.upsert(Object.assign({}, o, cambios));
     if (cambios.capa === "gm" && o.capa !== "gm") TB.red.emitir("quitar", { ids: [id] });
     try { await TB.red.actualizarObjeto(id, cambios); } catch (e) { aviso(mensajeError(e), true); }
+  };
+  // Cambiar el valor de una barra (las esferas de la selección). El jugador, solo si el DJ le deja editarla.
+  TB.cambiarBarra = async function (id, i, valor) {
+    const o = TB.L.objeto(id);
+    if (!o) return;
+    const barras = ((o.datos || {}).barras || []).slice();
+    while (barras.length <= i) barras.push({ valor: "", max: "", ver: true, editar: false, texto: "editores" });
+    const b = Object.assign({}, barras[i], { valor });
+    barras[i] = b;
+    if (TB.yo.esGM) await TB.cambiarObjeto(id, { datos: Object.assign({}, o.datos, { barras }) });
+    else {
+      if (!b.editar) { aviso("El DJ no te deja cambiar esa barra."); return; }
+      try { await TB.red.barra(id, i + 1, Number(valor) || 0, Number(b.max) || 0); } catch (e) { aviso(mensajeError(e), true); return; }
+    }
+    if (b.enlace) TB.red.fichaPV(b.enlace, { actual: Number(valor) || 0, max: null, temp: null }).catch(() => {});
   };
   TB.cambiarVarios = async function (lista) {
     // lista: [{id, cambios}]
@@ -564,6 +583,8 @@
       onBorrar: ids => TB.borrarObjetos(ids),
       onSeleccion: ids => TB.lanzar("seleccion", ids),
       onAbrirAjustes: id => TBPaneles.ajustesFicha(id),
+      onEstados: (id, x, y) => TBPaneles.menuEstados(id, x, y),
+      onBarra: (id, i, valor) => TB.cambiarBarra(id, i, valor),
       onMenu: (id, x, y) => TBPaneles.menuFicha(id, x, y),
       onRegla: d => {
         const datos = d ? Object.assign({ de: TB.yo.uid, color: TB.colorJugador(TB.yo.uid), escena: TB.escenaId }, d) : { de: TB.yo.uid, escena: TB.escenaId };
@@ -572,9 +593,16 @@
         else { clearTimeout(reglaPendiente); reglaPendiente = setTimeout(() => { ultimaRegla = Date.now(); TB.red.emitir("regla", datos); }, 80); }
       },
       onPing: (x, y, centrar) => TB.red.emitir("ping", { x, y, color: TB.colorJugador(TB.yo.uid), centrar: !!centrar && TB.yo.esGM, escena: TB.escenaId }),
-      onFx: (a, b) => {
+      onFx: (a, b, extra) => {
         const t = TBFx.TIPOS.find(x => x.id === TB.prefs.fx.tipo) || TBFx.TIPOS[0];
-        const d = { tipo: t.id, color: TB.prefs.fx.color, a, b: t.modo === "apuntar" ? b : a, escala: TB.L.tamCelda() / 70, escena: TB.escenaId };
+        const fp = TB.L.opciones().fxPrevia || {};
+        const pxPie = TB.L.tamCelda() / (((TB.escena() || {}).cuadricula || {}).pies || 5);
+        // Radio de cada efecto con escala 1 (en píxeles): para que el efecto mida lo que dice el panel o lo arrastrado
+        const BASE = { bomba: 52, explotar: 90, destello: 85, estrella: 160, agrupacion: 120, quemar: 22, brillo: 45, escudo: 42, rafaga: 50, burbujeante: 25, cohete: 48, misil: 48 };
+        let escala = TB.L.tamCelda() / 70;
+        const radioPx = (extra && extra.radio) || (fp.radioPies || 10) * pxPie;
+        if (BASE[t.id]) escala = Math.max(0.2, Math.min(8, radioPx / BASE[t.id]));
+        const d = { tipo: t.id, color: TB.prefs.fx.color, a, b: t.modo === "apuntar" ? b : a, escala, grados: fp.conoGrados, anchoPx: (fp.hazPies || 5) * pxPie, escena: TB.escenaId };
         TB.fx.reproducir(d);
         TB.red.emitir("fx", d);
       },

@@ -102,7 +102,7 @@
       redibujarVista();
       if (op.onZoom) op.onZoom(s);
     }
-    function redibujarVista() { lGrid.batchDraw(); lNiebla.batchDraw(); stage.batchDraw(); }
+    function redibujarVista() { lGrid.batchDraw(); lNiebla.batchDraw(); stage.batchDraw(); if (st.seleccion && st.seleccion.size === 1) pintarSeleccionUI(); }
     // Centra la página entera (Inicio)
     function ajustarVista() {
       const m = medidas();
@@ -224,6 +224,43 @@
         g.on("mousedown touchstart", e => { e.cancelBubble = true; });
         tiradores.add(g);
       });
+    }
+
+    // Vista previa de un efecto: el trayecto (flecha) y su área (cono, haz, impacto o radio) con la distancia
+    // El radio arrastrado va en casillas enteras (salvo con la regla sin ajuste)
+    function radioArrastrado(L) { return (st.opc.ajusteMedida || "centro") === "ninguno" ? L : Math.max(tam(), Math.round(L / tam()) * tam()); }
+    function etiquetaFx(p, texto) {
+      const z = zoom(), etq = new Konva.Label({ x: p.x + 10 / z, y: p.y - 28 / z, scaleX: 1 / z, scaleY: 1 / z });
+      etq.add(new Konva.Tag({ fill: "#e8641c", cornerRadius: 4 }));
+      etq.add(new Konva.Text({ text: texto, fontSize: 15, fontStyle: "bold", fill: "#fff", padding: 5 }));
+      guiaMedida.add(etq);
+    }
+    function previaFx(a, p) {
+      const fp = st.opc.fxPrevia || {};
+      if (fp.mostrar === false) return;
+      const z = zoom(), col = "#e8641c", pxPie = tam() / pies(), L = Math.hypot(p.x - a.x, p.y - a.y);
+      guiaMedida.destroyChildren();
+      let regla = null;
+      if (fp.modo === "apuntar") {
+        if (L * z < 4) { lUI.batchDraw(); return; }
+        guiaMedida.add(new Konva.Arrow({ points: [a.x, a.y, p.x, p.y], stroke: col, fill: col, strokeWidth: 2 / z, dash: [9 / z, 6 / z], pointerLength: 14 / z, pointerWidth: 12 / z }));
+        if (fp.forma === "cono") { const ex = { conoGrados: fp.conoGrados, conoForma: fp.conoForma }; dibujarMedida(guiaMedida, "cono", a, p, col, false, ex); regla = { forma: "cono", a, b: p, extra: ex }; }
+        else if (fp.forma === "haz") { const ex = { hazPies: fp.hazPies }; dibujarMedida(guiaMedida, "haz", a, p, col, false, ex); regla = { forma: "haz", a, b: p, extra: ex }; }
+        else {
+          const r = (fp.radioPies || 5) * pxPie;
+          guiaMedida.add(new Konva.Circle({ x: p.x, y: p.y, radius: r, stroke: col, strokeWidth: 2 / z, fill: col + "26", dash: [6 / z, 4 / z] }));
+          etiquetaFx(p, textoDistancia(a, p) + " · impacto de " + (fp.radioPies || 5) + " " + (cuad().unidad || "pies"));
+          regla = { forma: "linea", a, b: p };
+        }
+      } else {
+        const r = L * z > 8 ? radioArrastrado(L) : (fp.radioPies || 10) * pxPie;
+        guiaMedida.add(new Konva.Circle({ x: a.x, y: a.y, radius: r, stroke: col, strokeWidth: 2 / z, fill: col + "33" }));
+        guiaMedida.add(new Konva.Line({ points: [a.x, a.y, a.x + r, a.y], stroke: col, strokeWidth: 1.5 / z, dash: [6 / z, 4 / z] }));
+        etiquetaFx({ x: a.x + r * 0.72, y: a.y - r * 0.72 }, "radio " + textoCeldas(r / tam()));
+        regla = { forma: "circulo", a, b: { x: a.x + r, y: a.y }, extra: { origen: "centro" } };
+      }
+      if (regla && st.opc.transmitir !== false && op.onRegla) op.onRegla(Object.assign({ color: col }, regla));
+      lUI.batchDraw();
     }
 
     // Añade una parada a la ruta: al arrastrar una ficha (en el centro de su casilla) o al medir con la regla de línea
@@ -476,6 +513,7 @@
       ordenarCapa(o.capa);
       programarLuz();
       tr.forceUpdate();
+      if (st.seleccion.has(o.id)) pintarSeleccionUI();
       lMapa.batchDraw(); lObj.batchDraw(); lUI.batchDraw();
     }
 
@@ -498,6 +536,77 @@
       lMapa.batchDraw(); lObj.batchDraw();
     }
 
+    /* ------------------------------------------------------------ selección al estilo Roll20 */
+    // Esferas de las tres barras encima (clic: escribir el valor, o +2 / −2 para sumar o restar) y, debajo,
+    // la tuerca (ajustes de la ficha) y el botón de estados. Solo con una ficha seleccionada que puedes tocar.
+    const selUI = new Konva.Group({ name: "selui" });
+    lUI.add(selUI);
+    function pintarSeleccionUI() {
+      selUI.destroyChildren();
+      const ids = [...st.seleccion];
+      const n = ids.length === 1 && st.nodos.get(ids[0]);
+      if (!n || st.herr !== "seleccionar" || n.o.tipo !== "imagen" || n.o.capa === "luz" || !(st.esGM || controla(n.o))) { tr.rotateAnchorOffset(50); lUI.batchDraw(); return; }
+      const o = n.o, z = zoom(), k = 1 / z, d = o.datos || {};
+      const barras = [0, 1, 2].map(i => Object.assign({ valor: "", max: "" }, (d.barras || [])[i]));
+      const nb = (d.barras || []).filter(b => b && Number(b.max) > 0 && (st.esGM || controla(o) || b.ver)).length;
+      const hb = d.barraEstilo === "compacto" ? 6 : 11;
+      const ocupaArriba = d.barraPos === "debajo" ? 0 : nb * hb;
+      const yArriba = o.y - o.alto / 2 - ocupaArriba - 22 * k;
+      tr.rotateAnchorOffset(Math.round(ocupaArriba * z + 62));
+      barras.forEach((b, i) => {
+        const g = new Konva.Group({ x: o.x + (i - 1) * 36 * k, y: yArriba, scaleX: k, scaleY: k, name: "selui-b" });
+        g.add(new Konva.Circle({ radius: 16, fill: "#2b2b2b", stroke: COLORES_BARRA[i], strokeWidth: 3.5, shadowColor: "#000", shadowBlur: 5, shadowOpacity: 0.45 }));
+        const txt = b.valor === "" || b.valor == null ? "" : String(b.valor);
+        g.add(new Konva.Text({ text: txt, fontSize: txt.length > 3 ? 10 : 13, fontStyle: "bold", fill: "#fff", width: 32, align: "center", x: -16, y: txt.length > 3 ? -5 : -6.5, listening: false }));
+        g.on("mouseenter", () => { contenedor.style.cursor = "text"; });
+        g.on("mouseleave", () => { contenedor.style.cursor = ""; });
+        g.on("click tap", ev => { ev.cancelBubble = true; editarBurbuja(n, i, g); });
+        selUI.add(g);
+      });
+      const yAbajo = o.y + o.alto / 2 + (d.barraPos === "debajo" ? nb * hb : 0) + 24 * k;
+      [["⚙", -1, "Ajustes de la ficha", () => op.onAbrirAjustes && op.onAbrirAjustes(o.id)],
+       ["◎", 1, "Estados", ev => op.onEstados && op.onEstados(o.id, ev.evt.clientX, ev.evt.clientY)]].forEach(([icono, lado, titulo, f]) => {
+        const g = new Konva.Group({ x: o.x + lado * Math.max(o.ancho / 2 - 4, 22 * k), y: yAbajo, scaleX: k, scaleY: k, name: "selui-b" });
+        g.add(new Konva.Circle({ radius: 17, fill: "#2b2b2b", stroke: "#fff", strokeWidth: 2.5, shadowColor: "#000", shadowBlur: 5, shadowOpacity: 0.45 }));
+        g.add(new Konva.Text({ text: icono, fontSize: icono === "⚙" ? 19 : 20, fill: "#fff", width: 34, align: "center", x: -17, y: icono === "⚙" ? -10 : -11, listening: false }));
+        g.on("mouseenter", () => { contenedor.style.cursor = "pointer"; contenedor.title = titulo; });
+        g.on("mouseleave", () => { contenedor.style.cursor = ""; contenedor.title = ""; });
+        g.on("click tap", ev => { ev.cancelBubble = true; f(ev); });
+        selUI.add(g);
+      });
+      selUI.moveToTop();
+      lUI.batchDraw();
+    }
+    function editarBurbuja(n, i, g) {
+      const abs = g.getAbsolutePosition();
+      const b = Object.assign({ valor: "" }, ((n.o.datos || {}).barras || [])[i]);
+      const inp = document.createElement("input");
+      inp.type = "text";
+      inp.className = "tb-burbuja-edit";
+      inp.value = b.valor === "" || b.valor == null ? "" : String(b.valor);
+      inp.title = "Escribe el valor, o +2 / -2 para sumar o restar";
+      Object.assign(inp.style, { left: abs.x - 26 + "px", top: abs.y - 15 + "px", borderColor: COLORES_BARRA[i] });
+      contenedor.appendChild(inp);
+      setTimeout(() => { inp.focus(); inp.select(); }, 0);
+      let hecho = false;
+      const fin = guardar => {
+        if (hecho) return;
+        hecho = true;
+        const v = inp.value.trim().replace(",", ".");
+        inp.remove();
+        if (!guardar || v === "" || v === String(b.valor)) return;
+        const rel = v.match(/^([+-])\s*(\d+(?:\.\d+)?)$/);
+        let nuevo;
+        if (rel) nuevo = (Number(b.valor) || 0) + (rel[1] === "-" ? -1 : 1) * parseFloat(rel[2]);
+        else if (/^\d+(?:\.\d+)?$/.test(v)) nuevo = parseFloat(v);
+        else return;
+        nuevo = Math.round(nuevo * 100) / 100;
+        if (op.onBarra) op.onBarra(n.o.id, i, nuevo);
+      };
+      inp.addEventListener("keydown", e => { e.stopPropagation(); if (e.key === "Enter") fin(true); if (e.key === "Escape") fin(false); });
+      inp.addEventListener("blur", () => fin(true));
+    }
+
     /* ------------------------------------------------------------ selección */
     function actualizarTransformer() {
       const nodos = [...st.seleccion].map(id => st.nodos.get(id)).filter(Boolean);
@@ -510,6 +619,7 @@
         vistaPrevia.add(new Konva.Rect({ name: "sel", x: r.x - 2, y: r.y - 2, width: r.width + 4, height: r.height + 4, stroke: "#d6127e", strokeWidth: 1.5 / zoom(), dash: [5, 3] }));
       });
       lUI.batchDraw();
+      pintarSeleccionUI();
       if (op.onSeleccion) op.onSeleccion([...st.seleccion]);
     }
     // Los objetos agrupados se seleccionan juntos
@@ -579,6 +689,7 @@
           st.seleccion.forEach(id => { const m = st.nodos.get(id); if (m && m.o.capa !== "gm" && op.onMovEnCurso) op.onMovEnCurso(id, m.o.x, m.o.y); });
         }
         if (st.luzOn) programarLuz();
+        if (st.seleccion.size === 1) pintarSeleccionUI();
         if (st.opc.moverMide !== false && n.o.capa !== "mapa") {
           const ruta = (n.o.id === st.arrastre.lider ? st.arrastre.ruta : [ini]).concat([{ x: n.g.x(), y: n.g.y() }]);
           dibujarRuta(guiaMedida, ruta, "#d6127e", true);
@@ -626,6 +737,7 @@
       n.g.on("transform", () => {
         const m = n;
         m.deco.position(m.g.position()); m.aura.position(m.g.position());
+        selUI.destroyChildren();
       });
       n.g.on("transformend", e => {
         const sinAjuste = e.evt && e.evt.altKey;
@@ -883,6 +995,7 @@
       }
       // Las asas del transformador (esquinas y giro) no son «vacío»: si no, la selección se perdía al pulsarlas
       if (e.target.getParent && e.target.getParent() === tr) return;
+      if (e.target.findAncestor && e.target.findAncestor(".selui-b", true)) return;
       const vacio = e.target === stage || !e.target.findAncestor || !e.target.findAncestor(".obj", true);
       if (st.herr === "seleccionar") {
         const sp = stage.getPointerPosition();
@@ -965,12 +1078,7 @@
       if (gesto.tipo === "fx") {
         if (op.onFxPrevia) op.onFxPrevia(gesto.inicio, p);
         gesto.fin = p;
-        const pl = st.opc.fxPlantilla || "linea";
-        if (pl !== "ninguna" && Math.hypot(p.x - gesto.inicio.x, p.y - gesto.inicio.y) * zoom() > 4) {
-          dibujarMedida(guiaMedida, pl, gesto.inicio, p, "#e8641c", true);
-          if (st.opc.transmitir !== false && op.onRegla) op.onRegla({ forma: pl, a: gesto.inicio, b: p, extra: st.opc.medidaExtra, color: "#e8641c" });
-          lUI.batchDraw();
-        }
+        previaFx(gesto.inicio, p);
         return;
       }
       if (gesto.tipo === "niebla") {
@@ -1052,7 +1160,12 @@
       }
       if (g.tipo === "fx") {
         gesto = null;
-        if (op.onFx) op.onFx(g.inicio, g.fin || p);
+        const fp = st.opc.fxPrevia || {}, fin = g.fin || p;
+        const L = Math.hypot(fin.x - g.inicio.x, fin.y - g.inicio.y);
+        // En los efectos de área, arrastrar marca el radio; un clic usa el tamaño del panel
+        const radio = fp.modo !== "apuntar" && L * zoom() > 8 ? radioArrastrado(L) : null;
+        if (fp.modo !== "apuntar" && !radio) previaFx(g.inicio, g.inicio);
+        if (op.onFx) op.onFx(g.inicio, fin, { radio });
         // El área se queda un momento mientras dura el efecto (o fija, si la medida es persistente)
         if (!st.opc.persistente) setTimeout(() => { if (gesto && gesto.tipo === "fx") return; guiaMedida.destroyChildren(); lUI.batchDraw(); if (op.onRegla) op.onRegla(null); }, 1600);
         return;

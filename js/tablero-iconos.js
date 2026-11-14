@@ -15,6 +15,16 @@
     { id: "verde", nombre: "Punto verde", color: "#43a047", numero: true }, { id: "amarillo", nombre: "Punto amarillo", color: "#fdd835", numero: true },
     { id: "morado", nombre: "Punto morado", color: "#8e24aa", numero: true }
   ];
+  window.TBIconoDado = {
+    d4: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5L22 20.5H2z" fill="currentColor"/><path d="M12 2.5L9.5 20.5" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>',
+    d6: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z" fill="currentColor"/><path d="M3 7l9 5 9-5M12 12v10" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>',
+    d8: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8.5 10L12 22 3.5 12z" fill="currentColor"/><path d="M3.5 12h17M12 2L9.2 12 12 22" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>',
+    d10: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 9.2-9 10.8-9-10.8z" fill="currentColor"/><path d="M3 11.2l5 2.6L12 2l4 11.8 5-2.6M8 13.8h8M12 22v0" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>',
+    d12: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9.5 6.9-3.6 11.2H6.1L2.5 8.9z" fill="currentColor"/><path d="M12 6.6l4.4 3.2-1.7 5.2H9.3L7.6 9.8zM12 2v4.6M21.5 8.9l-5.1.9M17.9 20.1l-3.2-5.1M6.1 20.1l3.2-5.1M2.5 8.9l5.1.9" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>',
+    d20: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8.7 5v10L12 22l-8.7-5V7z" fill="currentColor"/><path d="M12 6.8l4.8 8.3H7.2zM12 2v4.8M3.3 7l3.9 8.1M20.7 7l-3.9 8.1M7.2 15.1L3.3 17M16.8 15.1l3.9 1.9M7.2 15.1L12 22l4.8-6.9" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>',
+    d100: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3l5.5 5.6-5.5 6.6-5.5-6.6z" fill="currentColor"/><path d="M17 8.8l5.5 5.6-5.5 6.6-5.5-6.6z" fill="currentColor"/><path d="M1.5 8.6L4.5 10 7 3l2.5 7 3-1.4M11.5 14.4l3 1.4L17 8.8l2.5 7 3-1.4" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>',
+    dF: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="currentColor"/><path d="M8 12h8M12 8v8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>'
+  };
   window.TBIcono = {
     menu: s('<path d="M4 6h16M4 12h16M4 18h16"/>'),
     seleccionar: s('<path d="M6 3l12 9-5.5 1.2 3.2 6.3-2.4 1.2-3.2-6.3L6 18z"/>', true),
