@@ -43,9 +43,18 @@ body.hv {
 .hv-fundido { position: fixed; inset: 0; z-index: 70000; background: #050a07; opacity: 0; pointer-events: none; transition: opacity .7s ease; }
 .hv-fundido.on { opacity: 1; }
 .hv-cargando {
-  position: fixed; left: 50%; top: 50%; z-index: 80000; margin: 0; transform: translate(-50%, -50%); padding: 12px 22px; background: var(--vivo-fondo);
-  border: 1px solid var(--vivo-borde); color: var(--accent); font: 600 .95rem var(--font-heading), serif; letter-spacing: .1em; text-transform: uppercase;
+  position: fixed; left: 50%; top: 50%; z-index: 80000; margin: 0; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 16px;
+  width: min(88vw, 380px); padding: 30px 28px 24px; background: #efe7cd; color: #14241b; border-top: 6px solid #b23a2e; box-shadow: 6px 6px 0 rgba(0, 0, 0, .5); text-align: center;
 }
+.hv-cargando p { margin: 0; font: 600 .95rem/1.35 Karla, sans-serif; }
+.hv-cargando-fig { width: 100%; height: 96px; overflow: hidden; border-bottom: 3px solid #14241b; background-image: linear-gradient(90deg, rgba(20, 36, 27, .32) 0 14px, transparent 14px); background-size: 46px 3px; background-repeat: repeat-x; background-position: 0 calc(100% - 5px); animation: hvSuelo .42s linear infinite; }
+.hv-cargando-fig svg { display: block; height: 100%; margin: 0 auto; animation: hvTrote .2s ease-in-out infinite alternate; }
+.hv-pata { transform-box: fill-box; transform-origin: 50% 0; animation: hvPata .2s ease-in-out infinite alternate; }
+.hv-pata.pb { animation-direction: alternate-reverse; }
+@keyframes hvSuelo { to { background-position: -46px calc(100% - 5px); } }
+@keyframes hvTrote { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+@keyframes hvPata { from { transform: rotate(26deg); } to { transform: rotate(-26deg); } }
+@media (prefers-reduced-motion: reduce) { .hv-cargando-fig, .hv-cargando-fig svg, .hv-pata { animation: none; } }
 .hv-cargando.hidden { display: none; }
 
 /* ---------------------------------------------------------------- la interfaz, encima y pequeña */

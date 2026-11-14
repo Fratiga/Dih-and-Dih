@@ -40,17 +40,25 @@ body.hip-juego:not([data-pestana="inicio"]) .hj-lienzo { transform: scale(1.3); 
 .hj-bandera { transform-box: fill-box; transform-origin: 0 50%; animation: hjBandera 2.6s ease-in-out infinite; }
 @keyframes hjBandera { 0%, 100% { transform: skewY(-7deg) scaleX(1); } 50% { transform: skewY(8deg) scaleX(.9); } }
 /* las tres criaturas que calientan dando vueltas a la pista (la calle va por el centro de la arena) */
-.hj-vuelta { offset-path: path("M1000 648 C1470 648 1470 436 1000 436 C530 436 530 648 1000 648 Z"); offset-rotate: 0deg; animation: hjVuelta 46s linear infinite; }
-.hj-vuelta.v2 { animation-duration: 53s; animation-delay: -17s; }
-.hj-vuelta.v3 { animation-duration: 61s; animation-delay: -39s; }
-.hj-vuelta > g { animation: hjTrote .5s ease-in-out infinite alternate; }
+.hj-vuelta { --d: 46s; --r: 0s; --paso: .5s; offset-path: path("M1000 648 C1470 648 1470 436 1000 436 C530 436 530 648 1000 648 Z"); offset-rotate: 0deg; animation: hjVuelta var(--d) linear var(--r) infinite; }
+.hj-vuelta.v2 { --d: 53s; --r: -17s; }
+.hj-vuelta.v3 { --d: 61s; --r: -39s; }
+/* la vuelta va hacia la derecha por la recta de abajo y hacia la izquierda por la de arriba: la criatura se da la vuelta en cada curva
+   (mismo reloj que la vuelta, a saltos: del 25 al 75 % del recorrido mira a la izquierda) */
+.hj-mira { animation: hjMira var(--d) steps(1) var(--r) infinite; }
+@keyframes hjMira { 0% { transform: scaleX(1); } 25% { transform: scaleX(-1); } 75%, 100% { transform: scaleX(1); } }
+.hj-vuelta .hj-bicho { animation: hjTrote var(--paso) ease-in-out infinite alternate; }
+/* las patas, por parejas cruzadas: solo trotan las que corren (las del paddock están paradas) */
+.hj-pata { transform-box: fill-box; transform-origin: 50% 0; }
+.hj-vuelta .hj-pata, .hj-cargando-fig .hj-pata { animation: hjPata var(--paso, .2s) ease-in-out infinite alternate; }
+.hj-vuelta .hj-pata.pb, .hj-cargando-fig .hj-pata.pb { animation-direction: alternate-reverse; }
+@keyframes hjPata { from { transform: rotate(26deg); } to { transform: rotate(-26deg); } }
 @keyframes hjVuelta { to { offset-distance: 100%; } }
 @keyframes hjTrote { from { transform: translateY(0); } to { transform: translateY(-3px); } }
 /* la carrera en marcha: las de la pista galopan, el público salta y las banderas baten */
-body[data-fase="corriendo"] .hj-vuelta { animation-duration: 9s; }
-body[data-fase="corriendo"] .hj-vuelta.v2 { animation-duration: 9.6s; }
-body[data-fase="corriendo"] .hj-vuelta.v3 { animation-duration: 10.3s; }
-body[data-fase="corriendo"] .hj-vuelta > g { animation-duration: .16s; }
+body[data-fase="corriendo"] .hj-vuelta { --d: 9s; --paso: .16s; }
+body[data-fase="corriendo"] .hj-vuelta.v2 { --d: 9.6s; }
+body[data-fase="corriendo"] .hj-vuelta.v3 { --d: 10.3s; }
 body[data-fase="corriendo"] .hj-bandera { animation-duration: .7s; }
 .hj-gente { transform-box: fill-box; }
 body[data-fase="corriendo"] .hj-gente, .hj-fondo.ovacion .hj-gente { animation: hjGente .34s ease-in-out infinite alternate; }
@@ -144,11 +152,12 @@ body[data-fase="corriendo"] .hj-vivo span { animation: hjLampara .5s steps(2) in
 .hip-juego .hip-pagina { position: relative; z-index: 10; max-width: 1220px; margin: 0 auto; padding: calc(var(--hud) + 22px) 20px 122px; }
 .hip-juego .hip-pagina.cargando { min-height: 100vh; display: grid; place-items: center; }
 .hip-pagina:not(.cargando) .hj-cargando { display: none; }
-.hj-cargando { display: grid; justify-items: center; gap: 14px; padding: 26px 34px 20px; background: var(--papel); color: var(--tinta); border-top: 6px solid var(--rojo); box-shadow: 6px 6px 0 rgba(7, 18, 12, .55); }
-.hj-cargando .hip-cargando { margin: 0; padding: 0; border: 0; color: var(--tinta); font: 400 .95rem var(--maquina); }
-.hj-cargando-fig { width: 150px; height: 64px; overflow: hidden; border-bottom: 3px solid var(--tinta); background-image: repeating-linear-gradient(90deg, transparent 0 22px, rgba(20, 36, 27, .25) 22px 30px); background-size: 30px 3px; background-repeat: repeat-x; background-position: 0 100%; animation: hjSuelo .5s linear infinite; }
-.hj-cargando-fig svg { width: 100%; height: 100%; animation: hjTrote .18s ease-in-out infinite alternate; }
-@keyframes hjSuelo { to { background-position: -30px 100%; } }
+.hj-cargando { display: grid; justify-items: center; gap: 16px; width: min(88vw, 380px); padding: 30px 28px 24px; background: var(--papel); color: var(--tinta); border-top: 6px solid var(--rojo); box-shadow: 6px 6px 0 rgba(7, 18, 12, .55); text-align: center; }
+/* (la regla vieja de la pantalla completa lo sacaba de la hoja y lo dejaba encima del dibujo) */
+.hj-cargando .hip-cargando, html.hip-pleno .hj-cargando #hipCargando { position: static; transform: none; z-index: auto; margin: 0; padding: 0; border: 0; color: var(--tinta); font: 400 .98rem/1.35 var(--maquina); text-wrap: balance; }
+.hj-cargando-fig { --paso: .2s; width: 100%; height: 96px; overflow: hidden; border-bottom: 3px solid var(--tinta); background-image: linear-gradient(90deg, rgba(20, 36, 27, .32) 0 14px, transparent 14px); background-size: 46px 3px; background-repeat: repeat-x; background-position: 0 calc(100% - 5px); animation: hjSuelo .42s linear infinite; }
+.hj-cargando-fig svg { display: block; height: 100%; margin: 0 auto; animation: hjTrote var(--paso) ease-in-out infinite alternate; }
+@keyframes hjSuelo { to { background-position: -46px calc(100% - 5px); } }
 .hip-juego #hipAviso { position: fixed; left: 50%; bottom: 96px; z-index: 80; transform: translateX(-50%); margin: 0; min-height: 0; max-width: min(92vw, 720px); padding: 9px 16px; background: var(--papel); color: var(--tinta); border-left: 6px solid var(--tinta); box-shadow: 4px 4px 0 rgba(7, 18, 12, .6); font: 400 .9rem var(--maquina); animation: hjPapelito .35s cubic-bezier(.2, 1.4, .4, 1); }
 .hip-juego #hipAviso:empty { display: none; }
 .hip-juego #hipAviso.bien { border-left-color: #2f7d4a; color: #1f5b34; } .hip-juego #hipAviso.mal { border-left-color: var(--rojo); color: var(--rojo-2); }
@@ -180,6 +189,7 @@ body[data-fase="corriendo"] .hj-vivo span { animation: hjLampara .5s steps(2) in
 .hj-sitio::after { content: ""; position: absolute; left: 10px; right: 10px; top: -13px; border-top: 3px solid var(--madera-3); }
 .hj-sitio .hj-ico { grid-row: span 2; width: 20px; height: 20px; }
 .hj-sitio b { font: 700 .78rem var(--font-heading), serif; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }
+.hj-sitio small:empty { display: none; }
 .hj-sitio small { grid-column: 2; max-width: 158px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .7rem; color: #e4d6ae; }
 .hj-sitio em { position: absolute; right: -8px; top: -9px; padding: 0 5px; background: #67b873; color: #10281a; font: 700 .58rem Karla, sans-serif; font-style: normal; letter-spacing: .08em; text-transform: uppercase; }
 .hj-sitio:hover, .hj-sitio:focus-visible { background: var(--marfil); color: var(--tinta); outline: 0; animation: hjBalancea .8s ease-out; z-index: 2; }
@@ -418,7 +428,7 @@ li:nth-child(10) > button > .hj-pta, .hip-juego .hip-insc:nth-child(10) .hip-ins
   .hj-cab-volver { justify-self: start; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hj-nube, .hj-bandera, .hj-vuelta, .hj-vuelta > g, .hj-gente, .hj-cargando-fig, .hj-cargando-fig svg { animation: none !important; }
+  .hj-nube, .hj-bandera, .hj-vuelta, .hj-mira, .hj-bicho, .hj-pata, .hj-gente, .hj-cargando-fig, .hj-cargando-fig svg { animation: none !important; }
   .hip-juego .hip-panel:not(.hidden), .hj-sitio, .hj-programa, .hj-roster li, .hj-res-boleto, .hip-juego .hip-ficha-caja { animation-duration: .01s !important; }
   .hj-lienzo, .hj-capa { transition: none; }
   .hj-megafonia span { animation-duration: 2.6s; }

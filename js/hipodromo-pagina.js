@@ -652,7 +652,7 @@
     let vista = true; try { vista = localStorage.getItem(CLAVE_NOVEDADES) === NOVEDADES_ULTIMA; } catch (e) { /* sin almacenamiento */ }
     return {
       carrera: p.suspendida ? "Carrera aplazada" : `${G.nombre} · ${p.entrantes.length} inscritas`,
-      vivo: "La pista a pantalla completa",
+      vivo: "",
       cuadra: mias.length ? `${mias.length} ${mias.length === 1 ? "criatura" : "criaturas"} en tu cuadra` : "Aún no tienes criaturas",
       mundo: `Carrera n.º ${m.n} del mundo`,
       apuestas: pend ? `${pend} ${pend === 1 ? "boleto" : "boletos"} en juego` : "Tus boletos y tu historial",

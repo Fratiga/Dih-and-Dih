@@ -50,8 +50,14 @@ window.HipodromoRecinto = (function () {
   };
 
   /* ---------------------------------------------------------------- el dibujo */
-  // una criatura pequeña (para la pista y el paddock): cuerpo, cuello, cabeza y patas
-  const bicho = (c, cl) => `<g class="${cl || ""}"><ellipse cx="0" cy="-12" rx="13" ry="7" fill="${c}"/><path d="M9 -15 l8 -11 5 3 -6 11z" fill="${c}"/><path d="M-9 -8 v9 M-3 -7 v8 M5 -7 v8 M10 -8 v9" stroke="${c}" stroke-width="2.6" stroke-linecap="round"/><path d="M-12 -14 q-8 2 -9 9" stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>`;
+  // una criatura pequeña (para la pista, el paddock y la pantalla de carga), de perfil y mirando a la derecha: las patas de
+  // atrás del dibujo, el tronco con el cuello, la oreja y la cabeza alargada hasta el hocico, la cola y las patas de delante.
+  // Las patas van sueltas y en dos parejas (pa, pb) para que troten donde la hoja de estilos lo pida.
+  const pata = (c, x, par) => `<path class="hj-pata ${par}" d="M${x} -9.5 V1" stroke="${c}" stroke-width="2.6" stroke-linecap="round" fill="none"/>`;
+  const bicho = (c, cl) => `<g class="hj-bicho ${cl || ""}">${pata(c, -6.2, "pb")}${pata(c, 6.4, "pa")}`
+    + `<path d="M-12.5 -16 C-17.5 -16.5 -20.5 -13 -20 -6.5" stroke="${c}" stroke-width="2.8" stroke-linecap="round" fill="none"/>`
+    + `<path fill="${c}" d="M-13 -13 C-13 -18 -9 -19.6 -4 -19.1 C0 -18.7 3 -18.5 5.6 -19.6 C8.6 -22.2 10.4 -26 11.9 -30.2 L12.5 -33.6 L15.1 -30.9 C18.6 -30 22.2 -26.6 24.8 -23 C25.9 -21.4 24.7 -19.5 22.8 -19.9 C20.6 -20.4 18.9 -22 17 -22.6 C16.7 -19 15.2 -15 13 -12 C12 -8 6 -6.5 0 -6.5 C-6 -6.5 -13 -7.5 -13 -13 Z"/>`
+    + `${pata(c, -9.4, "pa")}${pata(c, 9.6, "pb")}</g>`;
   function arte() {
     let arboles = "";
     for (let i = 0; i < 24; i++) {
@@ -145,7 +151,7 @@ window.HipodromoRecinto = (function () {
     <path d="M1000 626v44" stroke="#f2edd5" stroke-width="6"/><path d="M1000 626v44" stroke="#23262c" stroke-width="6" stroke-dasharray="6 6"/>
     <path d="M986 610v20M1014 610v20" stroke="#4a2f19" stroke-width="4"/><rect x="984" y="602" width="32" height="12" fill="#b23a2e"/><path d="M990 608h20" stroke="#f2edd5" stroke-width="2"/>
     <!-- tres criaturas calentando: dan la vuelta por el centro de la calle -->
-    <g class="hj-vuelta v1">${bicho("#b98a4e")}</g><g class="hj-vuelta v2">${bicho("#8f8f96")}</g><g class="hj-vuelta v3">${bicho("#a5523a")}</g>
+    <g class="hj-vuelta v1"><g class="hj-mira">${bicho("#b98a4e")}</g></g><g class="hj-vuelta v2"><g class="hj-mira">${bicho("#8f8f96")}</g></g><g class="hj-vuelta v3"><g class="hj-mira">${bicho("#a5523a")}</g></g>
   </g>
 
   <!-- la taquilla -->
@@ -226,7 +232,7 @@ window.HipodromoRecinto = (function () {
       const c = CABECERAS[id];
       p.insertAdjacentHTML("afterbegin", `<header class="hj-cab"><button type="button" class="hj-cab-volver" data-ir="inicio">${icono("inicio")}Recinto</button><div><p class="hj-cab-sitio">${c[0]}</p><h2>${c[1]}</h2><p class="hj-cab-lema">${c[2]}</p></div>${icono(id)}</header>`);
     });
-    const fig = document.querySelector(".hj-cargando-fig"); if (fig) fig.innerHTML = `<svg viewBox="-30 -34 60 38">${bicho("#14241b")}</svg>`;
+    const fig = document.querySelector(".hj-cargando-fig"); if (fig) fig.innerHTML = `<svg viewBox="-34 -37 68 41">${bicho("#14241b")}</svg>`;
     // el fondo se mueve un poco con el cursor, por capas (solo en el recinto y si no se pidió reducir el movimiento)
     if (lienzo && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       let pend = false, px = 0, py = 0;
