@@ -13,9 +13,10 @@
     { id: "acelerado", nombre: "Acelerado", e: "🏃", extra: true }, { id: "ralentizado", nombre: "Ralentizado", e: "🐌", extra: true }, { id: "muerto", nombre: "Muerto", e: "💀", extra: true },
     { id: "casteo_notas", nombre: "Casteo: notas musicales", e: "🎵", anim: true }, { id: "casteo_cartas", nombre: "Casteo: cartas", e: "🃏", anim: true },
     { id: "fumando", nombre: "Fumando", e: "🚬", anim: true }, { id: "raudo", nombre: "Raudo", e: "💨", anim: true },
-    { id: "rojo", nombre: "Punto rojo", color: "#e53935", numero: true }, { id: "azul", nombre: "Punto azul", color: "#1e88e5", numero: true },
-    { id: "verde", nombre: "Punto verde", color: "#43a047", numero: true }, { id: "amarillo", nombre: "Punto amarillo", color: "#fdd835", numero: true },
-    { id: "morado", nombre: "Punto morado", color: "#8e24aa", numero: true }
+    { id: "rojo", nombre: "Punto rojo", color: "#cc1a1a", numero: true }, { id: "azul", nombre: "Punto azul", color: "#1a78d2", numero: true },
+    { id: "verde", nombre: "Punto verde", color: "#35c424", numero: true }, { id: "naranja", nombre: "Punto naranja", color: "#cc7a1e", numero: true },
+    { id: "morado", nombre: "Punto morado", color: "#9b1fce", numero: true }, { id: "rosa", nombre: "Punto rosa", color: "#ee7ee2", numero: true },
+    { id: "amarillo", nombre: "Punto amarillo", color: "#e6e67a", numero: true }
   ];
   window.TBIconoDado = {
     d4: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5L22 20.5H2z" fill="currentColor"/><path d="M12 2.5L9.5 20.5" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>',

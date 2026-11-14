@@ -359,13 +359,13 @@
     // Añade una parada a la ruta: al arrastrar una ficha (en el centro de su casilla) o al medir con la regla de línea
     function puntoDeRuta() {
       if (st.arrastre) {
-        const m = st.nodos.get(st.arrastre.lider);
-        if (!m) return;
-        const p = ajustarPos(m.o, m.g.x(), m.g.y());
+        const m = st.nodos.get(st.arrastre.lider), f = st.arrastre.fantasma;
+        if (!m || !f) return;
+        const p = ajustarPos(m.o, f.x(), f.y());
         const ult = st.arrastre.ruta[st.arrastre.ruta.length - 1];
         if (Math.hypot(p.x - ult.x, p.y - ult.y) < 1) return;
         st.arrastre.ruta.push(p);
-        dibujarRuta(guiaMedida, st.arrastre.ruta.concat([{ x: m.g.x(), y: m.g.y() }]), "#d6127e", true);
+        dibujarRuta(guiaMedida, st.arrastre.ruta.concat([{ x: f.x(), y: f.y() }]), "#d6127e", true);
         lUI.batchDraw();
         return;
       }
@@ -589,7 +589,7 @@
     function upsert(o) {
       const n = st.nodos.get(o.id);
       if (!n) { crearNodo(o); ordenarCapa(o.capa); lObj.batchDraw(); lMapa.batchDraw(); programarLuz(); return; }
-      if (n.arrastrando || n.transformando) {
+      if (n.arrastrando || n.transformando || n.animando) {
         // Mientras se arrastra solo se aceptan los datos, no la posición
         n.o = Object.assign({}, o, { x: n.o.x, y: n.o.y, rot: n.o.rot, ancho: n.o.ancho, alto: n.o.alto });
         return;
@@ -751,6 +751,84 @@
     }
 
     /* ------------------------------------------------------------ arrastrar */
+    function moverFantasma() {
+      const a = st.arrastre;
+      if (!a) return;
+      const lider = st.nodos.get(a.lider), p = { x: a.fantasma.x(), y: a.fantasma.y() };
+      if (lider && st.opc.moverMide !== false && lider.o.capa !== "mapa") {
+        const ruta = a.ruta.concat([p]);
+        dibujarRuta(guiaMedida, ruta, "#d6127e", true);
+        if (st.opc.transmitir !== false && op.onRegla && lider.o.capa !== "gm") op.onRegla({ forma: "ruta", puntos: ruta, mov: true });
+      }
+      lUI.batchDraw();
+    }
+    function soltarFantasma(e) {
+      const a = st.arrastre;
+      if (!a) return;
+      const sinAjuste = e && e.evt && e.evt.altKey;
+      const lider = st.nodos.get(a.lider), liderIni = a.inicio.get(a.lider);
+      const muros = !st.esGM && bloqueaMovimiento() ? TBLuz.segmentosDe([...st.nodos.values()].map(x => x.o)).paso : null;
+      const pl = lider ? ajustarPos(lider.o, a.fantasma.x(), a.fantasma.y(), sinAjuste) : { x: a.fantasma.x(), y: a.fantasma.y() };
+      let chocan = false;
+      const movidos = [];
+      a.inicio.forEach((ini, id) => {
+        const m = st.nodos.get(id);
+        if (!m) return;
+        const off = { x: ini.x - liderIni.x, y: ini.y - liderIni.y };
+        let p = id === a.lider ? pl : ajustarPos(m.o, pl.x + off.x, pl.y + off.y, sinAjuste);
+        let camino = a.ruta.map(q => ({ x: q.x + off.x, y: q.y + off.y })).concat([p]);
+        if (muros && camino.some((q, k) => k > 0 && TBLuz.cruza(camino[k - 1], q, muros))) { p = { x: ini.x, y: ini.y }; camino = [p]; chocan = true; }
+        m.arrastrando = false;
+        m.g.opacity(m.o.opacidad == null ? 1 : m.o.opacidad);
+        m.o.x = p.x; m.o.y = p.y;
+        if (Math.hypot(p.x - ini.x, p.y - ini.y) > 0.5) { animarRuta(m, camino); movidos.push({ o: m.o, ruta: camino }); }
+        else { m.g.position(p); m.deco.position(p); m.aura.position(p); }
+      });
+      a.fantasma.destroy();
+      st.arrastre = null;
+      if (chocan && op.onAviso) op.onAviso("Hay un muro en medio: la ficha vuelve a su sitio.");
+      guiaMedida.destroyChildren();
+      if (op.onRegla) op.onRegla(null);
+      actualizarTransformer();
+      programarLuz();
+      lObj.batchDraw(); lMapa.batchDraw(); lUI.batchDraw();
+      movidos.forEach(({ o, ruta }) => {
+        if (op.onMovEnCurso && o.capa !== "gm") op.onMovEnCurso(o.id, o.x, o.y, ruta);
+        if (op.onMovido) op.onMovido(o);
+      });
+    }
+    // La ficha recorre la ruta (con sus paradas) a velocidad fija, como en Roll20; el tablero solo se anima mientras tanto
+    const SEG_POR_CASILLA = 0.12;
+    function animarRuta(m, puntos) {
+      if (m.anim) { m.anim.stop(); m.anim = null; }
+      const tramos = [];
+      let total = 0;
+      for (let i = 1; i < puntos.length; i++) { const d = Math.hypot(puntos[i].x - puntos[i - 1].x, puntos[i].y - puntos[i - 1].y); tramos.push(d); total += d; }
+      const fin = puntos[puntos.length - 1];
+      const poner = p => { m.g.position(p); m.deco.position(p); m.aura.position(p); };
+      if (total < 0.5) { poner(fin); return; }
+      const dur = Math.min(2.5, Math.max(0.2, total / tam() * SEG_POR_CASILLA));
+      const t0 = performance.now();
+      let ultimaLuz = 0;
+      m.animando = true;
+      const anim = new Konva.Animation(fr => {
+        const f = Math.min(1, (performance.now() - t0) / 1000 / dur);
+        let dist = f * total, i = 0;
+        while (i < tramos.length - 1 && dist > tramos[i]) { dist -= tramos[i]; i++; }
+        const a = puntos[i], b = puntos[i + 1], k = tramos[i] ? Math.min(1, dist / tramos[i]) : 1;
+        poner({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
+        if (st.seleccion.has(m.o.id)) tr.forceUpdate();
+        if (st.luzOn && fr && fr.time - ultimaLuz > 90) { ultimaLuz = fr.time; programarLuz(); }
+        if (f >= 1) {
+          anim.stop(); m.anim = null; m.animando = false;
+          poner(fin);
+          programarLuz();
+          if (st.seleccion.has(m.o.id)) { tr.forceUpdate(); pintarSeleccionUI(); }
+        }
+      }, [lObj, lMapa, lUI]);
+      m.anim = anim;
+      anim.start();
+    }
     let ultimoMov = 0;
     function enganchar(n) {
       n.g.on("mousedown touchstart", e => {
@@ -758,76 +836,32 @@
         if (e.evt.button === 2) return;
         const id = n.o.id;
         if (!puedeSeleccionar(n.o)) return;
+        n.pulsado = punteroMundo();
         if (e.evt.shiftKey) { if (st.seleccion.has(id)) deseleccionar(id); else seleccionar([id], true); }
         else if (!st.seleccion.has(id)) seleccionar([id]);
         e.cancelBubble = true;
       });
       n.g.on("dragstart", () => {
         if (!st.seleccion.has(n.o.id)) seleccionar([n.o.id]);
-        st.arrastre = { lider: n.o.id, ruta: [{ x: n.o.x, y: n.o.y }], inicio: new Map([...st.seleccion].map(id => { const m = st.nodos.get(id); return [id, { x: m.o.x, y: m.o.y }]; })) };
-        st.seleccion.forEach(id => { const m = st.nodos.get(id); if (m) m.arrastrando = true; });
-        cancelarPulsacion();
-      });
-      n.g.on("dragmove", () => {
-        if (!st.arrastre) return;
-        const ini = st.arrastre.inicio.get(n.o.id);
-        const dx = n.g.x() - ini.x, dy = n.g.y() - ini.y;
-        st.seleccion.forEach(id => {
-          const m = st.nodos.get(id), p = st.arrastre.inicio.get(id);
-          if (!m || !p) return;
-          if (id !== n.o.id) m.g.position({ x: p.x + dx, y: p.y + dy });
-          m.o.x = m.g.x(); m.o.y = m.g.y();
-          m.deco.position(m.g.position()); m.aura.position(m.g.position());
-        });
-        const ahora = Date.now();
-        if (ahora - ultimoMov > 60) {
-          ultimoMov = ahora;
-          st.seleccion.forEach(id => { const m = st.nodos.get(id); if (m && m.o.capa !== "gm" && op.onMovEnCurso) op.onMovEnCurso(id, m.o.x, m.o.y); });
-        }
-        if (st.luzOn) programarLuz();
-        if (st.seleccion.size === 1) pintarSeleccionUI();
-        if (st.opc.moverMide !== false && n.o.capa !== "mapa") {
-          const ruta = (n.o.id === st.arrastre.lider ? st.arrastre.ruta : [ini]).concat([{ x: n.g.x(), y: n.g.y() }]);
-          dibujarRuta(guiaMedida, ruta, "#d6127e", true);
-          if (st.opc.transmitir !== false && op.onRegla && n.o.capa !== "gm") op.onRegla({ forma: "ruta", puntos: ruta, mov: true });
-        }
-        tr.forceUpdate();
-        lUI.batchDraw();
-      });
-      n.g.on("dragend", e => {
-        if (!st.arrastre) return;
-        const sinAjuste = e.evt && e.evt.altKey;
-        const movidos = [];
-        const muros = !st.esGM && bloqueaMovimiento() ? TBLuz.segmentosDe([...st.nodos.values()].map(x => x.o)).paso : null;
-        let chocan = false;
-        st.seleccion.forEach(id => {
+        // Se arrastra una copia en la capa de interfaz: el tablero (mapa, fichas, luz) no se redibuja hasta soltar
+        n.g.stopDrag();
+        const lider = n.o, ids = [...st.seleccion].filter(id => st.nodos.get(id));
+        // Lo que ya se movió el ratón antes de empezar el arrastre también cuenta
+        const ahora = punteroMundo(), d0 = n.pulsado ? { x: ahora.x - n.pulsado.x, y: ahora.y - n.pulsado.y } : { x: 0, y: 0 };
+        const fantasma = new Konva.Group({ x: lider.x + d0.x, y: lider.y + d0.y, draggable: true, name: "fantasma" });
+        ids.forEach(id => {
           const m = st.nodos.get(id);
-          if (!m) return;
-          let p = ajustarPos(m.o, m.g.x(), m.g.y(), sinAjuste);
-          const ini = st.arrastre.inicio.get(id);
-          if (muros && ini) {
-            const desp = { x: m.o.x - ini.x, y: m.o.y - ini.y };   // los acompañantes siguen la ruta del líder desplazada
-            const base = (st.arrastre.ruta || [ini]).map(q => (id === st.arrastre.lider ? q : { x: q.x + (ini.x - st.arrastre.inicio.get(st.arrastre.lider).x), y: q.y + (ini.y - st.arrastre.inicio.get(st.arrastre.lider).y) }));
-            const camino = base.concat([p]);
-            if (camino.some((q, k) => k > 0 && TBLuz.cruza(camino[k - 1], q, muros))) { p = { x: ini.x, y: ini.y }; chocan = true; }
-            void desp;
-          }
-          m.g.position(p); m.o.x = p.x; m.o.y = p.y;
-          m.deco.position(p); m.aura.position(p);
-          m.arrastrando = false;
-          movidos.push(m.o);
+          fantasma.add(m.g.clone({ x: m.o.x - lider.x, y: m.o.y - lider.y, draggable: false, listening: false, opacity: 0.9 * (m.o.opacidad == null ? 1 : m.o.opacidad) }));
         });
-        st.arrastre = null;
-        if (chocan && op.onAviso) op.onAviso("Hay un muro en medio: la ficha vuelve a su sitio.");
-        programarLuz();
-        guiaMedida.destroyChildren();
-        if (op.onRegla) op.onRegla(null);
-        tr.forceUpdate();
-        lObj.batchDraw(); lMapa.batchDraw(); lUI.batchDraw();
-        movidos.forEach(o => {
-          if (op.onMovEnCurso && o.capa !== "gm") op.onMovEnCurso(o.id, o.x, o.y);
-          if (op.onMovido) op.onMovido(o);
-        });
+        lUI.add(fantasma);
+        st.arrastre = { lider: lider.id, fantasma, ruta: [{ x: lider.x, y: lider.y }], inicio: new Map(ids.map(id => { const m = st.nodos.get(id); return [id, { x: m.o.x, y: m.o.y }]; })) };
+        ids.forEach(id => { const m = st.nodos.get(id); m.arrastrando = true; m.g.opacity(0.35 * (m.o.opacidad == null ? 1 : m.o.opacidad)); });
+        tr.nodes([]); selUI.destroyChildren(); vistaPrevia.find(".sel").forEach(x => x.destroy());
+        lObj.batchDraw(); lMapa.batchDraw();
+        cancelarPulsacion();
+        fantasma.on("dragmove", moverFantasma);
+        fantasma.on("dragend", soltarFantasma);
+        fantasma.startDrag();
       });
       n.g.on("transformstart", () => { st.seleccion.forEach(id => { const m = st.nodos.get(id); if (m) m.transformando = true; }); });
       n.g.on("transform", () => {
@@ -888,20 +922,31 @@
     // Ruta con puntos de paso: se suma tramo a tramo (cada tramo con la regla de diagonales de la página)
     function dibujarRuta(grupo, puntos, color, limpiar) {
       if (limpiar) grupo.destroyChildren();
-      const z = zoom(), lw = 3 / z;
-      const plano = [];
-      puntos.forEach(p => plano.push(p.x, p.y));
-      grupo.add(new Konva.Line({ points: plano, stroke: color, strokeWidth: lw, dash: [10 / z, 6 / z], lineJoin: "round" }));
-      let total = 0;
-      for (let i = 0; i < puntos.length; i++) {
-        if (i > 0) total += celdasEntre(puntos[i - 1], puntos[i]);
-        if (i < puntos.length - 1) grupo.add(new Konva.Circle({ x: puntos[i].x, y: puntos[i].y, radius: (i ? 6 : 5) / z, fill: i ? "#fff" : color, stroke: color, strokeWidth: 2 / z }));
-      }
+      const z = zoom(), k = 1 / z;
+      const pl = [];
+      puntos.forEach(p => pl.push(p.x, p.y));
+      grupo.add(new Konva.Line({ points: pl, stroke: color, strokeWidth: 4 * k, lineJoin: "round", lineCap: "round" }));
+      const piesDe = celdas => Math.round(celdas * pies() * 10) / 10;
+      let acum = 0;
+      puntos.forEach((p, i) => {
+        if (i > 0) acum += celdasEntre(puntos[i - 1], p);
+        grupo.add(new Konva.Circle({ x: p.x, y: p.y, radius: 5 * k, fill: color }));
+        if (i > 0 && i < puntos.length - 1) {
+          const g = new Konva.Group({ x: p.x, y: p.y - 24 * k, scaleX: k, scaleY: k });
+          g.add(new Konva.Circle({ radius: 17, fill: "#6e6e6e", stroke: color, strokeWidth: 2, shadowColor: "#000", shadowBlur: 3, shadowOpacity: 0.3 }));
+          g.add(new Konva.Text({ text: String(piesDe(acum)), fontSize: 14, fontStyle: "bold", fill: "#fff", width: 40, align: "center", x: -20, y: -7 }));
+          grupo.add(g);
+        }
+      });
       const b = puntos[puntos.length - 1];
-      const etq = new Konva.Label({ x: b.x + 10 / z, y: b.y - 28 / z, scaleX: 1 / z, scaleY: 1 / z });
-      etq.add(new Konva.Tag({ fill: color, cornerRadius: 4 }));
-      etq.add(new Konva.Text({ text: textoCeldas(total) + (puntos.length > 2 ? ` · ${puntos.length - 2} ${puntos.length === 3 ? "parada" : "paradas"}` : ""), fontSize: 15, fontStyle: "bold", fill: "#fff", padding: 5 }));
-      grupo.add(etq);
+      const t1 = new Konva.Text({ text: piesDe(acum) + " " + (cuad().unidad || "pies"), fontSize: 17, fontStyle: "bold", fill: "#fff" });
+      const t2 = new Konva.Text({ text: (Math.round(acum * 10) / 10) + " cuad.", fontSize: 11, fontStyle: "bold", fill: "#fff" });
+      const w = Math.max(t1.width(), t2.width()) + 16, h = 40;
+      const caja = new Konva.Group({ x: b.x, y: b.y - 34 * k, scaleX: k, scaleY: k });
+      caja.add(new Konva.Rect({ x: -w / 2, y: -h / 2, width: w, height: h, fill: "rgba(24,24,24,.88)", stroke: color, strokeWidth: 1.5, cornerRadius: 4 }));
+      t1.setAttrs({ x: -t1.width() / 2, y: -16 }); t2.setAttrs({ x: -t2.width() / 2, y: 4 });
+      caja.add(t1, t2);
+      grupo.add(caja);
     }
     function celdasEntre(a, b) {
       const t = tam(), c = cuad(), libre = (st.opc.ajusteMedida || "centro") === "ninguno";
@@ -1063,7 +1108,7 @@
     }
     function estiloDibujo() {
       const d = st.opc.dibujo || {};
-      const grosores = { fino: 2, mediano: 4, grueso: 8, enorme: 14 };
+      const grosores = { fino: 2, pequeno: 3, mediano: 5, grande: 9, extragrande: 15, grueso: 9, enorme: 15 };
       return { trazo: d.trazo || "#d6127e", relleno: d.relleno || "transparent", grosor: grosores[d.grosor] || 4 };
     }
     function crearDibujo(forma, datosForma) {
@@ -1384,9 +1429,15 @@
       setVistaJugador(v) { st.vistaJugador = v; opacidadNiebla(); st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); programarLuz(); lObj.batchDraw(); lNiebla.batchDraw(); },
       setTurno(id) { const viejo = st.turno; st.turno = id; [viejo, id].forEach(x => { const n = st.nodos.get(x); if (n) pintarDeco(n); }); lObj.batchDraw(); lMapa.batchDraw(); },
       setEspacio(v) { st.espacio = v; contenedor.classList.toggle("arrastrando-camara", v); },
-      moverRemoto(id, x, y) {
+      moverRemoto(id, x, y, ruta) {
         const n = st.nodos.get(id);
         if (!n || n.arrastrando) return;
+        if (Array.isArray(ruta) && ruta.length > 1) {
+          const puntos = [{ x: n.g.x(), y: n.g.y() }].concat(ruta.slice(1, -1), [{ x, y }]);
+          n.o.x = x; n.o.y = y;
+          animarRuta(n, puntos);
+          return;
+        }
         n.o.x = x; n.o.y = y;
         n.g.to({ x, y, duration: 0.08 });
         n.deco.to({ x, y, duration: 0.08 }); n.aura.to({ x, y, duration: 0.08 });

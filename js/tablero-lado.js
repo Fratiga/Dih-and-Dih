@@ -134,8 +134,18 @@
     entrada.querySelector("[data-gif]").addEventListener("click", () => alternarGifs(entrada));
     // Pegar una imagen (por ejemplo, «Copiar imagen» en Discord): se sube y queda su enlace listo para mandar
     ta.addEventListener("paste", async e => {
+      // Si al copiar viene también el enlace original (Discord lo pone en el HTML), se usa ese: así el GIF se mueve.
+      // La imagen pegada sola es siempre una foto fija (el primer fotograma).
+      const html = (e.clipboardData && e.clipboardData.getData("text/html")) || "";
+      const enlaceImg = (html.match(/<img[^>]+src="([^"]+)"/i) || [])[1];
+      if (enlaceImg && /^https:\/\//i.test(enlaceImg) && medioDe(enlaceImg.replace(/&amp;/g, "&"))) {
+        e.preventDefault();
+        ta.value = (ta.value.trim() ? ta.value.trim() + "\n" : "") + enlaceImg.replace(/&amp;/g, "&");
+        return;
+      }
       const f = [...(e.clipboardData && e.clipboardData.files || [])].find(x => /^(image|video)\//.test(x.type));
       if (!f) return;
+      if (f.type === "image/png" || f.type === "image/bmp") aviso("Si era un GIF y sale quieto: en Discord usa «Copiar enlace» en vez de «Copiar imagen».");
       e.preventDefault();
       try { aviso("Subiendo la imagen…"); const url = await TB.red.subirPropio(f); ta.value = (ta.value.trim() ? ta.value.trim() + "\n" : "") + url; ta.focus(); }
       catch (err) { aviso(mensajeError(err), true); }
@@ -220,6 +230,9 @@
     if (m) return { tipo: "tenor", id: m[1] };
     m = u.match(/^https:\/\/(?:www\.)?giphy\.com\/(?:gifs|stickers)\/(?:\S*-)?([A-Za-z0-9]{8,})\/?(?:[?#]\S*)?$/i);
     if (m) return { tipo: "img", src: `https://media.giphy.com/media/${m[1]}/giphy.gif` };
+    // Klipy (lo que usa Discord ahora): su página no se puede incrustar; sus archivos directos sí
+    if (/^https:\/\/(?:www\.)?klipy\.com\/(?:gifs|clips|stickers|ai-gifs|static-memes)\/[^\s/?#]+/i.test(u)) return { tipo: "enlace", src: u, nombre: "GIF de Klipy" };
+    if (/^https:\/\/[a-z0-9.-]*klipy\.com\/.+\.(gif|webp|mp4|webm|png|jpe?g)(\?\S*)?$/i.test(u)) return /\.(mp4|webm)/i.test(u) ? { tipo: "video", src: u } : { tipo: "img", src: u };
     if (/\.(mp4|webm)(\?\S*)?$/i.test(u)) return { tipo: "video", src: u };
     if (/\.(gif|png|jpe?g|webp|avif)(\?\S*)?$/i.test(u) || /^https:\/\/(media\.tenor\.com|media\d*\.giphy\.com|i\.giphy\.com|media\.discordapp\.net|cdn\.discordapp\.com|i\.imgur\.com)\//i.test(u)) return { tipo: "img", src: u };
     return null;
@@ -227,6 +240,7 @@
   function medioHtml(md) {
     if (md.tipo === "tenor") return `<iframe class="tb-msg-medio tenor" src="https://tenor.com/embed/${md.id}" loading="lazy" referrerpolicy="no-referrer" allowfullscreen title="GIF de Tenor"></iframe>`;
     if (md.tipo === "video") return `<video class="tb-msg-medio" src="${esc(md.src)}" autoplay loop muted playsinline></video>`;
+    if (md.tipo === "enlace") return `<a class="tb-msg-enlace" href="${esc(md.src)}" target="_blank" rel="noopener noreferrer">▶ Abrir ${esc(md.nombre || "el enlace")} ↗</a>`;
     return `<img class="tb-msg-medio" src="${esc(md.src)}" alt="" loading="lazy" referrerpolicy="no-referrer">`;
   }
   // «Mis GIFs»: los favoritos de cada uno (en su cuenta). Se añaden pegando el enlace o subiendo el archivo.
@@ -262,7 +276,9 @@
     };
     buscar.addEventListener("input", () => { filtroGifs = buscar.value; pintar(); });
     const anadir = async (u, nombre) => {
-      if (!medioDe(u)) { aviso("Ese enlace no es un GIF ni una imagen que pueda mostrar.", true); return; }
+      const md = medioDe(u);
+      if (!md) { aviso("Ese enlace no es un GIF ni una imagen que pueda mostrar.", true); return; }
+      if (md.tipo === "enlace") { aviso("La página de Klipy no se puede incrustar. Ábrela, haz clic derecho en el GIF y copia la dirección de la imagen: ese enlace sí se mueve.", true); return; }
       try { const g = await TB.red.agregarGif({ url: u, nombre }); gifs = [g].concat(gifs || []); url.value = ""; pintar(); }
       catch (e) { aviso(mensajeError(e), true); }
     };

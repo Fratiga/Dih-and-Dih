@@ -135,13 +135,52 @@
   }
   function elegirDibujo(modo) { TB.prefs.dibujo.modo = modo; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); setHerramienta("dibujo"); }
 
+  // Paleta de Roll20: 8 columnas (grises, saturados y sus tonos claros y oscuros), transparente y código hexadecimal
+  const PALETA = ["#000000", "#434343", "#666666", "#c0c0c0", "#d9d9d9", "#ffffff", "#980000", "#ff0000",
+    "#ff9900", "#ffff00", "#00ff00", "#00ffff", "#4a86e8", "#0000ff", "#9900ff", "#ff00ff",
+    "#e6b8af", "#f4cccc", "#fce5cd", "#fff2cc", "#d9ead3", "#d0e0e3", "#c9daf8", "#cfe2f3",
+    "#d9d2e9", "#ead1dc", "#dd7e6b", "#ea9999", "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9",
+    "#a4c2f4", "#9fc5e8", "#b4a7d6", "#d5a6bd", "#cc4125", "#e06666", "#f6b26b", "#ffd966",
+    "#93c47d", "#76a5af", "#6d9eeb", "#6fa8dc", "#8e7cc3", "#c27ba0", "#a61c00", "#cc0000",
+    "#e69138", "#f1c232", "#6aa84f", "#45818e", "#3c78d8", "#3d85c6", "#674ea7", "#a64d79",
+    "#5b0f00", "#660000", "#783f04", "#7f6000", "#274e13", "#0c343d", "#1c4587", "#073763",
+    "#20124d", "transparent"];
+  function abrirPaleta(boton, valor, alElegir) {
+    document.querySelectorAll(".tb-paleta").forEach(x => x.remove());
+    const p = el(`<div class="tb-paleta"><div class="tb-paleta-rejilla">${PALETA.map(c => `<button type="button" data-c="${c}" class="${c === "transparent" ? "vacio" : ""}${String(valor).toLowerCase() === c ? " activo" : ""}" style="${c === "transparent" ? "" : "background:" + c}" title="${c === "transparent" ? "Transparente" : c.toUpperCase()}"></button>`).join("")}</div>
+      <div class="tb-paleta-hex"><span data-muestra></span><input type="text" maxlength="7" spellcheck="false" data-hex></div></div>`);
+    const hex = p.querySelector("[data-hex]"), muestra = p.querySelector("[data-muestra]");
+    const verHex = v => { hex.value = v === "transparent" ? "" : String(v).toUpperCase(); muestra.className = v === "transparent" ? "vacio" : ""; muestra.style.background = v === "transparent" ? "" : v; };
+    verHex(valor);
+    p.querySelector(".tb-paleta-rejilla").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (!b) return; alElegir(b.dataset.c); p.remove(); });
+    hex.addEventListener("keydown", e => { e.stopPropagation(); if (e.key === "Enter") { const v = hex.value.trim(); if (/^#?[0-9a-f]{6}$/i.test(v)) { alElegir((v[0] === "#" ? v : "#" + v).toLowerCase()); p.remove(); } } if (e.key === "Escape") p.remove(); });
+    hex.addEventListener("input", () => { const v = hex.value.trim(); if (/^#?[0-9a-f]{6}$/i.test(v)) { muestra.className = ""; muestra.style.background = v[0] === "#" ? v : "#" + v; } });
+    document.body.appendChild(p);
+    const r = boton.getBoundingClientRect();
+    p.style.left = Math.max(6, Math.min(r.left, window.innerWidth - p.offsetWidth - 6)) + "px";
+    p.style.top = Math.min(r.bottom + 6, window.innerHeight - p.offsetHeight - 6) + "px";
+    const fuera = e => { if (!p.contains(e.target) && e.target !== boton && !boton.contains(e.target)) { p.remove(); document.removeEventListener("mousedown", fuera, true); } };
+    setTimeout(() => document.addEventListener("mousedown", fuera, true), 0);
+  }
   function selectorColor(valor, permitirVacio, alCambiar) {
-    const b = el(`<label class="tb-color-btn${valor === "transparent" ? " vacio" : ""}" title="${permitirVacio ? "Clic derecho: sin color" : "Color"}"><input type="color"></label>`);
-    const inp = b.querySelector("input");
-    const pintar = v => { b.classList.toggle("vacio", v === "transparent"); b.style.background = v === "transparent" ? "" : v; if (v !== "transparent") inp.value = v; };
+    const b = el(`<button type="button" class="tb-color-btn" title="${permitirVacio ? "Color (o transparente)" : "Color"}"></button>`);
+    let actual = valor;
+    const pintar = v => { actual = v; b.classList.toggle("vacio", v === "transparent"); b.style.background = v === "transparent" ? "" : v; };
     pintar(valor);
-    inp.addEventListener("input", () => { pintar(inp.value); alCambiar(inp.value); });
-    if (permitirVacio) b.addEventListener("contextmenu", e => { e.preventDefault(); pintar("transparent"); alCambiar("transparent"); });
+    b.addEventListener("click", () => abrirPaleta(b, actual, v => { if (v === "transparent" && !permitirVacio) return; pintar(v); alCambiar(v); }));
+    return b;
+  }
+  const GROSORES = [["fino", "Fino"], ["pequeno", "Pequeño"], ["mediano", "Mediano"], ["grande", "Grande"], ["extragrande", "Extra grande"]];
+  function selectorGrosor(valor, alCambiar) {
+    const norm = v => ({ grueso: "grande", enorme: "extragrande" }[v] || v || "mediano");
+    let actual = norm(valor);
+    const b = el(`<button type="button" class="tb-grosor-btn" title="Grosor"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18" stroke="currentColor" stroke-width="1.5"/><path d="M3 12h18" stroke="currentColor" stroke-width="3"/><path d="M3 18.5h18" stroke="currentColor" stroke-width="4.5"/></svg><span></span><i>▾</i></button>`);
+    const pintar = () => { b.querySelector("span").textContent = (GROSORES.find(g => g[0] === actual) || GROSORES[2])[1]; };
+    pintar();
+    b.addEventListener("click", () => {
+      const r = b.getBoundingClientRect();
+      menu(r.left, r.bottom + 4, GROSORES.map(([v, t]) => ({ texto: (v === actual ? "✓ " : "") + t, accion: () => { actual = v; pintar(); alCambiar(v); } })));
+    });
     return b;
   }
   function pintarOpcionesDibujo() {
@@ -149,9 +188,7 @@
     op.innerHTML = "";
     const guardar = () => { TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); };
     op.append(selectorColor(d.trazo, false, v => { d.trazo = v; guardar(); }), selectorColor(d.relleno, true, v => { d.relleno = v; guardar(); }), el(`<span class="tb-sep-v"></span>`));
-    const s = el(`<select title="Grosor"><option value="fino">Fino</option><option value="mediano">Mediano</option><option value="grueso">Grueso</option><option value="enorme">Enorme</option></select>`);
-    s.value = d.grosor; s.addEventListener("change", () => { d.grosor = s.value; guardar(); });
-    op.append(s, el(`<span class="tb-nota" style="max-width:calc(180px * var(--tb-k))">Relleno: clic derecho para dejarlo vacío</span>`));
+    op.append(selectorGrosor(d.grosor, v => { d.grosor = v; guardar(); }));
     op.hidden = false;
   }
   function pintarOpcionesTexto() {
@@ -1129,11 +1166,51 @@
       { texto: "Quitar todos", peligro: true, apagado: !objs.some(q => ((q.datos || {}).estados || []).length), accion: () => ponerEstados(objs, () => []) }
     ];
   }
+  // Panel de estados (botón ◎ de la selección): buscador, «Limpiar todo», puntos de color y la rejilla de marcadores
+  let filtroEstados = "";
   function menuEstados(id, x, y) {
     const o = TB.L.objeto(id);
     if (!o || !(TB.esGM() || TB.controla(o))) return;
-    const sel = TB.esGM() && TB.L.seleccion().length > 1 ? TB.L.seleccion().map(s => TB.L.objeto(s)).filter(q => q && q.tipo === "imagen") : [o];
-    menu(x, y, itemsEstados(sel));
+    const ids = TB.esGM() && TB.L.seleccion().length > 1 ? TB.L.seleccion() : [id];
+    document.querySelectorAll(".tb-estados-pop").forEach(p => p.remove());
+    const cat = window.TBEstados || [];
+    const p = el(`<div class="tb-estados-pop"><div class="tb-estados-cab"><input type="search" placeholder="Buscar.." data-buscar><button type="button" class="tb-btn tb-btn-acento" data-limpiar>Limpiar todo</button></div><div data-cuerpo></div></div>`);
+    const objs = () => ids.map(s => TB.L.objeto(s)).filter(q => q && q.tipo === "imagen");
+    const activo = c => { const l = objs(); return l.length && l.every(q => ((q.datos || {}).estados || []).some(e => e.id === c.id)); };
+    const numeroDe = c => { const e = ((objs()[0] || {}).datos || {}).estados || []; const x = e.find(v => v.id === c.id); return x && x.n != null ? x.n : null; };
+    const alternar = async (c, conNumero) => {
+      let n = null;
+      if (conNumero || (c.numero && c.id === "agotamiento" && !activo(c))) {
+        const v = await pedir(c.nombre, String(numeroDe(c) == null ? (c.id === "agotamiento" ? 1 : "") : numeroDe(c)), { etiqueta: c.id === "agotamiento" ? "Nivel de agotamiento (1 a 6)" : "Número (vacío: sin número)" });
+        if (v === null) return;
+        n = v.trim() === "" ? null : Math.max(0, Math.min(99, parseInt(v, 10) || 0));
+        await ponerEstados(objs(), l => l.filter(e => e.id !== c.id).concat([n == null ? { id: c.id } : { id: c.id, n }]));
+      } else if (activo(c)) await ponerEstados(objs(), l => l.filter(e => e.id !== c.id));
+      else await ponerEstados(objs(), l => l.concat([{ id: c.id }]));
+      setTimeout(pintar, 250);
+    };
+    const pintar = () => {
+      const cuerpo = p.querySelector("[data-cuerpo]"), f = filtroEstados.trim().toLowerCase();
+      const ver = cat.filter(c => !f || c.nombre.toLowerCase().includes(f));
+      const muerto = cat.find(c => c.id === "muerto");
+      cuerpo.innerHTML = `<div class="tb-estados-colores"><span class="tb-estados-ico">◎</span>${ver.filter(c => c.color).map(c => `<button type="button" data-id="${c.id}" class="punto${activo(c) ? " activo" : ""}" style="background:${c.color}" title="${esc(c.nombre)} (clic derecho: con número)">${numeroDe(c) != null && activo(c) ? numeroDe(c) : ""}</button>`).join("")}
+        ${muerto && (!f || muerto.nombre.toLowerCase().includes(f)) ? `<button type="button" data-id="muerto" class="muerto${activo(muerto) ? " activo" : ""}" title="Muerto">✕</button>` : ""}</div>
+        <div class="tb-estados-rejilla">${ver.filter(c => !c.color && c.id !== "muerto").map(c => `<button type="button" data-id="${c.id}" class="${activo(c) ? "activo" : ""}${c.anim ? " anim" : ""}" title="${esc(c.nombre)}${c.anim ? " (animado)" : ""}">${c.e}${numeroDe(c) != null && activo(c) ? `<i>${numeroDe(c)}</i>` : ""}</button>`).join("")}</div>`;
+      if (!ver.length) cuerpo.innerHTML = `<p class="tb-nota" style="padding:calc(8px * var(--tb-k))">Nada con ese nombre.</p>`;
+    };
+    p.addEventListener("click", e => { const b = e.target.closest("[data-id]"); if (b) alternar(cat.find(c => c.id === b.dataset.id)); });
+    p.addEventListener("contextmenu", e => { const b = e.target.closest("[data-id]"); if (!b) return; e.preventDefault(); alternar(cat.find(c => c.id === b.dataset.id), true); });
+    const buscar = p.querySelector("[data-buscar]");
+    buscar.value = filtroEstados;
+    buscar.addEventListener("input", () => { filtroEstados = buscar.value; pintar(); });
+    buscar.addEventListener("keydown", e => e.stopPropagation());
+    p.querySelector("[data-limpiar]").addEventListener("click", async () => { await ponerEstados(objs(), () => []); setTimeout(pintar, 250); });
+    pintar();
+    document.body.appendChild(p);
+    p.style.left = Math.max(6, Math.min(x - 30, window.innerWidth - p.offsetWidth - 6)) + "px";
+    p.style.top = Math.max(6, Math.min(y + 14, window.innerHeight - p.offsetHeight - 6)) + "px";
+    const fuera = e => { if (!p.contains(e.target) && !e.target.closest(".tb-modal")) { p.remove(); document.removeEventListener("mousedown", fuera, true); } };
+    setTimeout(() => document.addEventListener("mousedown", fuera, true), 0);
   }
   function establecerDimensiones(todos) {
     const t = TB.L.tamCelda(), o = todos[0];

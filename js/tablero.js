@@ -234,7 +234,7 @@
     r.on("mensajeBorrado", id => { TB.mensajes = TB.mensajes.filter(m => m.id !== id); TB.lanzar("mensajes"); });
     r.on("diario", e => { TB.diario.set(e.id, e); TB.lanzar("diario"); });
     r.on("diarioBorrado", id => { TB.diario.delete(id); TB.lanzar("diario"); });
-    r.on("mov", d => { if (d && d.escena === TB.escenaId) TB.L.moverRemoto(d.id, d.x, d.y); });
+    r.on("mov", d => { if (d && d.escena === TB.escenaId) TB.L.moverRemoto(d.id, d.x, d.y, d.ruta); });
     r.on("quitar", d => { if (d && !TB.yo.esGM) (d.ids || []).forEach(id => TB.L.quitar(id)); });
     r.on("ping", d => {
       if (!d || d.escena !== TB.escenaId) return;
@@ -573,7 +573,7 @@
         try { await TB.red.moverPropio(o.id, o.x, o.y); }
         catch (e) { aviso(mensajeError(e), true); cargarEscena(TB.escenaId); }
       },
-      onMovEnCurso: (id, x, y) => TB.red.emitir("mov", { id, x, y, escena: TB.escenaId }),
+      onMovEnCurso: (id, x, y, ruta) => TB.red.emitir("mov", { id, x, y, escena: TB.escenaId, ruta: Array.isArray(ruta) ? ruta.slice(0, 25).map(p => ({ x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 })) : undefined }),
       // En la capa Iluminación, lo que se dibuja son muros (del tipo elegido en el panel de iluminación)
       onCrear: filas => TB.crearObjetos(filas.map(f => f.capa === "luz" && f.tipo === "dibujo"
         ? Object.assign({}, f, { datos: Object.assign({}, f.datos, { muro: TB.prefs.muroTipo || "muro", trazo: TBLuz.COLOR_MURO[TB.prefs.muroTipo || "muro"], relleno: "transparent", grosor: 4 }) }) : f)),
