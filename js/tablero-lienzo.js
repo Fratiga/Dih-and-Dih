@@ -42,7 +42,7 @@
     const pintorLuz = window.TBLuz ? TBLuz.crearPintor() : null;
 
     const tr = new Konva.Transformer({
-      rotateEnabled: true, keepRatio: false, ignoreStroke: true, anchorSize: 9, borderStroke: "#d6127e", anchorStroke: "#d6127e",
+      rotateEnabled: true, keepRatio: false, ignoreStroke: true, anchorSize: 11, borderStroke: "#d6127e", anchorStroke: "#d6127e",
       anchorCornerRadius: 2, rotationSnaps: [0, 45, 90, 135, 180, 225, 270, 315], rotationSnapTolerance: 6, flipEnabled: false,
       boundBoxFunc: (viejo, nuevo) => (Math.abs(nuevo.width) < 8 || Math.abs(nuevo.height) < 8 ? viejo : nuevo)
     });
@@ -770,6 +770,8 @@
         gesto = { tipo: "derecho", x: e.evt.clientX, y: e.evt.clientY, pos: stage.position(), id: tgt ? tgt.id() : null, mundo: p };
         return;
       }
+      // Las asas del transformador (esquinas y giro) no son «vacío»: si no, la selección se perdía al pulsarlas
+      if (e.target.getParent && e.target.getParent() === tr) return;
       const vacio = e.target === stage || !e.target.findAncestor || !e.target.findAncestor(".obj", true);
       if (st.herr === "seleccionar") {
         const sp = stage.getPointerPosition();
