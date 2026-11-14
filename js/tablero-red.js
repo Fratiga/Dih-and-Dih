@@ -115,6 +115,7 @@
       async guardarDiarioGM(id, texto) { ok(await sb.from("tablero_diario_gm").upsert({ diario: id, texto })); },
       async moverPropio(id, x, y) { ok(await sb.rpc("tablero_mover", { p_id: id, p_x: x, p_y: y })); },
       async puerta(id) { return ok(await sb.rpc("tablero_puerta", { p_objeto: id })); },
+      async estados(id, lista) { ok(await sb.rpc("tablero_estados", { p_objeto: id, p_estados: lista })); },
       async barra(id, n, valor, max) { ok(await sb.rpc("tablero_barra", { p_id: id, p_n: n, p_valor: valor, p_max: max })); },
       async crearPropio(escena, tipo, x, y, ancho, alto, datos) {
         return ok(await sb.rpc("tablero_crear_propio", { p_escena: escena, p_tipo: tipo, p_x: x, p_y: y, p_ancho: ancho, p_alto: alto, p_datos: datos }));
@@ -263,6 +264,12 @@
       async guardarNotaGM(objeto, texto) { d.notasGM[objeto] = texto; guardar(); },
       async diarioGM(id) { leer(); return d.diarioGM[id] || ""; },
       async guardarDiarioGM(id, texto) { d.diarioGM[id] = texto; guardar(); },
+      async estados(id, lista) {
+        const o = d.objetos.find(q => q.id === id);
+        if (!o || !(yo.esGM || (controla(o) && o.capa === "fichas"))) throw new Error("Esa ficha no es tuya.");
+        o.datos = Object.assign({}, o.datos, { estados: lista });
+        publicar("objeto", o);
+      },
       async puerta(id) {
         const o = d.objetos.find(q => q.id === id);
         if (!o || o.capa !== "luz" || (o.datos || {}).muro !== "puerta") throw new Error("Eso no es una puerta.");

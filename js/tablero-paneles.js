@@ -949,6 +949,7 @@
     };
     if (!gm) {
       const items = itemsComunes(p, false);
+      if (o.tipo === "imagen" && TB.controla(o)) items.push({ icono: "grupoDef", texto: "Estados", sub: itemsEstados([o]) });
       if (o.tipo === "imagen" && TB.controla(o)) items.push({ icono: "turno", texto: "Añadir turno", accion: iniciativa }, { icono: "ajustes", texto: "Ajustes de ficha…", accion: () => ajustesFicha(id) });
       if ((o.tipo === "dibujo" || o.tipo === "texto") && o.autor === TB.yo.uid) items.push("-", { icono: "papeleraR", texto: "Borrar", peligro: true, accion: () => TB.borrarObjetos(sel) });
       menu(x, y, items);
@@ -978,6 +979,7 @@
       { icono: "rehacer", texto: "Rehacer", apagado: !TB.puedeRehacer(), accion: () => TB.rehacer() },
       "-",
       { icono: "turno", texto: "Añadir turno", accion: () => TB.anadirAlTurno(sel) },
+      ...(o.tipo === "imagen" ? [{ icono: "grupoDef", texto: "Estados", sub: itemsEstados(todos.filter(q => q.tipo === "imagen")) }] : []),
       { icono: "capas", texto: "Cambiar capa", sub: CAPAS.map(c => ({ icono: c.icono, texto: (o.capa === c.id ? "✓ " : "") + c.nombre, accion: () => cambiarTodos(() => ({ capa: c.id })) })) },
       { icono: "frente", texto: "Traer al frente", accion: () => TB.cambiarVarios(todos.map((q, i) => ({ id: q.id, cambios: { z: Math.max(...z) + 1 + i } }))) },
       { icono: "fondo", texto: "Enviar al reverso", accion: () => TB.cambiarVarios(todos.map((q, i) => ({ id: q.id, cambios: { z: Math.min(...z) - todos.length + i } }))) },
@@ -1001,6 +1003,34 @@
       { icono: "papeleraR", texto: "Borrar", peligro: true, accion: () => TB.borrarObjetos(sel) }
     ]);
     menu(x, y, items);
+  }
+  // Marcadores de estado: el DJ en cualquier ficha; el jugador en las suyas (por función del servidor)
+  async function ponerEstados(objs, cambiar) {
+    if (TB.esGM()) { TB.cambiarVarios(objs.map(q => ({ id: q.id, cambios: { datos: Object.assign({}, q.datos, { estados: cambiar(((q.datos || {}).estados || []).slice()) }) } }))); return; }
+    for (const q of objs) {
+      try { await TB.red.estados(q.id, cambiar(((q.datos || {}).estados || []).slice())); } catch (e) { aviso(mensajeError(e), true); }
+    }
+  }
+  function itemsEstados(objs) {
+    const cat = window.TBEstados || [];
+    const tiene = id => objs.length && objs.every(q => ((q.datos || {}).estados || []).some(e => e.id === id));
+    const item = c => ({ texto: (tiene(c.id) ? "✓ " : "") + (c.color ? `<i class="tb-estado-punto" style="background:${c.color}"></i>` : c.e + " ") + c.nombre, accion: async () => {
+      if (tiene(c.id)) { ponerEstados(objs, l => l.filter(e => e.id !== c.id)); return; }
+      let n = null;
+      if (c.numero) {
+        const v = await pedir(c.nombre, c.id === "agotamiento" ? "1" : "", { etiqueta: c.id === "agotamiento" ? "Nivel de agotamiento (1 a 6)" : "Número (opcional; déjalo vacío para un punto sin número)" });
+        if (v === null) return;
+        n = v.trim() === "" ? null : Math.max(0, Math.min(99, parseInt(v, 10) || 0));
+      }
+      ponerEstados(objs, l => l.filter(e => e.id !== c.id).concat([n == null ? { id: c.id } : { id: c.id, n }]));
+    } });
+    return [
+      { cab: "Condiciones" }, ...cat.filter(c => !c.color && !c.extra).map(item), "-",
+      { texto: "Otros", sub: cat.filter(c => c.extra).map(item) },
+      { texto: "Puntos de color", sub: cat.filter(c => c.color).map(item) },
+      "-",
+      { texto: "Quitar todos", peligro: true, apagado: !objs.some(q => ((q.datos || {}).estados || []).length), accion: () => ponerEstados(objs, () => []) }
+    ];
   }
   function establecerDimensiones(todos) {
     const t = TB.L.tamCelda(), o = todos[0];

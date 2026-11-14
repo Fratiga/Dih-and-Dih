@@ -8,6 +8,21 @@
   const CAPAS = ["mapa", "fichas", "gm", "delantero", "luz"];
   const SUPA = "supabase.co";
 
+  // Konva termina un arrastre al soltar cualquier botón; el derecho (que añade paradas a la ruta) no debe soltar la ficha
+  (function () {
+    const DD = window.Konva && Konva.DD;
+    if (!DD || !DD._endDragBefore || window.__tbDDParcheado) return;
+    window.__tbDDParcheado = true;
+    const antes = DD._endDragBefore, despues = DD._endDragAfter;
+    ["mouseup", "pointerup"].forEach(t => {
+      window.removeEventListener(t, antes, true); window.removeEventListener(t, antes);
+      window.removeEventListener(t, despues, false); window.removeEventListener(t, despues);
+    });
+    const filtro = f => e => { if (e && e.button === 2 && DD.isDragging) return; f(e); };
+    window.addEventListener("mouseup", filtro(antes), true);
+    window.addEventListener("mouseup", filtro(despues), false);
+  })();
+
   function crear(contenedor, op) {
     Konva.pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);   // gráficas integradas: no pasar de 1,5
     const stage = new Konva.Stage({ container: contenedor, width: contenedor.clientWidth, height: contenedor.clientHeight });
@@ -211,6 +226,30 @@
       });
     }
 
+    // Añade una parada a la ruta: al arrastrar una ficha (en el centro de su casilla) o al medir con la regla de línea
+    function puntoDeRuta() {
+      if (st.arrastre) {
+        const m = st.nodos.get(st.arrastre.lider);
+        if (!m) return;
+        const p = ajustarPos(m.o, m.g.x(), m.g.y());
+        const ult = st.arrastre.ruta[st.arrastre.ruta.length - 1];
+        if (Math.hypot(p.x - ult.x, p.y - ult.y) < 1) return;
+        st.arrastre.ruta.push(p);
+        dibujarRuta(guiaMedida, st.arrastre.ruta.concat([{ x: m.g.x(), y: m.g.y() }]), "#d6127e", true);
+        lUI.batchDraw();
+        return;
+      }
+      if (gesto && gesto.tipo === "medida" && (st.opc.formaMedida || "linea") === "linea") {
+        const b = gesto.fin || gesto.inicio;
+        gesto.ruta = gesto.ruta || [gesto.inicio];
+        const ult = gesto.ruta[gesto.ruta.length - 1];
+        if (Math.hypot(b.x - ult.x, b.y - ult.y) < 1) return;
+        gesto.ruta.push(b);
+        dibujarRuta(guiaMedida, gesto.ruta.concat([b]), "#d6127e", true);
+        lUI.batchDraw();
+      }
+    }
+
     function opacidadNiebla() { lNiebla.opacity(st.esGM && !st.vistaJugador ? 0.42 : 1); }
 
     /* ------------------------------------------------------------ imágenes */
@@ -346,6 +385,37 @@
         n.deco.add(etq);
       }
       if (o.bloqueado && st.esGM && o.capa === st.capa) n.deco.add(new Konva.Text({ x: o.ancho / 2 - 12, y: -o.alto / 2 - 2, text: "🔒", fontSize: 11 }));
+      pintarEstados(n);
+    }
+
+    // Marcadores de estado: una fila de iconos en la esquina de arriba a la derecha (y una X roja si está muerto)
+    function pintarEstados(n) {
+      const o = n.o, lista = ((o.datos || {}).estados || []).filter(e => e && e.id);
+      if (!lista.length || o.tipo === "pin" || o.tipo === "luz") return;
+      const cat = window.TBEstados || [];
+      const s = Math.max(11, Math.min(22, Math.min(o.ancho, o.alto) * 0.27));
+      const porFila = Math.max(1, Math.floor(o.ancho / (s + 1)));
+      lista.forEach((e, i) => {
+        const def = cat.find(c => c.id === e.id) || { e: "❔" };
+        if (e.id === "muerto") {
+          const w = o.ancho / 2 * 0.85, h = o.alto / 2 * 0.85;
+          n.deco.add(new Konva.Line({ points: [-w, -h, w, h], stroke: "#d32f2f", strokeWidth: Math.max(3, o.ancho * 0.07), lineCap: "round", opacity: 0.9 }));
+          n.deco.add(new Konva.Line({ points: [w, -h, -w, h], stroke: "#d32f2f", strokeWidth: Math.max(3, o.ancho * 0.07), lineCap: "round", opacity: 0.9 }));
+        }
+        const fila = Math.floor(i / porFila), col = i % porFila;
+        const cx = o.ancho / 2 - s / 2 - col * (s + 1), cy = -o.alto / 2 + s / 2 + fila * (s + 1);
+        const g = new Konva.Group({ x: cx, y: cy, listening: false });
+        if (def.color) g.add(new Konva.Circle({ radius: s * 0.42, fill: def.color, stroke: "#fff", strokeWidth: 1.5 }));
+        else {
+          g.add(new Konva.Circle({ radius: s / 2, fill: "rgba(255,255,255,.92)", stroke: "rgba(0,0,0,.35)", strokeWidth: 1 }));
+          g.add(new Konva.Text({ text: def.e, fontSize: s * 0.68, width: s, align: "center", x: -s / 2, y: -s * 0.36 }));
+        }
+        if (e.n != null && e.n !== "") {
+          const t = new Konva.Text({ text: String(e.n), fontSize: s * 0.55, fontStyle: "bold", fill: "#fff", stroke: "#000", strokeWidth: 0.6, x: s * 0.05, y: s * 0.02 });
+          g.add(t);
+        }
+        n.deco.add(g);
+      });
     }
 
     function aplicarAtributos(n) {
@@ -488,7 +558,7 @@
       });
       n.g.on("dragstart", () => {
         if (!st.seleccion.has(n.o.id)) seleccionar([n.o.id]);
-        st.arrastre = { lider: n.o.id, inicio: new Map([...st.seleccion].map(id => { const m = st.nodos.get(id); return [id, { x: m.o.x, y: m.o.y }]; })) };
+        st.arrastre = { lider: n.o.id, ruta: [{ x: n.o.x, y: n.o.y }], inicio: new Map([...st.seleccion].map(id => { const m = st.nodos.get(id); return [id, { x: m.o.x, y: m.o.y }]; })) };
         st.seleccion.forEach(id => { const m = st.nodos.get(id); if (m) m.arrastrando = true; });
         cancelarPulsacion();
       });
@@ -510,8 +580,9 @@
         }
         if (st.luzOn) programarLuz();
         if (st.opc.moverMide !== false && n.o.capa !== "mapa") {
-          dibujarMedida(guiaMedida, "linea", ini, { x: n.g.x(), y: n.g.y() }, "#d6127e", true);
-          if (st.opc.transmitir !== false && op.onRegla && n.o.capa !== "gm") op.onRegla({ forma: "linea", a: ini, b: { x: n.g.x(), y: n.g.y() }, mov: true });
+          const ruta = (n.o.id === st.arrastre.lider ? st.arrastre.ruta : [ini]).concat([{ x: n.g.x(), y: n.g.y() }]);
+          dibujarRuta(guiaMedida, ruta, "#d6127e", true);
+          if (st.opc.transmitir !== false && op.onRegla && n.o.capa !== "gm") op.onRegla({ forma: "ruta", puntos: ruta, mov: true });
         }
         tr.forceUpdate();
         lUI.batchDraw();
@@ -527,7 +598,13 @@
           if (!m) return;
           let p = ajustarPos(m.o, m.g.x(), m.g.y(), sinAjuste);
           const ini = st.arrastre.inicio.get(id);
-          if (muros && ini && TBLuz.cruza(ini, p, muros)) { p = { x: ini.x, y: ini.y }; chocan = true; }
+          if (muros && ini) {
+            const desp = { x: m.o.x - ini.x, y: m.o.y - ini.y };   // los acompañantes siguen la ruta del líder desplazada
+            const base = (st.arrastre.ruta || [ini]).map(q => (id === st.arrastre.lider ? q : { x: q.x + (ini.x - st.arrastre.inicio.get(st.arrastre.lider).x), y: q.y + (ini.y - st.arrastre.inicio.get(st.arrastre.lider).y) }));
+            const camino = base.concat([p]);
+            if (camino.some((q, k) => k > 0 && TBLuz.cruza(camino[k - 1], q, muros))) { p = { x: ini.x, y: ini.y }; chocan = true; }
+            void desp;
+          }
           m.g.position(p); m.o.x = p.x; m.o.y = p.y;
           m.deco.position(p); m.aura.position(p);
           m.arrastrando = false;
@@ -596,6 +673,38 @@
       if (modo === "esquina") return { x: Math.round(p.x / t) * t, y: Math.round(p.y / t) * t };
       return p;
     }
+    function textoCeldas(celdas) {
+      const c = cuad(), v = Math.round(celdas * pies() * 10) / 10;
+      return v + " " + (c.unidad || "pies");
+    }
+    // Ruta con puntos de paso: se suma tramo a tramo (cada tramo con la regla de diagonales de la página)
+    function dibujarRuta(grupo, puntos, color, limpiar) {
+      if (limpiar) grupo.destroyChildren();
+      const z = zoom(), lw = 3 / z;
+      const plano = [];
+      puntos.forEach(p => plano.push(p.x, p.y));
+      grupo.add(new Konva.Line({ points: plano, stroke: color, strokeWidth: lw, dash: [10 / z, 6 / z], lineJoin: "round" }));
+      let total = 0;
+      for (let i = 0; i < puntos.length; i++) {
+        if (i > 0) total += celdasEntre(puntos[i - 1], puntos[i]);
+        if (i < puntos.length - 1) grupo.add(new Konva.Circle({ x: puntos[i].x, y: puntos[i].y, radius: (i ? 6 : 5) / z, fill: i ? "#fff" : color, stroke: color, strokeWidth: 2 / z }));
+      }
+      const b = puntos[puntos.length - 1];
+      const etq = new Konva.Label({ x: b.x + 10 / z, y: b.y - 28 / z, scaleX: 1 / z, scaleY: 1 / z });
+      etq.add(new Konva.Tag({ fill: color, cornerRadius: 4 }));
+      etq.add(new Konva.Text({ text: textoCeldas(total) + (puntos.length > 2 ? ` · ${puntos.length - 2} ${puntos.length === 3 ? "parada" : "paradas"}` : ""), fontSize: 15, fontStyle: "bold", fill: "#fff", padding: 5 }));
+      grupo.add(etq);
+    }
+    function celdasEntre(a, b) {
+      const t = tam(), c = cuad(), libre = (st.opc.ajusteMedida || "centro") === "ninguno";
+      let dx = Math.abs(b.x - a.x) / t, dy = Math.abs(b.y - a.y) / t;
+      if (!libre) { dx = Math.round(dx); dy = Math.round(dy); }
+      const diag = c.diagonal || "5e";
+      if (diag === "euclidea") return Math.hypot(dx, dy);
+      if (diag === "manhattan") return dx + dy;
+      if (diag === "pathfinder") return Math.max(dx, dy) + Math.floor(Math.min(dx, dy) / 2);
+      return Math.max(dx, dy);
+    }
     function textoDistancia(a, b) {
       const t = tam(), c = cuad(), libre = (st.opc.ajusteMedida || "centro") === "ninguno";
       let dx = Math.abs(b.x - a.x) / t, dy = Math.abs(b.y - a.y) / t;
@@ -655,10 +764,11 @@
       if (!d || !d.de) return;
       const vieja = reglasRemotas.get(d.de);
       if (vieja) { vieja.g.destroy(); clearTimeout(vieja.t); }
-      if (!d.a) { reglasRemotas.delete(d.de); lUI.batchDraw(); return; }
+      if (!d.a && !(d.puntos && d.puntos.length)) { reglasRemotas.delete(d.de); lUI.batchDraw(); return; }
       const g = new Konva.Group({ listening: false });
       guiasRemotas.add(g);
-      dibujarMedida(g, d.forma || "linea", d.a, d.b, d.color || "#2a7de1", false, d.extra);
+      if (d.forma === "ruta" && d.puntos) dibujarRuta(g, d.puntos, d.color || "#2a7de1", false);
+      else dibujarMedida(g, d.forma || "linea", d.a, d.b, d.color || "#2a7de1", false, d.extra);
       reglasRemotas.set(d.de, { g, t: setTimeout(() => { g.destroy(); reglasRemotas.delete(d.de); lUI.batchDraw(); }, d.persistente ? 600000 : 8000) });
       lUI.batchDraw();
     }
@@ -765,6 +875,7 @@
         contenedor.classList.add("arrastrando-camara");
         return;
       }
+      if (boton === 2 && (st.arrastre || (gesto && gesto.tipo === "medida"))) { puntoDeRuta(); return; }
       if (boton === 2) {
         const tgt = e.target.findAncestor && e.target.findAncestor(".obj", true);
         gesto = { tipo: "derecho", x: e.evt.clientX, y: e.evt.clientY, pos: stage.position(), id: tgt ? tgt.id() : null, mundo: p };
@@ -838,8 +949,15 @@
       }
       if (gesto.tipo === "medida") {
         const b = ajustarPunto(p);
-        dibujarMedida(guiaMedida, st.opc.formaMedida || "linea", gesto.inicio, b, "#d6127e", true);
         gesto.fin = b;
+        if (gesto.ruta) {
+          const ruta = gesto.ruta.concat([b]);
+          dibujarRuta(guiaMedida, ruta, "#d6127e", true);
+          if (st.opc.transmitir !== false && op.onRegla) op.onRegla({ forma: "ruta", puntos: ruta, persistente: !!st.opc.persistente });
+          lUI.batchDraw();
+          return;
+        }
+        dibujarMedida(guiaMedida, st.opc.formaMedida || "linea", gesto.inicio, b, "#d6127e", true);
         if (st.opc.transmitir !== false && op.onRegla) op.onRegla({ forma: st.opc.formaMedida || "linea", a: gesto.inicio, b, persistente: !!st.opc.persistente, extra: st.opc.medidaExtra });
         lUI.batchDraw();
         return;
@@ -902,6 +1020,7 @@
     function terminarGesto(e) {
       cancelarPulsacion();
       if (!gesto) return;
+      if (e && e.evt && e.evt.button === 2 && gesto.tipo === "medida") return;   // el clic derecho añade una parada, no termina
       const p = punteroMundo(), g = gesto;
       if (g.tipo === "camara") { gesto = null; contenedor.classList.remove("arrastrando-camara"); return; }
       if (g.tipo === "derecho") {
@@ -1030,6 +1149,8 @@
     return {
       stage,
       setPermisos(esGM, uid) { st.esGM = esGM; st.uid = uid; opacidadNiebla(); st.nodos.forEach(n => { pintarDeco(n); aplicarAtributos(n); }); programarLuz(); },
+      puntoDeRuta,
+      midiendo: () => !!st.arrastre || !!(gesto && gesto.tipo === "medida"),
       cruzaMuro(a, b) { return !!window.TBLuz && bloqueaMovimiento() && TBLuz.cruza(a, b, TBLuz.segmentosDe([...st.nodos.values()].map(x => x.o)).paso); },
       reiniciarExplorado() { if (pintorLuz) { pintorLuz.reiniciarExplorado(true); programarLuz(); } },
       actualizarLuz: programarLuz,

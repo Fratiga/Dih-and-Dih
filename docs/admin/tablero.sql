@@ -635,6 +635,28 @@ begin
 end;
 $$;
 
+-- Marcadores de estado (envenenado, derribado, concentración…) de una ficha: el DJ en cualquiera, el jugador en las
+-- suyas. Solo cambia datos.estados: [{ "id": "envenenado", "n": 2 }, …]
+create or replace function tablero_estados(p_objeto uuid, p_estados jsonb)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  o tablero_objetos;
+begin
+  if auth.uid() is null then raise exception 'Inicia sesión.'; end if;
+  if jsonb_typeof(p_estados) <> 'array' or jsonb_array_length(p_estados) > 30 or pg_column_size(p_estados) > 4000 then raise exception 'Estados no válidos.'; end if;
+  select * into o from tablero_objetos where id = p_objeto;
+  if not found then raise exception 'Esa ficha ya no existe.'; end if;
+  if not fichas_es_admin() and not ((o.controlan_todos or auth.uid() = any(o.controladores)) and o.capa = 'fichas' and tablero_escena_visible(o.escena)) then
+    raise exception 'Esa ficha no es tuya.';
+  end if;
+  update tablero_objetos set datos = jsonb_set(coalesce(datos, '{}'::jsonb), '{estados}', p_estados), actualizado = now() where id = p_objeto;
+end;
+$$;
+
 -- Pasar turno. El GM adelante o atrás; un jugador solo adelante y solo cuando el turno es de una ficha suya.
 create or replace function tablero_turno(p_paso int default 1)
 returns void
@@ -687,6 +709,7 @@ revoke all on function tablero_turno(int) from public, anon;
 revoke all on function tablero_ficha_pv(uuid, int, int, int) from public, anon;
 revoke all on function tablero_iniciativa_valor(uuid, numeric) from public, anon;
 revoke all on function tablero_puerta(uuid) from public, anon;
+revoke all on function tablero_estados(uuid, jsonb) from public, anon;
 grant execute on function tablero_escena_jugadores() to authenticated;
 grant execute on function tablero_escena_visible(uuid) to authenticated;
 grant execute on function tablero_mover(uuid, double precision, double precision) to authenticated;
@@ -700,6 +723,7 @@ grant execute on function tablero_turno(int) to authenticated;
 grant execute on function tablero_ficha_pv(uuid, int, int, int) to authenticated;
 grant execute on function tablero_iniciativa_valor(uuid, numeric) to authenticated;
 grant execute on function tablero_puerta(uuid) to authenticated;
+grant execute on function tablero_estados(uuid, jsonb) to authenticated;
 
 -- ============================================================ tiempo real y almacenamiento
 do $$

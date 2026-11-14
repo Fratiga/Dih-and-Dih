@@ -612,7 +612,7 @@
     const creadas = await TB.crearObjetos(portapapeles.map(o => { const c = Object.assign({}, o); delete c.id; delete c.actualizado; return Object.assign(c, TB.L.ajustarPos(c, p.x + o.x - cx, p.y + o.y - cy)); }));
     TB.L.seleccionar(creadas.map(o => o.id));
   };
-  function enCampo(e) { const t = e.target; return t && (t.closest("input, textarea, select, [contenteditable=true]")); }
+  function enCampo(e) { const t = e.target; return t && t.closest && t.closest("input, textarea, select, [contenteditable=true]"); }
   document.addEventListener("keydown", async e => {
     if (!TB.L || enCampo(e)) return;
     const ctrl = e.ctrlKey || e.metaKey;
@@ -620,6 +620,7 @@
     if (e.key === " " && !e.repeat) { TB.L.setEspacio(true); e.preventDefault(); return; }
     if (e.key === "Shift") TB.L.setMayus(true);
     if (!ctrl && (e.key === "v" || e.key === "V") && !e.repeat) { TB.L.setArriba(true); return; }
+    if (!ctrl && (e.key === "q" || e.key === "Q") && TB.L.midiendo()) { e.preventDefault(); TB.L.puntoDeRuta(); return; }
     if (!ctrl && (e.key === "b" || e.key === "B") && !e.repeat) { TB.L.setCursorB(true); return; }
     if (!ctrl && e.key === "Home") { TB.L.ajustarVista(); return; }
     if (!ctrl && (e.key === "p" || e.key === "P") && TB.yo.esGM) { TBPaneles.alternarPaginas(); return; }

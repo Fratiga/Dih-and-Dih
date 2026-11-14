@@ -1,6 +1,20 @@
 /* TABLERO — iconos (SVG en línea, trazos simples, color del texto) */
 (function () {
   const s = (cuerpo, relleno) => `<svg viewBox="0 0 24 24" fill="${relleno ? "currentColor" : "none"}" stroke="${relleno ? "none" : "currentColor"}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${cuerpo}</svg>`;
+  /* Marcadores de estado de las fichas: las condiciones de D&D 5e, algunos efectos comunes y puntos de color con número */
+  window.TBEstados = [
+    { id: "agarrado", nombre: "Agarrado", e: "✊" }, { id: "apresado", nombre: "Apresado", e: "⛓️" }, { id: "asustado", nombre: "Asustado", e: "😱" },
+    { id: "aturdido", nombre: "Aturdido", e: "💫" }, { id: "cegado", nombre: "Cegado", e: "🙈" }, { id: "derribado", nombre: "Derribado", e: "⤵️" },
+    { id: "encantado", nombre: "Encantado", e: "💗" }, { id: "ensordecido", nombre: "Ensordecido", e: "🙉" }, { id: "envenenado", nombre: "Envenenado", e: "🤢" },
+    { id: "incapacitado", nombre: "Incapacitado", e: "🚫" }, { id: "inconsciente", nombre: "Inconsciente", e: "💤" }, { id: "invisible", nombre: "Invisible", e: "👻" },
+    { id: "paralizado", nombre: "Paralizado", e: "⚡" }, { id: "petrificado", nombre: "Petrificado", e: "🗿" }, { id: "agotamiento", nombre: "Agotamiento", e: "😩", numero: true },
+    { id: "concentracion", nombre: "Concentración", e: "🎯", extra: true }, { id: "bendecido", nombre: "Bendecido", e: "✨", extra: true }, { id: "maldito", nombre: "Maldito", e: "🌑", extra: true },
+    { id: "sangrando", nombre: "Sangrando", e: "🩸", extra: true }, { id: "ardiendo", nombre: "Ardiendo", e: "🔥", extra: true }, { id: "protegido", nombre: "Protegido", e: "🛡️", extra: true },
+    { id: "acelerado", nombre: "Acelerado", e: "🏃", extra: true }, { id: "ralentizado", nombre: "Ralentizado", e: "🐌", extra: true }, { id: "muerto", nombre: "Muerto", e: "💀", extra: true },
+    { id: "rojo", nombre: "Punto rojo", color: "#e53935", numero: true }, { id: "azul", nombre: "Punto azul", color: "#1e88e5", numero: true },
+    { id: "verde", nombre: "Punto verde", color: "#43a047", numero: true }, { id: "amarillo", nombre: "Punto amarillo", color: "#fdd835", numero: true },
+    { id: "morado", nombre: "Punto morado", color: "#8e24aa", numero: true }
+  ];
   window.TBIcono = {
     menu: s('<path d="M4 6h16M4 12h16M4 18h16"/>'),
     seleccionar: s('<path d="M6 3l12 9-5.5 1.2 3.2 6.3-2.4 1.2-3.2-6.3L6 18z"/>', true),

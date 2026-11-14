@@ -195,6 +195,13 @@ como "$ADMIN" "update tablero_objetos set datos = datos || '{\"llave\": true}' w
 contiene "con llave no la abre" "$(como "$U1" "select tablero_puerta('$MURO');")" "cerrada con llave"
 contiene "un muro no es una puerta" "$(como "$U1" "select tablero_puerta('$F1');")" "no es una puerta"
 
+echo "== Marcadores de estado"
+como "$U1" "select tablero_estados('$F1', '[{\"id\": \"envenenado\"}, {\"id\": \"agotamiento\", \"n\": 2}]');" >/dev/null
+comprobar "el jugador marca estados en su ficha" "envenenado|2" "$(sql "select (datos -> 'estados' -> 0 ->> 'id') || '|' || (datos -> 'estados' -> 1 ->> 'n') from tablero_objetos where id = '$F1'")"
+contiene "no en la ficha de otro" "$(como "$U2" "select tablero_estados('$F1', '[]');")" "no es tuya"
+contiene "solo una lista" "$(como "$U1" "select tablero_estados('$F1', '{}');")" "no válidos"
+comprobar "y no toca nada más de la ficha" "Laia" "$(sql "select datos ->> 'nombre' from tablero_objetos where id = '$F1'")"
+
 echo "== Perfil y GIFs"
 sql "delete from tablero_perfil; delete from tablero_gifs" >/dev/null
 como "$U1" "insert into tablero_perfil (avatar) values ('https://ejemplo.com/yo.png');" >/dev/null

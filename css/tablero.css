@@ -624,3 +624,7 @@ body.tb.tb-oscuro .tb-avatares .tb-av-nombre { background: rgba(0,0,0,.7); }
 .tb-reproductor.cerrado { width: auto; background: none; box-shadow: none; overflow: visible; }
 .tb-reproductor.cerrado .tb-repro-cab { display: none; }
 .tb-reproductor.cerrado .tb-repro-abrir { display: grid; place-items: center; width: calc(34px * var(--tb-k)); height: calc(34px * var(--tb-k)); border-radius: 50%; border: 0; background: var(--tb-acento); color: #fff; font-size: calc(16px * var(--tb-k)); cursor: pointer; box-shadow: var(--tb-sombra); }
+
+/* ---------------------------------------------------------------- marcadores de estado en el menú */
+.tb-estado-punto { display: inline-block; width: calc(11px * var(--tb-k)); height: calc(11px * var(--tb-k)); border-radius: 50%; margin-right: calc(6px * var(--tb-k)); vertical-align: -1px; border: 1px solid rgba(0,0,0,.25); }
+.tb-submenu { max-height: calc(100vh - 16px); overflow-y: auto; }
