@@ -554,7 +554,9 @@
       const yArriba = o.y - o.alto / 2 - ocupaArriba - 22 * k;
       tr.rotateAnchorOffset(Math.round(ocupaArriba * z + 62));
       barras.forEach((b, i) => {
-        const g = new Konva.Group({ x: o.x + (i - 1) * 36 * k, y: yArriba, scaleX: k, scaleY: k, name: "selui-b" });
+        // Orden de Roll20: rojo (barra 3) a la izquierda, verde (barra 1) en medio, azul (barra 2) a la derecha
+        const lugar = [0, 1, -1][i];
+        const g = new Konva.Group({ x: o.x + lugar * 36 * k, y: yArriba, scaleX: k, scaleY: k, name: "selui-b" });
         g.add(new Konva.Circle({ radius: 16, fill: "#2b2b2b", stroke: COLORES_BARRA[i], strokeWidth: 3.5, shadowColor: "#000", shadowBlur: 5, shadowOpacity: 0.45 }));
         const txt = b.valor === "" || b.valor == null ? "" : String(b.valor);
         g.add(new Konva.Text({ text: txt, fontSize: txt.length > 3 ? 10 : 13, fontStyle: "bold", fill: "#fff", width: 32, align: "center", x: -16, y: txt.length > 3 ? -5 : -6.5, listening: false }));
