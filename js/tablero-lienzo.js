@@ -609,19 +609,36 @@
       const v = Math.round(celdas * pies() * 10) / 10;
       return v + " " + (c.unidad || "pies");
     }
-    function dibujarMedida(grupo, forma, a, b, color, limpiar) {
+    // extra: { conoGrados, conoForma ("plano" | "redondeado"), hazPies, origen ("centro" | "borde" | "esquina") }
+    function dibujarMedida(grupo, forma, a, b, color, limpiar, extra) {
       if (limpiar) grupo.destroyChildren();
+      const x = Object.assign({ conoGrados: 53, conoForma: "plano", hazPies: 5, origen: "centro" }, st.opc.medidaExtra, extra);
       const z = zoom(), t = tam();
       const lw = 3 / z;
       const comun = { stroke: color, strokeWidth: lw, fill: color + "33" };
       const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy) || 0.0001;
-      if (forma === "circulo") grupo.add(new Konva.Circle(Object.assign({ x: a.x, y: a.y, radius: L }, comun)));
-      else if (forma === "cuadrado") { const r = Math.max(Math.abs(dx), Math.abs(dy)); grupo.add(new Konva.Rect(Object.assign({ x: a.x - r, y: a.y - r, width: r * 2, height: r * 2 }, comun))); }
-      else if (forma === "cono") {
-        const ux = dx / L, uy = dy / L, px = -uy, py = ux;
-        grupo.add(new Konva.Line(Object.assign({ points: [a.x, a.y, b.x + px * L / 2, b.y + py * L / 2, b.x - px * L / 2, b.y - py * L / 2], closed: true }, comun)));
+      if (forma === "circulo") {
+        if (x.origen === "borde") grupo.add(new Konva.Circle(Object.assign({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, radius: L / 2 }, comun)));
+        else grupo.add(new Konva.Circle(Object.assign({ x: a.x, y: a.y, radius: L }, comun)));
+      } else if (forma === "cuadrado") {
+        const ax = Math.abs(dx), ay = Math.abs(dy), sx = dx < 0 ? -1 : 1, sy = dy < 0 ? -1 : 1;
+        if (x.origen === "esquina") { const s = Math.max(ax, ay); grupo.add(new Konva.Rect(Object.assign({ x: sx > 0 ? a.x : a.x - s, y: sy > 0 ? a.y : a.y - s, width: s, height: s }, comun))); }
+        else if (x.origen === "borde") {
+          // El origen queda en el centro de un lado y el cuadrado crece hacia donde apuntas
+          const s = Math.max(ax, ay);
+          if (ax >= ay) grupo.add(new Konva.Rect(Object.assign({ x: sx > 0 ? a.x : a.x - s, y: a.y - s / 2, width: s, height: s }, comun)));
+          else grupo.add(new Konva.Rect(Object.assign({ x: a.x - s / 2, y: sy > 0 ? a.y : a.y - s, width: s, height: s }, comun)));
+        } else { const r = Math.max(ax, ay); grupo.add(new Konva.Rect(Object.assign({ x: a.x - r, y: a.y - r, width: r * 2, height: r * 2 }, comun))); }
+      } else if (forma === "cono") {
+        const ang = Math.atan2(dy, dx), mitad = Math.max(1, Math.min(179, Number(x.conoGrados) || 53)) * Math.PI / 360;
+        if (x.conoForma === "redondeado") grupo.add(new Konva.Wedge(Object.assign({ x: a.x, y: a.y, radius: L, angle: mitad * 360 / Math.PI, rotation: (ang - mitad) * 180 / Math.PI }, comun)));
+        else {
+          const ux = dx / L, uy = dy / L, px = -uy, py = ux, ancho = L * Math.tan(mitad);
+          grupo.add(new Konva.Line(Object.assign({ points: [a.x, a.y, b.x + px * ancho, b.y + py * ancho, b.x - px * ancho, b.y - py * ancho], closed: true }, comun)));
+        }
       } else if (forma === "haz") {
-        const ux = dx / L, uy = dy / L, px = -uy * t / 2, py = ux * t / 2;
+        const ancho = (Number(x.hazPies) || 5) / pies() * t;
+        const ux = dx / L, uy = dy / L, px = -uy * ancho / 2, py = ux * ancho / 2;
         grupo.add(new Konva.Line(Object.assign({ points: [a.x + px, a.y + py, b.x + px, b.y + py, b.x - px, b.y - py, a.x - px, a.y - py], closed: true }, comun)));
       } else {
         grupo.add(new Konva.Line({ points: [a.x, a.y, b.x, b.y], stroke: color, strokeWidth: lw, dash: [10 / z, 6 / z] }));
@@ -641,7 +658,7 @@
       if (!d.a) { reglasRemotas.delete(d.de); lUI.batchDraw(); return; }
       const g = new Konva.Group({ listening: false });
       guiasRemotas.add(g);
-      dibujarMedida(g, d.forma || "linea", d.a, d.b, d.color || "#2a7de1", false);
+      dibujarMedida(g, d.forma || "linea", d.a, d.b, d.color || "#2a7de1", false, d.extra);
       reglasRemotas.set(d.de, { g, t: setTimeout(() => { g.destroy(); reglasRemotas.delete(d.de); lUI.batchDraw(); }, d.persistente ? 600000 : 8000) });
       lUI.batchDraw();
     }
@@ -821,13 +838,19 @@
         const b = ajustarPunto(p);
         dibujarMedida(guiaMedida, st.opc.formaMedida || "linea", gesto.inicio, b, "#d6127e", true);
         gesto.fin = b;
-        if (st.opc.transmitir !== false && op.onRegla) op.onRegla({ forma: st.opc.formaMedida || "linea", a: gesto.inicio, b, persistente: !!st.opc.persistente });
+        if (st.opc.transmitir !== false && op.onRegla) op.onRegla({ forma: st.opc.formaMedida || "linea", a: gesto.inicio, b, persistente: !!st.opc.persistente, extra: st.opc.medidaExtra });
         lUI.batchDraw();
         return;
       }
       if (gesto.tipo === "fx") {
         if (op.onFxPrevia) op.onFxPrevia(gesto.inicio, p);
         gesto.fin = p;
+        const pl = st.opc.fxPlantilla || "linea";
+        if (pl !== "ninguna" && Math.hypot(p.x - gesto.inicio.x, p.y - gesto.inicio.y) * zoom() > 4) {
+          dibujarMedida(guiaMedida, pl, gesto.inicio, p, "#e8641c", true);
+          if (st.opc.transmitir !== false && op.onRegla) op.onRegla({ forma: pl, a: gesto.inicio, b: p, extra: st.opc.medidaExtra, color: "#e8641c" });
+          lUI.batchDraw();
+        }
         return;
       }
       if (gesto.tipo === "niebla") {
@@ -906,7 +929,13 @@
         if (!st.opc.persistente) { guiaMedida.destroyChildren(); lUI.batchDraw(); if (op.onRegla) op.onRegla(null); }
         return;
       }
-      if (g.tipo === "fx") { gesto = null; if (op.onFx) op.onFx(g.inicio, g.fin || p); return; }
+      if (g.tipo === "fx") {
+        gesto = null;
+        if (op.onFx) op.onFx(g.inicio, g.fin || p);
+        // El área se queda un momento mientras dura el efecto (o fija, si la medida es persistente)
+        if (!st.opc.persistente) setTimeout(() => { if (gesto && gesto.tipo === "fx") return; guiaMedida.destroyChildren(); lUI.batchDraw(); if (op.onRegla) op.onRegla(null); }, 1600);
+        return;
+      }
       if (g.tipo === "niebla") {
         gesto = null;
         vistaPrevia.find(".previa").forEach(x => x.destroy()); lUI.batchDraw();

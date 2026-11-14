@@ -182,6 +182,7 @@
         <label class="tb-campo" style="flex:1.4"><span style="font-weight:600">Ajuste de cuadrícula</span><select data-ajuste>
           <option value="centro">Ajustar al centro</option><option value="esquina">Ajustar a las esquinas</option><option value="ninguno">Sin ajuste</option></select></label>
       </div>
+      <div data-extra></div>
       <p class="tb-flot-titulo-sec">Retardo de desvanecimiento</p>
       <div class="tb-segmento" data-persistente><button type="button" data-v="0">Instantáneo</button><button type="button" data-v="1">Persistente</button></div>
       <div class="tb-fila-toggle" style="margin-top:calc(12px * var(--tb-k))"><span>Mide siempre el movimiento de las fichas.</span><span data-t1></span></div>
@@ -189,7 +190,9 @@
     </div>`);
     const forma = c.querySelector("[data-forma]"), ajuste = c.querySelector("[data-ajuste]");
     forma.value = m.forma; ajuste.value = m.ajuste;
-    forma.addEventListener("change", () => { m.forma = forma.value; guardar(); });
+    const extra = c.querySelector("[data-extra]");
+    pintarExtraMedida(extra, () => forma.value, guardar);
+    forma.addEventListener("change", () => { m.forma = forma.value; guardar(); pintarExtraMedida(extra, () => forma.value, guardar); });
     ajuste.addEventListener("change", () => { m.ajuste = ajuste.value; guardar(); });
     const seg = c.querySelector("[data-persistente]");
     const pintarSeg = () => seg.querySelectorAll("button").forEach(b => b.classList.toggle("activo", (b.dataset.v === "1") === !!m.persistente));
@@ -202,6 +205,37 @@
     f.appendChild(c);
     const esc = TB.escena(), cu = (esc && esc.cuadricula) || {};
     f.appendChild(el(`<div class="tb-flot-pie"><span class="tb-nota">Compatible con D&amp;D 5ª ed. (las diagonales cuentan una casilla)</span><span class="tb-nota">1 casilla = ${cu.pies || 5} pies</span></div>`));
+  }
+
+  // Opciones de cada forma de medida, como en Roll20 (también las usan los efectos)
+  function pintarExtraMedida(caja, forma, guardar) {
+    const m = TB.prefs.medida;
+    const f = forma();
+    caja.innerHTML = "";
+    const botones = (titulo, clave, valores, unidad, def) => {
+      const actual = m[clave] == null ? def : m[clave];
+      const b = el(`<div><p class="tb-flot-titulo-sec">${titulo}</p><div class="tb-fila" style="align-items:center">
+        ${valores.map(v => `<button type="button" class="tb-btn tb-btn-mini${Number(actual) === v ? " activo" : ""}" data-v="${v}" style="min-width:calc(38px * var(--tb-k))">${v}</button>`).join("")}
+        <span class="tb-ud" style="flex:1"><input type="number" min="1" max="${unidad === "°" ? 179 : 500}" data-n style="width:100%"><i>${unidad}</i></span></div></div>`);
+      const n = b.querySelector("[data-n]");
+      n.value = actual;
+      const poner = v => { m[clave] = Math.max(1, Math.min(unidad === "°" ? 179 : 500, Number(v) || def)); n.value = m[clave]; b.querySelectorAll("[data-v]").forEach(x => x.classList.toggle("activo", Number(x.dataset.v) === m[clave])); guardar(); };
+      b.querySelectorAll("[data-v]").forEach(x => x.addEventListener("click", () => poner(x.dataset.v)));
+      n.addEventListener("change", () => poner(n.value));
+      caja.appendChild(b);
+    };
+    const segmento = (titulo, clave, opciones, def) => {
+      const b = el(`<div><p class="tb-flot-titulo-sec">${titulo}</p><div class="tb-segmento">${opciones.map(([v, t]) => `<button type="button" data-v="${v}">${t}</button>`).join("")}</div></div>`);
+      const pintar = () => b.querySelectorAll("[data-v]").forEach(x => x.classList.toggle("activo", x.dataset.v === (m[clave] || def)));
+      b.addEventListener("click", e => { const x = e.target.closest("[data-v]"); if (!x) return; m[clave] = x.dataset.v; pintar(); guardar(); });
+      pintar();
+      caja.appendChild(b);
+    };
+    if (f === "haz") botones("Amplitud de haz (pies)", "hazPies", [5, 10, 15], "pies", 5);
+    if (f === "cono") { botones("Grado de cono", "conoGrados", [45, 53, 60, 90], "°", 53); segmento("Forma de cono", "conoForma", [["plano", "Plano"], ["redondeado", "Redondeado"]], "plano"); }
+    if (f === "circulo") segmento("Origen de la medida", "origen", [["centro", "Centro"], ["borde", "Borde"]], "centro");
+    if (f === "cuadrado") segmento("Origen de la medida", "origen", [["centro", "Centro"], ["borde", "Borde"], ["esquina", "Esquina"]], "centro");
+    if (f === "cono") caja.appendChild(el(`<p class="tb-nota" style="margin:calc(4px * var(--tb-k)) 0 0">53° es el cono de D&amp;D 5e: igual de ancho que de largo.</p>`));
   }
 
   /* --- Lanzador de dados --- */
@@ -425,16 +459,25 @@
     const c = el(`<div class="tb-flot-cuerpo">
       <label class="tb-campo"><span style="font-weight:600">Tipo de efecto:</span><select data-tipo>${TBFx.TIPOS.map(t => `<option value="${t.id}">${t.nombre} · ${t.modo === "apuntar" ? "Apuntar" : t.modo === "clic" ? "Haz clic" : "Espera"}</option>`).join("")}</select></label>
       <p class="tb-nota" data-ayuda></p>
+      <label class="tb-campo"><span style="font-weight:600">Área al lanzar (regla):</span><select data-plantilla>
+        <option value="auto">Automática (según el efecto)</option><option value="linea">Regla (línea)</option><option value="cono">Cono</option><option value="haz">Haz</option><option value="circulo">Círculo</option><option value="cuadrado">Cuadrado</option><option value="ninguna">Sin regla</option></select></label>
+      <div data-extra></div>
       <div class="tb-colores-fx">${TBFx.COLORES.map(x => `<button type="button" data-c="${x.id}"><i style="background:${x.muestra}"></i>${x.nombre}</button>`).join("")}</div>
     </div>`);
     const tipo = c.querySelector("[data-tipo]"), ayuda = c.querySelector("[data-ayuda]");
     const pintar = () => {
       tipo.value = fx.tipo;
       const t = TBFx.TIPOS.find(x => x.id === fx.tipo) || TBFx.TIPOS[0];
-      ayuda.textContent = t.modo === "apuntar" ? "Arrastra desde el origen hasta el objetivo." : "Haz clic en el tablero donde quieras el efecto.";
+      ayuda.textContent = t.modo === "apuntar" ? "Arrastra desde el origen hasta el objetivo: verás el área y la distancia." : "Haz clic donde quieras el efecto, o arrastra para ver su área y la distancia.";
       c.querySelectorAll("[data-c]").forEach(b => b.classList.toggle("activo", b.dataset.c === fx.color));
     };
-    tipo.addEventListener("change", () => { fx.tipo = tipo.value; TB.guardarPrefs(); pintar(); setHerramienta("fx"); });
+    tipo.addEventListener("change", () => { fx.tipo = tipo.value; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); pintar(); pintarExtraFx(); setHerramienta("fx"); });
+    const plantilla = c.querySelector("[data-plantilla]"), extraFx = c.querySelector("[data-extra]");
+    plantilla.value = fx.plantilla || "auto";
+    const formaFx = () => { const v = plantilla.value; return v === "auto" ? ({ aliento: "cono", haz: "haz", salpicar: "cono", bomba: "circulo", explotar: "circulo", agrupacion: "circulo", estrella: "circulo", quemar: "circulo", rafaga: "circulo" }[fx.tipo] || "linea") : v; };
+    const pintarExtraFx = () => pintarExtraMedida(extraFx, formaFx, () => { TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); });
+    plantilla.addEventListener("change", () => { fx.plantilla = plantilla.value; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); pintarExtraFx(); });
+    pintarExtraFx();
     c.querySelector(".tb-colores-fx").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (!b) return; fx.color = b.dataset.c; TB.guardarPrefs(); pintar(); setHerramienta("fx"); });
     pintar();
     f.appendChild(c);
@@ -655,6 +698,10 @@
       <div class="tb-fila" style="justify-content:space-between"><h3 style="margin:calc(4px * var(--tb-k)) 0 calc(14px * var(--tb-k));font-size:calc(19px * var(--tb-k))">General</h3></div>
       ${gm ? `<label class="tb-campo"><span>Representa a un personaje</span><select data-rep><option value="">Ninguno / Ficha genérica</option>${personajes.map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join("")}</select></label>` : ""}
       <label class="tb-campo"><span>Nombre</span><span class="tb-fila"><input type="text" data-nombre ${gm ? "" : "disabled"}><label class="tb-casilla tb-btn" style="white-space:nowrap"><input type="checkbox" data-vernombre ${gm ? "" : "disabled"}> Nombre</label></span></label>
+      ${gm ? `<div class="tb-campo"><span>Tamaño</span><span class="tb-fila" style="align-items:center;flex-wrap:wrap">
+          <select data-tampre style="width:auto;flex:1;min-width:calc(150px * var(--tb-k))"><option value="">Personalizado</option><option value="0.5">Diminuto (½ casilla)</option><option value="1">Pequeño o mediano (1 casilla)</option><option value="2">Grande (2 × 2)</option><option value="3">Enorme (3 × 3)</option><option value="4">Gargantuesco (4 × 4)</option></select>
+          <span class="tb-ud"><input type="number" step="0.25" min="0.25" max="40" data-tw style="width:calc(64px * var(--tb-k))"><i>ancho</i></span>
+          <span class="tb-ud"><input type="number" step="0.25" min="0.25" max="40" data-th style="width:calc(64px * var(--tb-k))"><i>alto</i></span><span class="tb-nota">casillas</span></span></div>` : ""}
       ${gm ? `<div class="tb-campo"><span>Controlado por</span><div data-control></div><span class="tb-nota" data-control-nota hidden>(Determinado por los ajustes de personaje)</span></div>
         <div class="tb-fila" style="flex-wrap:wrap;margin-bottom:calc(12px * var(--tb-k))">${plantilla ? "" : `<button type="button" class="tb-btn tb-btn-azul" data-predet>Actualizar ficha predeterminada</button>`}<button type="button" class="tb-btn tb-btn-azul" data-hoja>Abrir hoja de personaje</button></div>
         <div class="tb-campo"><span>Color de tinte</span><span class="tb-fila"><input type="color" data-tinte><label class="tb-casilla"><input type="checkbox" data-sintinte> Sin tinte</label></span></div>` : ""}
@@ -744,6 +791,13 @@
       rep.addEventListener("change", () => { const p = TB.diario.get(rep.value); if (p && !q("[data-nombre]").value) q("[data-nombre]").value = p.nombre; pintarRep(); });
       pintarRep();
       q("[data-tinte]").value = d.tinte || "#ff0000"; q("[data-sintinte]").checked = !d.tinte;
+      // Tamaño en casillas
+      const tc = TB.L.tamCelda(), tw = q("[data-tw]"), th = q("[data-th]"), tp = q("[data-tampre]");
+      tw.value = Math.round(o.ancho / tc * 100) / 100; th.value = Math.round(o.alto / tc * 100) / 100;
+      const marcarPre = () => { tp.value = tw.value === th.value && ["0.5", "1", "2", "3", "4"].includes(String(Number(tw.value))) ? String(Number(tw.value)) : ""; };
+      marcarPre();
+      tp.addEventListener("change", () => { if (tp.value) { tw.value = tp.value; th.value = tp.value; } });
+      tw.addEventListener("input", marcarPre); th.addEventListener("input", marcarPre);
       const opac = q("[data-opac]"), opTxt = q("[data-opac-txt]");
       opac.value = Math.round((o.opacidad == null ? 1 : o.opacidad) * 100); opTxt.textContent = opac.value + "%";
       opac.addEventListener("input", () => { opTxt.textContent = opac.value + "%"; });
@@ -794,7 +848,10 @@
       titulo: plantilla ? "Ficha predeterminada de " + esc((entrada && entrada.nombre) || "") : "Ajustes de fichas", cuerpo, ancho: 880,
       alAceptar: async () => {
         const nd = leerDatos();
-        if (plantilla) { await TB.red.actualizarDiario(plantilla.diario, { token: { ancho: o.ancho, alto: o.alto, datos: nd } }); return; }
+        const tcel = TB.L.tamCelda();
+        const nuevoAncho = gm && q("[data-tw]") ? Math.max(5, (Number(q("[data-tw]").value) || o.ancho / tcel) * tcel) : o.ancho;
+        const nuevoAlto = gm && q("[data-th]") ? Math.max(5, (Number(q("[data-th]").value) || o.alto / tcel) * tcel) : o.alto;
+        if (plantilla) { await TB.red.actualizarDiario(plantilla.diario, { token: { ancho: nuevoAncho, alto: nuevoAlto, datos: nd } }); return; }
         // Una barra enlazada que se cambia aquí también cambia los PV de la ficha (el servidor comprueba que sea tuya o que seas el DJ)
         for (let i = 0; i < 3; i++) {
           const b = nd.barras[i], antes = barras[i];
@@ -815,6 +872,7 @@
           return;
         }
         const cambios = { datos: nd, opacidad: Number(q("[data-opac]").value) / 100 };
+        if (Math.abs(nuevoAncho - o.ancho) > 0.5 || Math.abs(nuevoAlto - o.alto) > 0.5) { cambios.ancho = nuevoAncho; cambios.alto = nuevoAlto; }
         const p = nd.representa && TB.diario.get(nd.representa);
         if (p) { cambios.controladores = (p.controladores || []).slice(); cambios.controlan_todos = false; }
         else { const v = controlSel.valor(); cambios.controlan_todos = v.includes("*"); cambios.controladores = v.filter(x => x !== "*"); }

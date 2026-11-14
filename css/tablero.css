@@ -615,3 +615,12 @@ body.tb.tb-oscuro .tb-tirada-total span { color: var(--tb-suave); }
 body.tb.tb-oscuro .tb-zoom { background: rgba(36, 38, 42, .94); }
 body.tb.tb-oscuro .tb-zoom-barra { background: #4a4d54; }
 body.tb.tb-oscuro .tb-avatares .tb-av-nombre { background: rgba(0,0,0,.7); }
+
+/* ---------------------------------------------------------------- reproductor: solo audio y cerrado (el iframe sigue vivo para que suene) */
+.tb-repro-cab button[hidden] { display: none; }
+.tb-repro-abrir { display: none; }
+.tb-reproductor.solo-audio .tb-repro-yt, .tb-reproductor.cerrado .tb-repro-yt, .tb-reproductor.cerrado .tb-repro-sp { position: absolute; left: 0; top: 0; width: 2px; height: 2px; overflow: hidden; opacity: 0.01; pointer-events: none; }
+.tb-reproductor.solo-audio { width: calc(240px * var(--tb-k)); }
+.tb-reproductor.cerrado { width: auto; background: none; box-shadow: none; overflow: visible; }
+.tb-reproductor.cerrado .tb-repro-cab { display: none; }
+.tb-reproductor.cerrado .tb-repro-abrir { display: grid; place-items: center; width: calc(34px * var(--tb-k)); height: calc(34px * var(--tb-k)); border-radius: 50%; border: 0; background: var(--tb-acento); color: #fff; font-size: calc(16px * var(--tb-k)); cursor: pointer; box-shadow: var(--tb-sombra); }

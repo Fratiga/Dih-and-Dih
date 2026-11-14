@@ -76,6 +76,10 @@
     document.getElementById("tbReglasBtn").addEventListener("click", alternarReglas);
     const repro = document.getElementById("tbReproductor");
     repro.querySelector("[data-plegar]").addEventListener("click", () => repro.classList.toggle("plegado"));
+    // Solo audio (se recuerda) y cerrar la ventana de esta pista; la música no se para
+    repro.querySelector("[data-audio]").addEventListener("click", () => { TB.prefs.soloAudio = !TB.prefs.soloAudio; TB.guardarPrefs(); estadoRepro(); });
+    repro.querySelector("[data-cerrar]").addEventListener("click", () => { reproCerrado = (TB.estado.musica || {}).src || null; estadoRepro(); });
+    repro.querySelector("[data-abrir]").addEventListener("click", () => { reproCerrado = null; if (TB.prefs.soloAudio) { TB.prefs.soloAudio = false; TB.guardarPrefs(); } estadoRepro(); });
     aplicarAjustes();
     TB.on("arte", pintarArte);
     pintarBarraMacros();
@@ -681,11 +685,23 @@
     if (tipo === "youtube") syncYT(mus);
     if (tipo === "spotify") syncSP(mus);
     document.getElementById("tbReproductor").hidden = !(tipo === "youtube" || tipo === "spotify");
+    estadoRepro();
     document.querySelector("#tbReproductor .tb-repro-yt").hidden = tipo !== "youtube";
     document.querySelector("#tbReproductor .tb-repro-sp").hidden = tipo !== "spotify";
     const cab = document.querySelector("#tbReproductor .tb-repro-nombre");
     if (cab) cab.textContent = mus.nombre || "";
     pintarGramola();
+  }
+  let reproCerrado = null;
+  function estadoRepro() {
+    const r = document.getElementById("tbReproductor"), mus = TB.estado.musica || {};
+    const cerrado = !!mus.src && reproCerrado === mus.src;
+    r.classList.toggle("solo-audio", !cerrado && !!TB.prefs.soloAudio && mus.tipo === "youtube");
+    r.classList.toggle("cerrado", cerrado);
+    const b = r.querySelector("[data-audio]");
+    b.hidden = mus.tipo !== "youtube";
+    b.textContent = TB.prefs.soloAudio ? "🎬" : "🎵";
+    b.title = TB.prefs.soloAudio ? "Ver el vídeo" : "Solo audio: esconde el vídeo y sigue sonando";
   }
   function marcarBloqueo(v) {
     if (audioBloqueado === v) return;
@@ -1170,6 +1186,7 @@
     const sonido = seccion("Sonido", false);
     deslizador(sonido, "volumen", "Mi volumen de la música", 0, 1, 0.05, aplicarVolumen);
     deslizador(sonido, "volumenEfectos", "Mi volumen de los efectos", 0, 1, 0.05);
+    toggle(sonido, "soloAudio", "YouTube solo en audio (sin la ventana del vídeo)", () => estadoRepro());
     if (!gm) sonido.appendChild(el(`<p class="tb-nota">La música y los efectos los pone el DJ.</p>`));
     if (gm) {
       // Los volúmenes globales del DJ: se aplican a todos (cada jugador ajusta encima el suyo)

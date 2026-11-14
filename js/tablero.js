@@ -180,8 +180,12 @@
 
   function aplicarOpcionesLienzo() {
     const p = TB.prefs;
+    // Plantilla de los efectos: la que se elija o, en «automática», la que va con el efecto
+    const AUTO = { aliento: "cono", haz: "haz", salpicar: "cono", bomba: "circulo", explotar: "circulo", agrupacion: "circulo", estrella: "circulo", quemar: "circulo", rafaga: "circulo" };
+    const pl = !p.fx.plantilla || p.fx.plantilla === "auto" ? (AUTO[p.fx.tipo] || "linea") : p.fx.plantilla;
     TB.L.setOpciones({ moverMide: p.medida.moverMide, transmitir: p.medida.transmitir, ajusteMedida: p.medida.ajuste, formaMedida: p.medida.forma,
-      persistente: p.medida.persistente, dibujo: p.dibujo, texto: p.texto, niebla: p.niebla });
+      persistente: p.medida.persistente, dibujo: p.dibujo, texto: p.texto, niebla: p.niebla, fxPlantilla: pl,
+      medidaExtra: { conoGrados: p.medida.conoGrados || 53, conoForma: p.medida.conoForma || "plano", hazPies: p.medida.hazPies || 5, origen: p.medida.origen || "centro" } });
   }
   TB.aplicarOpcionesLienzo = aplicarOpcionesLienzo;
 
@@ -592,6 +596,11 @@
 
   TB.aplicarEscala();
   window.addEventListener("resize", () => TB.aplicarEscala());
+  // Clic derecho: solo nuestro menú (el del navegador se queda para los campos de texto y el chat)
+  document.addEventListener("contextmenu", e => {
+    if (e.target.closest && e.target.closest("input, textarea, [contenteditable=true], .tb-chat-lista, .tb-contenido-rico, .tb-modal-cuerpo")) return;
+    e.preventDefault();
+  });
 
   /* ------------------------------------------------------------ portapapeles y teclado */
   let portapapeles = [];
