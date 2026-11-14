@@ -3,7 +3,7 @@ import Phaser from "phaser";
 import {
   hash, lienzo, colorNum, estiloMar, hornearSuelo, pintarMar, pintarArbol, pintarPico, pintarRoca, pintarCalavera, pintarCristal, pintarJuncos,
   pintarCiudad, pintarFortaleza, pintarRuinas, pintarNucleo, pintarCostura, pintarMuro, pintarGlifo, pintarBandera, pintarGema,
-  pintarNiebla, pintarTerritorios, pintarBrillo, pintarAnillo, pintarAroSel, pintarTajo, pintarEspadas, pintarHumo, type Ctx
+  pintarNiebla, pintarTerritorios, pintarBrillo, pintarAnillo, pintarAroSel, pintarTajo, pintarEspadas, pintarHumo, pintarFicha, pintarChispa, pintarGota, iconoDe, type Ctx
 } from "./pinturas";
 
 /* =============================================================================
@@ -24,11 +24,13 @@ export interface Ganchos {
 const W: any = window;
 const T = 96;                 // píxeles de mundo por casilla
 const FIG = 104;              // tamaño de las texturas de las figuras (una casilla)
-const RN = 4;                 // píxeles de niebla por casilla
+const RN = 8;                 // píxeles de niebla por casilla
 const RT = 32;                // píxeles del lienzo de provincias por casilla
 const FPS_VIVO = 60, FPS_QUIETO = 20;   // con algo moviéndose y con el mapa en reposo
 const CASILLA_VISTA = 86;     // tamaño de casilla (px CSS) con el que se abre la guerra
 const CASILLA_MAX = 200;
+const CASILLA_FICHA = 46;     // por debajo de este tamaño de casilla (px CSS) las tropas se ven como fichas
+const ROTULO_LEJOS = 56, ROTULO_CERCA = 92;   // los nombres de provincia se apagan al acercar la vista entre estos dos tamaños
 const REDUCIDO = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 const POSES: Record<string, { mov: boolean; fase: number; sw: number }> = {
   idle: { mov: false, fase: 0, sw: 0 }, w1: { mov: true, fase: 0.9, sw: 0 }, w2: { mov: true, fase: 3.9, sw: 0 },
@@ -76,6 +78,9 @@ export class EscenaGuerra extends Phaser.Scene {
   private unidades = new Map<string, { spr: Phaser.GameObjects.Image; clave: string }>();
   private marcas: Phaser.GameObjects.Image[] = [];
   private rotulos: Phaser.GameObjects.Text[] = [];
+  private placas = new Map<number, { cont: Phaser.GameObjects.Container; x: number; y: number }>();
+  private espuma: Phaser.GameObjects.Image[] = [];
+  private lejos = false;
   private firmaTerr = ""; private firmaVis = ""; private firmaSuelo = "";
 
   constructor(ganchos: Ganchos, dpr: number) {
@@ -95,6 +100,8 @@ export class EscenaGuerra extends Phaser.Scene {
     this.tex("tajo", 128, 128, g => pintarTajo(g, 128));
     this.tex("espadas", 64, 64, g => pintarEspadas(g, 64));
     this.tex("humo", 64, 64, g => pintarHumo(g, 64));
+    this.tex("chispa", 64, 64, g => pintarChispa(g, 64));
+    this.tex("gota", 32, 32, g => pintarGota(g, 32));
     this.aroSel = this.add.image(0, 0, "aro").setDepth(8.5).setVisible(false);
 
     this.input.addPointer(1);
@@ -180,6 +187,18 @@ export class EscenaGuerra extends Phaser.Scene {
     return clave;
   }
   private limpiar(lista: Obj[] | undefined): void { if (lista) lista.forEach(o => { this.tweens.killTweensOf(o); o.destroy(); }); }
+  /* Las placas con el nombre de las ciudades se apartan si una tropa queda debajo y se tapan las dos */
+  private colocarPlacas(): void {
+    if (!this.est || !this.placas.size) return;
+    const ocupada = new Set<string>();
+    Object.values(this.est.unidades).forEach((u: any) => ocupada.add(`${u.x},${u.y}`));
+    this.placas.forEach(p => {
+      if (!p.cont.active) return;
+      const X = p.x * T, Y = p.y * T, abajo = ocupada.has(`${p.x},${p.y + 1}`), arriba = ocupada.has(`${p.x},${p.y - 1}`);
+      if (abajo && !arriba) p.cont.setPosition(X + T / 2, Y - T * 0.32).setAlpha(1);
+      else p.cont.setPosition(X + T / 2, Y + T * 1.0).setAlpha(abajo ? 0.5 : 1);
+    });
+  }
 
   /* ===================================================================== estado y estructura */
   poner(est: any): void {
@@ -190,6 +209,8 @@ export class EscenaGuerra extends Phaser.Scene {
     this.estr.forEach(l => this.limpiar(l)); this.estr.clear(); this.firmaEstr = [];
     this.unidades.forEach(u => u.spr.destroy()); this.unidades.clear();
     this.rotulos.forEach(r => r.destroy()); this.rotulos = [];
+    this.placas.clear();
+    this.espuma.forEach(e => e.destroy()); this.espuma = [];
     this.marcas.forEach(m => m.destroy()); this.marcas = [];
     this.firmaTerr = ""; this.firmaVis = ""; this.firmaSuelo = "";
     this.vistaPendiente = true; this.toque = null; this.pinza = null;
@@ -217,15 +238,26 @@ export class EscenaGuerra extends Phaser.Scene {
     est.regiones.forEach((rg: any) => {
       let sx = 0, sy = 0, n = 0;
       for (let y = 0; y < est.alto; y++) for (let x = 0; x < est.ancho; x++) if (est.casillas[y][x].region === rg.id) { sx += x; sy += y; n++; }
-      const tx = this.add.text((sx / Math.max(1, n) + 0.5) * T, (sy / Math.max(1, n) + 0.5) * T - T * 0.42, String(rg.nombre).replace(/^Fragmento de /, "").toUpperCase(), {
-        fontFamily: "Cinzel, Georgia, serif", fontSize: `${Math.round(T * 0.15)}px`, color: "#f1e6c9", stroke: "#0a0810", strokeThickness: 4, align: "center", wordWrap: { width: T * 2.6 }
-      }).setOrigin(0.5).setDepth(26.5).setAlpha(0.62).setResolution(2);
+      // Como en un mapa antiguo: letras grandes, separadas y tenues, por debajo de las tropas. Se apagan al acercar la vista.
+      const tx = this.add.text((sx / Math.max(1, n) + 0.5) * T, (sy / Math.max(1, n) + 0.5) * T, String(rg.nombre).replace(/^Fragmento de /, "").toUpperCase(), {
+        fontFamily: "Cinzel, Georgia, serif", fontSize: `${Math.round(T * 0.3)}px`, color: "#f6ecd2", stroke: "#0a0810", strokeThickness: 3, align: "center", wordWrap: { width: T * 3.4 }, letterSpacing: Math.round(T * 0.04)
+      } as any).setOrigin(0.5).setDepth(9.6).setAlpha(0.5).setResolution(1.5);
       (tx as any).__rg = rg.id;
       this.rotulos.push(tx);
     });
     this.sincronizar(true);
     this.limitarVista();
     if (this.vistaPendiente) { this.vistaPendiente = false; this.centrar(); }
+    this.ajustarAlZoom();
+  }
+
+  /* Lo que cambia con el zoom: los nombres de provincia se apagan de cerca y las tropas pasan a fichas de lejos */
+  private ajustarAlZoom(): void {
+    if (!this.est) return;
+    const css = (T * this.vz) / this.dpr;
+    const f = Math.max(0, Math.min(1, (ROTULO_CERCA - css) / (ROTULO_CERCA - ROTULO_LEJOS)));
+    this.rotulos.forEach(tx => tx.setAlpha(0.5 * f));
+    this.lejos = css < CASILLA_FICHA;
   }
 
   estado(e: any): void {
@@ -258,6 +290,7 @@ export class EscenaGuerra extends Phaser.Scene {
     this.limitarVista();
     cam.setZoom(this.vz);
     cam.centerOn(this.cx + (this.scale.width / 2 - (L.x + L.w / 2)) / this.vz, this.cy + (this.scale.height / 2 - (L.y + L.h / 2)) / this.vz);
+    this.ajustarAlZoom();
     if (this.ganchos.alMoverVista) this.ganchos.alMoverVista();
   }
   private acercar(factor: number, sx?: number, sy?: number): void {
@@ -331,6 +364,14 @@ export class EscenaGuerra extends Phaser.Scene {
       if (this.textures.exists("suelo")) this.textures.remove("suelo");
       this.textures.addCanvas("suelo", s.lienzo);
       this.suelo = this.add.image(0, 0, "suelo").setOrigin(0).setDisplaySize(est.ancho * T, est.alto * T).setDepth(-10);
+      // La espuma de la orilla: dos franjas que se encienden por turnos
+      this.espuma.forEach(e => e.destroy()); this.espuma = [];
+      if (this.textures.exists("espuma")) this.textures.remove("espuma");
+      const te = this.textures.addCanvas("espuma", s.espuma);
+      if (te) {
+        te.add("e1", 0, 0, 0, s.ancho2, s.alto2); te.add("e2", 0, s.ancho2, 0, s.ancho2, s.alto2);
+        this.espuma = ["e1", "e2"].map(fr => this.add.image(0, 0, "espuma", fr).setOrigin(0).setDisplaySize(est.ancho * T, est.alto * T).setDepth(-9.5).setAlpha(0.5));
+      }
     }
     const ciudades: Record<string, any> = {};
     Object.values(est.ciudades).forEach((c: any) => { ciudades[`${c.x},${c.y}`] = c; });
@@ -361,6 +402,7 @@ export class EscenaGuerra extends Phaser.Scene {
       this.firmaTerr = ft + fv;
       if (this.lienzoTerr) { pintarTerritorios(this.lienzoTerr, est, vis, this.bandos.map(b => b.col), RT); (this.textures.get("provincias") as Phaser.Textures.CanvasTexture).refresh(); }
     }
+    this.colocarPlacas();
     // Lo que no cambia de un fotograma a otro (vida máxima, rango...) se calcula aquí y no en cada fotograma
     this.datos.clear();
     Object.values(est.unidades).forEach((u: any) => this.datos.set(u.uid, this.datosUnidad(u)));
@@ -444,14 +486,16 @@ export class EscenaGuerra extends Phaser.Scene {
       pon(this.tex(`ciudad:${col}:${nivel}:${ci.capital ? 1 : 0}`, 192, 192, g => pintarCiudad(g, 192, { col, nivel, capital: !!ci.capital, neutral })), T * (ci.capital ? 1.28 : 1.12));
       if (!neutral) bandera(ci.dueno, ci.capital ? 0.5 : 0.8, ci.capital ? 0.12 : 0.34, T * 0.5);
       // rótulo con el nombre, el color del dueño y el nivel
-      const tx = this.add.text(X + T / 2, Y + T * 1.0, `${ci.capital ? "★ " : ""}${ci.nombre}`, { fontFamily: "Cinzel, Georgia, serif", fontSize: `${Math.round(T * 0.135)}px`, color: v === 2 ? "#f6eeda" : "#a59f92", stroke: "#08060c", strokeThickness: 4 })
-        .setOrigin(0.5, 0).setDepth(28).setResolution(2);
-      const gr = this.add.graphics().setDepth(27.9);
-      const bw = tx.width + T * 0.22, bh = tx.height + 4;
-      gr.fillStyle(0x0b0910, 0.78).fillRect(X + T / 2 - bw / 2, Y + T * 1.0 - 2, bw, bh);
-      gr.fillStyle(neutral ? 0x8a8a8a : colorNum(col), 1).fillRect(X + T / 2 - bw / 2, Y + T * 1.0 - 2, T * 0.05, bh);
-      for (let k = 0; k < ci.nivel; k++) gr.fillStyle(0xe3bb4e, 0.9).fillRect(X + T / 2 - bw / 2 + T * 0.08 + k * 5, Y + T * 1.0 + bh - 5, 3.4, 2);
-      lista.push(gr, tx);
+      const tx = this.add.text(0, 0, `${ci.capital ? "★ " : ""}${ci.nombre}`, { fontFamily: "Cinzel, Georgia, serif", fontSize: `${Math.round(T * 0.13)}px`, color: v === 2 ? "#f6eeda" : "#a59f92", stroke: "#08060c", strokeThickness: 3 })
+        .setOrigin(0.5, 0).setResolution(2);
+      const gr = this.add.graphics();
+      const bw = tx.width + T * 0.2, bh = tx.height + 3;
+      gr.fillStyle(0x0b0910, 0.82).fillRect(-bw / 2, -2, bw, bh);
+      gr.fillStyle(neutral ? 0x8a8a8a : colorNum(col), 1).fillRect(-bw / 2, -2, T * 0.05, bh);
+      for (let k = 0; k < ci.nivel; k++) gr.fillStyle(0xe3bb4e, 0.9).fillRect(-bw / 2 + T * 0.08 + k * 5, bh - 5, 3.4, 2);
+      const cont = this.add.container(X + T / 2, Y + T * 1.0, [gr, tx]).setDepth(28);
+      this.placas.set(i, { cont, x, y });
+      lista.push(cont);
     } else if (c.est === "fortaleza") {
       pon(this.tex("fortaleza", 192, 192, g => pintarFortaleza(g, 192)), T * 1.1);
       if (fort !== null && fort !== undefined) bandera(fort, 0.5, 0.2, T * 0.46);
@@ -512,6 +556,26 @@ export class EscenaGuerra extends Phaser.Scene {
     return clave;
   }
 
+  /* De lejos: una ficha redonda con el color del bando, el icono de la tropa y la vida alrededor */
+  private pintarFicha(o: { spr: Phaser.GameObjects.Image; clave: string }, d: any, a: any, X: number, Y: number, t: number, g: Phaser.GameObjects.Graphics): void {
+    const bando = d.dueno >= 0 ? this.bandos[d.dueno] : { col: "#9a9a9a", ban: "#3a3a3a" };
+    const icono = iconoDe(d), especial = !!(d.heroe || d.lider);
+    const clave = this.tex(`ficha:${bando.col}:${icono}:${especial ? 1 : 0}`, 96, 96, gg => pintarFicha(gg, 96, bando.col, bando.ban, icono, especial));
+    if (o.clave !== clave) { o.spr.setTexture(clave); o.clave = clave; }
+    const cx = (X + 0.5 + (a.dx || 0)) * T, cy = (Y + 0.5 + (a.dy || 0)) * T;
+    o.spr.setOrigin(0.5).setPosition(cx, cy).setDisplaySize(T * 0.84, T * 0.84).setFlipX(false).setRotation(0).setDepth(10 + (Y + 0.5) / 100).setAlpha(a.alfa !== undefined ? a.alfa : 1);
+    if (a.flash > 0.15) o.spr.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL); else o.spr.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
+    if (a.alfa !== undefined && a.alfa < 0.4) return;
+    // la vida, en un arco alrededor de la ficha
+    const hp = a.hp !== undefined ? a.hp : d.hp, f = Math.max(0, Math.min(1, hp / d.hpMax)), r = T * 0.44;
+    g.lineStyle(Math.max(3, T * 0.07), 0x060408, 0.85); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.strokePath();
+    g.lineStyle(Math.max(2.4, T * 0.05), f > 0.5 ? 0x74c75e : f > 0.25 ? 0xe6bd4a : 0xdc5a4c, 1); g.beginPath(); g.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * f); g.strokePath();
+    const est = this.est, H = this.humano(), logica = est.unidades[d.uid];
+    if (!this.anim && logica && d.dueno === H && est.activo === H && est.ganador === null && (logica.pm > 0 || !logica.atacado)) {
+      g.fillStyle(0xfff0a0, 0.6 + 0.4 * Math.sin(t / 300 + d.x)).fillCircle(cx + r * 0.72, cy - r * 0.72, T * 0.07);
+    }
+  }
+
   /* Marca de bando: una forma distinta por puesto, para no depender solo del color */
   private formaBando(g: Phaser.GameObjects.Graphics, k: number, x: number, y: number, r: number, col: number): void {
     g.fillStyle(0x08060c, 0.9).fillCircle(x, y, r * 1.34);
@@ -558,6 +622,8 @@ export class EscenaGuerra extends Phaser.Scene {
       if (X < ve.x0 - 2 || X > ve.x1 + 1 || Y < ve.y0 - 2 || Y > ve.y1 + 1) { if (o) o.spr.setVisible(false); return; }
       if (o) o.spr.setVisible(true);
       if (!o) { o = { spr: this.add.image(0, 0, this.texFigura(d, "idle")).setOrigin(0.5, 0.86), clave: "" }; this.unidades.set(d.uid, o); }
+      if (this.lejos) { this.pintarFicha(o, d, a, X, Y, t, g); return; }
+      o.spr.setOrigin(0.5, 0.86);
       const hp = a.hp !== undefined ? a.hp : d.hp;
       // En el agua: los barcos y las barcas no andan, se mecen
       const enAgua = ty >= 0 && ty < est.alto && tx >= 0 && tx < est.ancho && est.casillas[ty][tx].t === "agua";
@@ -666,7 +732,8 @@ export class EscenaGuerra extends Phaser.Scene {
     if (ui.previaAtq) this.esquinas(ui.previaAtq.x, ui.previaAtq.y, 0xffe3a0, 1, Math.max(3, T / 20), 0.34, 5);
     const u = ui.sel && est.unidades[ui.sel];
     if (u && !this.anim) {
-      this.aroSel.setVisible(true).setPosition((u.x + 0.5) * T, (u.y + 0.86) * T).setDisplaySize(T * 0.92, T * 0.34).setTint(0xfff0b0);
+      if (this.lejos) this.aroSel.setVisible(true).setPosition((u.x + 0.5) * T, (u.y + 0.5) * T).setDisplaySize(T * 1.02, T * 1.02).setTint(0xfff0b0);
+      else this.aroSel.setVisible(true).setPosition((u.x + 0.5) * T, (u.y + 0.86) * T).setDisplaySize(T * 0.92, T * 0.34).setTint(0xfff0b0);
       if (!REDUCIDO) this.aroSel.setAlpha(0.75 + 0.25 * Math.sin(t / 200));
     } else this.aroSel.setVisible(false);
     if (ui.casilla) this.esquinas(ui.casilla.x, ui.casilla.y, 0xf2cf6a, 1, Math.max(2.5, T / 26), 0.28, 4);
@@ -709,7 +776,7 @@ export class EscenaGuerra extends Phaser.Scene {
       const vis = new Map<string, any>();
       base.forEach((d: any, uid: string) => vis.set(uid, { d, x: d.x, y: d.y, hp: d.hp, alfa: 1, dir: 0 }));
       Object.values(this.est.unidades).forEach((u: any) => { if (!vis.has(u.uid)) vis.set(u.uid, { d: this.datosUnidad(u), x: u.x, y: u.y, hp: u.hp, alfa: 0, oculto: true, dir: 0 }); });
-      this.anim = { vis, items: [], total: 0, t0: performance.now(), alTerminar: [], seguir: !!opciones.seguir };
+      this.anim = { vis, items: [], total: 0, tv: 0, prev: performance.now(), lento: 0, alTerminar: [], seguir: !!opciones.seguir };
     }
     const pulso = this.construir(evs, opciones.rapidez);
     pulso.items.forEach(i => { i.ini += Math.max(this.anim.total, 0); this.anim.items.push(i); });
@@ -720,7 +787,7 @@ export class EscenaGuerra extends Phaser.Scene {
     if (opciones.seguir) this.anim.seguir = true;
   }
 
-  saltar(): void { if (this.anim) this.anim.t0 -= 1e6; }
+  saltar(): void { if (this.anim) this.anim.tv += 1e6; }
   ocupado(): boolean { return !!this.anim; }
   alTerminar(f: () => void): void { if (this.anim) this.anim.alTerminar.push(f); else f(); }
 
@@ -744,7 +811,11 @@ export class EscenaGuerra extends Phaser.Scene {
   private pasoAnim(ahora: number): void {
     const A = this.anim;
     if (!A) return;
-    const t = ahora - A.t0;
+    // Reloj propio de la animación: puede ir a cámara lenta un momento (cuando cae alguien importante)
+    const dt = Math.min(100, Math.max(0, ahora - A.prev));
+    A.prev = ahora;
+    A.tv += dt * (A.lento > ahora ? 0.32 : 1);
+    const t = A.tv;
     const saltando = t > 5e5;
     if (t > A.total + 420 || t > 20000) { this.terminarAnim(); return; }
     A.vis.forEach((v: any) => { v.mov = false; v.sw = 0; v.flash = 0; v.dx = 0; v.dy = 0; });
@@ -761,6 +832,7 @@ export class EscenaGuerra extends Phaser.Scene {
         const ddx = r[i + 1].x - r[i].x;
         if (ddx) v.dir = ddx > 0 ? 1 : -1;
         v.mov = p < 1; v.fase = (t / 90) % 6.283;
+        if (!saltando && v.mov && v.d && v.d.barco && t - (it.estela || -1e9) > 90 && this.visibleEn(v.x, v.y)) { it.estela = t; this.estela(v.x, v.y); }
         if (!saltando && v.mov && Math.floor(q * 2) !== it.pisada && this.visibleEn(v.x, v.y)) { it.pisada = Math.floor(q * 2); this.sonar("paso"); }
         if (p >= 1 && !it.hecho) { it.hecho = true; v.x = r[tramos].x; v.y = r[tramos].y; if (!saltando) this.polvo(r[tramos].x, r[tramos].y); }
       } else if (it.tipo === "golpe") {
@@ -781,20 +853,29 @@ export class EscenaGuerra extends Phaser.Scene {
           it.hecho = true;
           if (o) o.hp = Math.max(0, o.hp - it.dmg);
           if (!saltando) {
-            this.texto(it.x, it.y, it.dmg > 0 ? `-${it.dmg}` : "Parado", it.dmg > 0 ? "#ffd0c8" : "#fff6c8");
-            this.impacto(it.x, it.y, it.arma, v ? Math.atan2(it.y - v.y, it.x - v.x) : 0);
+            this.texto(it.x, it.y, it.dmg > 0 ? `-${it.dmg}` : "Parado", it.dmg >= 6 ? "#ffb04a" : it.dmg > 0 ? "#ffd0c8" : "#fff6c8", it.dmg);
+            this.impacto(it.x, it.y, it.arma, v ? Math.atan2(it.y - v.y, it.x - v.x) : 0, it.dmg, !!(o && o.d && (o.d.clase === "esqueleto" || o.d.clase === "condenado" || o.d.clase === "automata" || o.d.barco || o.d.faccion === "trono-de-ceniza")));
             if (!it.lejos && this.visibleEn(it.x, it.y)) this.sonar(it.arma === "salpica" ? "salpica" : it.dmg > 0 ? "golpe" : "parada");
             if (it.dmg >= 6 && this.visibleEn(it.x, it.y)) this.cameras.main.shake(140, 0.004);
           }
         }
         if (o && p >= momento && p < momento + 0.4) {
           const kk = (p - momento) / 0.4, dxo = it.x - (v ? v.x : it.x), dyo = it.y - (v ? v.y : it.y), L = Math.hypot(dxo, dyo) || 1;
-          o.flash = it.dmg > 0 ? 1 - kk : 0; o.dx = (dxo / L) * 0.1 * Math.sin(kk * 3.14); o.dy = (dyo / L) * 0.1 * Math.sin(kk * 3.14);
+          const fuerza = it.dmg > 0 ? Math.min(0.24, 0.1 + it.dmg * 0.018) : 0.05;
+          o.flash = it.dmg > 0 ? 1 - kk : 0; o.dx = (dxo / L) * fuerza * Math.sin(kk * 3.14); o.dy = (dyo / L) * fuerza * Math.sin(kk * 3.14) - (it.dmg > 0 ? 0.04 * Math.sin(kk * 3.14) : 0);
         }
       } else if (it.tipo === "muerte") {
         const v = A.vis.get(it.uid); if (!v) return;
         v.alfa = 1 - p; v.rot = p * 1.35 * (v.dir || 1); v.dy = p * 0.12; v.flash = Math.max(0, 0.6 - p);
-        if (!it.sonado) { it.sonado = true; if (!saltando && !it.deserta && this.visibleEn(it.x, it.y)) this.sonar("muerte"); }
+        if (!it.sonado) {
+          it.sonado = true;
+          if (!saltando && !it.deserta && this.visibleEn(it.x, it.y)) {
+            this.sonar("muerte");
+            // Cae un héroe, un líder o un capitán: el tiempo se para un instante
+            const dd = v.d || {};
+            if (dd.heroe || dd.lider || dd.cap) { A.lento = ahora + 760; this.onda(it.x, it.y, "#ffffff", 2.6); this.cameras.main.shake(240, 0.005); }
+          }
+        }
         if (p >= 1 && !it.hecho) { it.hecho = true; if (!saltando) this.texto(it.x, it.y, it.deserta ? "deserta" : "✝", "#ffffff"); }
       } else if (it.tipo === "nuevo") {
         const v = A.vis.get(it.uid); if (!v) return;
@@ -820,16 +901,21 @@ export class EscenaGuerra extends Phaser.Scene {
   }
 
   /* ===================================================================== efectos */
-  texto(x: number, y: number, t: string, color: string): void {
+  texto(x: number, y: number, t: string, color: string, dmg = 0): void {
     if (!this.est || !this.visibleEn(x, y)) return;
     this.actividad = performance.now();
-    const c = this.centro(x, y);
-    const tx = this.add.text(c.x, c.y - T * 0.3, t, { fontFamily: "Cinzel, Georgia, serif", fontSize: `${Math.round(T * (t.length > 4 ? 0.24 : 0.44))}px`, fontStyle: "bold", color, stroke: "#050304", strokeThickness: Math.max(4, T * 0.07) }).setOrigin(0.5).setDepth(40).setResolution(2).setScale(0.6);
-    this.tweens.add({ targets: tx, scale: 1, duration: 140, ease: "Back.easeOut" });
-    this.tweens.add({ targets: tx, y: c.y - T * 1.0, alpha: { from: 1, to: 0 }, duration: 950, ease: "Quad.easeOut", onComplete: () => tx.destroy() });
+    const c = this.centro(x, y), grande = dmg >= 6;
+    const base = t.length > 4 ? 0.24 : grande ? 0.56 : 0.44;
+    const tx = this.add.text(c.x, c.y - T * 0.3, t, { fontFamily: "Cinzel, Georgia, serif", fontSize: `${Math.round(T * base)}px`, fontStyle: "bold", color, stroke: "#050304", strokeThickness: Math.max(4, T * 0.07) }).setOrigin(0.5).setDepth(40).setResolution(2).setScale(0.2);
+    // sale de golpe con un rebote, se aparta un poco hacia un lado y sube apagándose
+    const lado = (hash(Math.round(x * 7), Math.round(y * 7), Math.round(performance.now())) - 0.5) * T * 0.5;
+    this.tweens.add({ targets: tx, scale: grande ? 1.15 : 1, duration: 260, ease: "Back.easeOut", easeParams: [3] } as any);
+    this.tweens.add({ targets: tx, x: c.x + lado, duration: 1000, ease: "Sine.easeOut" });
+    this.tweens.add({ targets: tx, y: c.y - T * 1.05, duration: 1000, ease: "Quad.easeOut" });
+    this.tweens.add({ targets: tx, alpha: 0, delay: 520, duration: 480, onComplete: () => tx.destroy() });
   }
 
-  private impacto(x: number, y: number, arma: string, ang: number): void {
+  private impacto(x: number, y: number, arma: string, ang: number, dmg = 1, sinSangre = false): void {
     if (!this.visibleEn(x, y)) return;
     const c = this.centro(x, y);
     if (arma === "filo") {
@@ -837,13 +923,40 @@ export class EscenaGuerra extends Phaser.Scene {
       this.tweens.add({ targets: tj, alpha: 0, rotation: ang + 0.5, duration: 220, ease: "Quad.easeOut", onComplete: () => tj.destroy() });
     }
     const color = arma === "magia" || arma === "salpica" ? 0xc9a6ff : arma === "polvora" ? 0xffd27a : 0xfff4c4;
-    for (let k = 0; k < 7; k++) {
-      const a = k * 0.9 + 0.3, r0 = T * 0.08, r1 = T * (0.3 + (k % 3) * 0.1);
-      const s = this.add.rectangle(c.x + Math.cos(a) * r0, c.y + Math.sin(a) * r0, Math.max(3, T * 0.05), Math.max(3, T * 0.05), color).setDepth(31).setRotation(a);
-      this.tweens.add({ targets: s, x: c.x + Math.cos(a) * r1, y: c.y + Math.sin(a) * r1, alpha: 0, duration: 300, ease: "Quad.easeOut", onComplete: () => s.destroy() });
+    // Chispas que salen en la dirección del golpe y caen
+    const nCh = arma === "magia" || arma === "salpica" ? 8 : dmg > 0 ? 7 : 10;
+    for (let k = 0; k < nCh; k++) {
+      const a = ang + (hash(k, Math.round(x), 3) - 0.5) * 2.2, r1 = T * (0.35 + hash(k, Math.round(y), 5) * 0.4);
+      const ch = this.add.image(c.x, c.y - T * 0.15, "chispa").setDisplaySize(T * 0.26, T * 0.07).setRotation(a).setTint(color).setBlendMode(Phaser.BlendModes.ADD).setDepth(31);
+      const magia = arma === "magia" || arma === "salpica";
+      this.tweens.add({ targets: ch, x: c.x + Math.cos(a) * r1, duration: 380, ease: "Quad.easeOut" });
+      this.tweens.add({ targets: ch, y: c.y - T * 0.15 + Math.sin(a) * r1 + (magia ? -T * 0.35 : T * 0.3), duration: 380, ease: magia ? "Quad.easeOut" : "Quad.easeIn" });
+      this.tweens.add({ targets: ch, alpha: 0, displayWidth: T * 0.08, duration: 380, onComplete: () => ch.destroy() });
+    }
+    // Sangre (o polvo de hueso y astillas) si el golpe entra
+    if (dmg > 0 && (arma === "filo" || arma === "flecha" || arma === "polvora")) {
+      const tinte = sinSangre ? 0xcfc6b4 : 0x8a1712;
+      for (let k = 0; k < Math.min(9, 3 + dmg); k++) {
+        const a = ang + (hash(k, 9, Math.round(x * 3)) - 0.5) * 1.6, r1 = T * (0.2 + hash(k, 4, Math.round(y * 3)) * 0.35);
+        const gt = this.add.image(c.x, c.y - T * 0.2, "gota").setDisplaySize(T * 0.09, T * 0.09).setTint(tinte).setDepth(30.8);
+        this.tweens.add({ targets: gt, x: c.x + Math.cos(a) * r1, duration: 420, ease: "Quad.easeOut" });
+        this.tweens.add({ targets: gt, y: c.y + T * (0.2 + hash(k, 7, 1) * 0.2), duration: 420, ease: "Quad.easeIn" });
+        this.tweens.add({ targets: gt, alpha: 0, delay: 260, duration: 300, onComplete: () => gt.destroy() });
+      }
+    }
+    if (arma === "polvora") {
+      const h = this.add.image(c.x, c.y - T * 0.1, "humo").setDisplaySize(T * 0.5, T * 0.5).setTint(0x8a8480).setAlpha(0.7).setDepth(30.5);
+      this.tweens.add({ targets: h, y: c.y - T * 0.7, scale: h.scale * 2, alpha: 0, duration: 700, onComplete: () => h.destroy() });
     }
     const fl = this.add.image(c.x, c.y, "brillo").setDisplaySize(T * 0.9, T * 0.9).setTint(color).setAlpha(0.75).setBlendMode(Phaser.BlendModes.ADD).setDepth(30);
     this.tweens.add({ targets: fl, alpha: 0, scale: fl.scale * 1.5, duration: 260, onComplete: () => fl.destroy() });
+  }
+
+  /* La estela que deja un barco al navegar */
+  private estela(x: number, y: number): void {
+    const c = this.centro(x, y);
+    const e = this.add.image(c.x, c.y + T * 0.3, "brillo").setDisplaySize(T * 0.4, T * 0.14).setTint(0xe8f4f8).setAlpha(0.55).setDepth(1.5);
+    this.tweens.add({ targets: e, displayWidth: T * 0.9, displayHeight: T * 0.24, alpha: 0, duration: 900, ease: "Quad.easeOut", onComplete: () => e.destroy() });
   }
 
   private polvo(x: number, y: number): void {
@@ -922,6 +1035,10 @@ export class EscenaGuerra extends Phaser.Scene {
     this.pintarUnidades(tiempo);
     this.pintarResaltes(tiempo);
     if (!REDUCIDO && this.mar) this.mar.setTilePosition(tiempo / 200, tiempo / 420);
+    if (!REDUCIDO && this.espuma.length === 2) {
+      const f = 0.5 + 0.5 * Math.sin(tiempo / 1100);
+      this.espuma[0].setAlpha(0.2 + 0.6 * f); this.espuma[1].setAlpha(0.2 + 0.6 * (1 - f));
+    }
     // En reposo no hace falta dibujar 60 veces por segundo: solo se mueven el agua y algún brillo
     const vivo = !!this.anim || !!this.toque || !!this.viaje || !!this.pinza || performance.now() - this.actividad < 900;
     const quiere = vivo ? FPS_VIVO : FPS_QUIETO;

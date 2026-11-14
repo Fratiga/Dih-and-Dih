@@ -42,7 +42,7 @@ function ruido(x: number, y: number, k: number): number {
 /* =============================================================================
    EL SUELO DEL MUNDO
 ============================================================================= */
-export interface Suelo { lienzo: HTMLCanvasElement; P: number; caminos: Array<Array<{ x: number; y: number }>> }
+export interface Suelo { lienzo: HTMLCanvasElement; P: number; caminos: Array<Array<{ x: number; y: number }>>; espuma: HTMLCanvasElement; ancho2: number; alto2: number }
 
 export function hornearSuelo(est: any, P: number): Suelo {
   const w = est.ancho, h = est.alto, W = w * P, H = h * P;
@@ -75,14 +75,21 @@ export function hornearSuelo(est: any, P: number): Suelo {
     if (col) { gm2.fillStyle = col; gm2.fillRect((x + 1) * R, (y + 1) * R, R, R); }
   }
   const [gc, g] = lienzo(W, H);
-  const estirar = (origen: HTMLCanvasElement): Uint8ClampedArray => {
+  const estirar = (origen: HTMLCanvasElement, desenfoque = 0): Uint8ClampedArray => {
     const [, x] = lienzo(W, H);
     x.imageSmoothingEnabled = true; x.imageSmoothingQuality = "high";
+    if (desenfoque) x.filter = `blur(${desenfoque}px)`;
     x.drawImage(origen, -P, -P, W + 2 * P, H + 2 * P);
     return x.getImageData(0, 0, W, H).data;
   };
-  const col = estirar(cm2), tierra = estirar(mt), lago = estirar(ml);
+  // El agua navegable se desenfoca antes de recortarla: así su borde sale redondeado y no en octógonos
+  const col = estirar(cm2), tierra = estirar(mt), lago = estirar(ml, P * 0.45);
   const img = g.createImageData(W, H), d = img.data;
+  // Espuma que se mueve: dos franjas paralelas a la costa, a media resolución, una al lado de la otra en el mismo lienzo.
+  // La escena las enciende y apaga por turnos y parece que las olas llegan a la orilla.
+  const W2 = Math.ceil(W / 2), H2 = Math.ceil(H / 2);
+  const [ce, ge] = lienzo(W2 * 2, H2);
+  const ie = ge.createImageData(W2 * 2, H2), de = ie.data;
   const arena = hex("#d2bd8a");
   const estilo = MAR[estiloMar(est.tipo)], somero = hex(estilo[2]), medio = hex(estilo[1]);
   const nav = [(somero[0] + medio[0]) / 2, (somero[1] + medio[1]) / 2, (somero[2] + medio[2]) / 2];
@@ -102,9 +109,17 @@ export function hornearSuelo(est: any, P: number): Suelo {
         if (playa > 0) { r += (arena[0] - r) * playa * 0.85; gg += (arena[1] - gg) * playa * 0.85; b += (arena[2] - b) * playa * 0.85; }
         d[i] = r; d[i + 1] = gg; d[i + 2] = b; d[i + 3] = 255;
       } else {
+        if (!(px & 1) && !(py & 1)) {
+          const b1 = Math.max(0, 1 - Math.abs(a - (umbral - 0.07)) / 0.035), b2 = Math.max(0, 1 - Math.abs(a - (umbral - 0.17)) / 0.04);
+          if (b1 > 0 || b2 > 0) {
+            const e = ((py >> 1) * W2 * 2 + (px >> 1)) * 4, fuerza = 0.55 + grano * 0.45;
+            if (b1 > 0) { de[e] = 240; de[e + 1] = 246; de[e + 2] = 250; de[e + 3] = b1 * fuerza * 230; }
+            if (b2 > 0) { const e2 = e + W2 * 4; de[e2] = 240; de[e2 + 1] = 246; de[e2 + 2] = 250; de[e2 + 3] = b2 * fuerza * 200; }
+          }
+        }
         // Agua. La navegable se ve más clara que el mar abierto, con una línea tenue donde se acaba.
         // Pegadas a la tierra, aguas someras y una raya de espuma.
-        const l = lago[i + 3] / 255, ul = 0.46 + (n - 0.5) * 0.12;
+        const l = lago[i + 3] / 255, ul = 0.42 + (n - 0.5) * 0.24;
         const dentro = l <= ul ? 0 : Math.min(1, (l - ul) / 0.1);
         const f = a > umbral - 0.3 ? (a - (umbral - 0.3)) / 0.3 : 0;
         const espuma = a > umbral - 0.03 ? 1 : 0;
@@ -120,6 +135,7 @@ export function hornearSuelo(est: any, P: number): Suelo {
     }
   }
   g.putImageData(img, 0, 0);
+  ge.putImageData(ie, 0, 0);
 
   // 2. Sombra del borde de la tierra hacia dentro (da volumen a la orilla) y luz general
   g.save(); g.globalCompositeOperation = "source-atop";
@@ -207,7 +223,7 @@ export function hornearSuelo(est: any, P: number): Suelo {
   g.strokeStyle = "rgba(196,170,120,.82)"; g.lineWidth = 3.2 * u; caminos.forEach(trazar);
   g.strokeStyle = "rgba(120,96,60,.5)"; g.lineWidth = 0.8 * u; g.setLineDash([2.5 * u, 4.5 * u]); caminos.forEach(trazar); g.setLineDash([]);
   g.restore();
-  return { lienzo: gc, P, caminos };
+  return { lienzo: gc, P, caminos, espuma: ce, ancho2: W2, alto2: H2 };
 }
 
 /* El mar (o el abismo): una loseta que se repite sin costura y se desplaza despacio. Una sola capa: cada capa a pantalla
@@ -233,42 +249,99 @@ export function pintarMar(g: Ctx, S: number, estilo: string): void {
 }
 
 /* Provincias en un solo lienzo (R píxeles por casilla): tinte del dueño, franja que se apaga hacia dentro y frontera
-   entre dueños distintos. Se pinta una vez cada vez que cambia un dueño o lo que se ve, no en cada fotograma. */
+   entre dueños distintos. Las fronteras son curvas: cada píxel mira las nueve casillas de alrededor con un peso que baja
+   con la distancia (y un poco de ruido), y la frontera pasa por donde dos provincias pesan lo mismo. Las casillas que
+   no tocan ninguna frontera se rellenan de una vez. Se pinta solo cuando cambia un dueño o lo que se ve. */
 export function pintarTerritorios(c: HTMLCanvasElement, est: any, vis: number[], colores: string[], R: number): void {
-  const g = c.getContext("2d") as Ctx, w = est.ancho, h = est.alto;
-  g.clearRect(0, 0, c.width, c.height);
-  // El agua no se tiñe: las provincias son de tierra y su frontera sigue la costa
-  const regDe = (x: number, y: number): number => (x < 0 || y < 0 || x >= w || y >= h || est.casillas[y][x].t === "agua" ? -1 : est.casillas[y][x].region);
-  const rgba = (col: string, a: number): string => { const v = hex(col); return `rgba(${v[0]},${v[1]},${v[2]},${a})`; };
+  const g = c.getContext("2d") as Ctx, w = est.ancho, h = est.alto, W = c.width, H = c.height, ww = w + 2;
+  // Clase de cada casilla (con una casilla de margen): provincia (>= 0), mar o vacío (-1), sin explorar (-2)
+  const clase = new Int32Array(ww * (h + 2)).fill(-1);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const r = regDe(x, y);
-    if (vis[y * w + x] === 0 || r < 0) continue;
-    const d: number | null = est.regiones[r].dueno, X = x * R, Y = y * R;
-    if (d !== null) { g.fillStyle = rgba(colores[d], 0.1); g.fillRect(X, Y, R, R); }
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      const r2 = regDe(x + dx, y + dy);
-      if (r2 === r) continue;
-      const d2 = r2 < 0 ? null : est.regiones[r2].dueno;
-      if (d !== null && d2 !== d) {
-        const ancho = R * 0.24, lw = Math.max(1.5, R * 0.055);
-        const gr = dx ? g.createLinearGradient(dx > 0 ? X + R : X, 0, dx > 0 ? X + R - ancho : X + ancho, 0) : g.createLinearGradient(0, dy > 0 ? Y + R : Y, 0, dy > 0 ? Y + R - ancho : Y + ancho);
-        gr.addColorStop(0, rgba(colores[d], 0.5)); gr.addColorStop(1, rgba(colores[d], 0));
-        g.fillStyle = gr;
-        if (dx) g.fillRect(dx > 0 ? X + R - ancho : X, Y, ancho, R); else g.fillRect(X, dy > 0 ? Y + R - ancho : Y, R, ancho);
-        g.fillStyle = "rgba(8,6,12,.55)";
-        if (dx) g.fillRect(dx > 0 ? X + R - lw * 1.5 : X, Y, lw * 1.5, R); else g.fillRect(X, dy > 0 ? Y + R - lw * 1.5 : Y, R, lw * 1.5);
-        g.fillStyle = rgba(colores[d], 0.95);
-        if (dx) g.fillRect(dx > 0 ? X + R - lw * 1.25 : X + lw * 0.25, Y, lw, R); else g.fillRect(X, dy > 0 ? Y + R - lw * 1.25 : Y + lw * 0.25, R, lw);
-      } else if (d === null && d2 === null && r2 >= 0 && (dx > 0 || dy > 0)) {
-        g.fillStyle = "rgba(241,230,201,.24)";
-        for (let k = 0; k < 5; k++) { if (dx) g.fillRect(X + R - 0.75, Y + k * (R / 5) + 1, 1.5, R / 10); else g.fillRect(X + k * (R / 5) + 1, Y + R - 0.75, R / 10, 1.5); }
+    const cc = est.casillas[y][x];
+    if (cc.t !== "agua" && cc.t !== "vacio" && cc.region >= 0) clase[(y + 1) * ww + x + 1] = vis[y * w + x] === 0 ? -2 : cc.region;
+  }
+  const dueno: Array<number | null> = est.regiones.map((r: any) => r.dueno);
+  const rgb = colores.map(hex);
+  const img = g.createImageData(W, H), d = img.data;
+  const pon = (i: number, r: number, gg: number, b: number, a: number): void => { d[i] = r; d[i + 1] = gg; d[i + 2] = b; d[i + 3] = Math.max(0, Math.min(255, a * 255)); };
+  // Desplazamiento con ruido, calculado cada 4 píxeles: las fronteras serpentean un poco
+  const k = (est.semilla % 9973) + 71, PW = Math.ceil(W / 4) + 1, PH = Math.ceil(H / 4) + 1;
+  const ox = new Float32Array(PW * PH), oy = new Float32Array(PW * PH);
+  for (let qy = 0; qy < PH; qy++) for (let qx = 0; qx < PW; qx++) {
+    const fx = (qx * 4) / R, fy = (qy * 4) / R;
+    ox[qy * PW + qx] = (ruido(fx * 1.4, fy * 1.4, k) - 0.5) * 0.34;
+    oy[qy * PW + qx] = (ruido(fx * 1.4 + 17, fy * 1.4 + 5, k) - 0.5) * 0.34;
+  }
+  const ids = new Int32Array(9), ws = new Float32Array(9);
+  for (let ty = 0; ty < h; ty++) for (let tx = 0; tx < w; tx++) {
+    const c0 = clase[(ty + 1) * ww + tx + 1];
+    // ¿Toca alguna frontera? Si las nueve casillas de alrededor son iguales, la casilla entera es de un color
+    let igual = true;
+    for (let dy = -1; dy <= 1 && igual; dy++) for (let dx = -1; dx <= 1; dx++) if (clase[(ty + 1 + dy) * ww + tx + 1 + dx] !== c0) { igual = false; break; }
+    const x0 = tx * R, y0 = ty * R;
+    if (igual) {
+      if (c0 < 0) continue;
+      const d0 = dueno[c0];
+      if (d0 === null) continue;
+      const [r, gg, b] = rgb[d0];
+      for (let py = y0; py < y0 + R && py < H; py++) for (let px = x0; px < x0 + R && px < W; px++) pon((py * W + px) * 4, r, gg, b, 0.15);
+      continue;
+    }
+    for (let py = y0; py < y0 + R && py < H; py++) for (let px = x0; px < x0 + R && px < W; px++) {
+      const q = (py >> 2) * PW + (px >> 2);
+      const fx = (px + 0.5) / R + ox[q], fy = (py + 0.5) / R + oy[q];
+      const cx = Math.floor(fx), cy = Math.floor(fy);
+      let n = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const X = cx + dx, Y = cy + dy;
+        const kk = X < -1 || Y < -1 || X > w || Y > h ? -1 : clase[(Y + 1) * ww + X + 1];
+        const ex = fx - (X + 0.5), ey = fy - (Y + 0.5), q2 = 1 - (ex * ex + ey * ey) / 2.25;
+        if (q2 <= 0) continue;
+        const wt = q2 * q2 * q2;
+        let j = 0;
+        while (j < n && ids[j] !== kk) j++;
+        if (j === n) { ids[n] = kk; ws[n] = 0; n++; }
+        ws[j] += wt;
+      }
+      let a1 = -1, w1 = -1, a2 = -9, w2 = -1;
+      for (let j = 0; j < n; j++) {
+        if (ws[j] > w1) { a2 = a1; w2 = w1; a1 = ids[j]; w1 = ws[j]; }
+        else if (ws[j] > w2) { a2 = ids[j]; w2 = ws[j]; }
+      }
+      if (a1 < 0) continue;
+      const m = w2 > 0 ? (w1 - w2) / (w1 + w2) : 1, i = (py * W + px) * 4, d1 = dueno[a1];
+      if (d1 !== null) {
+        let [r, gg, b] = rgb[d1];
+        let al = 0.15;
+        const d2 = a2 >= 0 ? dueno[a2] : null;
+        if (w2 > 0 && a2 !== -2 && (a2 === -1 || d2 !== d1)) {
+          if (a2 === -1) {
+            // La costa: franja de color hacia dentro y una raya fina un poco metida en tierra
+            al += 0.4 * Math.pow(Math.max(0, 1 - m / 0.5), 2);
+            const lin = Math.max(0, 1 - Math.abs(m - 0.17) / 0.035);
+            al += (0.85 - al) * lin;
+          }
+          else {
+            al += 0.5 * Math.pow(Math.max(0, 1 - m / 0.4), 2);
+            const lin = Math.max(0, Math.min(1, (0.095 - m) / 0.025));          // la raya del color del dueño
+            al += (0.95 - al) * lin;
+            const osc = Math.max(0, Math.min(1, (0.04 - m) / 0.02));            // y una raya oscura justo en medio
+            r += (8 - r) * osc; gg += (6 - gg) * osc; b += (12 - b) * osc; al += (0.75 - al) * osc;
+          }
+        }
+        pon(i, r, gg, b, al);
+      } else if (a2 >= 0 && a2 !== a1 && dueno[a2] === null && m < 0.05) {
+        // Entre dos provincias sin dueño, una raya tenue y discontinua
+        if ((Math.floor((px + py) / (R * 0.22)) & 1) === 1) pon(i, 241, 230, 201, 0.26 * (1 - m / 0.05));
       }
     }
   }
+  g.clearRect(0, 0, W, H);
+  g.putImageData(img, 0, 0);
 }
 
 /* =============================================================================
-   LO QUE TIENE VOLUMEN. Coordenadas en unidades de 40 por casilla; (0,0) es el centro del pie.
+   LO QUE TIENE VOLUMEN
 ============================================================================= */
 const poli = (g: Ctx, col: string | CanvasGradient, pts: number[][]): void => { g.fillStyle = col; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]); g.closePath(); g.fill(); };
 const sombra = (g: Ctx, rx: number, ry: number): void => { g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, 7); g.fill(); };
@@ -459,22 +532,35 @@ export function pintarTumba(g: Ctx, S: number): void {
 /* =============================================================================
    NIEBLA, BRILLOS Y MARCAS
 ============================================================================= */
-/* Niebla de guerra en un lienzo pequeño (R píxeles por casilla). Al estirarlo con suavizado los bordes salen blandos. */
+/* Niebla de guerra en un lienzo pequeño (R píxeles por casilla). Se pinta a 1 píxel por casilla, se estira
+   desenfocada (los bordes se difuminan a lo largo de una casilla) y se le pone textura de nubes con ruido. */
 export function pintarNiebla(c: HTMLCanvasElement, est: any, vis: number[], R: number): void {
-  const g = c.getContext("2d") as Ctx, w = est.ancho, h = est.alto;
-  g.clearRect(0, 0, c.width, c.height);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const v = vis[y * w + x];
-    if (v === 2) continue;
-    // El mar no lleva niebla (si no, el borde del mapa se nota como una franja). La tierra nunca vista queda casi
-    // negra, así se intuye la silueta del continente; la ya explorada, en penumbra.
-    const tt = est.casillas[y][x].t;
-    if (tt === "vacio") continue;
-    // Sobre el agua navegable la niebla es más leve: se sigue viendo que es mar
-    if (tt === "agua") g.fillStyle = v === 1 ? "rgba(8,7,16,.3)" : "rgba(7,6,13,.55)";
-    else g.fillStyle = v === 1 ? "rgba(8,7,16,.5)" : "rgba(7,6,13,.9)";
-    g.fillRect(x * R, y * R, R, R);
+  const g = c.getContext("2d") as Ctx, w = est.ancho, h = est.alto, W = c.width, H = c.height;
+  const [m, gm] = lienzo(w + 2, h + 2);
+  const im = gm.createImageData(w + 2, h + 2), dm = im.data;
+  const alfa = (x: number, y: number): number => {
+    x = Math.max(0, Math.min(w - 1, x)); y = Math.max(0, Math.min(h - 1, y));
+    const v = vis[y * w + x], tt = est.casillas[y][x].t;
+    // El mar abierto no lleva niebla; el agua navegable, poca; la tierra nunca vista, casi negra
+    if (v === 2 || tt === "vacio") return 0;
+    if (tt === "agua") return v === 1 ? 0.3 : 0.55;
+    return v === 1 ? 0.5 : 0.9;
+  };
+  for (let y = -1; y <= h; y++) for (let x = -1; x <= w; x++) { const i = ((y + 1) * (w + 2) + x + 1) * 4; dm[i] = dm[i + 1] = dm[i + 2] = 255; dm[i + 3] = Math.round(alfa(x, y) * 255); }
+  gm.putImageData(im, 0, 0);
+  g.clearRect(0, 0, W, H);
+  g.save(); g.imageSmoothingEnabled = true; g.filter = `blur(${R * 0.5}px)`;
+  g.drawImage(m, -R, -R, (w + 2) * R, (h + 2) * R);
+  g.restore();
+  const id = g.getImageData(0, 0, W, H), d = id.data, k = (est.semilla % 9973) + 401;
+  for (let py = 0; py < H; py++) for (let px = 0; px < W; px++) {
+    const i = (py * W + px) * 4;
+    if (!d[i + 3]) continue;
+    const fx = px / R, fy = py / R, n = ruido(fx * 0.8, fy * 0.8, k) * 0.6 + ruido(fx * 2.1, fy * 2.1, k + 7) * 0.4;
+    d[i] = 7 + n * 26; d[i + 1] = 6 + n * 22; d[i + 2] = 14 + n * 36;
+    d[i + 3] = Math.min(255, d[i + 3] * (0.84 + n * 0.28));
   }
+  g.putImageData(id, 0, 0);
 }
 export function pintarBrillo(g: Ctx, S: number): void {
   const gr = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
@@ -512,4 +598,57 @@ export function pintarHumo(g: Ctx, S: number): void {
   const gr = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
   gr.addColorStop(0, "rgba(255,255,255,.8)"); gr.addColorStop(0.6, "rgba(255,255,255,.35)"); gr.addColorStop(1, "rgba(255,255,255,0)");
   g.fillStyle = gr; g.beginPath(); g.arc(S / 2, S / 2, S / 2, 0, 7); g.fill();
+}
+
+/* =============================================================================
+   FICHAS DE LEJOS: con la vista alejada cada tropa es una ficha redonda con el color de su bando y el icono
+   de lo que hace. Más fácil de leer que una figura diminuta.
+============================================================================= */
+const ICONO_CLASE: Record<string, string> = {
+  guerrero: "espada", mercenario: "espada", esqueleto: "espada", condenado: "espada", automata: "espada", berserker: "hacha", caballero: "lanza",
+  cazador: "arco", ballestero: "arco", arcanista: "baston", archimago: "baston", eco: "baston", paladin: "escudo", picaro: "daga", capo: "daga",
+  maestro: "daga", sanador: "cruz", barrilero: "bomba", quimera: "garra", salvaje: "garra"
+};
+export const iconoDe = (d: any): string => (d.heroe ? "estrella" : d.lider ? "corona" : d.barco ? "barco" : ICONO_CLASE[d.clase] || "espada");
+export function pintarIcono(g: Ctx, S: number, icono: string, col: string): void {
+  const u = S / 40, cx = S / 2, cy = S / 2;
+  g.save(); g.translate(cx, cy); g.scale(u, u);
+  g.fillStyle = col; g.strokeStyle = col; g.lineCap = "round"; g.lineJoin = "round";
+  const linea = (w: number, pts: number[]): void => { g.lineWidth = w; g.beginPath(); g.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]); g.stroke(); };
+  const poli2 = (pts: number[]): void => { g.beginPath(); g.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]); g.closePath(); g.fill(); };
+  if (icono === "espada") { poli2([-1.6, -11, 1.6, -11, 1.6, 4, -1.6, 4]); poli2([-1.6, -11, 0, -14, 1.6, -11]); linea(2.4, [-6, 4.5, 6, 4.5]); linea(2.6, [0, 5, 0, 10]); }
+  else if (icono === "hacha") { linea(2.4, [-5, 11, 5, -9]); poli2([1, -10, 9, -12, 11, -3, 4, -2]); }
+  else if (icono === "lanza") { linea(2.2, [-8, 11, 6, -9]); poli2([6, -9, 4, -4, 10, -8, 9, -13]); }
+  else if (icono === "arco") { g.lineWidth = 2.4; g.beginPath(); g.arc(-4, 0, 11, -1.15, 1.15); g.stroke(); linea(1.2, [0.6, -10, 0.6, 10]); linea(2, [-6, 0, 10, 0]); poli2([10, 0, 6, -3, 6, 3]); }
+  else if (icono === "baston") { linea(2.4, [-5, 12, 3, -4]); g.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 2.4 : 6, a = -Math.PI / 2 + (i * Math.PI) / 5; g.lineTo(5 + Math.cos(a) * r, -7 + Math.sin(a) * r); } g.closePath(); g.fill(); }
+  else if (icono === "escudo") { g.beginPath(); g.moveTo(-9, -10); g.lineTo(9, -10); g.lineTo(9, -1); g.quadraticCurveTo(8, 8, 0, 12); g.quadraticCurveTo(-8, 8, -9, -1); g.closePath(); g.fill(); }
+  else if (icono === "daga") { poli2([-1.4, -10, 1.4, -10, 1.6, 3, -1.6, 3]); poli2([-1.4, -10, 0, -13, 1.4, -10]); linea(2.2, [-4.5, 3.5, 4.5, 3.5]); linea(2.4, [0, 4, 0, 8]); g.save(); g.rotate(0.9); g.restore(); }
+  else if (icono === "cruz") { poli2([-2.6, -10, 2.6, -10, 2.6, -2.6, 10, -2.6, 10, 2.6, 2.6, 2.6, 2.6, 10, -2.6, 10, -2.6, 2.6, -10, 2.6, -10, -2.6, -2.6, -2.6]); }
+  else if (icono === "bomba") { g.beginPath(); g.arc(-1, 2, 8, 0, 7); g.fill(); linea(2, [4, -5, 8, -10]); g.beginPath(); g.arc(9, -11, 2.2, 0, 7); g.fill(); }
+  else if (icono === "garra") { for (let i = -1; i <= 1; i++) { g.lineWidth = 2.4; g.beginPath(); g.moveTo(i * 6 - 3, -10); g.quadraticCurveTo(i * 6 + 4, -2, i * 6 - 1, 10); g.stroke(); } }
+  else if (icono === "corona") { poli2([-10, 7, -10, -6, -5, 0, 0, -10, 5, 0, 10, -6, 10, 7]); }
+  else if (icono === "estrella") { g.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 5 : 12, a = -Math.PI / 2 + (i * Math.PI) / 5; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fill(); }
+  else if (icono === "barco") { g.beginPath(); g.moveTo(-11, 3); g.lineTo(11, 3); g.lineTo(7, 9); g.lineTo(-7, 9); g.closePath(); g.fill(); linea(1.6, [0, 3, 0, -12]); poli2([1, -11, 9, 0, 1, 0]); poli2([-1, -9, -8, 0, -1, 0]); }
+  g.restore();
+}
+export function pintarFicha(g: Ctx, S: number, col: string, fondo: string, icono: string, especial: boolean): void {
+  const r = S * 0.44, c = S / 2;
+  g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(c, c + S * 0.05, r, r, 0, 0, 7); g.fill();
+  const gr = g.createRadialGradient(c - r * 0.3, c - r * 0.4, r * 0.1, c, c, r);
+  gr.addColorStop(0, claro(fondo, 0.18)); gr.addColorStop(1, oscuro(fondo, 0.25));
+  g.fillStyle = gr; g.beginPath(); g.arc(c, c, r, 0, 7); g.fill();
+  g.lineWidth = S * 0.075; g.strokeStyle = col; g.beginPath(); g.arc(c, c, r - S * 0.035, 0, 7); g.stroke();
+  if (especial) { g.lineWidth = S * 0.025; g.strokeStyle = "#f0cf6a"; g.beginPath(); g.arc(c, c, r - S * 0.1, 0, 7); g.stroke(); }
+  g.save(); g.translate(c, c); g.scale(0.62, 0.62); g.translate(-c, -c);
+  pintarIcono(g, S, icono, "#f6eeda");
+  g.restore();
+}
+/* Chispa (un trazo corto que brilla) y gota */
+export function pintarChispa(g: Ctx, S: number): void {
+  const gr = g.createLinearGradient(0, 0, S, 0);
+  gr.addColorStop(0, "rgba(255,255,255,0)"); gr.addColorStop(0.7, "rgba(255,255,255,.9)"); gr.addColorStop(1, "rgba(255,255,255,1)");
+  g.fillStyle = gr; g.beginPath(); g.ellipse(S / 2, S / 2, S / 2, S * 0.12, 0, 0, 7); g.fill();
+}
+export function pintarGota(g: Ctx, S: number): void {
+  g.fillStyle = "#fff"; g.beginPath(); g.moveTo(S / 2, S * 0.1); g.quadraticCurveTo(S * 0.85, S * 0.6, S / 2, S * 0.9); g.quadraticCurveTo(S * 0.15, S * 0.6, S / 2, S * 0.1); g.fill();
 }
