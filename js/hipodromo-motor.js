@@ -779,6 +779,7 @@
       const dur = L.gr === "grave" ? "y no volverá a correr" : `y estará fuera unas ${L.dur} carreras`;
       ev.noticias.push(noticia(m, "lesion", `Se lesiona ${c.nombre}`, `${c.nombre} sufre ${L.tipo} (${L.gr}) en ${PISTAS[res.pista].nombre} ${dur}.${L.permanente ? " Los veterinarios temen que le quede secuela." : ""}`, [c.id], res.n));
       if (L.gr === "grave") ev.retirarPor.set(c.id, "lesión grave");
+      else if (c.dueno && !esNpcId(c.dueno)) ev.avisos.push({ dueno: c.dueno, id: c.id, n: res.n, texto: `${c.nombre} se lesionó en la carrera (${L.tipo}). Estará fuera unas ${L.dur} carreras.` });
       ev.cambios.add(c.id);
     });
     m.clima = { estado: res.clima, mojado: clamp(prog.secreto.base, 0, 1.3) };
@@ -800,7 +801,13 @@
     const i = m.vivos.indexOf(c); if (i < 0) return;
     m.vivos.splice(i, 1);
     if (esNpcId(c.dueno)) { c.dueno = null; c.entradas = []; c.entreno = null; c.tactica = null; }   // la que se retira de una cuadra virtual vuelve al mundo y, si vale, a la cría
-    const criador = quiereCria ? edadAnios(m.n, c) < 12 : digna(m, c) && !(c.lesion && c.lesion.gravedad === "grave" && rng.f() < 0.5);
+    // la de un jugador no desaparece: pasa a la cría dentro de su cuadra (él decide si criar con ella, venderla o soltarla) mientras tenga edad; las del mundo, solo si lo merecen
+    const deJugador = !!c.dueno && !esNpcId(c.dueno);
+    const criador = quiereCria || deJugador ? edadAnios(m.n, c) < 12 : digna(m, c) && !(c.lesion && c.lesion.gravedad === "grave" && rng.f() < 0.5);
+    if (deJugador && !quiereCria) {   // lo que tenía pagado por correr se le devuelve y lo que estaba haciendo se corta
+      (c.entradas || []).forEach(en => { if (en.pago && ev.pagos) ev.pagos.push({ dueno: c.dueno, monto: en.pago, concepto: `Inscripción devuelta: ${c.nombre}`, n: m.n }); });
+      c.entradas = []; c.entreno = null;
+    }
     c.estado = criador ? "criador" : "retirado";
     c.lesion = null;
     if (criador) {
@@ -811,6 +818,7 @@
     ev.cambios.add(c.id);
     const palmares = c.salidas ? `tras ${c.salidas} salidas y ${c.vic} victorias` : "sin llegar a debutar";
     bio(m, c, `Se retira ${palmares}.`);
+    if (deJugador && ev.avisos) ev.avisos.push({ dueno: c.dueno, id: c.id, n: m.n, texto: criador ? `${c.nombre} se retira de las carreras${motivo ? ` (${motivo})` : ""} y pasa a la cría. Sigue en tu cuadra.` : `${c.nombre} se retira${motivo ? ` (${motivo})` : ""} y, por su edad, ya no puede criar: deja tu cuadra.` });
     const leyenda = esLeyenda(c);
     ev.noticias.push(noticia(m, "retiro", leyenda ? `Fin de una era: se retira ${c.nombre}` : `Se retira ${c.nombre}`, `${c.nombre} deja las pistas ${palmares}${c.gp ? `, con ${c.gp} Gran${c.gp > 1 ? "des" : ""} Premio${c.gp > 1 ? "s" : ""}` : ""}${motivo ? ` (${motivo})` : ""}.${criador ? " Pasa a la cría." : ""}`, [c.id]));
   }
@@ -824,6 +832,10 @@
     ev.bajas.push(c); ev.cambios.add(c.id);
     m.stats.muertes++;
     const causa = rng.pick(CAUSAS_MUERTE);
+    if (c.dueno && !esNpcId(c.dueno) && ev.avisos) {
+      (c.entradas || []).forEach(en => { if (en.pago && ev.pagos) ev.pagos.push({ dueno: c.dueno, monto: en.pago, concepto: `Inscripción devuelta: ${c.nombre}`, n: m.n }); });
+      ev.avisos.push({ dueno: c.dueno, id: c.id, n: m.n, texto: `${c.nombre} ha muerto por ${causa}. Deja tu cuadra.` });
+    }
     const palmares = c.salidas ? `Dejó ${c.salidas} salidas, ${c.vic} victorias y ${c.crias} crías.` : "Todavía no había debutado.";
     ev.noticias.push(noticia(m, "muerte", esLeyenda(c) ? `Adiós a una leyenda: ${c.nombre}` : `Fallece ${c.nombre}`, `${c.nombre} murió por ${causa}. ${palmares}`, [c.id]));
   }
@@ -836,6 +848,7 @@
     if (tipo === "fuga") {
       c.lesion = { tipo: "desaparecido", gravedad: "leve", hasta: m.n + rng.i(30, 160) };
       ev.cambios.add(c.id);
+      if (c.dueno && !esNpcId(c.dueno)) ev.avisos.push({ dueno: c.dueno, id: c.id, n: m.n, texto: `${c.nombre} se ha escapado de los establos y nadie sabe dónde está. Se le busca: suele volver al cabo de unos días.` });
       ev.noticias.push(noticia(m, "fuga", `${c.nombre} se escapa de los establos`, `${c.nombre} amaneció fuera de su cuadra y nadie sabe adónde ha ido. Se le busca.`, [c.id]));
       return;
     }
@@ -844,6 +857,7 @@
     if (L.gr === "grave") { ev.retirarPor.set(c.id, "lesión grave"); }
     const donde = tipo === "entrenamiento" ? "durante el entrenamiento de esta mañana" : tipo === "enfermedad" ? "tras caer enferma esta semana" : "en un accidente en los establos";
     const verbo = tipo === "enfermedad" ? `sufre ${L.tipo}` : `se lesiona (${L.tipo})`;
+    if (c.dueno && !esNpcId(c.dueno) && L.gr !== "grave") ev.avisos.push({ dueno: c.dueno, id: c.id, n: m.n, texto: `${c.nombre} ${verbo} ${donde}. Estará fuera unas ${L.dur} carreras.` });
     ev.noticias.push(noticia(m, tipo === "enfermedad" ? "enfermedad" : "accidente", tipo === "enfermedad" ? `${c.nombre} cae enferma` : `Accidente en los establos: ${c.nombre}`, `${c.nombre} ${verbo} ${donde}${L.gr === "grave" ? " y no volverá a correr" : `; estará fuera unas ${L.dur} carreras`}.`, [c.id]));
   }
 
@@ -885,6 +899,7 @@
       c.fatiga = Math.max(0, c.fatiga - 2 * (0.75 + 0.5 * c.genes.mus));       // las ancas fuertes también recuperan mejor
       c.forma = clamp(0.97 * c.forma + rng.norm(0, 0.19), -2.2, 2.2);
       if (c.lesion && m.n + 1 >= c.lesion.hasta && c.lesion.gravedad !== "grave") {
+        if (c.lesion.tipo === "desaparecido" && c.dueno && !esNpcId(c.dueno)) ev.avisos.push({ dueno: c.dueno, id: c.id, n: m.n, texto: `${c.nombre} ha vuelto a los establos, sana y salva.` });
         if (c.lesion.tipo === "desaparecido") ev.noticias.push(noticia(m, "regreso", `${c.nombre} aparece sana y salva`, `${c.nombre} volvió a los establos como si nada. Nadie sabe dónde pasó estos días.`, [c.id]));
         c.lesion = null; ev.cambios.add(c.id);
       }
@@ -909,7 +924,11 @@
       if (a >= 9) h = 1;
       if (h > 0 && rng.f() < h) retirar(m, c, a >= 9 ? "por edad" : perm >= 9 ? "por las secuelas" : a > 5 ? "por edad" : "bajo rendimiento", ev, rng);
     });
-    m.criadores = m.criadores.filter(c => { if (edadAnios(m.n, c) <= 12) return true; c.estado = "retirado"; ev.bajas.push(c); ev.cambios.add(c.id); return false; });
+    m.criadores = m.criadores.filter(c => {
+      if (edadAnios(m.n, c) <= 12) return true;
+      if (c.dueno && !esNpcId(c.dueno)) ev.avisos.push({ dueno: c.dueno, id: c.id, n: m.n, texto: `${c.nombre} ya es demasiado mayor para la cría y deja tu cuadra.` });
+      c.estado = "retirado"; ev.bajas.push(c); ev.cambios.add(c.id); return false;
+    });
     // crías
     if (m.n % C.CRIA_CADA === 0) {
       const falta = C.OBJETIVO - m.vivos.length;
@@ -1479,7 +1498,7 @@
     C, AJUSTE, ESPECIE, PISTAS, REGLAS_ARCANAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
     crearRng, hash, crearMundo, programar, avanzar, avanzarHasta, loteInicial, lote, paso, programaPublico, perfil, buscar, horaDe, ventana,
     OBJETOS_CRIADERO, efectosCriadero, cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
-    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, mejoresDelMundo, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, esNpcId, TACTICAS, _interno: { npcX, pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
+    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, mejoresDelMundo, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, esNpcId, TACTICAS, _interno: { npcX, retirar, fallecer, pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoMotor;
 })(typeof window !== "undefined" ? window : globalThis);

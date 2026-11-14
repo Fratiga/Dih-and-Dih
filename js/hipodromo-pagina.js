@@ -747,7 +747,8 @@
         .sort((a, b) => (a.etapa === "cría" || a.etapa === "potro" ? 0 : 1) - (b.etapa === "cría" || b.etapa === "potro" ? 0 : 1) || a.precio - b.precio).slice(0, 40),
       sementales: () => online.perfiles().filter(x => x.estado === "criador" && x.sexo === "m" && x.montaPrecio).map(lineaje),
       avisos: () => est.avisos,
-      todas: () => online.perfiles(),   // todas las criaturas que se conocen (para los descendientes del árbol)
+      todas: () => online.perfiles(),
+      cargarHistoria: () => { if (online.retiradasCargadas) return Promise.resolve(false); online.retiradasCargadas = true; return online.leerRetiradas().then(() => true, () => false); },   // todas las criaturas que se conocen (para los descendientes del árbol)
       objetos: () => { const l = online.mias(); return (l[0] && l[0].c && l[0].c.objetos) || []; },   // los objetos del criadero viajan en lo privado de cada criatura mía
       clave: () => "s" + online.yo,
       ordenar: o => online.ordenar(o)

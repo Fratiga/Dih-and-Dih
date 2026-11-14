@@ -817,6 +817,23 @@ function cabezaACabeza(a, b, cond, veces) {
     ord(vacio, { dueno: "u1", tipo: "cuidar", id: c0.id }, { u1: 5000 }); ok(c0.fatiga === 40, "sin arbusto quita 20");
     ord(w, { dueno: "u1", tipo: "objeto", objeto: "recinto_crias" }, { u1: 5000 }); c.nace = w.n - 2; const joven = pc().costeEntrenar;
     ok(joven <= M.C.ENTRENO_COSTE - 2 && joven >= 15, `el entrenamiento nunca baja de 15 (cuesta ${joven})`); }
+  // una criatura de un jugador que se retira a la fuerza no desaparece: pasa a la cría en su cuadra y el dueño recibe el aviso (antes se iba del mundo sin decir nada)
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar" }); const c = M.cuadraDe(w, "u1")[0], evs = [];
+    c.nac = w.n - Math.round(9.5 * C.ANIO); c.salidas = 2; c.vic = 0; c.rating = 1400;   // vieja y sin méritos: el mundo no la querría para criar
+    avanza(w, 1, evs);
+    const avisos = evs.reduce((t, e) => t.concat(e.avisos), []);
+    ok(c.estado === "criador" && c.dueno === "u1" && M.cuadraDe(w, "u1").includes(c), "la criatura de un jugador que se retira por edad sigue en su cuadra, en la cría");
+    ok(avisos.some(x => x.dueno === "u1" && x.id === c.id && /se retira/.test(x.texto) && /Sigue en tu cuadra/.test(x.texto)), "y su dueño recibe el aviso del retiro");
+    c.nac = w.n - Math.round(12.2 * C.ANIO); const evs2 = []; avanza(w, 1, evs2);
+    ok(!M.cuadraDe(w, "u1").includes(c) && evs2.reduce((t, e) => t.concat(e.avisos), []).some(x => x.dueno === "u1" && x.id === c.id && /deja tu cuadra/.test(x.texto)), "cuando ya es demasiado mayor para la cría deja la cuadra, también con aviso"); }
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar" }); const c = M.cuadraDe(w, "u1")[0];
+    const ev = { avisos: [], pagos: [], noticias: [], bajas: [], cambios: new Set(), retirarPor: new Map() };
+    c.entradas = [{ n: w.n + 3, pago: 80 }]; c.lesion = { tipo: "fractura de pata", gravedad: "grave", hasta: w.n + 999 };
+    M._interno.retirar(w, c, "lesión grave", ev, M.crearRng("x"));
+    ok(c.estado === "criador" && c.dueno === "u1" && !c.entradas.length && ev.pagos.some(p => p.dueno === "u1" && p.monto === 80) && ev.avisos.length === 1, "una lesión grave la manda a la cría sin salir de la cuadra, con aviso y con la inscripción devuelta");
+    const ev3 = { avisos: [], pagos: [], noticias: [], bajas: [], cambios: new Set(), retirarPor: new Map() };
+    M._interno.fallecer(w, c, ev3, M.crearRng("y"));
+    ok(c.estado === "fallecido" && ev3.avisos.some(x => x.dueno === "u1" && /ha muerto/.test(x.texto)), "si muere, su dueño recibe el aviso"); }
   // la biografía
   { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", sexo: "f" }); const mad = M.cuadraDe(w, "u1")[0];
     ok(mad.bio && /Entra en la cuadra/.test(mad.bio[0].t), "al adoptarla, la biografía empieza con la entrada en la cuadra");

@@ -314,7 +314,7 @@ window.HipodromoCuadraUI = (function () {
     });
     cont.addEventListener("click", async e => {
       if (e.target.closest("[data-panel]")) { panel = !panel; pintar(true); return; }
-      const ab = e.target.closest("[data-arbol]"); if (ab) { arbolId = Number(ab.dataset.arbol); pintar(true); return; }
+      const ab = e.target.closest("[data-arbol]"); if (ab) { arbolId = Number(ab.dataset.arbol); pintar(true); if (api.cargarHistoria) api.cargarHistoria().then(si => { if (si) pintar(true); }); return; }   // las retiradas y fallecidas se leen la primera vez que se abre un árbol
       const ir = e.target.closest("[data-arbol-ir]"); if (ir) { arbolId = Number(ir.dataset.arbolIr); pintar(true); return; }
       if (e.target.closest("[data-arbol-cierra]")) { arbolId = null; pintar(true); return; }
       const v = e.target.closest("[data-vista]");
