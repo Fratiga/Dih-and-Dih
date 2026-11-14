@@ -31,13 +31,13 @@
   const textoDe = (el, t) => { if (el && el._t !== t) { el.textContent = t; el._t = t; } };
 
   let cuadraUI = null, cartasUI = null, online = null;
-  let est = null, m = null, pestana = "carrera", oculto = false, escena = null, fichaId = null, ultimoMarco = 0, ultimoPintado = 0, mostrarMas = 48, nUI = -1, velEfectiva = 1;
+  let est = null, m = null, pestana = "inicio", oculto = false, escena = null, fichaId = null, ultimoMarco = 0, ultimoPintado = 0, mostrarMas = 48, nUI = -1, velEfectiva = 1;
   const filtros = { estado: "pista", orden: "vic", q: "" };
-  try { oculto = localStorage.getItem(CLAVE_OCULTO) === "1"; pestana = localStorage.getItem(CLAVE_PESTANA) || "carrera"; } catch (e) { /* sin almacenamiento */ }
+  try { oculto = localStorage.getItem(CLAVE_OCULTO) === "1"; pestana = "inicio"; } catch (e) { /* sin almacenamiento */ }
   // la página en vivo manda aquí con #carrera, #noticias... (apostar, resultados completos)
-  { const h = location.hash.slice(1); if (["carrera", "cuadra", "cartas", "criaturas", "noticias", "novedades", "apuestas", "mundo"].includes(h)) pestana = h; }
+  { const h = location.hash.slice(1); if (["inicio", "carrera", "cuadra", "cartas", "criaturas", "noticias", "novedades", "apuestas", "mundo"].includes(h)) pestana = h; }
   /* El aviso «nuevo» de la pestaña Novedades: se apaga al abrirla (se acuerda en el navegador de cuál fue la última que se vio) */
-  const NOVEDADES_ULTIMA = "2026-10-30", CLAVE_NOVEDADES = "hipodromoNovedadesVista";
+  const NOVEDADES_ULTIMA = "2026-11-14", CLAVE_NOVEDADES = "hipodromoNovedadesVista";
   function marcaNovedades(vista) {
     let v = null; try { if (vista) localStorage.setItem(CLAVE_NOVEDADES, NOVEDADES_ULTIMA); v = localStorage.getItem(CLAVE_NOVEDADES); } catch (e) { /* sin almacenamiento */ }
     const n = document.getElementById("hipNovedadesNuevo"); if (n) n.classList.toggle("hidden", v === NOVEDADES_ULTIMA);
@@ -47,7 +47,7 @@
   const PLENO = /[?&]cuadra\b/.test(location.search);
   const LOCAL = /[?&]local\b/.test(location.search) ? "&local" : "";   // la prueba local se conserva al ir y volver de la cuadra
   if (!PLENO && location.hash === "#cuadra") location.replace("hipodromo.html?cuadra" + LOCAL);
-  if (PLENO) pestana = "cuadra"; else if (pestana === "cuadra") pestana = "carrera";
+  if (PLENO) pestana = "cuadra"; else if (pestana === "cuadra") pestana = "inicio";
 
   /* ---------------------------------------------------------------- guardar y crear */
   function cargar() {
@@ -169,7 +169,9 @@
     const ids = Object.keys(est.archivo);
     if (ids.length > MAX_ARCHIVO) ids.slice(0, ids.length - MAX_ARCHIVO).forEach(i => delete est.archivo[i]);
     nUI = -1; escena = null;
-    if (msgs.length) avisar(msgs.join(" · "), msgs.some(x => x.startsWith("Ganaste")) ? "bien" : "mal");
+    // a la hora real, un boleto con su sello; con el reloj de prueba acelerado, solo la línea de siempre
+    const liqAhora = est.historial.filter(h => h.n === n);
+    if (!(velEfectiva <= 1 && mostrarResultado(liqAhora, premio, prog.nombre)) && msgs.length) avisar(msgs.join(" · "), msgs.some(x => x.startsWith("Ganaste")) ? "bien" : "mal");
     guardar();
     pintarTodo();
   }
@@ -192,8 +194,10 @@
     else cuenta = `siguiente en ${mmss(p.hora + C.APLICAR_SEG * 1000 - est.virtual)}`;
     textoDe($("hipFase"), FASES[f]);
     textoDe($("hipCuenta"), cuenta);
+    $("hipCuenta").dataset.t = cuenta.replace(/^.* /, "");   // en pantallas estrechas el marcador enseña solo la cifra
     textoDe($("hipRelojInfo"), `Carrera n.º ${p.n} · sale a las ${horaTxt(p.hora)} · hora del mundo ${horaTxt(est.virtual)}`);
-    textoDe($("hipSaldo"), monedas(est.saldo));
+    pintarSaldo(); alCambiarFase(f); urgencia(f, p); relojInicio();
+    if (R && !PLENO) R.momento(new Date(est.virtual).getHours());
     const saltar = $("hipSaltar");
     textoDe(saltar, f === "abierta" || f === "cerrada" ? "Ir a la salida" : f === "corriendo" ? "Saltar la carrera" : "Siguiente carrera");
     $("hipApostar").disabled = f !== "abierta" || !!p.suspendida;
@@ -425,7 +429,7 @@
       let r; try { r = await online.apostar(p.n, tipo, sel, monto, doble); } finally { window.HipEspera.quitar($("hipApostar")); }
       if (!r.ok) return falla(r.error || "No se pudo apostar.");
       msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} tokens a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(Number(r.cuota))}${doble ? " (doble)" : ""}.`;
-      msg.className = "hip-aviso bien";
+      msg.className = "hip-aviso bien"; sellar();
       pintarPendientesCarrera(); pintarApuestas(); pintarReloj(); pintarCuotaApuesta();
       cerrarBoletoTrasApostar(msg.textContent);
       return;
@@ -434,7 +438,7 @@
     est.pendientes.push({ n: p.n, tipo, sel, monto, cuota, nombres: ids.map(nombreDe), carrera: p.nombre, doble });
     guardar();
     msg.textContent = `Apuesta hecha: ${M.TIPOS_APUESTA[tipo].nombre.toLowerCase()} a ${ids.map(nombreDe).join(" y ")}, ${monedas(monto)} tokens a ${tipo === "pozo" ? "≈ " : ""}${M.fmtCuota(cuota)}${doble ? " (doble)" : ""}.`;
-    msg.className = "hip-aviso bien";
+    msg.className = "hip-aviso bien"; sellar();
     pintarPendientesCarrera(); pintarApuestas(); pintarReloj(); pintarCuotaApuesta();
     cerrarBoletoTrasApostar(msg.textContent);
   }
@@ -592,7 +596,7 @@
   }
   function abrirFicha(id) {
     const p = perfilDe(id); if (!p) return;
-    fichaId = id;
+    fichaId = id; S.tocar("carta");
     $("hipFichaCuerpo").innerHTML = fichaHtml(p);
     $("hipFicha").classList.remove("hidden");
     document.body.classList.add("hip-con-ficha");
@@ -603,13 +607,13 @@
   /* ---------------------------------------------------------------- Noticias, apuestas, mundo */
   function pintarNoticias() {
     poner($("hipNoticiasLista"), est.noticias.length ? est.noticias.map(n => `<article class="hip-noticia ${esc(n.tipo)}"><div class="hip-noticia-cab"><span class="hip-sello">${esc(TIPOS_NOTICIA[n.tipo] || n.tipo)}</span><small>n.º ${n.n} · ${horaTxt(n.hora)}</small></div>
-      <h3>${esc(n.titulo)}</h3><p>${esc(n.texto)}</p>${n.ids.length ? `<p class="hip-noticia-ids">${n.ids.slice(0, 3).filter(perfilDe).map(id => nombreBtn(id)).join(" ")}</p>` : ""}</article>`).join("") : '<p class="hip-vacio">Todavía no hay noticias. Deja correr unas carreras.</p>');
+      <h3>${esc(n.titulo)}</h3><p>${esc(n.texto)}</p>${n.ids.length ? `<p class="hip-noticia-ids">${n.ids.slice(0, 3).filter(perfilDe).map(id => nombreBtn(id)).join(" ")}</p>` : ""}</article>`).join("") : '<p class="hip-vacio">La Gaceta sale con la primera carrera. Vuelve cuando haya corrido alguna.</p>');
   }
   function pintarApuestas() {
     const tot = est.historial.reduce((a, h) => ({ ap: a.ap + (h.devuelta ? 0 : h.monto), co: a.co + (h.devuelta ? 0 : h.pago) }), { ap: 0, co: 0 });
     poner($("hipApuestasResumen"), `<div class="hip-datos"><div><span>Tokens</span><strong>${monedas(est.saldo)}</strong></div><div><span>Apostado</span><strong>${monedas(tot.ap)}</strong></div><div><span>Cobrado</span><strong>${monedas(tot.co)}</strong></div><div><span>${T("rendimiento", "Rendimiento")}</span><strong>${tot.ap ? coma((tot.co / tot.ap - 1) * 100, 1) + " %" : "-"}</strong></div></div>`);
     poner($("hipApuestasPend"), est.pendientes.length ? `<h3>Pendientes</h3><ul class="hip-lista-apuestas">${est.pendientes.map(a => `<li>n.º ${a.n} · <strong>${esc(M.TIPOS_APUESTA[a.tipo].nombre)}</strong> ${esc(a.nombres.join(" y "))} · ${monedas(a.monto)} a ${M.fmtCuota(a.cuota)}</li>`).join("")}</ul>` : "");
-    poner($("hipApuestasHist"), est.historial.length ? `<h3>Historial</h3><table class="hip-tabla"><thead><tr><th>n.º</th><th>Apuesta</th><th>Importe</th><th>Cuota</th><th>Resultado</th></tr></thead><tbody>${est.historial.map(h => `<tr class="${h.devuelta ? "" : h.gana ? "gana" : "pierde"}"><td>${h.n}</td><td>${esc(M.TIPOS_APUESTA[h.tipo].nombre)} a ${esc(h.nombres.join(" y "))}</td><td>${monedas(h.monto)}</td><td>${M.fmtCuota(h.cuota)}</td><td>${h.devuelta ? "devuelta" : h.gana ? "+" + monedas(h.pago - h.monto) : "-" + monedas(h.monto)}</td></tr>`).join("")}</tbody></table>` : '<p class="hip-vacio">Todavía no has apostado.</p>');
+    poner($("hipApuestasHist"), est.historial.length ? `<h3>Historial</h3><table class="hip-tabla"><thead><tr><th>n.º</th><th>Apuesta</th><th>Importe</th><th>Cuota</th><th>Resultado</th></tr></thead><tbody>${est.historial.map(h => `<tr class="${h.devuelta ? "" : h.gana ? "gana" : "pierde"}"><td>${h.n}</td><td>${esc(M.TIPOS_APUESTA[h.tipo].nombre)} a ${esc(h.nombres.join(" y "))}</td><td>${monedas(h.monto)}</td><td>${M.fmtCuota(h.cuota)}</td><td>${h.devuelta ? "devuelta" : h.gana ? "+" + monedas(h.pago - h.monto) : "-" + monedas(h.monto)}</td></tr>`).join("")}</tbody></table>` : '<p class="hip-vacio">Ningún boleto todavía. La taquilla abre con cada carrera: elige una criatura en la pista y prueba suerte.</p>');
   }
   function pintarMundo() {
     if (online) {
@@ -633,12 +637,162 @@
     $("hipOculto").checked = oculto;
   }
 
+  /* ---------------------------------------------------------------- el recinto (la entrada) y las respuestas del juego
+     La página es un sitio: se entra por el recinto (el dibujo del hipódromo con sus carteles) y cada sección es un lugar de él.
+     Aquí está lo que hace que responda: el programa de mano de la entrada, los tokens que ruedan, la megafonía al cambiar la fase,
+     el sello del boleto, el resultado de las apuestas y los sonidos (js/hipodromo-sonido.js). No cambia ninguna regla. */
+  const R = window.HipodromoRecinto, S = window.HipodromoSonido || { tocar() {}, poner() {}, activo: () => false };
+  const QUIETO = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const CTA = { abierta: "Apostar", cerrada: "Ver la salida", corriendo: "Ver la carrera", terminada: "Ver el resultado" };
+  const FRASES_GRADA = ["¡Vamos, que ya salen!", "¡Ese boleto es mío!", "¡A por ellas!", "¿Quién lleva el programa?", "¡La cuatro, la cuatro!"];
+  function miasAhora() { try { return online ? online.mias() : apiLocal.mias(); } catch (e) { return []; } }
+  function lineasSitios() {
+    const p = m.proxima, G = M.GRADOS[p.grado], mias = miasAhora(), pend = est.pendientes.length, ult = est.noticias[0];
+    const vivas = online ? online.perfiles().filter(x => x.estado === "activo").length : m.vivos.length;
+    let vista = true; try { vista = localStorage.getItem(CLAVE_NOVEDADES) === NOVEDADES_ULTIMA; } catch (e) { /* sin almacenamiento */ }
+    return {
+      carrera: p.suspendida ? "Carrera aplazada" : `${G.nombre} · ${p.entrantes.length} inscritas`,
+      vivo: "La pista a pantalla completa",
+      cuadra: mias.length ? `${mias.length} ${mias.length === 1 ? "criatura" : "criaturas"} en tu cuadra` : "Aún no tienes criaturas",
+      mundo: `Carrera n.º ${m.n} del mundo`,
+      apuestas: pend ? `${pend} ${pend === 1 ? "boleto" : "boletos"} en juego` : "Tus boletos y tu historial",
+      criaturas: `${vivas} en condiciones de correr`,
+      novedades: vista ? "Lo último que se añadió" : "Hay novedades sin leer",
+      noticias: ult ? ult.titulo : "La Gaceta aún no ha salido",
+      cartas: "Cartas por tokens, con el Buhonero"
+    };
+  }
+  function pintarInicio() {
+    if (PLENO || !R || !m || !m.proxima) return;
+    const p = m.proxima, G = M.GRADOS[p.grado], pista = M.PISTAS[p.pista], caja = $("hjSitios");
+    if (!caja.firstChild) caja.innerHTML = R.SITIOS.map((s, i) => (s.enlace
+      ? `<a class="hj-sitio" href="${s.enlace}" data-sitio="${s.id}" style="left:${s.x}%;top:${s.y}%;--i:${i}">${R.icono(s.id)}<b>${s.nombre}</b><small></small></a>`
+      : `<button type="button" class="hj-sitio${s.principal ? " principal" : ""}" data-ir="${s.id}" data-sitio="${s.id}" style="left:${s.x}%;top:${s.y}%;--i:${i}">${R.icono(s.id)}<b>${s.nombre}</b><small></small></button>`)).join("")
+      + '<button type="button" class="hj-secreto reloj" data-secreto="reloj" aria-label="El reloj de la torre" tabindex="-1"></button><button type="button" class="hj-secreto grada" data-secreto="grada" aria-label="La grada" tabindex="-1"></button>';
+    const lin = lineasSitios();
+    caja.querySelectorAll("[data-sitio]").forEach(el => textoDe(el.querySelector("small"), lin[el.dataset.sitio] || ""));
+    const menor = p.entrantes.reduce((a, e) => (e.gan < a ? e.gan : a), Infinity);
+    const filas = p.entrantes.map((e, i) => {
+      const per = perfilDe(e.id); if (!per) return "";
+      const mia = e.dueno && e.dueno.id === YO;
+      return `<li style="--i:${i}" class="${mia ? "mia" : ""}"><button type="button" data-ficha="${e.id}" title="Ver la ficha de ${esc(per.nombre)}"><span class="hj-pta">${e.puerta}</span><span class="hj-fig">${D.silueta(per, { clase: "hip-mini" })}</span><span class="hj-nom">${esc(per.nombre)}<small>${mia ? "Tuya · " : e.gan === menor ? "Favorita · " : ""}${per.salidas ? `${per.vic} ${per.vic === 1 ? "victoria" : "victorias"} en ${per.salidas}` : "debuta"}</small></span><span class="hj-cuota">${M.fmtCuota(e.gan)}</span></button></li>`;
+    }).join("");
+    poner($("hjPrograma"), `<p class="hj-prog-oficial"><span>Programa oficial</span><span>Carrera n.º ${p.n}</span></p>
+      <p class="hj-prog-grado">${G.copa ? "★ " : ""}${esc(G.nombre)}</p>
+      <h1>${esc(p.nombre)}</h1>
+      <p class="hj-prog-linea">${esc(pista.nombre)} · ${p.dist} m · bolsa de ${monedas(p.bolsa)}</p>
+      <div class="hj-prog-cuenta"><span id="hjFase"></span><strong id="hjCuenta"></strong></div>
+      <div class="hj-prog-acciones"><button type="button" class="hj-btn principal" data-ir="carrera" id="hjCta"></button><a class="hj-btn" href="hipodromo-vivo.html" title="La pista a pantalla completa">${R.icono("vivo")}En vivo</a></div>
+      <p class="hj-prog-sub"><span>Inscritas</span><small>puerta · criatura · paga por token</small></p>
+      ${p.suspendida || !filas ? '<p class="hj-prog-vacio">Nadie en los cajones. Los mozos dicen que la próxima sí sale.</p>' : `<ol class="hj-roster">${filas}</ol>`}`);
+    relojInicio();
+  }
+  function relojInicio() {
+    const fEl = $("hjFase"); if (!fEl) return;
+    const f = M.ventana(m.proxima, est.virtual);
+    textoDe(fEl, FASES[f]); textoDe($("hjCuenta"), $("hipCuenta").textContent.replace(/^(cierran en|sale en|siguiente en) /, "")); textoDe($("hjCta"), CTA[f] || "Apostar");
+  }
+  /* Los tokens del marcador: al cambiar, el número rueda hasta el nuevo y sale por debajo lo ganado o lo gastado */
+  let saldoVisto = null, saldoAnim = 0;
+  function pintarSaldo() {
+    const el = $("hipSaldo"), v = est.saldo;
+    if (saldoVisto === null || PLENO || QUIETO || document.hidden) { saldoVisto = v; textoDe(el, monedas(v)); return; }
+    if (v === saldoVisto) return;
+    const de = saldoVisto, dif = v - de, caja = el.closest(".hj-tokens"), mueve = $("hjSaldoMueve"), t0 = performance.now();
+    saldoVisto = v; cancelAnimationFrame(saldoAnim);
+    if (caja) { caja.classList.remove("sube", "baja"); void caja.offsetWidth; caja.classList.add(dif > 0 ? "sube" : "baja"); clearTimeout(pintarSaldo._t); pintarSaldo._t = setTimeout(() => caja.classList.remove("sube", "baja"), 1500); }
+    if (mueve) { mueve.textContent = (dif > 0 ? "+" : "−") + monedas(Math.abs(dif)); mueve.className = "hj-saldo-mueve " + (dif > 0 ? "mas" : "menos"); void mueve.offsetWidth; mueve.classList.add("va"); }
+    const paso = t => { const k = Math.min(1, (t - t0) / 700), e = 1 - Math.pow(1 - k, 3); el.textContent = monedas(Math.round((de + dif * e) * 100) / 100); el._t = el.textContent; if (k < 1) saldoAnim = requestAnimationFrame(paso); };
+    saldoAnim = requestAnimationFrame(paso);
+  }
+  /* La megafonía: una franja que cruza la pantalla cuando cambia la fase de la carrera, con su sonido */
+  function megafonia(texto, clase) { const c = $("hjMegafonia"); if (c && !PLENO) c.innerHTML = `<span class="${clase || ""}">${esc(texto)}</span>`; }
+  let faseVista = null, ticVisto = -1;
+  function alCambiarFase(f) {
+    if (faseVista === null) { faseVista = f; return; }
+    if (f === faseVista) return;
+    const antes = faseVista; faseVista = f;
+    if (!online && velEfectiva > 1) return;   // con el reloj de prueba acelerado no se anuncia cada cosa
+    if (f === "cerrada") { megafonia("Apuestas cerradas", "oscuro"); S.tocar("cierre"); }
+    else if (f === "corriendo") { megafonia("¡Salen!"); S.tocar("campana"); }
+    else if (f === "terminada") { megafonia("Llegada", "verde"); S.tocar("llegada"); }
+    else if (f === "abierta" && antes === "terminada") megafonia("Apuestas abiertas", "verde");
+  }
+  /* Los últimos diez segundos antes del cierre: el reloj late y suena un tic por segundo */
+  function urgencia(f, p) {
+    const queda = p.cierre - est.virtual, urg = f === "abierta" && queda <= 10000 && queda > 0;
+    document.body.classList.toggle("hj-urgente", urg);
+    if (!urg) return;
+    const s = Math.ceil(queda / 1000);
+    if (s !== ticVisto) { ticVisto = s; if (online || velEfectiva <= 1) S.tocar("tic"); }
+  }
+  /* El sello del boleto al apostar */
+  function sellar() {
+    const b = $("hipPanelApuesta"); if (!b || PLENO) return;
+    S.tocar("sello");
+    b.querySelectorAll(".hj-sello").forEach(x => x.remove());
+    b.insertAdjacentHTML("beforeend", '<span class="hj-sello">Apostado</span>');
+    if (!esMovil() && !QUIETO) { b.classList.remove("hj-golpe"); void b.offsetWidth; b.classList.add("hj-golpe"); }
+    setTimeout(() => b.querySelectorAll(".hj-sello").forEach(x => x.remove()), 2000);
+  }
+  /* Lo que pasó con tus boletos: un boleto que cae con su sello, las monedas si hubo premio y el detalle de cada apuesta */
+  function mostrarResultado(liq, premio, carrera) {
+    const caja = $("hjResultado"); if (!caja || PLENO) return false;
+    const jugadas = liq.filter(h => !h.devuelta); if (!jugadas.length && !premio) return false;
+    const cobrado = jugadas.reduce((t, h) => t + (h.gana ? h.pago : 0), 0), puesto = jugadas.reduce((t, h) => t + h.monto, 0), neto = cobrado - puesto + (premio || 0), gano = cobrado > 0 || premio > 0;
+    const filas = jugadas.map(h => `<li class="${h.gana ? "gana" : "pierde"}"><span>${esc(M.TIPOS_APUESTA[h.tipo] ? M.TIPOS_APUESTA[h.tipo].nombre : h.tipo)} a ${esc((h.nombres || []).join(" y "))}</span><b>${h.gana ? "+" + monedas(h.pago) : "−" + monedas(h.monto)}</b></li>`).join("")
+      + (premio ? `<li class="gana"><span>Premios de tu cuadra</span><b>+${monedas(premio)}</b></li>` : "");
+    let lluvia = "";
+    if (gano && !QUIETO) for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2, r = 110 + (i % 4) * 34; lluvia += `<i class="hj-moneda" style="--dx:${Math.round(Math.cos(a) * r)}px;--dy:${Math.round(Math.sin(a) * r * 0.7 - 60)}px;animation-delay:${(0.5 + (i % 5) * 0.04).toFixed(2)}s"></i>`; }
+    caja.innerHTML = `<div class="hj-res-boleto${gano ? "" : " perdido"}"><p class="hj-res-cab"><span>Taquilla</span><span>${esc(carrera || "")}</span></p>
+      <h2>${gano ? (jugadas.some(h => h.gana) ? "Boleto premiado" : "Tu cuadra cobra") : "Esta vez no"}</h2>
+      <p class="hj-res-cifra" id="hjResCifra">${neto >= 0 ? "+" : "−"}0</p>
+      <ul class="hj-res-lista">${filas}</ul>
+      <button type="button" class="hj-btn" id="hjResSeguir">Seguir</button>
+      <span class="hj-res-sello">${gano ? "Premiado" : "Sin premio"}</span>${lluvia}</div>`;
+    caja.classList.remove("hidden");
+    S.tocar(gano ? "monedas" : "pierde"); setTimeout(() => S.tocar("sello"), 450);
+    const el = $("hjResCifra"), t0 = performance.now(), fin = Math.abs(neto);
+    const paso = t => { const k = QUIETO ? 1 : Math.min(1, (t - t0 - 350) / 900); if (k > 0) { const e = 1 - Math.pow(1 - k, 3); el.textContent = (neto >= 0 ? "+" : "−") + monedas(Math.round(fin * e * 100) / 100); } if (k < 1 && !caja.classList.contains("hidden")) requestAnimationFrame(paso); };
+    requestAnimationFrame(paso);
+    $("hjResSeguir").focus();
+    return true;
+  }
+  function cerrarResultado() { const c = $("hjResultado"); if (c && !c.classList.contains("hidden")) { c.classList.add("hidden"); c.innerHTML = ""; } }
+  function plenoPantalla() { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); } catch (e) { /* sin pantalla completa */ } }
+  /* Dos cosas escondidas en el dibujo: el reloj de la torre da la hora del mundo y la grada contesta */
+  function secreto(b) {
+    const caja = $("hjSitios"), bocadillo = (x, y, t) => { caja.querySelectorAll(".hj-bocadillo").forEach(q => q.remove()); caja.insertAdjacentHTML("beforeend", `<span class="hj-bocadillo" style="left:${x}%;top:${y}%">${esc(t)}</span>`); setTimeout(() => caja.querySelectorAll(".hj-bocadillo").forEach(q => q.remove()), 2700); };
+    if (b.dataset.secreto === "reloj") { S.tocar("hora"); bocadillo(83.2, 41, `Son las ${horaTxt(est.virtual)} en el hipódromo`); }
+    else { S.tocar("ovacion"); const f = $("hjFondo"); f.classList.add("ovacion"); setTimeout(() => f.classList.remove("ovacion"), 1500); bocadillo(60, 34.5, FRASES_GRADA[Math.floor(Math.random() * FRASES_GRADA.length)]); }
+  }
+  function eventosJuego() {
+    document.addEventListener("click", e => { if (e.target.closest("button, .hj-btn, .hj-sitio, .hip-vivo, summary")) S.tocar("madera"); }, true);
+    document.addEventListener("click", e => {
+      const ir = e.target.closest("[data-ir]"); if (ir) { mostrarPestana(ir.dataset.ir); return; }
+      const sec = e.target.closest("[data-secreto]"); if (sec) { secreto(sec); return; }
+      if (e.target.closest("#hjResSeguir") || e.target === $("hjResultado")) cerrarResultado();
+    });
+    let roce = null;
+    document.addEventListener("pointerover", e => { const s = e.target.closest(".hj-sitio, .hj-dock button"); if (s && s !== roce) S.tocar("roce"); roce = s; });
+    const son = $("hjSonido"); if (son) { son.setAttribute("aria-pressed", String(S.activo())); son.addEventListener("click", () => { S.poner(!S.activo()); son.setAttribute("aria-pressed", String(S.activo())); }); }
+    const pl = $("hjPleno"); if (pl) pl.addEventListener("click", plenoPantalla);
+    document.addEventListener("keydown", e => {
+      if (PLENO || e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName || "") || document.querySelector("dialog[open]")) return;
+      if (e.key === "Escape" && !$("hjResultado").classList.contains("hidden")) { cerrarResultado(); return; }
+      if (e.key === "f" || e.key === "F") { plenoPantalla(); return; }
+      if (fichaId != null) return;
+      const k = Number(e.key);
+      if (k >= 1 && k <= 9) { const b = document.querySelectorAll(".hj-dock [data-pestana]")[k - 1]; if (b) mostrarPestana(b.dataset.pestana); }
+    });
+  }
+
   /* ---------------------------------------------------------------- pintar */
   function pintarTodo() {
     document.querySelector(".hip-pagina").classList.remove("cargando");
     $("hipCargando").classList.add("hidden");
     pintarReloj();
-    pintarApuestas(); pintarNoticias(); pintarMundo();
+    pintarApuestas(); pintarNoticias(); pintarMundo(); pintarInicio();
     if (nUI !== m.proxima.n) {
       nUI = m.proxima.n;
       pintarPrograma(); pintarPanelApuesta(true); pintarPendientesCarrera(); pintarUltimo();
@@ -652,22 +806,34 @@
     if (cartasUI) cartasUI.pintar();
     mostrarPestana(pestana, true);
   }
+  let saleT = 0;
   function mostrarPestana(id, sinGuardar) {
     if (id === "cuadra" && !PLENO) { location.href = "hipodromo.html?cuadra" + LOCAL; return; }
+    const cambia = id !== pestana, sale = document.querySelector(".hip-panel:not(.hidden)");
     pestana = id;
-    document.body.dataset.pestana = id;
-    if (id !== "carrera") abrirBoleto(false);
-    document.querySelectorAll("[data-pestana]").forEach(b => { const on = b.dataset.pestana === id; b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; });
-    document.querySelectorAll(".hip-panel").forEach(p => p.classList.toggle("hidden", p.id !== "hipPanel-" + id));
-    if (!sinGuardar && !PLENO) try { localStorage.setItem(CLAVE_PESTANA, id); } catch (e) { /* sin almacenamiento */ }
-    if (id === "novedades") marcaNovedades(true);
-    if (id === "criaturas") pintarCriaturas();
-    if (id === "cuadra" && cuadraUI) cuadraUI.pintar();
-    if (id === "cartas" && cartasUI) cartasUI.abrir();
+    const poner2 = () => {
+      document.body.dataset.pestana = id;
+      if (id !== "carrera") abrirBoleto(false);
+      document.querySelectorAll(".hip-pestanas [data-pestana]").forEach(b => { const on = b.dataset.pestana === id; b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; });
+      document.querySelectorAll(".hip-panel").forEach(p => p.classList.toggle("hidden", p.id !== "hipPanel-" + id));
+      if (id === "novedades") marcaNovedades(true);
+      if (id === "criaturas") pintarCriaturas();
+      if (id === "cuadra" && cuadraUI) cuadraUI.pintar();
+      if (id === "cartas" && cartasUI) cartasUI.abrir();
+      if (id === "inicio") pintarInicio();
+      if (cambia && !PLENO) window.scrollTo(0, 0);
+    };
+    clearTimeout(saleT); document.querySelectorAll(".hip-panel.hj-sale").forEach(p => p.classList.remove("hj-sale"));
+    const animar = cambia && !sinGuardar && !PLENO;
+    if (animar) { if (R) R.enfocar(id); S.tocar("papel"); }
+    if (animar && !QUIETO && sale && sale.id !== "hipPanel-" + id && sale.id !== "hipPanel-inicio") { sale.classList.add("hj-sale"); saleT = setTimeout(() => { sale.classList.remove("hj-sale"); poner2(); }, 150); }
+    else poner2();
   }
 
   /* ---------------------------------------------------------------- eventos */
   function iniciarEventos() {
+    if (R) R.montar();
+    eventosJuego();
     $("hipVelocidad").innerHTML = VELOCIDADES.map(([v, t]) => `<button type="button" class="hip-boton chico" data-vel="${v}" aria-pressed="false">${t}</button>`).join("");
     $("hipVelocidad").addEventListener("click", e => { const b = e.target.closest("[data-vel]"); if (!b) return; est.vel = Number(b.dataset.vel); guardar(); pintarReloj(); });
     $("hipSaltar").addEventListener("click", saltar);
@@ -676,7 +842,7 @@
     document.querySelector(".hip-pestanas").addEventListener("click", e => { const b = e.target.closest("[data-pestana]"); if (b) mostrarPestana(b.dataset.pestana); });
     document.querySelector(".hip-pestanas").addEventListener("keydown", e => {
       if (!["ArrowLeft", "ArrowRight"].includes(e.key)) return;
-      const bs = [...document.querySelectorAll("[data-pestana]")], i = bs.findIndex(b => b.getAttribute("aria-selected") === "true");
+      const bs = [...document.querySelectorAll(".hip-pestanas [data-pestana]")], i = bs.findIndex(b => b.getAttribute("aria-selected") === "true");
       const sig = bs[(i + (e.key === "ArrowRight" ? 1 : bs.length - 1)) % bs.length]; mostrarPestana(sig.dataset.pestana); sig.focus();
     });
     document.addEventListener("click", e => {
@@ -729,7 +895,7 @@
     if (tipo === "carrera") {
       const liq = est.liquidadas || []; est.liquidadas = [];
       const ganadas = liq.filter(h => h.gana), perdidas = liq.filter(h => !h.gana && !h.devuelta);
-      if (liq.length) avisar([ganadas.length ? `Ganaste ${monedas(ganadas.reduce((t, h) => t + h.pago, 0))} tokens (${ganadas.length} ${ganadas.length === 1 ? "apuesta" : "apuestas"})` : "", perdidas.length ? `Perdiste ${perdidas.length} ${perdidas.length === 1 ? "apuesta" : "apuestas"}` : ""].filter(Boolean).join(" · "), ganadas.length ? "bien" : "mal");
+      if (liq.length && !mostrarResultado(liq, 0, est.resultados[0] ? est.resultados[0].nombre : "")) avisar([ganadas.length ? `Ganaste ${monedas(ganadas.reduce((t, h) => t + h.pago, 0))} tokens (${ganadas.length} ${ganadas.length === 1 ? "apuesta" : "apuestas"})` : "", perdidas.length ? `Perdiste ${perdidas.length} ${perdidas.length === 1 ? "apuesta" : "apuestas"}` : ""].filter(Boolean).join(" · "), ganadas.length ? "bien" : "mal");
       nUI = -1; escena = null;
     }
     pintarTodo();

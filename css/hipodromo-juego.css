@@ -1,0 +1,430 @@
+/* =============================================================================
+   HIPÓDROMO: la presentación de juego. Se carga después de hipodromo.css y cambia cómo se ve todo sin tocar lo que hace.
+
+   Dirección artística (un club de carreras de provincias, visto desde dentro):
+   - Materiales, no tarjetas: papel de programa de mano (marfil con tinta verde), boletos con perforado, carteles de
+     madera colgados, una pizarra para los resultados, corcho para el tablón y latón viejo para lo que vale dinero.
+   - Paleta: césped y tinta (#16291f, #14241b), marfil (#f2edd5), papel (#efe7cd), rojo de divisa (#b23a2e),
+     latón (#c9a44a), madera (#5a3a22, #3d2416), arena (#d9c38c) y pizarra (#23353b). Colores planos: sin degradados
+     de brillo, sin resplandores. Las sombras son duras y cortas, como de cartel pintado.
+   - Letra: Cinzel para lo rotulado (carteles, cabeceras), Special Elite (máquina de escribir) para lo impreso con
+     número (boletos, cuotas, libro de apuestas) y Karla para leer.
+   - Movimiento: las cosas pesan. Los carteles se balancean, el papel entra deslizándose y se asienta, los sellos caen
+     de golpe. Nada aparece ni desaparece sin más. Con «reducir movimiento» se queda todo quieto.
+   - El recinto reacciona a la carrera (body[data-fase]) y a la hora del mundo (#hjFondo[data-momento]).
+============================================================================= */
+body.hip-juego {
+  --tinta: #14241b; --marfil: #f2edd5; --papel: #efe7cd; --papel-2: #e2d8b8; --rojo: #b23a2e; --rojo-2: #7d2419;
+  --laton: #c9a44a; --laton-2: #8f7733; --madera: #5a3a22; --madera-2: #3d2416; --madera-3: #2a180e; --arena: #d9c38c; --pizarra: #23353b;
+  --hud: 58px; --maquina: 'Special Elite', 'Courier New', monospace;
+  background: #16291f; background-image: none;
+}
+html.hip-pleno .hj-fondo, html.hip-pleno .hj-hud, html.hip-pleno .hj-dock, html.hip-pleno .hj-megafonia, html.hip-pleno .hj-resultado, html.hip-pleno #hipPanel-inicio, html.hip-pleno .hj-cab { display: none !important; }
+
+/* ------------------------------------------------------------------ el recinto de fondo */
+.hj-fondo { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(#97cccd 0 21%, #a9d6d3 21% 43.5%, #62a052 43.5% 71%, #589648 71% 88.5%, #4f8b42 88.5%); transition: background-color 2s; }
+.hj-fondo[data-momento="tarde"] { background: linear-gradient(#a2beb3 0 21%, #b1c7b8 21% 43.5%, #75994c 43.5% 71%, #6d9143 71% 88.5%, #65883e 88.5%); }
+.hj-fondo[data-momento="noche"] { background: linear-gradient(#476875 0 21%, #4e6c78 21% 43.5%, #315642 43.5% 71%, #2c523e 71% 88.5%, #294d3b 88.5%); }
+.hj-fondo::after { content: ""; position: absolute; inset: 0; background: #0d1a13; opacity: 0; transition: opacity .45s ease; pointer-events: none; }
+body.hip-juego:not([data-pestana="inicio"]) .hj-fondo::after { opacity: .88; }
+.hj-lienzo { position: absolute; right: 0; top: 0; height: 100%; aspect-ratio: 16 / 9; transform-origin: var(--ox, 62%) var(--oy, 58%); transition: transform .6s cubic-bezier(.2, .7, .2, 1); -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%); mask-image: linear-gradient(90deg, transparent 0, #000 8%); }
+body.hip-juego:not([data-pestana="inicio"]) .hj-lienzo { transform: scale(1.3); }
+.hj-arte { display: block; width: 100%; height: 100%; }
+.hj-capa { transition: transform .25s linear; }
+.hj-capa.c-cielo { transform: translate(calc(var(--px, 0) * -14px), calc(var(--py, 0) * -5px)); }
+.hj-capa.c-fondo { transform: translate(calc(var(--px, 0) * -7px), calc(var(--py, 0) * -2px)); }
+.hj-capa.c-frente { transform: translate(calc(var(--px, 0) * 16px), calc(var(--py, 0) * 6px)); }
+.hj-nube { animation: hjNube 90s linear infinite alternate; }
+.hj-nube.lenta { animation-duration: 140s; animation-direction: alternate-reverse; }
+@keyframes hjNube { from { transform: translateX(-60px); } to { transform: translateX(120px); } }
+.hj-bandera { transform-box: fill-box; transform-origin: 0 50%; animation: hjBandera 2.6s ease-in-out infinite; }
+@keyframes hjBandera { 0%, 100% { transform: skewY(-7deg) scaleX(1); } 50% { transform: skewY(8deg) scaleX(.9); } }
+/* las tres criaturas que calientan dando vueltas a la pista (la calle va por el centro de la arena) */
+.hj-vuelta { offset-path: path("M1000 648 C1470 648 1470 436 1000 436 C530 436 530 648 1000 648 Z"); offset-rotate: 0deg; animation: hjVuelta 46s linear infinite; }
+.hj-vuelta.v2 { animation-duration: 53s; animation-delay: -17s; }
+.hj-vuelta.v3 { animation-duration: 61s; animation-delay: -39s; }
+.hj-vuelta > g { animation: hjTrote .5s ease-in-out infinite alternate; }
+@keyframes hjVuelta { to { offset-distance: 100%; } }
+@keyframes hjTrote { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+/* la carrera en marcha: las de la pista galopan, el público salta y las banderas baten */
+body[data-fase="corriendo"] .hj-vuelta { animation-duration: 9s; }
+body[data-fase="corriendo"] .hj-vuelta.v2 { animation-duration: 9.6s; }
+body[data-fase="corriendo"] .hj-vuelta.v3 { animation-duration: 10.3s; }
+body[data-fase="corriendo"] .hj-vuelta > g { animation-duration: .16s; }
+body[data-fase="corriendo"] .hj-bandera { animation-duration: .7s; }
+.hj-gente { transform-box: fill-box; }
+body[data-fase="corriendo"] .hj-gente, .hj-fondo.ovacion .hj-gente { animation: hjGente .34s ease-in-out infinite alternate; }
+@keyframes hjGente { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+/* la hora del mundo */
+.hj-tarde, .hj-noche, .hj-luces, .hj-estrellas { opacity: 0; transition: opacity 2.5s ease; }
+[data-momento="tarde"] .hj-tarde { opacity: .16; }
+[data-momento="tarde"] .hj-luces { opacity: .55; }
+[data-momento="noche"] .hj-noche { opacity: .58; }
+[data-momento="noche"] .hj-luces { opacity: 1; }
+[data-momento="noche"] .hj-estrellas { opacity: 1; }
+[data-momento="noche"] .hj-sol { fill: #e9eef0; }
+[data-momento="noche"] .hj-nube { opacity: .35; }
+
+/* ------------------------------------------------------------------ el marcador (arriba) */
+.hj-hud { position: fixed; left: 0; right: 0; top: 0; z-index: 70; height: var(--hud); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; padding: 0 12px; background: #0f1d15; border-bottom: 2px solid var(--laton-2); box-shadow: 0 3px 0 #07120c; }
+.hj-hud-izq, .hj-hud-der { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.hj-hud-der { justify-content: flex-end; }
+.hj-salir { flex: none; display: grid; place-items: center; width: 34px; height: 34px; color: var(--marfil); text-decoration: none; font-size: 1.1rem; border: 1px solid #35543f; background: #16291f; transition: transform .12s, background .12s; }
+.hj-salir:hover { background: var(--marfil); color: var(--tinta); transform: translateX(-2px); }
+.hj-marca { display: flex; flex-direction: column; align-items: flex-start; padding: 2px 6px; background: none; border: 0; cursor: pointer; color: var(--marfil); font: 700 1.02rem var(--font-heading), serif; letter-spacing: .16em; text-transform: uppercase; line-height: 1.05; }
+.hj-marca small { font: 600 .56rem Karla, sans-serif; letter-spacing: .34em; color: var(--laton); }
+.hj-marca:hover { color: var(--laton); }
+.hj-enlaces { flex-wrap: nowrap; gap: 4px 12px; font-size: .74rem; }
+.hj-enlaces a { color: var(--muted); text-decoration: none; }
+.hj-enlaces a:hover { color: var(--marfil); }
+.hip-juego .hip-modo { max-width: 15ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 7px; border: 1px dashed #35543f; font-size: .68rem; text-align: left; }
+/* el reloj: una pizarra negra con la fase encendida y la cuenta */
+.hip-juego .hj-reloj { position: relative; margin: 0; padding: 5px 14px; display: flex; align-items: center; gap: 14px; background: #070f0b; border: 1px solid #2c4a3a; border-left: 1px solid #2c4a3a; grid-template-columns: none; }
+.hip-juego .hj-reloj .hip-reloj-fase { flex-wrap: nowrap; align-items: center; gap: 12px; }
+.hip-juego .hip-fase { display: flex; align-items: center; gap: 7px; font-size: .68rem; letter-spacing: .16em; color: var(--marfil); white-space: nowrap; }
+.hip-juego .hip-fase::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #55675b; }
+body[data-fase="abierta"] .hip-fase::before { background: #67b873; }
+body[data-fase="cerrada"] .hip-fase::before { background: var(--laton); animation: hjLampara 1s steps(2) infinite; }
+body[data-fase="corriendo"] .hip-fase::before { background: #e0513b; animation: hjLampara .5s steps(2) infinite; }
+@keyframes hjLampara { 50% { opacity: .25; } }
+.hip-juego #hipCuenta { font: 400 1.18rem var(--maquina); letter-spacing: .04em; color: var(--marfil); white-space: nowrap; min-width: 8ch; }
+body.hj-urgente #hipCuenta { color: #f08a6e; animation: hjLatido .5s ease-in-out infinite alternate; }
+@keyframes hjLatido { to { transform: scale(1.07); } }
+.hip-juego .hip-reloj-info { grid-column: auto; font-size: .7rem; white-space: nowrap; }
+.hip-juego .hip-reloj-prueba { position: static; }
+.hip-juego .hip-reloj-prueba summary { cursor: pointer; font-size: .68rem; color: var(--muted); white-space: nowrap; }
+.hip-juego .hip-reloj-prueba[open] .hip-reloj-mandos { position: absolute; right: 0; top: calc(100% + 8px); z-index: 5; padding: 10px; background: #0f1d15; border: 1px solid var(--laton-2); box-shadow: 4px 4px 0 #07120c; align-items: flex-end; grid-column: auto; grid-row: auto; }
+/* los tokens: una ficha de latón; al cambiar, el número rueda y sale lo ganado o lo gastado */
+.hip-juego .hj-tokens { position: relative; flex-direction: row; align-items: center; gap: 8px; padding: 5px 12px 5px 8px; background: #16291f; border: 1px solid var(--laton-2); cursor: pointer; transition: transform .12s; }
+.hip-juego .hj-tokens::before { content: ""; flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--laton); border: 2px solid #f0dc9a; box-shadow: inset 0 0 0 2px var(--laton-2); }
+.hip-juego .hj-tokens span { font-size: .58rem; letter-spacing: .2em; }
+.hip-juego .hj-tokens strong { font: 400 1.12rem var(--maquina); color: var(--marfil); }
+.hip-juego .hj-tokens:hover { transform: translateY(-1px); border-color: var(--laton); }
+.hj-tokens.sube strong { color: #8fdc9a; } .hj-tokens.baja strong { color: #f08a6e; }
+.hj-tokens.sube::before, .hj-tokens.baja::before { animation: hjFicha .5s ease-out; }
+@keyframes hjFicha { 30% { transform: translateY(-7px) rotate(-18deg); } 60% { transform: translateY(1px); } }
+.hj-saldo-mueve { position: absolute; right: 8px; top: 100%; font: 400 .9rem var(--maquina); font-style: normal; white-space: nowrap; pointer-events: none; opacity: 0; }
+.hj-saldo-mueve.va { animation: hjFlota 1.6s ease-out forwards; }
+.hj-saldo-mueve.mas { color: #8fdc9a; } .hj-saldo-mueve.menos { color: #f08a6e; }
+@keyframes hjFlota { 0% { opacity: 0; transform: translateY(-6px); } 15% { opacity: 1; transform: translateY(4px); } 100% { opacity: 0; transform: translateY(26px); } }
+.hip-juego .hj-vivo { margin: 0; padding: 8px 14px; background: var(--marfil); color: var(--tinta); border: 1px solid var(--marfil); box-shadow: 2px 2px 0 #07120c; font: 700 .78rem Karla, sans-serif; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; white-space: nowrap; animation: none; transition: transform .12s, box-shadow .12s; }
+.hip-juego .hj-vivo:hover { background: #fff; transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #07120c; }
+.hip-juego .hj-vivo:active { transform: translate(2px, 2px); box-shadow: 0 0 0 #07120c; }
+.hip-juego .hj-vivo span { color: var(--rojo); }
+body[data-fase="corriendo"] .hj-vivo span { animation: hjLampara .5s steps(2) infinite; }
+.hj-icono { flex: none; display: grid; place-items: center; width: 34px; height: 34px; background: #16291f; border: 1px solid #35543f; color: var(--marfil); cursor: pointer; transition: background .12s, color .12s; }
+.hj-icono:hover { background: var(--marfil); color: var(--tinta); }
+.hj-icono[aria-pressed="false"] { color: #6c8272; }
+.hj-icono[aria-pressed="false"]::after { content: ""; position: absolute; width: 26px; border-top: 2px solid currentColor; transform: rotate(-38deg); }
+.hj-ico { width: 20px; height: 20px; }
+
+/* ------------------------------------------------------------------ la megafonía */
+.hj-megafonia { position: fixed; left: 0; right: 0; top: calc(var(--hud) + 16px); z-index: 65; display: flex; justify-content: center; pointer-events: none; overflow: hidden; }
+.hj-megafonia span { display: block; padding: 9px 46px; background: var(--rojo); color: var(--marfil); font: 700 1.25rem var(--font-heading), serif; letter-spacing: .3em; text-transform: uppercase; border-top: 2px solid var(--marfil); border-bottom: 2px solid var(--marfil); box-shadow: 0 4px 0 rgba(7, 18, 12, .6); animation: hjMegafonia 2.6s cubic-bezier(.2, .8, .2, 1) forwards; }
+.hj-megafonia span.verde { background: #2f7d4a; } .hj-megafonia span.oscuro { background: #14241b; }
+@keyframes hjMegafonia { 0% { transform: translateX(-110vw) skewX(-14deg); } 14% { transform: translateX(0) skewX(-14deg); } 20%, 80% { transform: translateX(0) skewX(0); } 100% { transform: translateX(110vw) skewX(14deg); } }
+
+/* ------------------------------------------------------------------ la barra de secciones (abajo): un listón de madera con sus placas */
+.hip-juego .hj-dock { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 70; margin: 0; padding: 5px 6px; gap: 3px; max-width: calc(100vw - 16px); overflow-x: auto; overflow-y: visible; background-color: var(--madera-2); background-image: repeating-linear-gradient(90deg, transparent 0 62px, rgba(0, 0, 0, .22) 62px 63px); border: 1px solid var(--madera-3); border-bottom: 0; box-shadow: 0 5px 0 #07120c; scrollbar-width: none; }
+.hip-juego .hj-dock::-webkit-scrollbar { display: none; }
+.hip-juego .hj-dock button { position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 78px; padding: 7px 10px 6px; white-space: nowrap; background: none; border: 1px solid transparent; border-bottom-width: 1px; color: #e4d6ae; font: 600 .6rem Karla, sans-serif; letter-spacing: .1em; text-transform: uppercase; scroll-snap-align: none; transition: transform .16s cubic-bezier(.3, 1.6, .5, 1), background .12s, color .12s; }
+.hip-juego .hj-dock button i { display: grid; place-items: center; }
+.hip-juego .hj-dock button .hj-ico { width: 22px; height: 22px; }
+.hip-juego .hj-dock button:hover { background: rgba(242, 237, 213, .1); color: var(--marfil); transform: translateY(-3px); }
+.hip-juego .hj-dock button:active { transform: translateY(1px); }
+.hip-juego .hj-dock button[aria-selected="true"] { background: var(--marfil); color: var(--tinta); border-color: #fff; box-shadow: 0 3px 0 rgba(0, 0, 0, .45); transform: translateY(-7px); }
+.hip-juego .hj-dock .hj-dock-principal { min-width: 92px; color: #fff; }
+.hip-juego .hj-dock .hj-dock-principal:not([aria-selected="true"]) { background: var(--rojo); border-color: var(--rojo-2); }
+.hip-juego .hj-dock .hj-dock-principal:not([aria-selected="true"]):hover { background: #c7483a; }
+.hip-juego .hj-dock .hip-nuevo { position: absolute; right: 4px; top: 3px; margin: 0; padding: 0 4px; font-size: .5rem; animation: hjLatido .7s ease-in-out infinite alternate; }
+.hj-dock kbd { position: absolute; left: 4px; top: 3px; font: 400 .56rem var(--maquina); opacity: 0; transition: opacity .15s; }
+.hj-dock:hover kbd { opacity: .55; }
+
+/* ------------------------------------------------------------------ la hoja de la página */
+.hip-juego .hip-pagina { position: relative; z-index: 10; max-width: 1220px; margin: 0 auto; padding: calc(var(--hud) + 22px) 20px 122px; }
+.hip-juego .hip-pagina.cargando { min-height: 100vh; display: grid; place-items: center; }
+.hip-pagina:not(.cargando) .hj-cargando { display: none; }
+.hj-cargando { display: grid; justify-items: center; gap: 14px; padding: 26px 34px 20px; background: var(--papel); color: var(--tinta); border-top: 6px solid var(--rojo); box-shadow: 6px 6px 0 rgba(7, 18, 12, .55); }
+.hj-cargando .hip-cargando { margin: 0; padding: 0; border: 0; color: var(--tinta); font: 400 .95rem var(--maquina); }
+.hj-cargando-fig { width: 150px; height: 64px; overflow: hidden; border-bottom: 3px solid var(--tinta); background-image: repeating-linear-gradient(90deg, transparent 0 22px, rgba(20, 36, 27, .25) 22px 30px); background-size: 30px 3px; background-repeat: repeat-x; background-position: 0 100%; animation: hjSuelo .5s linear infinite; }
+.hj-cargando-fig svg { width: 100%; height: 100%; animation: hjTrote .18s ease-in-out infinite alternate; }
+@keyframes hjSuelo { to { background-position: -30px 100%; } }
+.hip-juego #hipAviso { position: fixed; left: 50%; bottom: 96px; z-index: 80; transform: translateX(-50%); margin: 0; min-height: 0; max-width: min(92vw, 720px); padding: 9px 16px; background: var(--papel); color: var(--tinta); border-left: 6px solid var(--tinta); box-shadow: 4px 4px 0 rgba(7, 18, 12, .6); font: 400 .9rem var(--maquina); animation: hjPapelito .35s cubic-bezier(.2, 1.4, .4, 1); }
+.hip-juego #hipAviso:empty { display: none; }
+.hip-juego #hipAviso.bien { border-left-color: #2f7d4a; color: #1f5b34; } .hip-juego #hipAviso.mal { border-left-color: var(--rojo); color: var(--rojo-2); }
+@keyframes hjPapelito { from { opacity: 0; transform: translate(-50%, 24px) rotate(-2deg); } }
+.hip-juego #hipModoNota { margin: 0 0 14px; padding: 8px 12px; background: #0f1d15; border-left: 4px solid var(--laton-2); }
+
+/* entrar y salir de una sección: la hoja sube y se asienta; al irse, baja */
+.hip-juego .hip-panel:not(.hidden) { animation: hjEntra .34s cubic-bezier(.2, .9, .3, 1) both; }
+.hip-juego .hip-panel.hj-sale { animation: hjSale .15s ease-in forwards; }
+@keyframes hjEntra { from { opacity: 0; transform: translateY(28px); } }
+@keyframes hjSale { to { opacity: 0; transform: translateY(18px); } }
+/* la cabecera de cada sección: en qué sitio del recinto estás */
+.hj-cab { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 6px 18px; margin: 0 0 20px; padding-bottom: 12px; border-bottom: 3px double var(--laton-2); }
+.hj-cab-volver { align-self: center; display: flex; align-items: center; gap: 6px; padding: 7px 12px 7px 9px; background: var(--madera); color: var(--marfil); border: 1px solid var(--madera-3); box-shadow: 0 3px 0 #07120c; font: 700 .68rem Karla, sans-serif; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; transition: transform .14s cubic-bezier(.3, 1.6, .5, 1), background .12s, color .12s; }
+.hj-cab-volver:hover { background: var(--marfil); color: var(--tinta); transform: translateX(-3px); }
+.hj-cab-volver:active { transform: translateY(2px); box-shadow: 0 1px 0 #07120c; }
+.hj-cab-volver .hj-ico { width: 17px; height: 17px; }
+.hj-cab p { margin: 0; }
+.hj-cab .hj-cab-sitio { font: 600 .66rem Karla, sans-serif; letter-spacing: .32em; text-transform: uppercase; color: var(--laton); }
+.hj-cab h2 { margin: 0; font: 700 1.9rem var(--font-heading), serif; letter-spacing: .06em; color: var(--marfil); line-height: 1.1; }
+.hj-cab .hj-cab-lema { color: var(--muted); font-size: .88rem; }
+.hj-cab > .hj-ico { width: 44px; height: 44px; color: var(--laton-2); stroke-width: 1.1; }
+
+/* ------------------------------------------------------------------ el recinto: programa a la izquierda y carteles sobre el dibujo */
+.hip-juego #hipPanel-inicio { animation: none; }
+.hj-sitios { position: fixed; right: 0; top: 0; height: 100vh; aspect-ratio: 16 / 9; z-index: 12; pointer-events: none; }
+.hj-sitio { position: absolute; transform: translate(-50%, -100%); transform-origin: 50% -12px; display: grid; grid-template-columns: 20px auto; column-gap: 8px; align-items: center; padding: 6px 13px 7px 9px; background: var(--madera); color: var(--marfil); border: 1px solid var(--madera-3); box-shadow: 0 4px 0 rgba(7, 18, 12, .5); text-align: left; text-decoration: none; cursor: pointer; pointer-events: auto; font-family: Karla, sans-serif; animation: hjCuelga .7s cubic-bezier(.3, 1.5, .5, 1) both; animation-delay: calc(var(--i, 0) * 70ms + 120ms); transition: background .12s, color .12s; }
+.hj-sitio::before { content: ""; position: absolute; left: 16px; right: 16px; top: -11px; height: 10px; border-left: 2px solid var(--madera-3); border-right: 2px solid var(--madera-3); }
+.hj-sitio::after { content: ""; position: absolute; left: 10px; right: 10px; top: -13px; border-top: 3px solid var(--madera-3); }
+.hj-sitio .hj-ico { grid-row: span 2; width: 20px; height: 20px; }
+.hj-sitio b { font: 700 .78rem var(--font-heading), serif; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }
+.hj-sitio small { grid-column: 2; max-width: 158px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .7rem; color: #e4d6ae; }
+.hj-sitio em { position: absolute; right: -8px; top: -9px; padding: 0 5px; background: #67b873; color: #10281a; font: 700 .58rem Karla, sans-serif; font-style: normal; letter-spacing: .08em; text-transform: uppercase; }
+.hj-sitio:hover, .hj-sitio:focus-visible { background: var(--marfil); color: var(--tinta); outline: 0; animation: hjBalancea .8s ease-out; z-index: 2; }
+.hj-sitio:hover small, .hj-sitio:focus-visible small { color: #4b5a4c; }
+.hj-sitio:active { translate: 0 2px; }
+.hj-sitio.principal { padding: 9px 18px 10px 12px; background: var(--rojo); border-color: var(--rojo-2); }
+.hj-sitio.principal b { font-size: .98rem; }
+.hj-sitio.principal small { color: #ffe1d6; font-size: .76rem; }
+.hj-sitio.principal:hover small { color: #4b5a4c; }
+@keyframes hjCuelga { 0% { opacity: 0; translate: 0 -34px; rotate: -7deg; } 60% { opacity: 1; rotate: 4deg; } 100% { rotate: 0deg; } }
+@keyframes hjBalancea { 0% { rotate: 0deg; } 25% { rotate: -5deg; } 55% { rotate: 3.5deg; } 80% { rotate: -1.5deg; } 100% { rotate: 0deg; } }
+/* dos cosas escondidas en el dibujo: el reloj de la torre y la grada */
+.hj-secreto { position: absolute; transform: translate(-50%, -50%); background: none; border: 0; padding: 0; cursor: pointer; pointer-events: auto; }
+.hj-secreto.reloj { left: 83.2%; top: 31.3%; width: 2.6%; aspect-ratio: 1; border-radius: 50%; }
+.hj-secreto.grada { left: 60%; top: 38.5%; width: 21%; height: 7.5%; }
+.hj-bocadillo { position: absolute; transform: translate(-50%, -100%); padding: 5px 10px; background: var(--papel); color: var(--tinta); font: 400 .8rem var(--maquina); box-shadow: 3px 3px 0 rgba(7, 18, 12, .5); white-space: nowrap; pointer-events: none; animation: hjBocadillo 2.6s ease-out forwards; }
+@keyframes hjBocadillo { 0% { opacity: 0; translate: 0 8px; } 10%, 80% { opacity: 1; translate: 0 0; } 100% { opacity: 0; translate: 0 -10px; } }
+
+/* el programa de mano: papel, tinta verde y la cuenta atrás */
+.hj-programa { position: fixed; left: 18px; top: calc(var(--hud) + 18px); bottom: 104px; z-index: 13; width: clamp(280px, 24vw, 350px); display: flex; flex-direction: column; padding: 14px 15px 10px; background-color: var(--papel); background-image: repeating-linear-gradient(0deg, rgba(20, 36, 27, .03) 0 1px, transparent 1px 4px); color: var(--tinta); border-top: 7px solid var(--rojo); box-shadow: 7px 7px 0 rgba(7, 18, 12, .5); animation: hjPrograma .55s cubic-bezier(.2, .9, .3, 1) both; }
+@keyframes hjPrograma { from { opacity: 0; transform: translateX(-40px) rotate(-1.6deg); } }
+.hj-prog-oficial { display: flex; justify-content: space-between; margin: 0 0 8px; padding-bottom: 5px; border-bottom: 3px double var(--tinta); font: 400 .68rem var(--maquina); letter-spacing: .1em; text-transform: uppercase; }
+.hj-prog-grado { margin: 0; font: 700 .68rem Karla, sans-serif; letter-spacing: .26em; text-transform: uppercase; color: var(--rojo-2); }
+.hj-programa h1 { margin: 2px 0 4px; font: 700 1.42rem var(--font-heading), serif; letter-spacing: .03em; line-height: 1.12; color: var(--tinta); }
+.hj-prog-linea { margin: 0; font: 400 .8rem var(--maquina); color: #3d4c40; }
+.hj-prog-cuenta { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 11px 0 9px; padding: 8px 12px; background: var(--tinta); color: var(--marfil); }
+.hj-prog-cuenta span { display: flex; align-items: center; gap: 7px; font: 700 .62rem Karla, sans-serif; letter-spacing: .18em; text-transform: uppercase; }
+.hj-prog-cuenta span::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #55675b; }
+body[data-fase="abierta"] .hj-prog-cuenta span::before { background: #67b873; }
+body[data-fase="cerrada"] .hj-prog-cuenta span::before { background: var(--laton); animation: hjLampara 1s steps(2) infinite; }
+body[data-fase="corriendo"] .hj-prog-cuenta span::before { background: #e0513b; animation: hjLampara .5s steps(2) infinite; }
+.hj-prog-cuenta strong { font: 400 1.5rem var(--maquina); white-space: nowrap; }
+body.hj-urgente .hj-prog-cuenta strong { color: #f08a6e; }
+.hj-prog-acciones { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.hj-btn { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 14px; background: transparent; color: var(--tinta); border: 2px solid var(--tinta); font: 700 .78rem Karla, sans-serif; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; cursor: pointer; box-shadow: 3px 3px 0 rgba(20, 36, 27, .35); transition: transform .1s, box-shadow .1s, background .12s, color .12s; }
+.hj-btn:hover { background: var(--tinta); color: var(--marfil); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 rgba(20, 36, 27, .35); }
+.hj-btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 rgba(20, 36, 27, .35); }
+.hj-btn.principal { background: var(--rojo); border-color: var(--rojo-2); color: #fff; }
+.hj-btn.principal:hover { background: var(--rojo-2); }
+.hj-btn .hj-ico { width: 16px; height: 16px; }
+.hj-prog-sub { display: flex; justify-content: space-between; align-items: baseline; margin: 13px 0 4px; padding-top: 7px; border-top: 1px solid var(--tinta); font: 700 .66rem Karla, sans-serif; letter-spacing: .22em; text-transform: uppercase; }
+.hj-prog-sub small { font: 400 .68rem var(--maquina); letter-spacing: 0; text-transform: none; color: #3d4c40; }
+.hj-roster { flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 0; list-style: none; scrollbar-width: thin; scrollbar-color: #b9ad88 transparent; }
+.hj-roster li { animation: hjFila .4s cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(var(--i, 0) * 45ms + 260ms); }
+@keyframes hjFila { from { opacity: 0; transform: translateX(-18px); } }
+.hj-roster button { display: grid; grid-template-columns: 24px 50px 1fr auto; align-items: center; gap: 8px; width: 100%; padding: 4px 6px 4px 0; background: none; border: 0; border-bottom: 1px dashed #b9ad88; color: var(--tinta); text-align: left; cursor: pointer; font-family: Karla, sans-serif; transition: background .12s, padding .12s; }
+.hj-roster button:hover { background: var(--papel-2); padding-left: 5px; }
+.hj-roster .hj-fig { height: 34px; }
+.hj-roster .hj-fig svg { width: 100%; height: 100%; }
+.hj-roster .hj-nom { min-width: 0; font-weight: 700; font-size: .84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hj-roster .hj-nom small { display: block; font-weight: 400; font-size: .68rem; color: #5d6a58; overflow: hidden; text-overflow: ellipsis; }
+.hj-roster .hj-cuota { font: 400 .95rem var(--maquina); }
+.hj-roster .mia .hj-nom { color: var(--rojo-2); }
+.hj-prog-vacio { margin: 10px 0; font: 400 .84rem var(--maquina); color: #3d4c40; }
+/* el número de la puerta, con los colores de mantilla de las carreras */
+.hj-pta, .hip-juego .hip-insc-pta { display: grid; place-items: center; width: 24px; height: 24px; background: #c0392b; color: #fff; font: 400 .86rem var(--maquina); border: 1px solid rgba(0, 0, 0, .45); border-radius: 0; }
+li:nth-child(2) > button > .hj-pta, .hip-juego .hip-insc:nth-child(2) .hip-insc-pta { background: #f6f4ea; color: #14241b; }
+li:nth-child(3) > button > .hj-pta, .hip-juego .hip-insc:nth-child(3) .hip-insc-pta { background: #2f5fa8; color: #fff; }
+li:nth-child(4) > button > .hj-pta, .hip-juego .hip-insc:nth-child(4) .hip-insc-pta { background: #e6c24e; color: #14241b; }
+li:nth-child(5) > button > .hj-pta, .hip-juego .hip-insc:nth-child(5) .hip-insc-pta { background: #2f7d4a; color: #fff; }
+li:nth-child(6) > button > .hj-pta, .hip-juego .hip-insc:nth-child(6) .hip-insc-pta { background: #1d1f23; color: #e6c24e; }
+li:nth-child(7) > button > .hj-pta, .hip-juego .hip-insc:nth-child(7) .hip-insc-pta { background: #d97a2b; color: #14241b; }
+li:nth-child(8) > button > .hj-pta, .hip-juego .hip-insc:nth-child(8) .hip-insc-pta { background: #d77a9a; color: #14241b; }
+li:nth-child(9) > button > .hj-pta, .hip-juego .hip-insc:nth-child(9) .hip-insc-pta { background: #2a9a9a; color: #14241b; }
+li:nth-child(10) > button > .hj-pta, .hip-juego .hip-insc:nth-child(10) .hip-insc-pta { background: #6b4a9a; color: #fff; }
+
+/* ------------------------------------------------------------------ materiales de las secciones */
+/* por defecto, un tablón de madera oscura pintada de verde, con su rótulo */
+.hip-juego .hip-tarjeta { position: relative; padding: 16px 18px 18px; background: #1a3125; border: 1px solid #2f4f3d; border-top: 3px solid var(--laton-2); box-shadow: 5px 5px 0 rgba(7, 18, 12, .55); }
+.hip-juego .hip-tarjeta h3 { font-size: .86rem; letter-spacing: .2em; text-transform: uppercase; color: var(--laton); }
+.hip-juego .hip-col-principal > * + *, .hip-juego #hipPanel-mundo > * + * { margin-top: 20px; }
+@media (min-width: 960px) { .hip-juego .hip-col-lateral { top: calc(var(--hud) + 16px); } }
+/* el papel: dentro de él, la tinta manda (las piezas usan estas variables) */
+.hip-juego #hipPrograma, .hip-juego #hipPanelApuesta, .hip-juego .hip-noticias, .hip-juego #hipApuestasResumen, .hip-juego #hipApuestasPend, .hip-juego .hip-tabla-ancha:has(#hipApuestasHist), .hip-juego #hipMundoDatos, .hip-juego #hipPanel-novedades > section {
+  --text: #14241b; --muted: #55624f; --accent: #7d2419; --accent-soft: #8a7a52; --panel: #efe7cd; --panel-2: #e2d8b8; --border: #b9ad88; --sombra-dura: rgba(7, 18, 12, .5);
+  background-color: var(--papel); background-image: repeating-linear-gradient(0deg, rgba(20, 36, 27, .03) 0 1px, transparent 1px 4px); color: var(--text); }
+/* el programa de la carrera */
+.hip-juego #hipPrograma { border: 0; border-top: 7px solid var(--rojo); padding: 18px 20px; }
+.hip-juego #hipPrograma h2 { font: 700 1.7rem var(--font-heading), serif; color: var(--tinta); }
+.hip-juego #hipPrograma .hip-grado { color: var(--rojo-2); letter-spacing: .26em; }
+.hip-juego #hipPrograma .hip-prog-hora strong { font: 400 1.7rem var(--maquina); color: var(--tinta); }
+.hip-juego #hipPrograma .hip-datos > div { background: transparent; border: 0; border-left: 3px solid var(--tinta); padding: 2px 0 2px 10px; box-shadow: none; }
+.hip-juego #hipPrograma .hip-datos strong { font-family: var(--font-heading), serif; color: var(--tinta); }
+.hip-juego #hipPrograma .hip-chip { background: transparent; border: 1px solid var(--tinta); color: var(--tinta); font: 400 .74rem var(--maquina); }
+.hip-juego #hipPrograma .hip-rumores { border-top: 1px dashed #b9ad88; font: 400 .84rem var(--maquina); font-style: normal; }
+.hip-juego #hipPrograma .hip-barrita { background: #cfc4a0; } .hip-juego #hipPrograma .hip-barrita i { background: var(--tinta); }
+/* las copas: la vitrina */
+.hip-juego #hipCopas { background: var(--madera-2); border-color: var(--madera-3); border-top-color: var(--laton); }
+.hip-juego #hipCopas .hip-nota { color: #dccfa8; }
+/* las inscritas: los cajones de salida */
+.hip-juego .hip-insc { transition: background .12s, transform .12s; }
+.hip-juego .hip-insc:hover { background: #21402f; transform: translateX(3px); }
+.hip-juego .hip-insc-cuota { background: #0c1711; border: 1px solid var(--laton-2); border-radius: 0; transition: transform .12s cubic-bezier(.3, 1.6, .5, 1), background .12s; }
+.hip-juego .hip-insc-cuota strong { font: 400 1.25rem var(--maquina); color: var(--marfil); }
+.hip-juego .hip-insc-cuota:hover { background: var(--marfil); transform: scale(1.05); }
+.hip-juego .hip-insc-cuota:hover strong, .hip-juego .hip-insc-cuota:hover span, .hip-juego .hip-insc-cuota:hover small { color: var(--tinta); }
+.hip-juego .hip-insc-cuota:active { transform: scale(.97); }
+/* el último resultado: la pizarra */
+.hip-juego #hipUltimoCaja { background: var(--pizarra); border: 8px solid var(--madera); box-shadow: 5px 5px 0 rgba(7, 18, 12, .55); }
+.hip-juego #hipUltimoCaja h3 { color: #f3f1e4; font: 400 1rem var(--maquina); letter-spacing: .12em; }
+.hip-juego #hipUltimoCaja .hip-tabla { font-family: var(--maquina); }
+.hip-juego #hipUltimoCaja .hip-tabla th { color: #a9c0c4; border-color: #3d5a62; }
+.hip-juego #hipUltimoCaja .hip-tabla td { border-color: #33505a; color: #f3f1e4; }
+/* el boleto: papel con perforado arriba y abajo, y el sello al apostar */
+.hip-juego #hipPanelApuesta { position: relative; border: 0; padding: 22px 18px 20px; box-shadow: 6px 6px 0 rgba(7, 18, 12, .55); -webkit-mask-image: radial-gradient(circle 6px at 8px 0, transparent 98%, #000 100%), radial-gradient(circle 6px at 8px 100%, transparent 98%, #000 100%); -webkit-mask-size: 16px 51%; -webkit-mask-position: 0 0, 0 100%; -webkit-mask-repeat: repeat-x; mask-image: radial-gradient(circle 6px at 8px 0, transparent 98%, #000 100%), radial-gradient(circle 6px at 8px 100%, transparent 98%, #000 100%); mask-size: 16px 51%; mask-position: 0 0, 0 100%; mask-repeat: repeat-x; }
+.hip-juego #hipPanelApuesta h3 { font: 400 1.1rem var(--maquina); letter-spacing: .2em; color: var(--tinta); }
+.hip-juego #hipPanelApuesta .hip-apuesta-cab { border-bottom: 2px dashed #8a7a52; padding-bottom: 6px; margin-bottom: 10px; }
+.hip-juego #hipPanelApuesta label { font-family: var(--maquina); letter-spacing: .06em; color: #3d4c40; }
+.hip-juego #hipPanelApuesta select, .hip-juego #hipPanelApuesta input[type="number"] { background-color: #f8f3df; color: var(--tinta); border: 1px solid var(--tinta); border-radius: 0; font-family: var(--maquina); }
+.hip-juego #hipPanelApuesta .hip-foto { background: #e6ddc0; border: 1px solid #b9ad88; }
+.hip-juego #hipPanelApuesta .hip-resumen-apuesta { border-top: 2px dashed #8a7a52; border-bottom: 2px dashed #8a7a52; padding: 8px 0; }
+.hip-juego #hipPanelApuesta .hip-resumen-apuesta dd { font: 400 1.25rem var(--maquina); color: var(--tinta); }
+.hip-juego #hipPanelApuesta .hip-boton { background: transparent; color: var(--tinta); border: 1px solid var(--tinta); border-radius: 0; font-family: var(--maquina); }
+.hip-juego #hipPanelApuesta .hip-boton:hover:not(:disabled) { background: var(--tinta); color: var(--marfil); }
+.hip-juego #hipPanelApuesta .hip-boton.principal { width: 100%; padding: 13px; background: var(--rojo); color: #fff; border: 2px solid var(--rojo-2); font: 700 .95rem Karla, sans-serif; letter-spacing: .22em; text-transform: uppercase; box-shadow: 3px 3px 0 rgba(20, 36, 27, .4); transition: transform .1s, box-shadow .1s, background .12s; }
+.hip-juego #hipPanelApuesta .hip-boton.principal:hover:not(:disabled) { background: var(--rojo-2); color: #fff; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 rgba(20, 36, 27, .4); }
+.hip-juego #hipPanelApuesta .hip-boton.principal:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 0 0 0 rgba(20, 36, 27, .4); }
+.hip-juego #hipPanelApuesta .hip-boton.principal:disabled { background: #b9ad88; border-color: #8a7a52; color: #6b624a; box-shadow: none; }
+.hj-sello { position: absolute; left: 50%; top: 42%; z-index: 4; padding: 6px 16px; border: 4px solid var(--rojo); color: var(--rojo); font: 700 1.5rem var(--font-heading), serif; letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; pointer-events: none; transform: translate(-50%, -50%) rotate(-11deg); animation: hjSello 1.9s cubic-bezier(.2, .9, .3, 1) forwards; }
+.hj-sello.verde { border-color: #2f7d4a; color: #2f7d4a; }
+@keyframes hjSello { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(-11deg) scale(2.6); } 12% { opacity: 1; transform: translate(-50%, -50%) rotate(-11deg) scale(.94); } 18% { transform: translate(-50%, -50%) rotate(-11deg) scale(1); } 78% { opacity: .92; } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(-11deg) scale(1); } }
+.hj-golpe { animation: hjGolpe .28s ease-out; }
+@keyframes hjGolpe { 20% { transform: translate(0, 4px) rotate(.5deg); } 50% { transform: translate(0, -2px) rotate(-.3deg); } }
+/* la gaceta */
+.hip-juego .hip-noticias { display: block; max-width: none; padding: 20px 24px 24px; box-shadow: 6px 6px 0 rgba(7, 18, 12, .55); }
+.hip-juego .hip-noticias::before { content: "La Gaceta del Hipódromo"; display: block; margin-bottom: 16px; padding: 4px 0 8px; border-top: 4px solid var(--tinta); border-bottom: 3px double var(--tinta); font: 700 2rem var(--font-heading), serif; letter-spacing: .08em; text-align: center; color: var(--tinta); column-span: all; }
+@media (min-width: 860px) { .hip-juego .hip-noticias { column-count: 2; column-gap: 30px; column-rule: 1px solid #b9ad88; } }
+.hip-juego .hip-noticia { break-inside: avoid; margin: 0 0 14px; padding: 0 0 12px; background: none; border: 0; border-bottom: 1px solid #b9ad88; box-shadow: none; }
+.hip-juego .hip-noticia:first-of-type { column-span: all; padding-bottom: 16px; border-bottom: 3px double var(--tinta); }
+.hip-juego .hip-noticia:first-of-type h3 { font-size: 1.7rem; }
+.hip-juego .hip-noticia:first-of-type p { font-size: 1rem; }
+.hip-juego .hip-noticia h3 { font: 700 1.08rem var(--font-heading), serif; letter-spacing: .01em; color: var(--tinta); }
+.hip-juego .hip-noticia p { font-size: .9rem; }
+.hip-juego .hip-noticia .hip-sello { background: var(--tinta); color: var(--marfil); border: 0; border-radius: 0; font: 400 .64rem var(--maquina); letter-spacing: .1em; text-transform: uppercase; }
+.hip-juego .hip-noticia-cab small { font-family: var(--maquina); }
+/* la taquilla: el libro y los boletos */
+.hip-juego #hipApuestasResumen { padding: 16px 18px; border-top: 7px solid var(--tinta); box-shadow: 6px 6px 0 rgba(7, 18, 12, .55); }
+.hip-juego #hipApuestasResumen .hip-datos > div, .hip-juego #hipMundoDatos .hip-datos > div { background: transparent; border: 0; border-left: 3px solid var(--tinta); padding: 2px 0 2px 10px; box-shadow: none; }
+.hip-juego #hipApuestasResumen .hip-datos strong, .hip-juego #hipMundoDatos .hip-datos strong { font: 400 1.5rem var(--maquina); color: var(--tinta); }
+.hip-juego #hipApuestasPend { margin-top: 18px; padding: 14px 18px; background: transparent; background-image: none; --text: var(--marfil); }
+.hip-juego #hipApuestasPend:empty { display: none; }
+.hip-juego #hipApuestasPend h3 { color: var(--laton); font: 600 .8rem var(--font-heading), serif; letter-spacing: .2em; text-transform: uppercase; }
+.hip-juego .hip-lista-apuestas { display: grid; gap: 9px; padding: 0; list-style: none; }
+.hip-juego .hip-lista-apuestas li { padding: 9px 14px 9px 22px; background: var(--papel); color: var(--tinta); border-left: 2px dashed #8a7a52; font: 400 .88rem var(--maquina); box-shadow: 4px 4px 0 rgba(7, 18, 12, .5); animation: hjFila .4s cubic-bezier(.2, .9, .3, 1) both; }
+.hip-juego .hip-lista-apuestas li:nth-child(odd) { transform: rotate(-.35deg); } .hip-juego .hip-lista-apuestas li:nth-child(even) { transform: rotate(.3deg); }
+.hip-juego .hip-tabla-ancha:has(#hipApuestasHist) { margin-top: 18px; padding: 14px 18px; box-shadow: 6px 6px 0 rgba(7, 18, 12, .55); }
+.hip-juego #hipApuestasHist:empty { display: none; }
+.hip-juego .hip-tabla-ancha:has(#hipApuestasHist:empty) { display: none; }
+.hip-juego #hipApuestasHist .hip-tabla { font-family: var(--maquina); }
+.hip-juego #hipApuestasHist .hip-tabla th, .hip-juego #hipApuestasHist .hip-tabla td { border-color: #b9ad88; }
+.hip-juego #hipApuestasHist tr.gana td { color: #1f5b34; } .hip-juego #hipApuestasHist tr.pierde td { color: #7d2419; }
+/* el registro */
+.hip-juego #hipMundoDatos { padding: 18px 20px; border-top: 7px solid var(--pizarra); box-shadow: 6px 6px 0 rgba(7, 18, 12, .55); }
+/* el tablón: corcho y notas clavadas */
+.hip-juego #hipPanel-novedades { max-width: none; }
+.hip-juego #hipPanel-novedades > .hip-nota { display: none; }
+.hip-juego #hipPanel-novedades { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 26px 24px; align-items: start; padding: 26px 24px 30px; background-color: #9a6a3e; background-image: radial-gradient(rgba(0, 0, 0, .16) 1px, transparent 1.6px), radial-gradient(rgba(255, 255, 255, .1) 1px, transparent 1.6px); background-size: 9px 9px, 13px 13px; background-position: 0 0, 4px 6px; border: 10px solid var(--madera-2); box-shadow: 6px 6px 0 rgba(7, 18, 12, .55); }
+.hip-juego #hipPanel-novedades.hidden { display: none; }
+.hip-juego #hipPanel-novedades > .hj-cab { grid-column: 1 / -1; margin: 0; padding: 10px 14px; background: var(--madera-2); border: 0; }
+.hip-juego #hipPanel-novedades > section { position: relative; margin: 0; padding: 22px 18px 16px; border: 0; box-shadow: 4px 5px 0 rgba(0, 0, 0, .35); transform: rotate(-.7deg); transition: transform .2s cubic-bezier(.3, 1.6, .5, 1); }
+.hip-juego #hipPanel-novedades > section:nth-of-type(even) { transform: rotate(.6deg); }
+.hip-juego #hipPanel-novedades > section:hover { transform: rotate(0) translateY(-3px); }
+.hip-juego #hipPanel-novedades > section::before { content: ""; position: absolute; left: 50%; top: 7px; width: 13px; height: 13px; margin-left: -6px; border-radius: 50%; background: var(--rojo); border: 2px solid var(--rojo-2); box-shadow: 1px 2px 0 rgba(0, 0, 0, .35); }
+.hip-juego #hipPanel-novedades h3 { color: var(--rojo-2); font: 400 .9rem var(--maquina); }
+.hip-juego #hipPanel-novedades a { color: var(--rojo-2); }
+/* el paddock: cada criatura, un cromo */
+.hip-juego .hip-filtros { padding: 10px 14px; background: var(--madera-2); border: 1px solid var(--madera-3); box-shadow: 0 4px 0 #07120c; }
+.hip-juego .hip-cria { border-radius: 0; transition: transform .16s cubic-bezier(.3, 1.6, .5, 1), box-shadow .16s, border-color .12s; }
+.hip-juego .hip-cria:hover { transform: translateY(-5px) rotate(-.6deg); box-shadow: 5px 8px 0 rgba(7, 18, 12, .55); border-color: var(--laton); }
+.hip-juego .hip-cria:active { transform: translateY(0); }
+/* botones de siempre: planos y con peso */
+.hip-juego .hip-boton { border-radius: 0; transition: transform .1s, background .12s, color .12s, border-color .12s; }
+.hip-juego .hip-boton:active:not(:disabled) { transform: translateY(2px); }
+.hip-juego .hip-boton.principal { background: var(--marfil); color: var(--tinta); border-color: var(--marfil); }
+.hip-juego .hip-boton.principal:hover:not(:disabled) { background: #fff; }
+/* lo vacío también habla */
+.hip-juego .hip-vacio { padding: 22px 18px; border: 2px dashed #46705a; font: 400 .92rem var(--maquina); text-align: center; }
+/* la ficha de una criatura: entra como una carta que se pone sobre la mesa */
+.hip-juego .hip-ficha { z-index: 1000; animation: hjVelo .2s ease-out; }
+.hip-juego .hip-ficha-caja { border: 0; border-top: 6px solid var(--laton); box-shadow: 8px 8px 0 rgba(0, 0, 0, .5); animation: hjCarta .34s cubic-bezier(.2, 1.3, .4, 1); }
+@keyframes hjVelo { from { background: rgba(5, 12, 9, 0); } }
+@keyframes hjCarta { from { opacity: 0; transform: translateY(40px) rotate(-1.5deg) scale(.97); } }
+
+/* ------------------------------------------------------------------ el resultado de tus boletos */
+.hj-resultado { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 20px; background: rgba(7, 18, 12, .74); animation: hjVelo .25s ease-out; }
+.hj-resultado.hidden { display: none; }
+.hj-res-boleto { position: relative; width: min(440px, 100%); padding: 26px 26px 20px; background-color: var(--papel); background-image: repeating-linear-gradient(0deg, rgba(20, 36, 27, .03) 0 1px, transparent 1px 4px); color: var(--tinta); box-shadow: 10px 10px 0 rgba(0, 0, 0, .5); animation: hjBoletoCae .55s cubic-bezier(.2, 1.2, .4, 1) both; -webkit-mask-image: radial-gradient(circle 7px at 9px 0, transparent 98%, #000 100%), radial-gradient(circle 7px at 9px 100%, transparent 98%, #000 100%); -webkit-mask-size: 18px 51%; -webkit-mask-position: 0 0, 0 100%; -webkit-mask-repeat: repeat-x; mask-image: radial-gradient(circle 7px at 9px 0, transparent 98%, #000 100%), radial-gradient(circle 7px at 9px 100%, transparent 98%, #000 100%); mask-size: 18px 51%; mask-position: 0 0, 0 100%; mask-repeat: repeat-x; }
+@keyframes hjBoletoCae { from { opacity: 0; transform: translateY(-70px) rotate(-7deg); } }
+.hj-res-boleto .hj-res-cab { margin: 0 0 6px; padding-bottom: 6px; border-bottom: 2px dashed #8a7a52; font: 400 .72rem var(--maquina); letter-spacing: .14em; text-transform: uppercase; display: flex; justify-content: space-between; }
+.hj-res-boleto h2 { margin: 6px 0 2px; font: 700 1.25rem var(--font-heading), serif; color: var(--tinta); }
+.hj-res-cifra { margin: 8px 0 4px; font: 400 2.9rem var(--maquina); line-height: 1; color: #1f5b34; }
+.hj-res-boleto.perdido .hj-res-cifra { color: var(--rojo-2); }
+.hj-res-lista { margin: 12px 0; padding: 8px 0; border-top: 1px dashed #8a7a52; border-bottom: 1px dashed #8a7a52; list-style: none; font: 400 .84rem var(--maquina); max-height: 30vh; overflow: auto; }
+.hj-res-lista li { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+.hj-res-lista li.gana b { color: #1f5b34; } .hj-res-lista li.pierde b { color: var(--rojo-2); }
+.hj-res-boleto .hj-btn { width: 100%; }
+.hj-res-sello { position: absolute; right: 20px; top: 74px; padding: 5px 13px; border: 4px solid #2f7d4a; color: #2f7d4a; font: 700 1.05rem var(--font-heading), serif; letter-spacing: .16em; text-transform: uppercase; transform: rotate(9deg); animation: hjSelloFijo .5s cubic-bezier(.2, .9, .3, 1) .45s both; }
+.hj-res-boleto.perdido .hj-res-sello { border-color: var(--rojo); color: var(--rojo); }
+@keyframes hjSelloFijo { 0% { opacity: 0; transform: rotate(9deg) scale(2.8); } 60% { opacity: 1; transform: rotate(9deg) scale(.93); } 100% { transform: rotate(9deg) scale(1); } }
+.hj-res-boleto.perdido { filter: saturate(.7); }
+.hj-moneda { position: absolute; left: 50%; top: 46%; width: 15px; height: 15px; border-radius: 50%; background: var(--laton); border: 2px solid #f0dc9a; pointer-events: none; animation: hjMoneda 1.1s cubic-bezier(.2, .7, .4, 1) .5s both; }
+@keyframes hjMoneda { 0% { opacity: 0; transform: translate(0, 0) scale(.4); } 12% { opacity: 1; } 60% { transform: translate(var(--dx), var(--dy)) scale(1); } 100% { opacity: 0; transform: translate(calc(var(--dx) * 1.15), calc(var(--dy) + 150px)) scale(.8); } }
+
+/* ------------------------------------------------------------------ pantallas que no son anchas: el recinto pasa a ser una lista */
+@media (max-width: 1099px), (max-aspect-ratio: 16 / 10) {
+  body.hip-juego[data-pestana="inicio"] .hj-fondo::after { opacity: .5; }
+  .hj-lienzo { right: auto; left: 50%; translate: -50% 0; -webkit-mask-image: none; mask-image: none; }
+  .hj-programa { position: static; width: auto; max-height: none; margin-bottom: 26px; }
+  .hj-roster { overflow: visible; }
+  .hj-sitios { position: static; height: auto; aspect-ratio: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 22px 14px; pointer-events: auto; }
+  .hj-sitio { position: relative; left: auto !important; top: auto !important; transform: none; }
+  .hj-secreto { display: none; }
+}
+@media (max-width: 1700px) { .hip-juego .hip-reloj-info { display: none; } }
+@media (max-width: 1280px) { .hj-enlaces { display: none; } }
+@media (max-width: 900px) {
+  .hj-hud { grid-template-columns: auto 1fr auto; gap: 8px; padding: 0 8px; }
+  .hj-marca, .hip-juego .hip-modo, .hip-juego .hj-tokens span, #hjPleno { display: none; }
+  .hj-hud-izq, .hj-hud-der { gap: 6px; }
+  .hip-juego .hj-tokens { padding: 4px 8px 4px 6px; gap: 6px; }
+  .hip-juego .hj-tokens strong { font-size: .95rem; }
+  .hip-juego .hj-vivo { font-size: 0; padding: 8px 10px; }
+  .hip-juego .hj-vivo span { font-size: .9rem; }
+  .hip-juego .hip-reloj-prueba { position: absolute; left: 0; top: calc(100% + 6px); padding: 1px 7px; background: #0f1d15; border: 1px dashed #35543f; }
+  .hip-juego .hip-reloj-prueba[open] .hip-reloj-mandos { position: static; padding: 6px 0; border: 0; box-shadow: none; align-items: flex-start; }
+  .hip-juego .hj-reloj { padding: 4px 8px; gap: 8px; justify-self: center; }
+  .hip-juego .hj-reloj { min-width: 0; }
+  .hip-juego #hipCuenta { font-size: 0; min-width: 0; }
+  .hip-juego #hipCuenta::after { content: attr(data-t); font-size: 1rem; }
+  .hip-juego .hip-fase { font-size: 0; gap: 0; }
+  .hip-juego .hip-pagina { padding-left: 12px; padding-right: 12px; }
+  .hip-juego .hj-dock { left: 0; right: 0; bottom: 0; transform: none; max-width: none; justify-content: flex-start; }
+  .hip-juego .hj-dock button { min-width: 66px; padding-left: 6px; padding-right: 6px; }
+  .hip-juego .hip-apuesta-flota { bottom: 78px; background: var(--rojo); color: #fff; border: 2px solid var(--rojo-2); border-radius: 0; box-shadow: 3px 3px 0 #07120c; letter-spacing: .08em; text-transform: uppercase; }
+  .hj-cab { grid-template-columns: 1fr; } .hj-cab > .hj-ico { display: none; } .hj-cab h2 { font-size: 1.45rem; }
+  .hj-cab-volver { justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hj-nube, .hj-bandera, .hj-vuelta, .hj-vuelta > g, .hj-gente, .hj-cargando-fig, .hj-cargando-fig svg { animation: none !important; }
+  .hip-juego .hip-panel:not(.hidden), .hj-sitio, .hj-programa, .hj-roster li, .hj-res-boleto, .hip-juego .hip-ficha-caja { animation-duration: .01s !important; }
+  .hj-lienzo, .hj-capa { transition: none; }
+  .hj-megafonia span { animation-duration: 2.6s; }
+}
+
+/* el botón de la música de la página, por encima de la barra de secciones */
+body.hip-juego .pagmus, body.hip-juego:not(.has-mini-player) .pagmus { left: auto; right: 12px; bottom: 16px; }
+@media (max-width: 900px) { body.hip-juego .pagmus, body.hip-juego:not(.has-mini-player) .pagmus { bottom: 142px; } }
+@media (max-width: 1099px) { body.hip-juego .pagmus, body.hip-juego:not(.has-mini-player) .pagmus { bottom: 96px; } }

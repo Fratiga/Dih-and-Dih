@@ -3,6 +3,7 @@
    mano: pon lo más nuevo primero. fecha en formato AAAA-MM-DD. enlace es opcional.
    La cinta usa las 5 primeras; el tablón muestra las 6 primeras. */
 window.NOVEDADES = [
+  { fecha: "2026-11-14", titulo: "El hipódromo estrena recinto", texto: "Se entra por el dibujo del hipódromo y cada cartel lleva a un sitio: la pista, la taquilla, el quiosco, tu cuadra. Con marcador, sonidos y pantalla completa.", enlace: "hipodromo.html" },
   { fecha: "2026-10-30", titulo: "Tus criaturas ya viven en un criadero", texto: "Mi cuadra ahora es una escena: tus criaturas pastan, duermen, juegan y se saludan. Pulsa una para ver su ficha.", enlace: "hipodromo.html" },
   { fecha: "2026-10-28", titulo: "El Pozo del Dragón ya está abierto", texto: "Tres dados, un tesoro y un dragón que te vigila en la oscuridad. Juega en solitario, en duelo o en mesas compartidas con tokens y cartas.", enlace: "pozo-dragon.html" },
   { fecha: "2026-10-23", titulo: "Criar en el hipódromo tiene mutaciones", texto: "Cada cruce da una camada de una a tres crías, con mutaciones raras y un carácter heredado.", enlace: "hipodromo.html" },

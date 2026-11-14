@@ -10,66 +10,61 @@
   <link rel="stylesheet" href="css/minijuegos.css?v=20271111">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Almendra:ital,wght@0,400;0,700;1,400;1,700&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Almendra:ital,wght@0,400;0,700;1,400;1,700&family=Press+Start+2P&family=Special+Elite&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/buhonero.css?v=20271111">
-  <link rel="stylesheet" href="css/hipodromo.css?v=20271191">
+  <link rel="stylesheet" href="css/hipodromo.css?v=20271200">
   <link rel="stylesheet" href="css/hipodromo-criadero.css?v=20271190">
+  <link rel="stylesheet" href="css/hipodromo-juego.css?v=20271201">
   <script>if (/[?&]cuadra(&|$)/.test(location.search)) document.documentElement.classList.add("hip-pleno");</script>
 </head>
-<body class="mj-pagina hip-tema" data-fase="abierta">
-  <div class="mj-barra">
-    <span class="mj-enlaces">
-      <a href="minijuegos.html" class="mj-volver">← Minijuegos</a>
-      <a href="index.html" class="mj-volver mj-volver-sec">Inicio</a>
-      <a href="compendio.html" class="mj-volver mj-volver-sec">Compendio</a>
-    </span>
-    <span class="hip-modo">Prueba local: el mundo corre en este navegador, sin servidor</span>
-  </div>
+<body class="mj-pagina hip-tema hip-juego" data-fase="abierta" data-pestana="inicio">
+  <!-- El recinto: el dibujo del hipódromo queda detrás de todo. En «Recinto» se ve entero y se pulsa; en las demás secciones, apagado (js/hipodromo-recinto.js) -->
+  <div id="hjFondo" class="hj-fondo" aria-hidden="true"><div id="hjLienzo" class="hj-lienzo"></div></div>
+
+  <!-- El marcador: dónde estás, el reloj de las carreras y tus tokens -->
+  <header class="hj-hud">
+    <div class="hj-hud-izq">
+      <a href="minijuegos.html" class="hj-salir" title="Volver a Minijuegos" aria-label="Volver a Minijuegos">←</a>
+      <button type="button" class="hj-marca" data-ir="inicio" title="Volver al recinto"><small>Carreras</small>Hipódromo</button>
+      <span class="mj-enlaces hj-enlaces"><a href="index.html">Inicio</a><a href="compendio.html">Compendio</a></span>
+      <span class="hip-modo">Prueba local: el mundo corre en este navegador, sin servidor</span>
+    </div>
+    <section class="hip-reloj hj-reloj" aria-label="Reloj de las carreras">
+      <div class="hip-reloj-fase">
+        <span id="hipFase" class="hip-fase">-</span>
+        <strong id="hipCuenta">--:--</strong>
+      </div>
+      <p id="hipRelojInfo" class="hip-reloj-info"></p>
+      <details id="hipRelojPrueba" class="hip-reloj-prueba">
+        <summary>Reloj de prueba</summary>
+        <div class="hip-reloj-mandos">
+          <div id="hipVelocidad" class="hip-velocidad" role="group" aria-label="Velocidad del reloj"></div>
+          <button type="button" id="hipSaltar" class="hip-boton">Ir a la salida</button>
+          <p id="hipRelojNota" class="hip-nota"></p>
+        </div>
+      </details>
+    </section>
+    <div class="hj-hud-der">
+      <button type="button" class="hip-billetera hj-tokens" data-ir="apuestas" title="Tus tokens. Pulsa para ver tus apuestas"><span>Tokens</span><strong id="hipSaldo">-</strong><i id="hjSaldoMueve" class="hj-saldo-mueve" aria-hidden="true"></i></button>
+      <a href="hipodromo-vivo.html" id="hipEnVivo" class="hip-vivo hj-vivo" title="La pista a pantalla completa, con las carreras a su hora"><span aria-hidden="true">▶</span> Ver en vivo</a>
+      <button type="button" id="hjSonido" class="hj-icono" title="Sonidos del hipódromo" aria-pressed="true" aria-label="Sonidos del hipódromo"></button>
+      <button type="button" id="hjPleno" class="hj-icono" title="Pantalla completa (tecla F)" aria-label="Pantalla completa"></button>
+    </div>
+  </header>
+  <!-- La voz de la megafonía: una franja que cruza la pantalla cuando cambia la fase de la carrera -->
+  <div id="hjMegafonia" class="hj-megafonia" role="status" aria-live="polite"></div>
+  <!-- Lo que pasó con tus boletos al terminar una carrera -->
+  <div id="hjResultado" class="hj-resultado hidden" role="dialog" aria-label="Resultado de tus apuestas"></div>
 
   <main class="mj-contenido hip-pagina cargando">
-    <header class="hip-cabecera">
-      <div class="hip-titular">
-        <p class="eyebrow">CARRERAS</p>
-        <h1 class="mj-titulo">Hipódromo</h1>
-        <p class="hip-lema">Una carrera de criaturas cada hora. Apuesta, o ten tu propia cuadra.</p>
-      </div>
-      <div class="hip-cabecera-der">
-        <a href="hipodromo-vivo.html" id="hipEnVivo" class="hip-vivo" title="La pista a pantalla completa, con las carreras a su hora"><span aria-hidden="true">▶</span> Ver en vivo</a>
-        <div class="hip-billetera"><span>Tokens</span><strong id="hipSaldo">-</strong></div>
-      </div>
-    </header>
-
     <p id="hipModoNota" class="hip-nota hidden"></p>
-    <p id="hipCargando" class="hip-cargando" role="status">Conectando con el hipódromo...</p>
+    <div class="hj-cargando"><div class="hj-cargando-fig" aria-hidden="true"></div><p id="hipCargando" class="hip-cargando" role="status">Conectando con el hipódromo...</p></div>
     <p id="hipAviso" class="hip-aviso" role="status" aria-live="polite"></p>
 
-    <div class="hip-fija">
-      <section class="hip-reloj" aria-label="Reloj de las carreras">
-        <div class="hip-reloj-fase">
-          <span id="hipFase" class="hip-fase">-</span>
-          <strong id="hipCuenta">--:--</strong>
-        </div>
-        <p id="hipRelojInfo" class="hip-reloj-info"></p>
-        <details id="hipRelojPrueba" class="hip-reloj-prueba">
-          <summary>Reloj de prueba</summary>
-          <div class="hip-reloj-mandos">
-            <div id="hipVelocidad" class="hip-velocidad" role="group" aria-label="Velocidad del reloj"></div>
-            <button type="button" id="hipSaltar" class="hip-boton">Ir a la salida</button>
-          </div>
-        </details>
-        <p id="hipRelojNota" class="hip-nota"></p>
-      </section>
-
-      <nav class="hip-pestanas" role="tablist" aria-label="Secciones">
-        <button type="button" role="tab" data-pestana="carrera" aria-selected="true">Carrera</button>
-        <button type="button" role="tab" data-pestana="cuadra" aria-selected="false">Mi cuadra</button>
-        <button type="button" role="tab" data-pestana="cartas" aria-selected="false">Cartas</button>
-        <button type="button" role="tab" data-pestana="criaturas" aria-selected="false">Criaturas</button>
-        <button type="button" role="tab" data-pestana="noticias" aria-selected="false">Noticias</button>
-        <button type="button" role="tab" data-pestana="apuestas" aria-selected="false">Mis apuestas</button>
-        <button type="button" role="tab" data-pestana="mundo" aria-selected="false">Mundo</button>
-        <button type="button" role="tab" data-pestana="novedades" aria-selected="false">Novedades<span id="hipNovedadesNuevo" class="hip-nuevo hidden">nuevo</span></button>
-      </nav>
+    <!-- RECINTO: la entrada. A la izquierda, el programa de la próxima carrera con sus inscritas; sobre el dibujo, los sitios -->
+    <div id="hipPanel-inicio" class="hip-panel hj-recinto hidden">
+      <aside id="hjPrograma" class="hj-programa" aria-label="Próxima carrera"></aside>
+      <div id="hjSitios" class="hj-sitios" aria-label="Sitios del hipódromo"></div>
     </div>
 
     <!-- CARRERA -->
@@ -182,6 +177,14 @@
     <div id="hipPanel-novedades" class="hip-panel hip-novedades hidden">
       <p class="hip-nota">Lo último que se añadió al hipódromo y dónde encontrarlo.</p>
       <section>
+        <h3>14 de noviembre</h3>
+        <ul>
+          <li><strong>El hipódromo es ahora un recinto.</strong> Se entra por el dibujo del hipódromo: cada cartel lleva a una sección. La barra de abajo hace lo mismo, y también las teclas del 1 al 9. A la izquierda está el programa de la próxima carrera con sus inscritas.</li>
+          <li><strong>El marcador.</strong> Arriba tienes el reloj de la carrera, tus tokens (púlsalos para ver tus apuestas), el sonido y la pantalla completa (tecla F).</li>
+          <li><strong>Avisos de tu cuadra.</strong> Ahora te llega un aviso si una criatura tuya se lesiona, se retira, se escapa o muere. La que se retira por una lesión pasa a la cría y sigue en tu cuadra. Los avisos están en Mi cuadra, botón «Avisos».</li>
+        </ul>
+      </section>
+      <section>
         <h3>30 de octubre</h3>
         <ul>
           <li><strong>Mi cuadra, a pantalla completa.</strong> La pestaña «Mi cuadra» te lleva a una pantalla propia con tu criadero. Tiene sitio para 6 criaturas, un panel lateral (Criaturas, Mercado, Objetos y Avisos) y una barra de enlaces arriba para volver a la carrera, las cartas o el mundo. <a href="hipodromo.html?cuadra">Abrir Mi cuadra</a></li>
@@ -221,6 +224,18 @@
         <p class="hip-nota">El mundo, los tokens y las apuestas se guardan solo en este navegador. El reloj del mundo es virtual y solo avanza con la página abierta. Cuando esté el servidor, todos verán la misma carrera a la misma hora. Cómo funciona todo: docs/hipodromo.md.</p>
       </div>
     </div>
+    <!-- La barra de secciones (los iconos los pone js/hipodromo-recinto.js) -->
+    <nav class="hip-pestanas hj-dock" role="tablist" aria-label="Secciones">
+      <button type="button" role="tab" data-pestana="inicio" aria-selected="true"><i data-ico="inicio"></i><span>Recinto</span></button>
+      <button type="button" role="tab" data-pestana="carrera" aria-selected="false" class="hj-dock-principal"><i data-ico="carrera"></i><span>Carrera</span></button>
+      <button type="button" role="tab" data-pestana="cuadra" aria-selected="false"><i data-ico="cuadra"></i><span>Mi cuadra</span></button>
+      <button type="button" role="tab" data-pestana="criaturas" aria-selected="false"><i data-ico="criaturas"></i><span>Criaturas</span></button>
+      <button type="button" role="tab" data-pestana="cartas" aria-selected="false"><i data-ico="cartas"></i><span>Cartas</span></button>
+      <button type="button" role="tab" data-pestana="noticias" aria-selected="false"><i data-ico="noticias"></i><span>Noticias</span></button>
+      <button type="button" role="tab" data-pestana="apuestas" aria-selected="false"><i data-ico="apuestas"></i><span>Mis apuestas</span></button>
+      <button type="button" role="tab" data-pestana="mundo" aria-selected="false"><i data-ico="mundo"></i><span>Mundo</span></button>
+      <button type="button" role="tab" data-pestana="novedades" aria-selected="false"><i data-ico="novedades"></i><span>Novedades</span><span id="hipNovedadesNuevo" class="hip-nuevo hidden">nuevo</span></button>
+    </nav>
   </main>
 
   <!-- Ficha de una criatura -->
@@ -243,11 +258,13 @@
   <script src="js/hipodromo-pista.js?v=20271111"></script>
   <script src="js/hipodromo-espera.js?v=20271111"></script>
   <script src="js/hipodromo-glosario.js?v=20271111"></script>
+  <script src="js/hipodromo-sonido.js?v=20271201"></script>
+  <script src="js/hipodromo-recinto.js?v=20271201"></script>
   <script src="js/hipodromo-cartas.js?v=20271111"></script>
   <script src="js/hipodromo-cuadra.js?v=20271194"></script>
   <script src="js/fichas-supabase.js?v=20271111"></script>
   <script src="js/hipodromo-online.js?v=20271111"></script>
-  <script src="js/hipodromo-pagina.js?v=20271194"></script>
+  <script src="js/hipodromo-pagina.js?v=20271201"></script>
   <script src="js/interruptores.js?v=20271111"></script>
   <script src="js/avisos-admin.js?v=20271111"></script>
   <script src="js/musica-paginas.js?v=20271111"></script>
