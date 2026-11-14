@@ -1,23 +1,48 @@
 /* TABLERO — iconos (SVG en línea, trazos simples, color del texto) */
 (function () {
   const s = (cuerpo, relleno) => `<svg viewBox="0 0 24 24" fill="${relleno ? "currentColor" : "none"}" stroke="${relleno ? "none" : "currentColor"}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${cuerpo}</svg>`;
-  /* Marcadores de estado de las fichas: las condiciones de D&D 5e, algunos efectos comunes y puntos de color con número */
+  /* Marcadores de estado de las fichas, en el orden del set por defecto de Roll20: siete puntos de color, la X de muerto
+     y las siluetas de game-icons.net (js/tablero-marcas.js). Las condiciones de D&D 5e llevan la silueta que más se les parece;
+     los ids antiguos se conservan para que las fichas que ya los llevan sigan igual. */
+  const m = (id, nombre, ic, x) => Object.assign({ id, nombre, ic }, x || {});
   window.TBEstados = [
-    { id: "agarrado", nombre: "Agarrado", e: "✊" }, { id: "apresado", nombre: "Apresado", e: "⛓️" }, { id: "asustado", nombre: "Asustado", e: "😱" },
-    { id: "aturdido", nombre: "Aturdido", e: "💫" }, { id: "cegado", nombre: "Cegado", e: "🙈" }, { id: "derribado", nombre: "Derribado", e: "⤵️" },
-    { id: "encantado", nombre: "Encantado", e: "💗" }, { id: "ensordecido", nombre: "Ensordecido", e: "🙉" }, { id: "envenenado", nombre: "Envenenado", e: "🤢" },
-    { id: "incapacitado", nombre: "Incapacitado", e: "🚫" }, { id: "inconsciente", nombre: "Inconsciente", e: "💤" }, { id: "invisible", nombre: "Invisible", e: "👻" },
-    { id: "paralizado", nombre: "Paralizado", e: "⚡" }, { id: "petrificado", nombre: "Petrificado", e: "🗿" }, { id: "agotamiento", nombre: "Agotamiento", e: "😩", numero: true },
-    { id: "concentracion", nombre: "Concentración", e: "🎯", extra: true }, { id: "bendecido", nombre: "Bendecido", e: "✨", extra: true }, { id: "maldito", nombre: "Maldito", e: "🌑", extra: true },
-    { id: "sangrando", nombre: "Sangrando", e: "🩸", extra: true }, { id: "ardiendo", nombre: "Ardiendo", e: "🔥", extra: true }, { id: "protegido", nombre: "Protegido", e: "🛡️", extra: true },
-    { id: "acelerado", nombre: "Acelerado", e: "🏃", extra: true }, { id: "ralentizado", nombre: "Ralentizado", e: "🐌", extra: true }, { id: "muerto", nombre: "Muerto", e: "💀", extra: true },
-    { id: "casteo_notas", nombre: "Casteo: notas musicales", e: "🎵", anim: true }, { id: "casteo_cartas", nombre: "Casteo: cartas", e: "🃏", anim: true },
-    { id: "fumando", nombre: "Fumando", e: "🚬", anim: true }, { id: "raudo", nombre: "Raudo", e: "💨", anim: true },
-    { id: "rojo", nombre: "Punto rojo", color: "#cc1a1a", numero: true }, { id: "azul", nombre: "Punto azul", color: "#1a78d2", numero: true },
-    { id: "verde", nombre: "Punto verde", color: "#35c424", numero: true }, { id: "naranja", nombre: "Punto naranja", color: "#cc7a1e", numero: true },
-    { id: "morado", nombre: "Punto morado", color: "#9b1fce", numero: true }, { id: "rosa", nombre: "Punto rosa", color: "#ee7ee2", numero: true },
-    { id: "amarillo", nombre: "Punto amarillo", color: "#e6e67a", numero: true }
+    { id: "rojo", nombre: "Punto rojo", color: "#C91010", numero: true }, { id: "azul", nombre: "Punto azul", color: "#1076C9", numero: true },
+    { id: "verde", nombre: "Punto verde", color: "#2FC910", numero: true }, { id: "naranja", nombre: "Punto marrón", color: "#C97310", numero: true },
+    { id: "morado", nombre: "Punto morado", color: "#9510C9", numero: true }, { id: "rosa", nombre: "Punto rosa", color: "#EB75E1", numero: true },
+    { id: "amarillo", nombre: "Punto amarillo", color: "#E5EB75", numero: true },
+    m("muerto", "Muerto", null),
+    m("calavera", "Calavera", "skull-crossed-bones"), m("inconsciente", "Inconsciente", "sleepy", { cond: true }),
+    m("agotamiento", "Agotamiento", "half-heart", { cond: true, numero: true }), m("ardiendo", "Ardiendo", "half-haze"),
+    m("ensordecido", "Ensordecido", "interdiction", { cond: true }), m("ralentizado", "Ralentizado", "snail"),
+    m("paralizado", "Paralizado", "lightning-helix", { cond: true }), m("llave", "Llave", "spanner"),
+    m("encantado", "Encantado", "chained-heart", { cond: true }), m("envenenado", "Envenenado", "chemical-bolt", { cond: true }),
+    m("maldito", "Maldito", "death-zone"), m("pocion", "Poción", "drink-me"),
+    m("petrificado", "Petrificado", "edge-crack", { cond: true }), m("invisible", "Invisible", "ninja-mask", { cond: true }),
+    m("cronometro", "Cronómetro", "stopwatch"), m("apresado", "Apresado", "fishing-net", { cond: true }),
+    m("aturdido", "Aturdido", "overdrive", { cond: true }), m("fuerte", "Fuerte", "strong"), m("puno", "Puño", "fist"),
+    m("candado", "Candado", "padlock"), m("hojas", "Tres hojas", "three-leaves"), m("acelerado", "Acelerado", "fluffy-wing"),
+    m("golpeado", "Golpeado", "pummeled"), m("huellas", "Huellas", "tread"),
+    m("sangrando", "Sangrando", "arrowed"), m("concentracion", "Concentración", "aura"),
+    m("derribado", "Derribado", "back-pain", { cond: true }), m("bandera_negra", "Bandera negra", "black-flag"),
+    m("cegado", "Cegado", "bleeding-eye", { cond: true }), m("protegido", "Protegido", "bolt-shield"),
+    m("corazon_roto", "Corazón roto", "broken-heart"), m("telarana", "Telaraña", "cobweb"),
+    m("incapacitado", "Incapacitado", "broken-shield", { cond: true }), m("bandera", "Bandera", "flying-flag"),
+    m("radiactivo", "Radiactivo", "radioactive"), m("trofeo", "Trofeo", "trophy"),
+    m("craneo_roto", "Cráneo roto", "broken-skull"), m("helado", "Helado", "frozen-orb"),
+    m("bomba", "Bomba", "rolling-bomb"), m("torre", "Torre", "white-tower"),
+    m("agarrado", "Agarrado", "grab", { cond: true }), m("asustado", "Asustado", "screaming", { cond: true }),
+    m("granada", "Granada", "grenade"), m("torreta", "Torreta", "sentry-gun"),
+    m("todos_a_una", "Todos a una", "all-for-one"), m("bendecido", "Bendecido", "angel-outfit"), m("diana", "Diana", "archery-target"),
+    m("casteo_notas", "Casteo: notas musicales", "musical-notes", { anim: true }), m("casteo_cartas", "Casteo: cartas", "poker-hand", { anim: true }),
+    m("fumando", "Fumando", "smoking-pipe", { anim: true }), m("raudo", "Raudo", "sprint", { anim: true })
   ];
+  // Silueta de un marcador como SVG en línea (toma el color del texto)
+  window.TBMarcaSVG = c => {
+    const d = c && c.ic && window.TBMarcas && window.TBMarcas[c.ic];
+    if (d) return `<svg viewBox="0 0 512 512" aria-hidden="true"><path fill="currentColor" d="${d}"/></svg>`;
+    if (c && c.id === "muerto") return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="#d32f2f" stroke-width="3.4" stroke-linecap="round"/></svg>';
+    return "";
+  };
   window.TBIconoDado = {
     d4: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5L22 20.5H2z" fill="currentColor"/><path d="M12 2.5L9.5 20.5" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>',
     d6: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z" fill="currentColor"/><path d="M3 7l9 5 9-5M12 12v10" stroke="#fff" stroke-opacity=".55" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>',

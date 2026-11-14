@@ -243,6 +243,7 @@
     });
     r.on("regla", d => { if (d && (!d.escena || d.escena === TB.escenaId)) TB.L.reglaRemota(d); });
     r.on("fx", d => { if (d && d.escena === TB.escenaId && !TB.prefs.sinFx) TB.fx.reproducir(d); });
+    r.on("fxFin", d => { if (d && d.id) TB.fx.parar(d.id); });
     r.on("presencia", lista => { TB.presencia = lista || []; TB.lanzar("presencia"); });
     r.on("cursor", d => { if (d && d.escena === TB.escenaId) TB.L.cursorRemoto(d); });
     r.on("sonido", d => { if (d && window.TBLado) TBLado.sonar(d); });
@@ -564,6 +565,26 @@
   };
 
   /* ------------------------------------------------------------ lienzo → app */
+  let fxMantenido = null, fxTope = null;
+  // Datos de un efecto con el tipo, color y tamaño del panel de Efectos
+  function datosFx(a, b, extra) {
+    const t = TBFx.TIPOS.find(x => x.id === TB.prefs.fx.tipo) || TBFx.TIPOS[0];
+    const fp = TB.L.opciones().fxPrevia || {};
+    const pxPie = TB.L.tamCelda() / (((TB.escena() || {}).cuadricula || {}).pies || 5);
+    // Radio de cada efecto con escala 1 (en píxeles): para que el efecto mida lo que dice el panel o lo arrastrado
+    const BASE = { bomba: 52, explotar: 90, destello: 85, estrella: 160, agrupacion: 120, quemar: 22, brillo: 45, escudo: 42, rafaga: 50, burbujeante: 25, cohete: 48, misil: 48 };
+    let escala = TB.L.tamCelda() / 70;
+    const radioPx = (extra && extra.radio) || (fp.radioPies || 10) * pxPie;
+    if (BASE[t.id]) escala = Math.max(0.2, Math.min(8, radioPx / BASE[t.id]));
+    return { tipo: t.id, color: TB.prefs.fx.color, a, b: t.modo === "apuntar" ? b : a, escala, grados: fp.conoGrados, anchoPx: (fp.hazPies || 5) * pxPie, escena: TB.escenaId };
+  }
+  function callbacksFxFin() {
+    if (!fxMantenido) return;
+    TB.fx.parar(fxMantenido);
+    TB.red.emitir("fxFin", { id: fxMantenido, escena: TB.escenaId });
+    fxMantenido = null;
+    clearTimeout(fxTope);
+  }
   let ultimaRegla = 0, reglaPendiente = null, ultimoCursor = 0;
   function callbacksLienzo() {
     return {
@@ -594,18 +615,20 @@
       },
       onPing: (x, y, centrar) => TB.red.emitir("ping", { x, y, color: TB.colorJugador(TB.yo.uid), centrar: !!centrar && TB.yo.esGM, escena: TB.escenaId }),
       onFx: (a, b, extra) => {
-        const t = TBFx.TIPOS.find(x => x.id === TB.prefs.fx.tipo) || TBFx.TIPOS[0];
-        const fp = TB.L.opciones().fxPrevia || {};
-        const pxPie = TB.L.tamCelda() / (((TB.escena() || {}).cuadricula || {}).pies || 5);
-        // Radio de cada efecto con escala 1 (en píxeles): para que el efecto mida lo que dice el panel o lo arrastrado
-        const BASE = { bomba: 52, explotar: 90, destello: 85, estrella: 160, agrupacion: 120, quemar: 22, brillo: 45, escudo: 42, rafaga: 50, burbujeante: 25, cohete: 48, misil: 48 };
-        let escala = TB.L.tamCelda() / 70;
-        const radioPx = (extra && extra.radio) || (fp.radioPies || 10) * pxPie;
-        if (BASE[t.id]) escala = Math.max(0.2, Math.min(8, radioPx / BASE[t.id]));
-        const d = { tipo: t.id, color: TB.prefs.fx.color, a, b: t.modo === "apuntar" ? b : a, escala, grados: fp.conoGrados, anchoPx: (fp.hazPies || 5) * pxPie, escena: TB.escenaId };
+        const d = datosFx(a, b, extra);
         TB.fx.reproducir(d);
         TB.red.emitir("fx", d);
       },
+      // Mantener: el efecto sigue mientras el botón esté pulsado (y en las pantallas de los demás también)
+      onFxMantener: a => {
+        const d = Object.assign(datosFx(a, a, null), { mantener: true, id: TB.yo.uid + ":" + Date.now() });
+        fxMantenido = d.id;
+        TB.fx.reproducir(d);
+        TB.red.emitir("fx", d);
+        clearTimeout(fxTope);
+        fxTope = setTimeout(() => { if (fxMantenido === d.id) callbacksFxFin(); }, 60000);
+      },
+      onFxFin: () => callbacksFxFin(),
       onNiebla: n => { if (TB.yo.esGM && TB.escenaId) TB.guardarEscena(TB.escenaId, { niebla: n }); },
       onZoom: z => TB.lanzar("zoom", z),
       onMenuVacio: (p, x, y, id) => TBPaneles.menuVacio(p, x, y, id),
@@ -649,6 +672,7 @@
     if (e.key === "Shift") TB.L.setMayus(true);
     if (!ctrl && (e.key === "v" || e.key === "V") && !e.repeat) { TB.L.setArriba(true); return; }
     if (!ctrl && (e.key === "q" || e.key === "Q") && TB.L.midiendo()) { e.preventDefault(); TB.L.puntoDeRuta(); return; }
+    if (!ctrl && !e.altKey && (e.key === "x" || e.key === "X") && sel.length) { if (TB.L.ultimaRuta()) { e.preventDefault(); return; } }
     if (!ctrl && (e.key === "b" || e.key === "B") && !e.repeat) { TB.L.setCursorB(true); return; }
     if (!ctrl && e.key === "Home") { TB.L.ajustarVista(); return; }
     if (!ctrl && (e.key === "p" || e.key === "P") && TB.yo.esGM) { TBPaneles.alternarPaginas(); return; }

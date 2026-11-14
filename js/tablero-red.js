@@ -18,7 +18,7 @@
   const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "x" + Date.now().toString(36) + Math.random().toString(36).slice(2));
   const ahora = () => new Date().toISOString();
   const ESTADO_VACIO = () => ({ id: 1, escena_jugadores: null, iniciativa: { lista: [], turno: 0, ronda: 1, visible: false }, musica: {}, gramola: {} });
-  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "camara", "cursor", "sonido", "explorado"];
+  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "fxFin", "camara", "cursor", "sonido", "explorado"];
 
   /* ============================================================ Supabase */
   function redSupabase() {
@@ -170,7 +170,8 @@
       async fichas() {
         const { data, error } = await sb.from("fichas_personajes").select("id, owner_id, data").eq("archivado", false);
         if (error) return [];
-        return (data || []).map(f => ({ id: f.id, owner: f.owner_id, nombre: (f.data && f.data.identidad && f.data.identidad.nombre) || "Sin nombre", combate: f.data && f.data.combate }));
+        return (data || []).map(f => { const id = (f.data && f.data.identidad) || {}; return { id: f.id, owner: f.owner_id, nombre: id.nombre || "Sin nombre", combate: f.data && f.data.combate,
+          retrato: id.retrato || "", raza: id.raza || "", clase: id.clase || "", nivel: id.nivelTotal || null }; });
       },
       emitir(evento, datos) { if (canal && conectado) canal.send({ type: "broadcast", event: evento, payload: datos }).catch(() => {}); },
       presencia(extra) { extraPresencia = Object.assign({}, extraPresencia, extra); if (canal && conectado) canal.track(Object.assign({ uid: yo.uid, nombre: yo.nombre, gm: yo.esGM }, extraPresencia)).catch(() => {}); },
@@ -395,7 +396,7 @@
       async subirPropio(archivo) { return this.subirImagen(archivo); },
       async subirImagen(archivo) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(archivo); }); },
       async jugadores() { return jugadores.slice(); },
-      async fichas() { return [{ id: "local-ficha", owner: JUG, nombre: "Jugador de prueba", combate: { pvActual: 18, pvMax: 24, pvTemp: 0 } }]; },
+      async fichas() { return [{ id: "local-ficha", owner: JUG, nombre: "Jugador de prueba", combate: { pvActual: 18, pvMax: 24, pvTemp: 0 }, retrato: "", raza: "Humano", clase: "Guerrero", nivel: 3 }]; },
       emitir(evento, x) { if (bc) bc.postMessage({ evento, x }); },
       presencia(extra) { setTimeout(() => ev.lanzar("presencia", [Object.assign({ uid: yo.uid, nombre: yo.nombre, gm: yo.esGM }, extra)]), 0); },
       async fichaCompleta() { return null; },

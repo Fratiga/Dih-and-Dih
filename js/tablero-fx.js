@@ -1,6 +1,6 @@
 /* =============================================================================
    TABLERO — efectos (FX) con partículas: los tipos y colores del panel de Efectos de Roll20.
-   Modo "apuntar": se arrastra de un punto a otro. "clic": en un punto. "espera": se queda un rato en un punto.
+   Modo "apuntar": se arrastra de un punto a otro. "clic": en un punto. "mantener": sigue mientras se mantiene pulsado el clic.
    Solo anima mientras hay partículas (nada de bucles en reposo).
 ============================================================================= */
 (function () {
@@ -8,14 +8,14 @@
     { id: "aliento", nombre: "Aliento", modo: "apuntar" },
     { id: "haz", nombre: "Haz", modo: "apuntar" },
     { id: "cohete", nombre: "Cohete", modo: "apuntar" },
-    { id: "quemar", nombre: "Quemar", modo: "espera" },
-    { id: "brillo", nombre: "Brillo", modo: "espera" },
-    { id: "destello", nombre: "Destello", modo: "espera" },
-    { id: "escudo", nombre: "Escudo", modo: "espera" },
+    { id: "quemar", nombre: "Quemar", modo: "mantener" },
+    { id: "brillo", nombre: "Brillo", modo: "mantener" },
+    { id: "destello", nombre: "Destello", modo: "mantener" },
+    { id: "escudo", nombre: "Escudo", modo: "mantener" },
     { id: "bomba", nombre: "Bomba", modo: "clic" },
     { id: "explotar", nombre: "Explotar", modo: "clic" },
-    { id: "rafaga", nombre: "Ráfaga", modo: "espera" },
-    { id: "burbujeante", nombre: "Burbujeante", modo: "espera" },
+    { id: "rafaga", nombre: "Ráfaga", modo: "mantener" },
+    { id: "burbujeante", nombre: "Burbujeante", modo: "mantener" },
     { id: "estrella", nombre: "Estrella nueva", modo: "clic" },
     { id: "salpicar", nombre: "Salpicar", modo: "apuntar" },
     { id: "agrupacion", nombre: "Agrupación", modo: "clic" },
@@ -167,13 +167,33 @@
       }
     }
 
+    const mantenidos = new Map();
     return {
       reproducir(d) {
         const c = COLORES.find(x => x.id === d.color) || COLORES[0];
         const f = comportamientos[d.tipo] || comportamientos.explotar;
         const s = d.escala || 1;
-        lanzarEmisor(f(c, d.a, d.b || d.a, s, d));
+        const e = f(c, d.a, d.b || d.a, s, d);
+        if (d.mantener && d.id) {
+          // Los continuos emiten en cada fotograma; los de un golpe (destello) se repiten cada poco mientras se mantiene
+          const corto = e.dur < 0.5;
+          let espera = 0;
+          const m = { dur: 60, paso(dt) {
+            if (!corto) { e.paso(dt); return; }
+            espera -= dt;
+            if (espera <= 0) { espera = 0.55; e.paso(dt); }
+          } };
+          if (mantenidos.has(d.id)) mantenidos.get(d.id).dur = 0;
+          mantenidos.set(d.id, m);
+          lanzarEmisor(m);
+        } else lanzarEmisor(e);
         if (particulas.length > 2500) particulas.splice(0, particulas.length - 2500);
+      },
+      parar(id) {
+        const m = mantenidos.get(id);
+        if (!m) return;
+        m.dur = 0;
+        mantenidos.delete(id);
       }
     };
   }

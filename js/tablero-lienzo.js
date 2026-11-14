@@ -5,6 +5,17 @@
 ============================================================================= */
 (function () {
   const COLORES_BARRA = ["#5cb85c", "#4f8fd6", "#d9534f"];
+  const COLORES_BURBUJA = ["#78c878", "#7598d0", "#c0201d"];
+  const AZUL_SEL = "#6b84f5";
+  // Rueda dentada de la tuerca (8 dientes) y el icono de estados, dibujados a mano
+  const RUEDA = (() => {
+    let d = "";
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4, p = (r, da) => [Math.cos(a + da) * r, Math.sin(a + da) * r].map(v => v.toFixed(2)).join(" ");
+      d += (i ? "L" : "M") + p(7, -0.32) + "L" + p(10, -0.2) + "L" + p(10, 0.2) + "L" + p(7, 0.32) + "L" + p(7, Math.PI / 4 - 0.32);
+    }
+    return d + "Z M3.2 0A3.2 3.2 0 1 0 -3.2 0A3.2 3.2 0 1 0 3.2 0Z";
+  })();
   const CAPAS = ["mapa", "fichas", "gm", "delantero", "luz"];
   const SUPA = "supabase.co";
 
@@ -61,8 +72,8 @@
     const pintorLuz = window.TBLuz ? TBLuz.crearPintor() : null;
 
     const tr = new Konva.Transformer({
-      rotateEnabled: true, keepRatio: false, ignoreStroke: true, anchorSize: 11, borderStroke: "#d6127e", anchorStroke: "#d6127e",
-      anchorCornerRadius: 2, rotationSnaps: [0, 45, 90, 135, 180, 225, 270, 315], rotationSnapTolerance: 6, flipEnabled: false,
+      rotateEnabled: false, keepRatio: false, ignoreStroke: true, anchorSize: 9, borderStroke: AZUL_SEL, borderStrokeWidth: 1.5, anchorStroke: AZUL_SEL, anchorFill: AZUL_SEL,
+      anchorStrokeWidth: 1, anchorCornerRadius: 0, rotationSnaps: [0, 45, 90, 135, 180, 225, 270, 315], rotationSnapTolerance: 6, flipEnabled: false,
       boundBoxFunc: (viejo, nuevo) => (Math.abs(nuevo.width) < 8 || Math.abs(nuevo.height) < 8 ? viejo : nuevo)
     });
     lUI.add(tr);
@@ -70,7 +81,7 @@
     const guiasRemotas = new Konva.Group({ listening: false });
     const pings = new Konva.Group({ listening: false });
     const vistaPrevia = new Konva.Group({ listening: false });
-    const marco = new Konva.Rect({ visible: false, fill: "rgba(214,18,126,.08)", stroke: "#d6127e", strokeWidth: 1, dash: [4, 3], listening: false });
+    const marco = new Konva.Rect({ visible: false, fill: "rgba(107,132,245,.1)", stroke: AZUL_SEL, strokeWidth: 1, listening: false });
     lUI.add(guiasRemotas, guiaMedida, vistaPrevia, pings, marco);
 
     const st = {
@@ -193,21 +204,39 @@
         bucleAnim.start();
       } else if (!hay && bucleAnim) { bucleAnim.stop(); bucleAnim = null; lAnim.batchDraw(); }
     }
+    // Figuras dibujadas (24 × 24) para las notas y los palos de las cartas; sin caracteres que el sistema pinte como emoji
+    let FIG = null;
+    function figura(c, nombre, px, py, tam, relleno, borde) {
+      if (!FIG) FIG = {
+        corchea: new Path2D("M11 3v12.3A3.5 3.5 0 1 0 13 18V7.5c2 .3 4 1.7 5 4 .3-3.4-2.5-6.5-7-8.5z"),
+        doble: new Path2D("M8 5.2L20 3v12.6A3.2 3.2 0 1 1 18 12.8V7.4l-8 1.5v8.9A3.2 3.2 0 1 1 8 15z"),
+        negra: new Path2D("M13 2v13.4A3.6 3.6 0 1 0 15 18.6V2z"),
+        semi: new Path2D("M10 3v12.4A3.5 3.5 0 1 0 12 18.5V9c2 .2 4 1.2 5 3 .2-1.6-.4-3-1.4-4 1 0 1.8.4 2.4 1 .2-3-2.6-5-8-6z"),
+        pica: new Path2D("M12 2s8 6 8 11a4 4 0 0 1-6.6 3L15 21H9l1.6-5A4 4 0 0 1 4 13c0-5 8-11 8-11z"),
+        diamante: new Path2D("M12 2l7 10-7 10-7-10z"),
+        trebol: new Path2D("M12 2a4 4 0 0 0-3.4 6.1A4 4 0 1 0 10.6 15.6L9 21h6l-1.6-5.4a4 4 0 1 0 2-7.5A4 4 0 0 0 12 2z"),
+        corazon: new Path2D("M12 21s-8.5-5.4-8.5-11.2A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8.5 2.8C20.5 15.6 12 21 12 21z"),
+        estrella: new Path2D("M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8z")
+      };
+      c.save();
+      c.translate(px, py); c.scale(tam / 24, tam / 24); c.translate(-12, -12);
+      if (borde) { c.lineWidth = 2.4; c.lineJoin = "round"; c.strokeStyle = borde; c.stroke(FIG[nombre]); }
+      c.fillStyle = relleno; c.fill(FIG[nombre]);
+      c.restore();
+    }
     function dibujarAnimado(c, id, x, y, R, t) {
       c.save();
       if (id === "casteo_notas") {
         // Notas musicales moradas girando alrededor
-        const notas = ["♪", "♫", "♬", "♩"], tonos = ["#b57bff", "#d9b3ff", "#9b59ff", "#c38dff"];
+        const notas = ["corchea", "doble", "semi", "negra"], tonos = ["#b57bff", "#d9b3ff", "#9b59ff", "#c38dff"];
         c.globalAlpha = 0.18; c.strokeStyle = "#b57bff"; c.lineWidth = R * 0.05;
         c.beginPath(); c.ellipse(x, y, R * 1.28, R * 1.08, 0, 0, Math.PI * 2); c.stroke();
         c.globalAlpha = 0.95; c.textAlign = "center"; c.textBaseline = "middle";
         for (let i = 0; i < 6; i++) {
           const a = t * 0.9 + i * Math.PI / 3, rr = R * (1.28 + Math.sin(t * 2 + i) * 0.06);
           const px = x + Math.cos(a) * rr, py = y + Math.sin(a) * rr * 0.85 + Math.sin(t * 3.2 + i * 1.3) * R * 0.08;
-          const tam = R * (0.38 + 0.06 * Math.sin(t * 2.6 + i));
-          c.font = `bold ${tam}px "Segoe UI Symbol", "Noto Sans Symbols", serif`;
-          c.lineWidth = Math.max(1, tam * 0.1); c.strokeStyle = "rgba(40,10,70,.75)"; c.strokeText(notas[i % 4], px, py);
-          c.fillStyle = tonos[i % 4]; c.fillText(notas[i % 4], px, py);
+          const tam = R * (0.42 + 0.06 * Math.sin(t * 2.6 + i));
+          figura(c, notas[i % 4], px, py, tam, tonos[i % 4], "rgba(40,10,70,.75)");
         }
       } else if (id === "casteo_cartas") {
         // Cartas moradas barajándose en órbita: se acercan, se alejan y se dan la vuelta
@@ -226,8 +255,7 @@
             c.fillStyle = "#b57bff"; c.fill();
           } else {
             c.fillStyle = "#f6efff"; c.fill(); c.lineWidth = w * 0.08; c.strokeStyle = "#7d3cc9"; c.stroke();
-            c.fillStyle = "#7d3cc9"; c.font = `bold ${h * 0.42}px serif`; c.textAlign = "center"; c.textBaseline = "middle";
-            c.fillText(["♠", "♦", "♣", "♥", "★"][i], 0, h * 0.02);
+            figura(c, ["pica", "diamante", "trebol", "corazon", "estrella"][i], 0, 0, h * 0.5, "#7d3cc9");
           }
           c.restore();
         }
@@ -327,6 +355,14 @@
       etq.add(new Konva.Tag({ fill: "#e8641c", cornerRadius: 4 }));
       etq.add(new Konva.Text({ text: texto, fontSize: 15, fontStyle: "bold", fill: "#fff", padding: 5 }));
       guiaMedida.add(etq);
+    }
+    // Centro de la ficha bajo el punto o, si no hay ninguna, de la casilla
+    function centroFx(p) {
+      const bajo = [...st.nodos.values()].filter(n => n.g.visible() && n.o.tipo === "imagen" && (n.o.capa === "fichas" || (st.esGM && n.o.capa === "gm"))
+        && Math.abs(p.x - n.o.x) <= n.o.ancho / 2 && Math.abs(p.y - n.o.y) <= n.o.alto / 2).sort((a, b) => (b.o.z || 0) - (a.o.z || 0));
+      if (bajo.length) return { x: bajo[0].o.x, y: bajo[0].o.y };
+      const t = tam(), d0 = desp();
+      return { x: Math.floor((p.x - d0.x) / t) * t + t / 2 + d0.x, y: Math.floor((p.y - d0.y) / t) * t + t / 2 + d0.y };
     }
     function previaFx(a, p) {
       const fp = st.opc.fxPrevia || {};
@@ -526,20 +562,23 @@
       if (!lista.length || o.tipo === "pin" || o.tipo === "luz") return;
       const s = Math.max(11, Math.min(22, Math.min(o.ancho, o.alto) * 0.27));
       const porFila = Math.max(1, Math.floor(o.ancho / (s + 1)));
-      lista.forEach((e, i) => {
-        const def = cat.find(c => c.id === e.id) || { e: "❔" };
-        if (e.id === "muerto") {
-          const w = o.ancho / 2 * 0.85, h = o.alto / 2 * 0.85;
-          n.deco.add(new Konva.Line({ points: [-w, -h, w, h], stroke: "#d32f2f", strokeWidth: Math.max(3, o.ancho * 0.07), lineCap: "round", opacity: 0.9 }));
-          n.deco.add(new Konva.Line({ points: [w, -h, -w, h], stroke: "#d32f2f", strokeWidth: Math.max(3, o.ancho * 0.07), lineCap: "round", opacity: 0.9 }));
-        }
+      if (lista.some(e => e.id === "muerto")) {
+        const w = o.ancho / 2 * 0.85, h = o.alto / 2 * 0.85;
+        n.deco.add(new Konva.Line({ points: [-w, -h, w, h], stroke: "#d32f2f", strokeWidth: Math.max(3, o.ancho * 0.07), lineCap: "round", opacity: 0.9 }));
+        n.deco.add(new Konva.Line({ points: [w, -h, -w, h], stroke: "#d32f2f", strokeWidth: Math.max(3, o.ancho * 0.07), lineCap: "round", opacity: 0.9 }));
+      }
+      lista.filter(e => e.id !== "muerto" && (cat.find(c => c.id === e.id) || {}).id).forEach((e, i) => {
+        const def = cat.find(c => c.id === e.id);
         const fila = Math.floor(i / porFila), col = i % porFila;
         const cx = o.ancho / 2 - s / 2 - col * (s + 1), cy = -o.alto / 2 + s / 2 + fila * (s + 1);
         const g = new Konva.Group({ x: cx, y: cy, listening: false });
         if (def.color) g.add(new Konva.Circle({ radius: s * 0.42, fill: def.color, stroke: "#fff", strokeWidth: 1.5 }));
         else {
-          g.add(new Konva.Circle({ radius: s / 2, fill: "rgba(255,255,255,.92)", stroke: "rgba(0,0,0,.35)", strokeWidth: 1 }));
-          g.add(new Konva.Text({ text: def.e, fontSize: s * 0.68, width: s, align: "center", x: -s / 2, y: -s * 0.36 }));
+          const d = def.ic && window.TBMarcas && window.TBMarcas[def.ic];
+          if (e.id === "muerto" || !d) return;
+          g.add(new Konva.Circle({ radius: s / 2, fill: "rgba(255,255,255,.94)", stroke: "rgba(0,0,0,.35)", strokeWidth: 1 }));
+          const q = s * 0.72 / 512;
+          g.add(new Konva.Path({ data: d, fill: "#111", scaleX: q, scaleY: q, x: -s * 0.36, y: -s * 0.36 }));
         }
         if (e.n != null && e.n !== "") {
           const t = new Konva.Text({ text: String(e.n), fontSize: s * 0.55, fontStyle: "bold", fill: "#fff", stroke: "#000", strokeWidth: 0.6, x: s * 0.05, y: s * 0.02 });
@@ -639,39 +678,89 @@
       selUI.destroyChildren();
       const ids = [...st.seleccion];
       const n = ids.length === 1 && st.nodos.get(ids[0]);
-      if (!n || st.herr !== "seleccionar" || n.o.tipo !== "imagen" || n.o.capa === "luz" || !(st.esGM || controla(n.o))) { tr.rotateAnchorOffset(50); lUI.batchDraw(); return; }
+      if (!n || st.herr !== "seleccionar" || n.o.tipo !== "imagen" || n.o.capa === "luz" || !(st.esGM || controla(n.o))) { lUI.batchDraw(); return; }
       const o = n.o, z = zoom(), k = 1 / z, d = o.datos || {};
       const barras = [0, 1, 2].map(i => Object.assign({ valor: "", max: "" }, (d.barras || [])[i]));
       const nb = (d.barras || []).filter(b => b && Number(b.max) > 0 && (st.esGM || controla(o) || b.ver)).length;
       const hb = d.barraEstilo === "compacto" ? 6 : 11;
       const ocupaArriba = d.barraPos === "debajo" ? 0 : nb * hb;
-      const yArriba = o.y - o.alto / 2 - ocupaArriba - 22 * k;
-      tr.rotateAnchorOffset(Math.round(ocupaArriba * z + 62));
+      const yArriba = o.y - o.alto / 2 - ocupaArriba - 62 * k;
+      const boton = (x, y, titulo, cursor) => {
+        const g = new Konva.Group({ x, y, scaleX: k, scaleY: k, name: "selui-b" });
+        g.on("mouseenter", () => { contenedor.style.cursor = cursor; if (titulo) contenedor.title = titulo; });
+        g.on("mouseleave", () => { contenedor.style.cursor = ""; contenedor.title = ""; });
+        selUI.add(g);
+        return g;
+      };
+      const disco = (g, anillo) => {
+        g.add(new Konva.Circle({ radius: 18, fill: "#fff", shadowColor: "#000", shadowBlur: 6, shadowOffsetY: 1, shadowOpacity: 0.4 }));
+        if (anillo) g.add(new Konva.Circle({ radius: 16.5, fill: anillo }));
+        g.add(new Konva.Circle({ radius: anillo ? 13 : 16.5, fill: "#222" }));
+      };
       barras.forEach((b, i) => {
         // Orden de Roll20: rojo (barra 3) a la izquierda, verde (barra 1) en medio, azul (barra 2) a la derecha
         const lugar = [0, 1, -1][i];
-        const g = new Konva.Group({ x: o.x + lugar * 36 * k, y: yArriba, scaleX: k, scaleY: k, name: "selui-b" });
-        g.add(new Konva.Circle({ radius: 16, fill: "#2b2b2b", stroke: COLORES_BARRA[i], strokeWidth: 3.5, shadowColor: "#000", shadowBlur: 5, shadowOpacity: 0.45 }));
+        const g = boton(o.x + lugar * 44 * k, yArriba, "", "text");
+        disco(g, COLORES_BURBUJA[i]);
         const txt = b.valor === "" || b.valor == null ? "" : String(b.valor);
-        g.add(new Konva.Text({ text: txt, fontSize: txt.length > 3 ? 10 : 13, fontStyle: "bold", fill: "#fff", width: 32, align: "center", x: -16, y: txt.length > 3 ? -5 : -6.5, listening: false }));
-        g.on("mouseenter", () => { contenedor.style.cursor = "text"; });
-        g.on("mouseleave", () => { contenedor.style.cursor = ""; });
+        g.add(new Konva.Text({ text: txt, fontSize: txt.length > 3 ? 10 : 13, fontStyle: "bold", fill: "#fff", width: 30, align: "center", x: -15, y: txt.length > 3 ? -5 : -6.5, listening: false }));
         g.on("click tap", ev => { ev.cancelBubble = true; editarBurbuja(n, i, g); });
-        selUI.add(g);
       });
-      const yAbajo = o.y + o.alto / 2 + (d.barraPos === "debajo" ? nb * hb : 0) + 24 * k;
-      [["⚙", -1, "Ajustes de la ficha", () => op.onAbrirAjustes && op.onAbrirAjustes(o.id)],
-       ["◎", 1, "Estados", ev => op.onEstados && op.onEstados(o.id, ev.evt.clientX, ev.evt.clientY)]].forEach(([icono, lado, titulo, f]) => {
-        const g = new Konva.Group({ x: o.x + lado * Math.max(o.ancho / 2 - 4, 22 * k), y: yAbajo, scaleX: k, scaleY: k, name: "selui-b" });
-        g.add(new Konva.Circle({ radius: 17, fill: "#2b2b2b", stroke: "#fff", strokeWidth: 2.5, shadowColor: "#000", shadowBlur: 5, shadowOpacity: 0.45 }));
-        g.add(new Konva.Text({ text: icono, fontSize: icono === "⚙" ? 19 : 20, fill: "#fff", width: 34, align: "center", x: -17, y: icono === "⚙" ? -10 : -11, listening: false }));
-        g.on("mouseenter", () => { contenedor.style.cursor = "pointer"; contenedor.title = titulo; });
-        g.on("mouseleave", () => { contenedor.style.cursor = ""; contenedor.title = ""; });
-        g.on("click tap", ev => { ev.cancelBubble = true; f(ev); });
-        selUI.add(g);
-      });
+      // Debajo, abajo a la izquierda: la tuerca y, algo más abajo y hacia el centro, los estados
+      const yAbajo = o.y + o.alto / 2 + (d.barraPos === "debajo" ? nb * hb : 0);
+      const dx = Math.max(o.ancho * 0.27, 36 * k);
+      const tuerca = boton(o.x - dx, yAbajo + 44 * k, "Ajustes de la ficha", "pointer");
+      disco(tuerca);
+      tuerca.add(new Konva.Path({ data: RUEDA, fill: "#fff", fillRule: "evenodd", listening: false }));
+      tuerca.on("click tap", ev => { ev.cancelBubble = true; if (op.onAbrirAjustes) op.onAbrirAjustes(o.id); });
+      const est = boton(o.x, yAbajo + 54 * k, "Estados", "pointer");
+      disco(est);
+      est.add(new Konva.Circle({ radius: 9, stroke: "#fff", strokeWidth: 2, listening: false }));
+      est.add(new Konva.Circle({ radius: 4.6, stroke: "#fff", strokeWidth: 2, listening: false }));
+      est.add(new Konva.Arc({ innerRadius: 4.6, outerRadius: 9, angle: 80, rotation: -130, fill: "#fff", listening: false }));
+      est.on("click tap", ev => { ev.cancelBubble = true; if (op.onEstados) op.onEstados(o.id, ev.evt.clientX, ev.evt.clientY); });
+      // Punto azul para girar, arriba a la derecha y fuera del marco (solo si el marco tiene tiradores)
+      if (tr.nodes().length === 1 && tr.nodes()[0] === n.g) {
+        const rad = (o.rot || 0) * Math.PI / 180, lx = o.ancho / 2 + 18 * k, ly = -o.alto / 2 - 20 * k;
+        const giro = boton(o.x + lx * Math.cos(rad) - ly * Math.sin(rad), o.y + lx * Math.sin(rad) + ly * Math.cos(rad), "Girar (Mayús: de 15 en 15 grados)", "grab");
+        giro.add(new Konva.Circle({ radius: 8, fill: AZUL_SEL }));
+        giro.add(new Konva.Circle({ radius: 14, fill: "transparent" }));
+        giro.on("mousedown touchstart", ev => { ev.cancelBubble = true; empezarGiro(n, ev); });
+      }
       selUI.moveToTop();
       lUI.batchDraw();
+    }
+    // Girar con el punto azul: el ángulo sigue al ratón alrededor del centro de la ficha
+    function empezarGiro(n, ev) {
+      const o = n.o, p0 = punteroMundo(), r0 = n.g.rotation();
+      const a0 = Math.atan2(p0.y - o.y, p0.x - o.x);
+      n.transformando = true;
+      contenedor.style.cursor = "grabbing";
+      const mover = e => {
+        stage.setPointersPositions(e);
+        const p = punteroMundo();
+        let ang = r0 + (Math.atan2(p.y - o.y, p.x - o.x) - a0) * 180 / Math.PI;
+        ang = ((ang % 360) + 360) % 360;
+        if (e.shiftKey) ang = Math.round(ang / 15) * 15;
+        else { const cerca = Math.round(ang / 45) * 45; if (Math.abs(cerca - ang) < 6) ang = cerca; }
+        n.g.rotation(ang % 360);
+        selUI.destroyChildren();
+        tr.forceUpdate();
+        lObj.batchDraw(); lUI.batchDraw();
+      };
+      const soltar = () => {
+        window.removeEventListener("pointermove", mover);
+        window.removeEventListener("pointerup", soltar);
+        contenedor.style.cursor = "";
+        n.transformando = false;
+        const rot = Math.round(n.g.rotation() * 100) / 100;
+        if (rot !== (o.rot || 0)) { o.rot = rot; programarLuz(); if (op.onCambiar) op.onCambiar(o.id, { rot }); }
+        tr.forceUpdate();
+        pintarSeleccionUI();
+      };
+      window.addEventListener("pointermove", mover);
+      window.addEventListener("pointerup", soltar);
+      if (ev.evt && ev.evt.preventDefault) ev.evt.preventDefault();
     }
     function editarBurbuja(n, i, g) {
       const abs = g.getAbsolutePosition();
@@ -712,7 +801,7 @@
       vistaPrevia.find(".sel").forEach(x => x.destroy());
       if (!transformables) nodos.forEach(n => {
         const r = n.g.getClientRect({ relativeTo: stage });
-        vistaPrevia.add(new Konva.Rect({ name: "sel", x: r.x - 2, y: r.y - 2, width: r.width + 4, height: r.height + 4, stroke: "#d6127e", strokeWidth: 1.5 / zoom(), dash: [5, 3] }));
+        vistaPrevia.add(new Konva.Rect({ name: "sel", x: r.x - 2, y: r.y - 2, width: r.width + 4, height: r.height + 4, stroke: AZUL_SEL, strokeWidth: 1.5 / zoom() }));
       });
       lUI.batchDraw();
       pintarSeleccionUI();
@@ -781,8 +870,8 @@
         m.arrastrando = false;
         m.g.opacity(m.o.opacidad == null ? 1 : m.o.opacidad);
         m.o.x = p.x; m.o.y = p.y;
-        if (Math.hypot(p.x - ini.x, p.y - ini.y) > 0.5) { animarRuta(m, camino); movidos.push({ o: m.o, ruta: camino }); }
-        else { m.g.position(p); m.deco.position(p); m.aura.position(p); }
+        m.g.position(p); m.deco.position(p); m.aura.position(p);
+        if (Math.hypot(p.x - ini.x, p.y - ini.y) > 0.5) { m.ultimaRuta = [{ x: ini.x, y: ini.y }].concat(camino); movidos.push({ o: m.o, ruta: camino }); }
       });
       a.fantasma.destroy();
       st.arrastre = null;
@@ -797,8 +886,9 @@
         if (op.onMovido) op.onMovido(o);
       });
     }
-    // La ficha recorre la ruta (con sus paradas) a velocidad fija, como en Roll20; el tablero solo se anima mientras tanto
-    const SEG_POR_CASILLA = 0.12;
+    // En las pantallas de los demás la ficha recorre la ruta (con sus paradas) en el mismo tiempo sea cual sea la distancia,
+    // como en Roll20; el tablero solo se anima mientras tanto
+    const DUR_RUTA = 1.5;
     function animarRuta(m, puntos) {
       if (m.anim) { m.anim.stop(); m.anim = null; }
       const tramos = [];
@@ -807,10 +897,12 @@
       const fin = puntos[puntos.length - 1];
       const poner = p => { m.g.position(p); m.deco.position(p); m.aura.position(p); };
       if (total < 0.5) { poner(fin); return; }
-      const dur = Math.min(2.5, Math.max(0.2, total / tam() * SEG_POR_CASILLA));
+      const dur = DUR_RUTA;
       const t0 = performance.now();
       let ultimaLuz = 0;
       m.animando = true;
+      // Los botones de la selección vuelven cuando la ficha llega
+      if (st.seleccion.has(m.o.id)) selUI.destroyChildren();
       const anim = new Konva.Animation(fr => {
         const f = Math.min(1, (performance.now() - t0) / 1000 / dur);
         let dist = f * total, i = 0;
@@ -1156,7 +1248,12 @@
         return;
       }
       if (st.herr === "medida") { gesto = { tipo: "medida", inicio: ajustarPunto(p) }; return; }
-      if (st.herr === "fx") { gesto = { tipo: "fx", inicio: p }; return; }
+      if (st.herr === "fx") {
+        const a = centroFx(p);
+        gesto = { tipo: "fx", inicio: a };
+        if ((st.opc.fxPrevia || {}).modo === "mantener") { gesto.mantener = true; previaFx(a, a); if (op.onFxMantener) op.onFxMantener(a); }
+        return;
+      }
       if (st.herr === "niebla") {
         if ((st.opc.niebla || {}).forma === "poligono") {
           gesto = gesto && gesto.tipo === "nieblaPoli" ? gesto : { tipo: "nieblaPoli", puntos: [] };
@@ -1217,9 +1314,11 @@
         return;
       }
       if (gesto.tipo === "fx") {
-        if (op.onFxPrevia) op.onFxPrevia(gesto.inicio, p);
-        gesto.fin = p;
-        previaFx(gesto.inicio, p);
+        if (gesto.mantener) return;
+        const fin = (st.opc.fxPrevia || {}).modo === "apuntar" ? centroFx(p) : p;
+        if (op.onFxPrevia) op.onFxPrevia(gesto.inicio, fin);
+        gesto.fin = fin;
+        previaFx(gesto.inicio, fin);
         return;
       }
       if (gesto.tipo === "niebla") {
@@ -1301,7 +1400,12 @@
       }
       if (g.tipo === "fx") {
         gesto = null;
-        const fp = st.opc.fxPrevia || {}, fin = g.fin || p;
+        const fp = st.opc.fxPrevia || {}, fin = g.fin || (fp.modo === "apuntar" ? centroFx(p) : p);
+        if (g.mantener) {
+          if (op.onFxFin) op.onFxFin();
+          if (!st.opc.persistente) { guiaMedida.destroyChildren(); lUI.batchDraw(); if (op.onRegla) op.onRegla(null); }
+          return;
+        }
         const L = Math.hypot(fin.x - g.inicio.x, fin.y - g.inicio.y);
         // En los efectos de área, arrastrar marca el radio; un clic usa el tamaño del panel
         const radio = fp.modo !== "apuntar" && L * zoom() > 8 ? radioArrastrado(L) : null;
@@ -1435,6 +1539,7 @@
         if (Array.isArray(ruta) && ruta.length > 1) {
           const puntos = [{ x: n.g.x(), y: n.g.y() }].concat(ruta.slice(1, -1), [{ x, y }]);
           n.o.x = x; n.o.y = y;
+          n.ultimaRuta = puntos;
           animarRuta(n, puntos);
           return;
         }
@@ -1445,6 +1550,17 @@
         if (st.seleccion.has(id)) setTimeout(() => { tr.forceUpdate(); actualizarTransformer(); }, 100);
       },
       reglaRemota, ping,
+      // Tecla X: la última ruta de las fichas seleccionadas, unos segundos
+      ultimaRuta() {
+        const rutas = [...st.seleccion].map(id => st.nodos.get(id)).filter(n => n && n.ultimaRuta && n.ultimaRuta.length > 1);
+        if (!rutas.length) return false;
+        guiaMedida.destroyChildren();
+        rutas.forEach(n => dibujarRuta(guiaMedida, n.ultimaRuta, "#d6127e", false));
+        lUI.batchDraw();
+        clearTimeout(st.relojRuta);
+        st.relojRuta = setTimeout(() => { if (!st.arrastre && !gesto) { guiaMedida.destroyChildren(); lUI.batchDraw(); } }, 4000);
+        return true;
+      },
       limpiarMedida() { guiaMedida.destroyChildren(); lUI.batchDraw(); },
       cancelarGesto() { gesto = null; vistaPrevia.find(".previa").forEach(x => x.destroy()); lUI.batchDraw(); },
       terminarPoligono() { if (gesto && gesto.tipo === "nieblaPoli") terminarPoligonoNiebla(); if (gesto && gesto.tipo === "pluma") terminarPluma(gesto.puntos); },

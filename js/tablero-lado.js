@@ -117,6 +117,24 @@
       <textarea placeholder="Escribe aquí. Intro para enviar, Mayús+Intro para otra línea."></textarea>
       <div class="tb-chat-pie"><label>Como:</label><select data-como></select><button type="button" class="tb-btn tb-btn-gif" data-gif title="Mis GIFs">GIF</button><button type="button" class="tb-btn" data-enviar>Enviar</button></div></div>`);
     c.append(lista, entrada);
+    // Estrella de los GIFs del chat: vacía si no lo tienes guardado; un clic lo guarda en «Mis GIFs» y otro lo quita
+    lista.addEventListener("click", async e => {
+      const b = e.target.closest(".tb-gif-estrella");
+      if (!b) return;
+      e.preventDefault(); e.stopPropagation();
+      const u = b.parentNode.dataset.gif;
+      if (!u || b.disabled) return;
+      b.disabled = true;
+      try {
+        await cargarGifs();
+        const g = (gifs || []).find(x => x.url === u);
+        if (g) { await TB.red.borrarGif(g.id); gifs = gifs.filter(x => x.id !== g.id); aviso("Quitado de Mis GIFs."); }
+        else { const n = await TB.red.agregarGif({ url: u, nombre: "" }); gifs = [n].concat(gifs || []); aviso("Guardado en Mis GIFs."); }
+        marcarEstrellas();
+      } catch (err) { aviso(/tablero_gifs/.test(String(err && err.message)) ? "Falta volver a correr tablero.sql para guardar GIFs." : mensajeError(err), true); }
+      finally { b.disabled = false; }
+    });
+    cargarGifs().then(marcarEstrellas).catch(() => {});
     const ta = entrada.querySelector("textarea");
     const enviar = async () => {
       const t = ta.value.trim();
@@ -203,7 +221,7 @@
     const enlinea = (m.tirada && m.tirada.enlinea) || [];
     let cuerpoTxt = esc(t.replace(/^\/(em|desc)\s+/i, ""));
     const medio = !m.tirada && !emote && !desc ? medioDe(t) : null;
-    if (medio) cuerpoTxt = medioHtml(medio);
+    if (medio) cuerpoTxt = medio.tipo === "enlace" ? medioHtml(medio) : `<span class="tb-msg-medio-caja" data-gif="${esc(t.trim())}">${medioHtml(medio)}<button type="button" class="tb-gif-estrella${gifs && gifs.some(g => g.url === t.trim()) ? " llena" : ""}" title="Guardar en Mis GIFs">${ESTRELLA}</button></span>`;
     cuerpoTxt = cuerpoTxt.replace(/⟦(\d+)⟧/g, (x, i) => TBDados.enLineaHtml(enlinea[+i]));
     let etq = "";
     if (m.modo === "dj") etq = m.autor === TB.yo.uid && !TB.esGM() ? "Al DJ" : "Tirada / mensaje al DJ";
@@ -243,8 +261,24 @@
     if (md.tipo === "enlace") return `<a class="tb-msg-enlace" href="${esc(md.src)}" target="_blank" rel="noopener noreferrer">▶ Abrir ${esc(md.nombre || "el enlace")} ↗</a>`;
     return `<img class="tb-msg-medio" src="${esc(md.src)}" alt="" loading="lazy" referrerpolicy="no-referrer">`;
   }
-  // «Mis GIFs»: los favoritos de cada uno (en su cuenta). Se añaden pegando el enlace o subiendo el archivo.
-  let gifs = null, filtroGifs = "";
+  // «Mis GIFs»: los favoritos de cada uno (en su cuenta). Se añaden pegando el enlace, subiendo el archivo o con la estrella del chat.
+  let gifs = null, filtroGifs = "", cargandoGifs = null;
+  const ESTRELLA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg>';
+  function cargarGifs() {
+    if (gifs !== null) return Promise.resolve(gifs);
+    if (!cargandoGifs) cargandoGifs = TB.red.gifs().then(l => { gifs = l || []; return gifs; }).finally(() => { cargandoGifs = null; });
+    return cargandoGifs;
+  }
+  function marcarEstrellas() {
+    const lista = cuerpos.chat && cuerpos.chat.querySelector(".tb-chat-lista");
+    if (!lista) return;
+    const guardados = new Set((gifs || []).map(g => g.url));
+    lista.querySelectorAll(".tb-msg-medio-caja").forEach(c => {
+      const b = c.querySelector(".tb-gif-estrella"), si = guardados.has(c.dataset.gif);
+      b.classList.toggle("llena", si);
+      b.title = si ? "Quitar de Mis GIFs" : "Guardar en Mis GIFs";
+    });
+  }
   async function alternarGifs(entrada) {
     let caja = entrada.querySelector(".tb-gifs");
     if (caja) { caja.remove(); return; }
@@ -269,7 +303,7 @@
         item.querySelector(".tb-gif-tapa").addEventListener("click", () => { TB.enviarChat(g.url, cuerpos.chat.querySelector("[data-como]").value || null); caja.remove(); });
         item.querySelector(".tb-gif-quitar").addEventListener("click", async ev => {
           ev.stopPropagation();
-          try { await TB.red.borrarGif(g.id); gifs = gifs.filter(x => x.id !== g.id); pintar(); } catch (e) { aviso(mensajeError(e), true); }
+          try { await TB.red.borrarGif(g.id); gifs = gifs.filter(x => x.id !== g.id); pintar(); marcarEstrellas(); } catch (e) { aviso(mensajeError(e), true); }
         });
         rej.appendChild(item);
       });
@@ -279,7 +313,7 @@
       const md = medioDe(u);
       if (!md) { aviso("Ese enlace no es un GIF ni una imagen que pueda mostrar.", true); return; }
       if (md.tipo === "enlace") { aviso("La página de Klipy no se puede incrustar. Ábrela, haz clic derecho en el GIF y copia la dirección de la imagen: ese enlace sí se mueve.", true); return; }
-      try { const g = await TB.red.agregarGif({ url: u, nombre }); gifs = [g].concat(gifs || []); url.value = ""; pintar(); }
+      try { const g = await TB.red.agregarGif({ url: u, nombre }); gifs = [g].concat(gifs || []); url.value = ""; pintar(); marcarEstrellas(); }
       catch (e) { aviso(mensajeError(e), true); }
     };
     caja.querySelector("[data-anadir]").addEventListener("click", () => anadir(url.value.trim(), ""));
@@ -361,7 +395,7 @@
     const gm = TB.esGM();
     const cab = el(`<div class="tb-pes-cab" style="display:block">
       <input type="search" placeholder="Buscar por etiqueta o nombre…" data-buscar>
-      ${gm ? `<div class="tb-fila" style="margin-top:calc(8px * var(--tb-k))"><button type="button" class="tb-btn" data-nuevo="personaje">＋ Personaje</button><button type="button" class="tb-btn" data-nuevo="nota">＋ Nota</button><span style="flex:1"></span><label class="tb-casilla tb-nota"><input type="checkbox" data-arch> Archivados</label></div>` : ""}</div>`);
+      ${gm ? `<div class="tb-fila" style="margin-top:calc(8px * var(--tb-k))"><button type="button" class="tb-btn" data-nuevo="personaje">＋ Personaje</button><button type="button" class="tb-btn" data-nuevo="nota">＋ Nota</button><button type="button" class="tb-btn" data-traer title="Crear personajes del diario con las fichas de «Mis personajes» de tus jugadores">De Mis personajes</button><span style="flex:1"></span><label class="tb-casilla tb-nota"><input type="checkbox" data-arch> Archivados</label></div>` : ""}</div>`);
     const buscar = cab.querySelector("[data-buscar]");
     buscar.value = filtroDiario;
     buscar.addEventListener("input", () => { filtroDiario = buscar.value; pintarLista(); });
@@ -370,6 +404,7 @@
         try { const e = await TB.red.crearDiario({ tipo: b.dataset.nuevo, nombre: b.dataset.nuevo === "nota" ? "Nueva nota" : "Nuevo personaje", carpeta: b.dataset.nuevo === "nota" ? "Notas" : "Personajes" }); TB.diario.set(e.id, e); editarEntrada(e.id); }
         catch (e) { aviso(mensajeError(e), true); }
       }));
+      cab.querySelector("[data-traer]").addEventListener("click", traerPersonajes);
       const arch = cab.querySelector("[data-arch]");
       arch.checked = verArchivados;
       arch.addEventListener("change", () => { verArchivados = arch.checked; pintarLista(); });
@@ -404,6 +439,39 @@
       });
     }
     pintarLista();
+  }
+
+  // El DJ trae al diario las fichas de «Mis personajes»: nombre, retrato, quién lo controla y el enlace a la ficha
+  async function traerPersonajes() {
+    const [fichas, jugadores] = await Promise.all([TB.red.fichas(), TB.red.jugadores().catch(() => [])]);
+    const nombreDe = uid => (jugadores.find(j => j.uid === uid) || {}).nombre || "Jugador";
+    const ya = new Set([...TB.diario.values()].map(e => e.ficha).filter(Boolean));
+    fichas.sort((a, b) => nombreDe(a.owner).localeCompare(nombreDe(b.owner)) || a.nombre.localeCompare(b.nombre));
+    const c = el(`<div>${fichas.length ? `<p class="tb-nota" style="margin-top:0">Se crea un personaje por ficha, con su retrato. Lo controla y lo ve su dueño.</p>
+      <div class="tb-traer-lista">${fichas.map(f => `<label class="tb-traer-item${ya.has(f.id) ? " ya" : ""}"><input type="checkbox" value="${esc(f.id)}"${ya.has(f.id) ? " disabled" : ""}>
+        <span class="tb-lista-av" style="${f.retrato ? `background:url('${esc(f.retrato)}') center/cover` : "background:#999"}"></span>
+        <span><b>${esc(f.nombre)}</b><small>${esc([f.raza, f.clase, f.nivel ? "nivel " + f.nivel : ""].filter(Boolean).join(" · "))}</small></span>
+        <em>${ya.has(f.id) ? "Ya está en el diario" : esc(nombreDe(f.owner))}</em></label>`).join("")}</div>` : `<p class="tb-nota">Tus jugadores todavía no tienen fichas en «Mis personajes».</p>`}</div>`);
+    modal({ titulo: "Traer de «Mis personajes»", cuerpo: c, ancho: 520, aceptar: fichas.length ? "Traer al diario" : null, alAceptar: async () => {
+      const marcadas = [...c.querySelectorAll("input:checked")].map(i => fichas.find(f => f.id === i.value)).filter(Boolean);
+      if (!marcadas.length) { aviso("Marca al menos una ficha."); return false; }
+      const boton = document.querySelector(".tb-modal [data-aceptar]");
+      if (boton) boton.innerHTML = '<span class="tb-girando"></span> Trayendo…';
+      for (const f of marcadas) {
+        let imagen = f.retrato || "";
+        // Los retratos guardados dentro de la ficha se suben al almacén del tablero (el diario solo guarda enlaces)
+        if (imagen.startsWith("data:")) {
+          try { const b = await (await fetch(imagen)).blob(); imagen = await TB.red.subirImagen(new File([b], "retrato." + ((b.type.split("/")[1] || "png").replace("jpeg", "jpg")), { type: b.type })); }
+          catch (e) { imagen = ""; }
+        }
+        if (imagen.length > 1000) imagen = "";
+        const e = await TB.red.crearDiario({ tipo: "personaje", nombre: f.nombre.slice(0, 80), imagen, carpeta: "Personajes", controladores: [f.owner], ver: [f.owner], ficha: f.id,
+          etiquetas: [f.raza, f.clase].filter(Boolean).map(t => String(t).slice(0, 40)) });
+        TB.diario.set(e.id, e);
+      }
+      aviso(marcadas.length === 1 ? "Personaje añadido al diario." : marcadas.length + " personajes añadidos al diario.");
+      pintarDiario();
+    } });
   }
 
   async function abrirEntrada(id) {
@@ -1285,6 +1353,8 @@
       <tr><td>Copiar / pegar</td><td>Ctrl + C / Ctrl + V</td></tr>
       <tr><td>Deshacer / rehacer</td><td>Ctrl + Z / Ctrl + Y</td></tr>
       <tr><td>Mover una casilla (Mayús: un quinto)</td><td>Flechas</td></tr>
+      <tr><td>Parada de la ruta mientras arrastras una ficha</td><td>Q o clic derecho</td></tr>
+      <tr><td>Ver la última ruta de la ficha seleccionada</td><td>X</td></tr>
       <tr><th colspan="2">Vista</th></tr>
       <tr><td>Centrar la página</td><td>Inicio</td></tr>
       <tr><td>Mis fichas por encima (mientras se pulsa)</td><td>V</td></tr>

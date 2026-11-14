@@ -515,7 +515,7 @@
     f.appendChild(cabFlot("Efectos", true));
     const fx = TB.prefs.fx;
     const c = el(`<div class="tb-flot-cuerpo">
-      <label class="tb-campo"><span style="font-weight:600">Tipo de efecto:</span><select data-tipo>${TBFx.TIPOS.map(t => `<option value="${t.id}">${t.nombre} · ${t.modo === "apuntar" ? "Apuntar" : t.modo === "clic" ? "Haz clic" : "Espera"}</option>`).join("")}</select></label>
+      <label class="tb-campo"><span style="font-weight:600">Tipo de efecto:</span><select data-tipo>${TBFx.TIPOS.map(t => `<option value="${t.id}">${t.nombre} · ${t.modo === "apuntar" ? "Apuntar" : t.modo === "clic" ? "Haz clic" : "Mantener"}</option>`).join("")}</select></label>
       <p class="tb-nota" data-ayuda></p>
       <div class="tb-fila-toggle" style="border:0"><span>Mostrar el trayecto y el área al apuntar</span><span data-mostrar></span></div>
       <div data-tamfx></div>
@@ -525,7 +525,7 @@
     const pintar = () => {
       tipo.value = fx.tipo;
       const t = TBFx.TIPOS.find(x => x.id === fx.tipo) || TBFx.TIPOS[0];
-      ayuda.textContent = t.modo === "apuntar" ? "Arrastra desde el origen hasta el objetivo: verás el área y la distancia." : "Haz clic donde quieras el efecto, o arrastra para ver su área y la distancia.";
+      ayuda.textContent = t.modo === "apuntar" ? "Arrastra desde el origen hasta el objetivo. Sale del centro de la ficha o casilla y llega al centro de la de destino." : t.modo === "mantener" ? "Mantén pulsado el clic: el efecto sigue en el centro de esa ficha o casilla hasta que lo sueltes." : "Haz clic donde quieras el efecto, o arrastra para ver su área y la distancia.";
       c.querySelectorAll("[data-c]").forEach(b => b.classList.toggle("activo", b.dataset.c === fx.color));
     };
     tipo.addEventListener("change", () => { fx.tipo = tipo.value; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); pintar(); pintarExtraFx(); setHerramienta("fx"); });
@@ -551,7 +551,7 @@
       if (tipoAct === "aliento" || tipoAct === "salpicar") fila("Grados del cono", [45, 53, 60, 90], "°", () => fx.grados || 53, v => { fx.grados = Math.min(179, v); });
       else if (tipoAct === "haz") fila("Anchura del haz", [5, 10, 15], "pies", () => fx.hazPies || 5, v => { fx.hazPies = v; });
       else fila(fpAct.modo === "apuntar" ? "Radio del impacto" : "Radio del efecto", [5, 10, 15, 20, 30], "pies", () => (fx.radios || {})[tipoAct] || fpAct.radioPies || 10, v => { fx.radios = Object.assign({}, fx.radios, { [tipoAct]: v }); });
-      if (fpAct.modo !== "apuntar") cajaTam.appendChild(el(`<p class="tb-nota" style="margin:calc(4px * var(--tb-k)) 0 0">También puedes arrastrar desde el centro para marcar el radio a ojo.</p>`));
+      if (fpAct.modo === "clic") cajaTam.appendChild(el(`<p class="tb-nota" style="margin:calc(4px * var(--tb-k)) 0 0">También puedes arrastrar desde el centro para marcar el radio a ojo.</p>`));
     };
     pintarExtraFx();
     c.querySelector(".tb-colores-fx").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (!b) return; fx.color = b.dataset.c; TB.guardarPrefs(); pintar(); setHerramienta("fx"); });
@@ -1147,7 +1147,7 @@
   function itemsEstados(objs) {
     const cat = window.TBEstados || [];
     const tiene = id => objs.length && objs.every(q => ((q.datos || {}).estados || []).some(e => e.id === id));
-    const item = c => ({ texto: (tiene(c.id) ? "✓ " : "") + (c.color ? `<i class="tb-estado-punto" style="background:${c.color}"></i>` : c.e + " ") + c.nombre, accion: async () => {
+    const item = c => ({ texto: (tiene(c.id) ? "✓ " : "") + (c.color ? `<i class="tb-estado-punto" style="background:${c.color}"></i>` : `<i class="tb-estado-sil">${window.TBMarcaSVG(c)}</i>`) + c.nombre, accion: async () => {
       if (tiene(c.id)) { ponerEstados(objs, l => l.filter(e => e.id !== c.id)); return; }
       let n = null;
       if (c.numero) {
@@ -1158,9 +1158,9 @@
       ponerEstados(objs, l => l.filter(e => e.id !== c.id).concat([n == null ? { id: c.id } : { id: c.id, n }]));
     } });
     return [
-      { cab: "Condiciones" }, ...cat.filter(c => !c.color && !c.extra && !c.anim).map(item), "-",
+      { cab: "Condiciones" }, ...cat.filter(c => c.cond).map(item), "-",
       { texto: "Animados", sub: cat.filter(c => c.anim).map(item) },
-      { texto: "Otros", sub: cat.filter(c => c.extra).map(item) },
+      { texto: "Otros", sub: cat.filter(c => !c.cond && !c.color && !c.anim).map(item) },
       { texto: "Puntos de color", sub: cat.filter(c => c.color).map(item) },
       "-",
       { texto: "Quitar todos", peligro: true, apagado: !objs.some(q => ((q.datos || {}).estados || []).length), accion: () => ponerEstados(objs, () => []) }
@@ -1193,9 +1193,9 @@
       const cuerpo = p.querySelector("[data-cuerpo]"), f = filtroEstados.trim().toLowerCase();
       const ver = cat.filter(c => !f || c.nombre.toLowerCase().includes(f));
       const muerto = cat.find(c => c.id === "muerto");
-      cuerpo.innerHTML = `<div class="tb-estados-colores"><span class="tb-estados-ico">◎</span>${ver.filter(c => c.color).map(c => `<button type="button" data-id="${c.id}" class="punto${activo(c) ? " activo" : ""}" style="background:${c.color}" title="${esc(c.nombre)} (clic derecho: con número)">${numeroDe(c) != null && activo(c) ? numeroDe(c) : ""}</button>`).join("")}
-        ${muerto && (!f || muerto.nombre.toLowerCase().includes(f)) ? `<button type="button" data-id="muerto" class="muerto${activo(muerto) ? " activo" : ""}" title="Muerto">✕</button>` : ""}</div>
-        <div class="tb-estados-rejilla">${ver.filter(c => !c.color && c.id !== "muerto").map(c => `<button type="button" data-id="${c.id}" class="${activo(c) ? "activo" : ""}${c.anim ? " anim" : ""}" title="${esc(c.nombre)}${c.anim ? " (animado)" : ""}">${c.e}${numeroDe(c) != null && activo(c) ? `<i>${numeroDe(c)}</i>` : ""}</button>`).join("")}</div>`;
+      cuerpo.innerHTML = `<div class="tb-estados-colores"><span class="tb-estados-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M6.6 9.2A6 6 0 0 1 9.6 6.4L11 9.6A2.6 2.6 0 0 0 9.7 10.6z" fill="currentColor"/></svg></span>${ver.filter(c => c.color).map(c => `<button type="button" data-id="${c.id}" class="punto${activo(c) ? " activo" : ""}" style="background:${c.color}" title="${esc(c.nombre)} (clic derecho: con número)">${numeroDe(c) != null && activo(c) ? numeroDe(c) : ""}</button>`).join("")}
+        ${muerto && (!f || muerto.nombre.toLowerCase().includes(f)) ? `<button type="button" data-id="muerto" class="muerto${activo(muerto) ? " activo" : ""}" title="Muerto">X</button>` : ""}</div>
+        <div class="tb-estados-rejilla">${ver.filter(c => !c.color && c.id !== "muerto").map(c => `<button type="button" data-id="${c.id}" class="${activo(c) ? "activo" : ""}${c.anim ? " anim" : ""}" title="${esc(c.nombre)}${c.anim ? " (animado)" : ""}">${window.TBMarcaSVG(c)}${numeroDe(c) != null && activo(c) ? `<i>${numeroDe(c)}</i>` : ""}</button>`).join("")}</div>`;
       if (!ver.length) cuerpo.innerHTML = `<p class="tb-nota" style="padding:calc(8px * var(--tb-k))">Nada con ese nombre.</p>`;
     };
     p.addEventListener("click", e => { const b = e.target.closest("[data-id]"); if (b) alternar(cat.find(c => c.id === b.dataset.id)); });
