@@ -657,6 +657,45 @@ begin
 end;
 $$;
 
+-- Copiar apariencias (cambiaformas): el jugador cambia la imagen, el nombre y el tinte de su ficha si el DJ le dio
+-- datos.cambiaformas. Se guarda su aspecto original para volver a él. p_ap = null vuelve al original.
+create or replace function tablero_apariencia(p_objeto uuid, p_ap jsonb)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  o tablero_objetos;
+  d jsonb;
+begin
+  if auth.uid() is null then raise exception 'Inicia sesión.'; end if;
+  select * into o from tablero_objetos where id = p_objeto;
+  if not found or o.tipo <> 'imagen' then raise exception 'Esa ficha ya no existe.'; end if;
+  if not fichas_es_admin() then
+    if not ((o.controlan_todos or auth.uid() = any(o.controladores)) and o.capa = 'fichas' and tablero_escena_visible(o.escena)) then raise exception 'Esa ficha no es tuya.'; end if;
+    if not coalesce((o.datos ->> 'cambiaformas')::boolean, false) then raise exception 'Tu ficha no puede cambiar de aspecto.'; end if;
+  end if;
+  d := coalesce(o.datos, '{}'::jsonb);
+  if p_ap is null or jsonb_typeof(p_ap) = 'null' then
+    if d ? 'original' and jsonb_typeof(d -> 'original') = 'object' then
+      d := (d - 'original' - 'disfraz') || (d -> 'original');
+    end if;
+  else
+    if jsonb_typeof(p_ap) <> 'object' or coalesce(p_ap ->> 'src', '') !~ '^(https://|assets/)' or char_length(p_ap ->> 'src') > 1000
+       or char_length(coalesce(p_ap ->> 'nombre', '')) > 80 then
+      raise exception 'Apariencia no válida.';
+    end if;
+    if not (d ? 'original') then
+      d := d || jsonb_build_object('original', jsonb_build_object('src', d -> 'src', 'nombre', d -> 'nombre', 'verNombre', d -> 'verNombre', 'tinte', d -> 'tinte', 'voltearH', d -> 'voltearH'));
+    end if;
+    d := d || jsonb_build_object('src', p_ap -> 'src', 'nombre', coalesce(p_ap -> 'nombre', '""'::jsonb), 'verNombre', coalesce(p_ap -> 'verNombre', 'false'::jsonb),
+      'tinte', coalesce(p_ap -> 'tinte', 'null'::jsonb), 'voltearH', coalesce(p_ap -> 'voltearH', 'false'::jsonb), 'disfraz', 'true'::jsonb);
+  end if;
+  update tablero_objetos set datos = d, actualizado = now() where id = p_objeto;
+end;
+$$;
+
 -- Pasar turno. El GM adelante o atrás; un jugador solo adelante y solo cuando el turno es de una ficha suya.
 create or replace function tablero_turno(p_paso int default 1)
 returns void
@@ -710,6 +749,7 @@ revoke all on function tablero_ficha_pv(uuid, int, int, int) from public, anon;
 revoke all on function tablero_iniciativa_valor(uuid, numeric) from public, anon;
 revoke all on function tablero_puerta(uuid) from public, anon;
 revoke all on function tablero_estados(uuid, jsonb) from public, anon;
+revoke all on function tablero_apariencia(uuid, jsonb) from public, anon;
 grant execute on function tablero_escena_jugadores() to authenticated;
 grant execute on function tablero_escena_visible(uuid) to authenticated;
 grant execute on function tablero_mover(uuid, double precision, double precision) to authenticated;
@@ -724,6 +764,7 @@ grant execute on function tablero_ficha_pv(uuid, int, int, int) to authenticated
 grant execute on function tablero_iniciativa_valor(uuid, numeric) to authenticated;
 grant execute on function tablero_puerta(uuid) to authenticated;
 grant execute on function tablero_estados(uuid, jsonb) to authenticated;
+grant execute on function tablero_apariencia(uuid, jsonb) to authenticated;
 
 -- ============================================================ tiempo real y almacenamiento
 do $$
@@ -753,6 +794,15 @@ create table if not exists tablero_gifs (
   creado timestamptz not null default now()
 );
 create index if not exists tablero_gifs_owner on tablero_gifs (owner, creado desc);
+-- Biblioteca de apariencias copiadas de cada jugador (solo la ve su dueño)
+create table if not exists tablero_apariencias (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  nombre text not null default '' check (char_length(nombre) <= 80),
+  datos jsonb not null check (jsonb_typeof(datos) = 'object' and pg_column_size(datos) <= 4000),
+  creado timestamptz not null default now()
+);
+create index if not exists tablero_apariencias_owner on tablero_apariencias (owner, creado desc);
 -- Como mucho 300 GIFs por persona
 create or replace function tablero_i_tope_gifs()
 returns trigger
@@ -776,6 +826,11 @@ drop policy if exists "tablero_perfil_mio" on tablero_perfil;
 create policy "tablero_perfil_mio" on tablero_perfil for insert to authenticated with check (uid = auth.uid());
 drop policy if exists "tablero_perfil_cambiar" on tablero_perfil;
 create policy "tablero_perfil_cambiar" on tablero_perfil for update to authenticated using (uid = auth.uid()) with check (uid = auth.uid());
+alter table tablero_apariencias enable row level security;
+drop policy if exists "tablero_apariencias_mias" on tablero_apariencias;
+create policy "tablero_apariencias_mias" on tablero_apariencias for all to authenticated using (owner = auth.uid()) with check (owner = auth.uid());
+revoke all on tablero_apariencias from anon;
+grant select, insert, update, delete on tablero_apariencias to authenticated;
 alter table tablero_gifs enable row level security;
 drop policy if exists "tablero_gifs_mios" on tablero_gifs;
 create policy "tablero_gifs_mios" on tablero_gifs for all to authenticated using (owner = auth.uid()) with check (owner = auth.uid());

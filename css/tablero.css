@@ -639,3 +639,9 @@ body.tb.tb-oscuro .tb-dados-iconos button svg { color: #b8bcc4; }
 /* ---------------------------------------------------------------- editar una barra desde su esfera */
 .tb-burbuja-edit { position: absolute; z-index: 30; width: calc(52px * var(--tb-k)); height: calc(30px * var(--tb-k)); border-radius: 999px; border: 3px solid #5cb85c; background: #2b2b2b; color: #fff;
   text-align: center; font: 700 calc(14px * var(--tb-k)) var(--tb-fuente); outline: none; box-shadow: 0 2px 8px rgba(0,0,0,.45); }
+
+/* ---------------------------------------------------------------- mis apariencias */
+.tb-apariencias { display: flex; flex-direction: column; gap: calc(8px * var(--tb-k)); max-height: 60vh; overflow-y: auto; }
+.tb-apariencia { display: flex; align-items: center; gap: calc(10px * var(--tb-k)); padding: calc(6px * var(--tb-k)); border: 1px solid var(--tb-borde); border-radius: calc(6px * var(--tb-k)); }
+.tb-apariencia b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-apariencia-img { width: calc(44px * var(--tb-k)); height: calc(44px * var(--tb-k)); border-radius: 50%; background: var(--tb-gris) center / cover no-repeat; flex: none; }

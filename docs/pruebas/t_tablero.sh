@@ -14,7 +14,7 @@ uno() { como "$1" "$2" | tail -1; }
 echo "== Instalación"
 cargar admin/tablero.sql
 cargar admin/tablero.sql          # se puede repetir sin romper nada
-comprobar "las once tablas existen" "11" "$(sql "select count(*) from pg_tables where tablename like 'tablero\_%'")"
+comprobar "las doce tablas existen" "12" "$(sql "select count(*) from pg_tables where tablename like 'tablero\_%'")"
 comprobar "hay una sola fila de estado" "1" "$(sql "select count(*) from tablero_estado")"
 
 sql "delete from tablero_escenas; delete from tablero_diario; delete from tablero_macros; delete from tablero_arte; truncate tablero_mensajes; insert into tablero_estado (id) values (1) on conflict (id) do nothing; update tablero_estado set escena_jugadores = null, iniciativa = '{\"lista\": [], \"turno\": 0, \"ronda\": 1, \"visible\": false}'" >/dev/null
@@ -201,6 +201,20 @@ comprobar "el jugador marca estados en su ficha" "envenenado|2" "$(sql "select (
 contiene "no en la ficha de otro" "$(como "$U2" "select tablero_estados('$F1', '[]');")" "no es tuya"
 contiene "solo una lista" "$(como "$U1" "select tablero_estados('$F1', '{}');")" "no válidos"
 comprobar "y no toca nada más de la ficha" "Laia" "$(sql "select datos ->> 'nombre' from tablero_objetos where id = '$F1'")"
+
+echo "== Copiar apariencias"
+contiene "sin permiso del DJ no cambia de aspecto" "$(como "$U1" "select tablero_apariencia('$F1', '{\"src\": \"https://x.com/lobo.png\", \"nombre\": \"Lobo\"}');")" "no puede cambiar"
+sql "update tablero_objetos set datos = datos || '{\"cambiaformas\": true, \"src\": \"https://x.com/laia.png\"}' where id = '$F1'" >/dev/null
+como "$U1" "select tablero_apariencia('$F1', '{\"src\": \"https://x.com/lobo.png\", \"nombre\": \"Lobo\", \"verNombre\": true}');" >/dev/null
+comprobar "con permiso toma el aspecto copiado" "https://x.com/lobo.png|Lobo|true" "$(sql "select (datos ->> 'src') || '|' || (datos ->> 'nombre') || '|' || (datos ->> 'verNombre') from tablero_objetos where id = '$F1'")"
+como "$U1" "select tablero_apariencia('$F1', '{\"src\": \"https://x.com/oso.png\", \"nombre\": \"Oso\"}');" >/dev/null
+como "$U1" "select tablero_apariencia('$F1', null);" >/dev/null
+comprobar "y vuelve a su aspecto original aunque copie dos veces" "https://x.com/laia.png|Laia|" "$(sql "select (datos ->> 'src') || '|' || (datos ->> 'nombre') || '|' || coalesce(datos ->> 'disfraz', '') from tablero_objetos where id = '$F1'")"
+contiene "otro jugador no cambia su aspecto" "$(como "$U2" "select tablero_apariencia('$F1', null);")" "no es tuya"
+contiene "solo imágenes https o del sitio" "$(como "$U1" "select tablero_apariencia('$F1', '{\"src\": \"javascript:alert(1)\"}');")" "no válida"
+sql "delete from tablero_apariencias" >/dev/null
+como "$U1" "insert into tablero_apariencias (nombre, datos) values ('Lobo', '{\"src\": \"https://x.com/lobo.png\"}');" >/dev/null
+comprobar "la biblioteca de apariencias es solo de su dueño" "1|0" "$(uno "$U1" "select count(*) from tablero_apariencias;")|$(uno "$U2" "select count(*) from tablero_apariencias;")"
 
 echo "== Perfil y GIFs"
 sql "delete from tablero_perfil; delete from tablero_gifs" >/dev/null

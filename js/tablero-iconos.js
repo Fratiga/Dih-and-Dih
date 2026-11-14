@@ -11,6 +11,8 @@
     { id: "concentracion", nombre: "Concentración", e: "🎯", extra: true }, { id: "bendecido", nombre: "Bendecido", e: "✨", extra: true }, { id: "maldito", nombre: "Maldito", e: "🌑", extra: true },
     { id: "sangrando", nombre: "Sangrando", e: "🩸", extra: true }, { id: "ardiendo", nombre: "Ardiendo", e: "🔥", extra: true }, { id: "protegido", nombre: "Protegido", e: "🛡️", extra: true },
     { id: "acelerado", nombre: "Acelerado", e: "🏃", extra: true }, { id: "ralentizado", nombre: "Ralentizado", e: "🐌", extra: true }, { id: "muerto", nombre: "Muerto", e: "💀", extra: true },
+    { id: "casteo_notas", nombre: "Casteo: notas musicales", e: "🎵", anim: true }, { id: "casteo_cartas", nombre: "Casteo: cartas", e: "🃏", anim: true },
+    { id: "fumando", nombre: "Fumando", e: "🚬", anim: true }, { id: "raudo", nombre: "Raudo", e: "💨", anim: true },
     { id: "rojo", nombre: "Punto rojo", color: "#e53935", numero: true }, { id: "azul", nombre: "Punto azul", color: "#1e88e5", numero: true },
     { id: "verde", nombre: "Punto verde", color: "#43a047", numero: true }, { id: "amarillo", nombre: "Punto amarillo", color: "#fdd835", numero: true },
     { id: "morado", nombre: "Punto morado", color: "#8e24aa", numero: true }

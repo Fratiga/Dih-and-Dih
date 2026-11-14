@@ -116,6 +116,10 @@
       async moverPropio(id, x, y) { ok(await sb.rpc("tablero_mover", { p_id: id, p_x: x, p_y: y })); },
       async puerta(id) { return ok(await sb.rpc("tablero_puerta", { p_objeto: id })); },
       async estados(id, lista) { ok(await sb.rpc("tablero_estados", { p_objeto: id, p_estados: lista })); },
+      async apariencia(id, ap) { ok(await sb.rpc("tablero_apariencia", { p_objeto: id, p_ap: ap || null })); },
+      async apariencias() { return ok(await sb.from("tablero_apariencias").select("id, nombre, datos").order("creado", { ascending: false })) || []; },
+      async guardarApariencia(a) { return ok(await sb.from("tablero_apariencias").insert({ nombre: (a.nombre || "").slice(0, 80), datos: a.datos }).select("id, nombre, datos").single()); },
+      async borrarApariencia(id) { ok(await sb.from("tablero_apariencias").delete().eq("id", id)); },
       async barra(id, n, valor, max) { ok(await sb.rpc("tablero_barra", { p_id: id, p_n: n, p_valor: valor, p_max: max })); },
       async crearPropio(escena, tipo, x, y, ancho, alto, datos) {
         return ok(await sb.rpc("tablero_crear_propio", { p_escena: escena, p_tipo: tipo, p_x: x, p_y: y, p_ancho: ancho, p_alto: alto, p_datos: datos }));
@@ -264,6 +268,20 @@
       async guardarNotaGM(objeto, texto) { d.notasGM[objeto] = texto; guardar(); },
       async diarioGM(id) { leer(); return d.diarioGM[id] || ""; },
       async guardarDiarioGM(id, texto) { d.diarioGM[id] = texto; guardar(); },
+      async apariencia(id, ap) {
+        const o = d.objetos.find(q => q.id === id);
+        if (!o || !(yo.esGM || (controla(o) && o.capa === "fichas" && (o.datos || {}).cambiaformas))) throw new Error("Tu ficha no puede cambiar de aspecto.");
+        let dd = Object.assign({}, o.datos);
+        if (!ap) { if (dd.original) { const orig = dd.original; delete dd.original; delete dd.disfraz; dd = Object.assign(dd, orig); } }
+        else {
+          if (!dd.original) dd.original = { src: dd.src, nombre: dd.nombre, verNombre: dd.verNombre, tinte: dd.tinte, voltearH: dd.voltearH };
+          Object.assign(dd, { src: ap.src, nombre: ap.nombre || "", verNombre: !!ap.verNombre, tinte: ap.tinte || null, voltearH: !!ap.voltearH, disfraz: true });
+        }
+        o.datos = dd; publicar("objeto", o);
+      },
+      async apariencias() { try { return JSON.parse(localStorage.getItem("tbAparLocal:" + yo.uid) || "[]"); } catch (e) { return []; } },
+      async guardarApariencia(a) { const l = await this.apariencias(); const n = { id: uuid(), nombre: a.nombre || "", datos: a.datos }; l.unshift(n); localStorage.setItem("tbAparLocal:" + yo.uid, JSON.stringify(l.slice(0, 200))); return n; },
+      async borrarApariencia(id) { localStorage.setItem("tbAparLocal:" + yo.uid, JSON.stringify((await this.apariencias()).filter(x => x.id !== id))); },
       async estados(id, lista) {
         const o = d.objetos.find(q => q.id === id);
         if (!o || !(yo.esGM || (controla(o) && o.capa === "fichas"))) throw new Error("Esa ficha no es tuya.");

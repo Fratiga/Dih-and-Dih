@@ -4,7 +4,7 @@
    páginas (solo GM) y lo que se suelta sobre el tablero. Las pestañas de la derecha están en tablero-lado.js.
 ============================================================================= */
 (function () {
-  const { esc, el, aviso, mensajeError, ventana, ventanas, modal, pedir, confirmar, menu, chips, campoImagen, interruptor } = TBUI;
+  const { esc, el, aviso, mensajeError, ventana, ventanas, modal, cerrarModal, pedir, confirmar, menu, chips, campoImagen, interruptor } = TBUI;
   const I = TBIcono;
   let TB = null;
 
@@ -804,13 +804,15 @@
       const luz = Object.assign({ brillante: 0, tenue: 0 }, d.luz);
       const luzEl = el(`<div><h3 style="font-size:calc(19px * var(--tb-k));margin:calc(6px * var(--tb-k)) 0 calc(12px * var(--tb-k))">Visión e iluminación</h3>
         <div class="tb-fila" style="flex-wrap:wrap;gap:calc(10px * var(--tb-k)) calc(16px * var(--tb-k))">
-          <label class="tb-casilla"><input type="checkbox" data-ve> Tiene visión (los que la controlan ven por sus ojos)</label></div>
+          <label class="tb-casilla"><input type="checkbox" data-ve> Tiene visión (los que la controlan ven por sus ojos)</label>
+          <label class="tb-casilla" title="Quien la controla puede copiar el aspecto de criaturas de su mismo tamaño (clic derecho sobre ellas)"><input type="checkbox" data-cambia> Puede copiar apariencias</label></div>
         <div class="tb-fila" style="margin-top:calc(8px * var(--tb-k))">
           <label class="tb-campo" style="flex:1"><span style="font-weight:400">Visión en la oscuridad (pies)</span><input type="number" min="0" step="5" data-osc></label>
           <label class="tb-campo" style="flex:1"><span style="font-weight:400">Luz brillante que da (pies)</span><input type="number" min="0" step="5" data-lb></label>
           <label class="tb-campo" style="flex:1"><span style="font-weight:400">Luz tenue, más allá (pies)</span><input type="number" min="0" step="5" data-lt></label></div>
         <p class="tb-nota" style="margin:0">Solo cuenta en las páginas con la iluminación dinámica activada. Antorcha: 20 y 20.</p></div>`);
       luzEl.querySelector("[data-ve]").checked = vis.ve !== false;
+      luzEl.querySelector("[data-cambia]").checked = !!d.cambiaformas;
       luzEl.querySelector("[data-osc]").value = vis.oscuridad || 0;
       luzEl.querySelector("[data-lb]").value = luz.brillante || 0;
       luzEl.querySelector("[data-lt]").value = luz.tenue || 0;
@@ -873,6 +875,7 @@
         nd.barraPos = q("[data-bpos]").value;
         nd.barraEstilo = cuerpo.querySelector("input[name=bestilo]:checked").value;
         nd.vision = { ve: q("[data-ve]").checked, oscuridad: Math.max(0, Number(q("[data-osc]").value) || 0) };
+        nd.cambiaformas = q("[data-cambia]").checked;
         const lb = Math.max(0, Number(q("[data-lb]").value) || 0), lt = Math.max(0, Number(q("[data-lt]").value) || 0);
         nd.luz = lb || lt ? { brillante: lb, tenue: lt } : null;
         nd.auras = [...cuerpo.querySelectorAll("[data-aura]")].map(c => ({
@@ -960,9 +963,18 @@
     );
     return items;
   }
-  function menuVacio(p, x, y) {
+  function menuVacio(p, x, y, idBajo) {
     const gm = TB.esGM();
     const items = itemsComunes(p, gm);
+    const objetivo = idBajo && TB.L.objeto(idBajo);
+    if (!gm && objetivo && objetivo.tipo === "imagen" && !TB.controla(objetivo) && (objetivo.datos || {}).src) {
+      const mias = TB.L.objetos().filter(q => q.tipo === "imagen" && TB.controla(q) && (q.datos || {}).cambiaformas && q.id !== objetivo.id);
+      if (mias.length) {
+        const iguales = mias.filter(q => Math.abs(q.ancho - objetivo.ancho) < 1.5 && Math.abs(q.alto - objetivo.alto) < 1.5);
+        items.push("-", iguales.length ? { icono: "copiar", texto: "Copiar apariencia", accion: () => copiarApariencia(iguales[0], objetivo) }
+          : { icono: "copiar", texto: "Copiar apariencia (no es de tu tamaño)", apagado: true });
+      }
+    }
     if (gm) items.push(
       { icono: "grupoPon", texto: "Colocar grupo", accion: () => colocarGrupo(p) },
       { icono: "ping", texto: "Colocar pin", accion: () => colocarPin(p) },
@@ -972,6 +984,50 @@
       { icono: "rehacer", texto: "Rehacer", apagado: !TB.puedeRehacer(), accion: () => TB.rehacer() }
     );
     menu(x, y, items);
+  }
+  /* Apariencias copiadas: se guardan en la biblioteca de cada jugador. Para los demás no hay ningún aviso:
+     solo ven el aspecto nuevo (sin las barras ni las auras de quien lo lleva). */
+  const datosApariencia = o => { const d = o.datos || {}; return { src: d.src, nombre: d.nombre || "", verNombre: !!d.verNombre, tinte: d.tinte || null, voltearH: !!d.voltearH }; };
+  async function copiarApariencia(mia, objetivo) {
+    const ap = datosApariencia(objetivo);
+    try {
+      if (!TB.misApariencias) TB.misApariencias = await TB.red.apariencias().catch(() => []);
+      if (!TB.misApariencias.some(a => a.datos && a.datos.src === ap.src && a.nombre === ap.nombre)) {
+        const g = await TB.red.guardarApariencia({ nombre: ap.nombre || "Sin nombre", datos: ap });
+        TB.misApariencias.unshift(g);
+      }
+      await TB.red.apariencia(mia.id, ap);
+      aviso("Tienes su aspecto. Queda guardado en tus apariencias (clic derecho en tu ficha).");
+    } catch (e) { aviso(/tablero_apariencia/.test(String(e && e.message)) ? "Falta volver a correr tablero.sql." : mensajeError(e), true); }
+  }
+  function itemsApariencias(o) {
+    const lista = TB.misApariencias;
+    const items = [];
+    if (!lista) { TB.red.apariencias().then(l => { TB.misApariencias = l; }).catch(() => { TB.misApariencias = []; }); items.push({ texto: "Cargando…", apagado: true }); }
+    else if (!lista.length) items.push({ texto: "Todavía no has copiado ninguna", apagado: true });
+    else lista.slice(0, 30).forEach(a => items.push({ texto: esc(a.nombre || "Sin nombre"), accion: () => TB.red.apariencia(o.id, a.datos).catch(e => aviso(mensajeError(e), true)) }));
+    items.push("-", { texto: "Volver a mi aspecto", apagado: !(o.datos || {}).disfraz, accion: () => TB.red.apariencia(o.id, null).catch(e => aviso(mensajeError(e), true)) },
+      { texto: "Gestionar mis apariencias…", accion: () => gestionarApariencias(o) });
+    return items;
+  }
+  async function gestionarApariencias(o) {
+    if (!TB.misApariencias) TB.misApariencias = await TB.red.apariencias().catch(() => []);
+    const c = el(`<div class="tb-apariencias"></div>`);
+    const pintar = () => {
+      c.innerHTML = "";
+      if (!TB.misApariencias.length) { c.appendChild(el(`<p class="tb-nota">Todavía no has copiado ninguna. Haz clic derecho sobre una criatura de tu tamaño y elige «Copiar apariencia».</p>`)); return; }
+      TB.misApariencias.forEach(a => {
+        const f = el(`<div class="tb-apariencia"><span class="tb-apariencia-img" style="background-image:url('${esc((a.datos || {}).src || "")}')"></span><b>${esc(a.nombre || "Sin nombre")}</b>
+          <button type="button" class="tb-btn tb-btn-mini" data-usar>Usar</button><button type="button" class="tb-btn tb-btn-mini tb-btn-rojo" data-borrar>Borrar</button></div>`);
+        f.querySelector("[data-usar]").addEventListener("click", () => TB.red.apariencia(o.id, a.datos).then(() => cerrarModal()).catch(e => aviso(mensajeError(e), true)));
+        f.querySelector("[data-borrar]").addEventListener("click", async () => {
+          try { await TB.red.borrarApariencia(a.id); TB.misApariencias = TB.misApariencias.filter(x => x.id !== a.id); pintar(); } catch (e) { aviso(mensajeError(e), true); }
+        });
+        c.appendChild(f);
+      });
+    };
+    pintar();
+    modal({ titulo: "Mis apariencias", cuerpo: c, ancho: 520, aceptar: "", cancelar: "Cerrar" });
   }
   function menuFicha(id, x, y) {
     const o = TB.L.objeto(id);
@@ -989,6 +1045,7 @@
     if (!gm) {
       const items = itemsComunes(p, false);
       if (o.tipo === "imagen" && TB.controla(o)) items.push({ icono: "grupoDef", texto: "Estados", sub: itemsEstados([o]) });
+      if (o.tipo === "imagen" && TB.controla(o) && (o.datos || {}).cambiaformas) items.push({ icono: "copiar", texto: "Apariencias", sub: itemsApariencias(o) });
       if (o.tipo === "imagen" && TB.controla(o)) items.push({ icono: "turno", texto: "Añadir turno", accion: iniciativa }, { icono: "ajustes", texto: "Ajustes de ficha…", accion: () => ajustesFicha(id) });
       if ((o.tipo === "dibujo" || o.tipo === "texto") && o.autor === TB.yo.uid) items.push("-", { icono: "papeleraR", texto: "Borrar", peligro: true, accion: () => TB.borrarObjetos(sel) });
       menu(x, y, items);
@@ -1064,7 +1121,8 @@
       ponerEstados(objs, l => l.filter(e => e.id !== c.id).concat([n == null ? { id: c.id } : { id: c.id, n }]));
     } });
     return [
-      { cab: "Condiciones" }, ...cat.filter(c => !c.color && !c.extra).map(item), "-",
+      { cab: "Condiciones" }, ...cat.filter(c => !c.color && !c.extra && !c.anim).map(item), "-",
+      { texto: "Animados", sub: cat.filter(c => c.anim).map(item) },
       { texto: "Otros", sub: cat.filter(c => c.extra).map(item) },
       { texto: "Puntos de color", sub: cat.filter(c => c.color).map(item) },
       "-",

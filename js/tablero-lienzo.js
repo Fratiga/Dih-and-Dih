@@ -32,6 +32,10 @@
     const lNiebla = new Konva.Layer({ listening: false });
     const lUI = new Konva.Layer();
     stage.add(lMapa, lGrid, lObj, lNiebla, lUI);
+    // Estados animados (casteo, fumando, raudo): capa propia que solo se redibuja mientras haya alguno, a unos 24 fps
+    const lAnim = new Konva.Layer({ listening: false });
+    stage.add(lAnim);
+    lAnim.zIndex(3);
     // La página: el lienzo donde van los mapas; fuera de ella se ve el color del tablero
     const pagina = new Konva.Rect({ x: 0, y: 0, width: 2800, height: 2800, fill: "#ffffff", listening: false, shadowColor: "#000", shadowBlur: 24, shadowOpacity: 0.35 });
     lMapa.add(pagina);
@@ -167,7 +171,96 @@
     const opcLuz = () => (st.escena && st.escena.opciones && st.escena.opciones.luz) || {};
     function bloqueaMovimiento() { const L = opcLuz(), b = L.bloquear || "luz"; return !!window.TBLuz && (b === "siempre" || (b === "luz" && !!L.activa)); }
     let luzPendiente = false;
+    const ANIMADOS = { casteo_notas: 1, casteo_cartas: 1, fumando: 1, raudo: 1 };
+    const animForma = new Konva.Shape({
+      listening: false,
+      sceneFunc(ctx) {
+        const raw = ctx._context, t = performance.now() / 1000;
+        st.nodos.forEach(n => {
+          const est = (n.o.datos || {}).estados;
+          if (!est || !est.length || !n.g.visible()) return;
+          const R = Math.max(n.o.ancho, n.o.alto) / 2, x = n.g.x(), y = n.g.y();
+          est.forEach(e => { if (e && ANIMADOS[e.id]) dibujarAnimado(raw, e.id, x, y, R, t); });
+        });
+      }
+    });
+    lAnim.add(animForma);
+    let bucleAnim = null, ultimoCuadro = 0;
+    function actualizarAnim() {
+      const hay = [...st.nodos.values()].some(n => ((n.o.datos || {}).estados || []).some(e => e && ANIMADOS[e.id]));
+      if (hay && !bucleAnim) {
+        bucleAnim = new Konva.Animation(f => { if (f.time - ultimoCuadro < 42) return false; ultimoCuadro = f.time; }, lAnim);
+        bucleAnim.start();
+      } else if (!hay && bucleAnim) { bucleAnim.stop(); bucleAnim = null; lAnim.batchDraw(); }
+    }
+    function dibujarAnimado(c, id, x, y, R, t) {
+      c.save();
+      if (id === "casteo_notas") {
+        // Notas musicales moradas girando alrededor
+        const notas = ["♪", "♫", "♬", "♩"], tonos = ["#b57bff", "#d9b3ff", "#9b59ff", "#c38dff"];
+        c.globalAlpha = 0.18; c.strokeStyle = "#b57bff"; c.lineWidth = R * 0.05;
+        c.beginPath(); c.ellipse(x, y, R * 1.28, R * 1.08, 0, 0, Math.PI * 2); c.stroke();
+        c.globalAlpha = 0.95; c.textAlign = "center"; c.textBaseline = "middle";
+        for (let i = 0; i < 6; i++) {
+          const a = t * 0.9 + i * Math.PI / 3, rr = R * (1.28 + Math.sin(t * 2 + i) * 0.06);
+          const px = x + Math.cos(a) * rr, py = y + Math.sin(a) * rr * 0.85 + Math.sin(t * 3.2 + i * 1.3) * R * 0.08;
+          const tam = R * (0.38 + 0.06 * Math.sin(t * 2.6 + i));
+          c.font = `bold ${tam}px "Segoe UI Symbol", "Noto Sans Symbols", serif`;
+          c.lineWidth = Math.max(1, tam * 0.1); c.strokeStyle = "rgba(40,10,70,.75)"; c.strokeText(notas[i % 4], px, py);
+          c.fillStyle = tonos[i % 4]; c.fillText(notas[i % 4], px, py);
+        }
+      } else if (id === "casteo_cartas") {
+        // Cartas moradas barajándose en órbita: se acercan, se alejan y se dan la vuelta
+        const w = R * 0.34, h = R * 0.5;
+        for (let i = 0; i < 5; i++) {
+          const a = t * 1.25 + i * Math.PI * 2 / 5, rr = R * (1.22 + 0.16 * Math.sin(t * 2.3 + i * 1.7));
+          const px = x + Math.cos(a) * rr, py = y + Math.sin(a) * rr * 0.9;
+          const giro = Math.cos(t * 3 + i * 1.1);
+          c.save();
+          c.translate(px, py); c.rotate(a + Math.PI / 2); c.scale(Math.max(0.08, Math.abs(giro)), 1);
+          c.globalAlpha = 0.95;
+          c.beginPath(); if (c.roundRect) c.roundRect(-w / 2, -h / 2, w, h, w * 0.14); else c.rect(-w / 2, -h / 2, w, h);
+          if (giro > 0) {
+            c.fillStyle = "#4a1f73"; c.fill(); c.lineWidth = w * 0.08; c.strokeStyle = "#d8b4ff"; c.stroke();
+            c.beginPath(); c.moveTo(0, -h * 0.3); c.lineTo(w * 0.28, 0); c.lineTo(0, h * 0.3); c.lineTo(-w * 0.28, 0); c.closePath();
+            c.fillStyle = "#b57bff"; c.fill();
+          } else {
+            c.fillStyle = "#f6efff"; c.fill(); c.lineWidth = w * 0.08; c.strokeStyle = "#7d3cc9"; c.stroke();
+            c.fillStyle = "#7d3cc9"; c.font = `bold ${h * 0.42}px serif`; c.textAlign = "center"; c.textBaseline = "middle";
+            c.fillText(["♠", "♦", "♣", "♥", "★"][i], 0, h * 0.02);
+          }
+          c.restore();
+        }
+      } else if (id === "fumando") {
+        // Humo que sale de un costado, sube, se abre y se desvanece
+        const ox = x + R * 0.78, oy = y - R * 0.12;
+        for (let i = 0; i < 8; i++) {
+          const f = (t * 0.32 + i / 8) % 1;
+          const px = ox + f * R * 0.75 + Math.sin(t * 1.4 + i * 2.1) * R * 0.12, py = oy - f * R * 1.5;
+          const rad = R * (0.07 + f * 0.34);
+          const alfa = 0.42 * (1 - f) * Math.min(1, f * 8);
+          const g = c.createRadialGradient(px, py, 0, px, py, rad);
+          g.addColorStop(0, `rgba(215,215,222,${alfa})`); g.addColorStop(1, "rgba(215,215,222,0)");
+          c.fillStyle = g; c.beginPath(); c.arc(px, py, rad, 0, Math.PI * 2); c.fill();
+        }
+      } else if (id === "raudo") {
+        // Líneas de velocidad por detrás y ráfagas de viento girando
+        c.lineCap = "round";
+        for (let i = 0; i < 7; i++) {
+          const f = (t * 1.7 + i / 7) % 1, sy = y + (i / 6 - 0.5) * R * 1.5, sx = x - R * 0.85 - f * R * 1.2, largo = R * (0.45 + 0.35 * Math.abs(Math.sin(i * 1.9)));
+          c.strokeStyle = `rgba(200,236,255,${0.65 * (1 - f)})`; c.lineWidth = R * 0.05;
+          c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx - largo, sy); c.stroke();
+        }
+        for (let k = 0; k < 3; k++) {
+          const a0 = t * 4.2 + k * Math.PI * 2 / 3;
+          c.strokeStyle = "rgba(225,245,255,.55)"; c.lineWidth = R * 0.045;
+          c.beginPath(); c.ellipse(x, y, R * 1.18, R * 0.95, 0, a0, a0 + 0.9); c.stroke();
+        }
+      }
+      c.restore();
+    }
     function programarLuz() {
+      actualizarAnim();
       if (luzPendiente) return;
       luzPendiente = true;
       // requestAnimationFrame no corre con la pestaña en segundo plano: el temporizador hace de respaldo
@@ -387,7 +480,8 @@
       n.aura.position({ x: o.x, y: o.y });
       n.deco.position({ x: o.x, y: o.y });
       const t = tam(), r0 = Math.max(o.ancho, o.alto) / 2;
-      (d.auras || []).forEach(a => {
+      const disfrazado = !!d.disfraz && !st.esGM && !controla(o);
+      (disfrazado ? [] : (d.auras || [])).forEach(a => {
         if (!a || !(a.radio > 0) || (!st.esGM && a.ver === false)) return;
         const r = r0 + a.radio / pies() * t;
         const comun = { fill: a.color || "#ffff99", opacity: a.opacidad == null ? 0.35 : a.opacidad };
@@ -397,7 +491,7 @@
       // Barras
       const compacto = d.barraEstilo === "compacto";
       const hb = compacto ? 4 : 9, w = Math.max(o.ancho, 30);
-      const barras = (d.barras || []).map((b, i) => ({ b, i })).filter(({ b }) => b && Number(b.max) > 0 && (st.esGM || controla(o) || b.ver));
+      const barras = disfrazado ? [] : (d.barras || []).map((b, i) => ({ b, i })).filter(({ b }) => b && Number(b.max) > 0 && (st.esGM || controla(o) || b.ver));
       const debajo = d.barraPos === "debajo";
       barras.forEach(({ b, i }, k) => {
         const y = debajo ? o.alto / 2 + 3 + k * (hb + 2) : -o.alto / 2 - 3 - (barras.length - k) * (hb + 2);
@@ -427,9 +521,9 @@
 
     // Marcadores de estado: una fila de iconos en la esquina de arriba a la derecha (y una X roja si está muerto)
     function pintarEstados(n) {
-      const o = n.o, lista = ((o.datos || {}).estados || []).filter(e => e && e.id);
-      if (!lista.length || o.tipo === "pin" || o.tipo === "luz") return;
       const cat = window.TBEstados || [];
+      const o = n.o, lista = ((o.datos || {}).estados || []).filter(e => e && e.id && !(cat.find(c => c.id === e.id) || {}).anim);
+      if (!lista.length || o.tipo === "pin" || o.tipo === "luz") return;
       const s = Math.max(11, Math.min(22, Math.min(o.ancho, o.alto) * 0.27));
       const porFila = Math.max(1, Math.floor(o.ancho / (s + 1)));
       lista.forEach((e, i) => {
@@ -1140,7 +1234,7 @@
         if (n && puedeSeleccionar(n.o) && (st.esGM || !(n.o.datos && n.o.datos.sinMenu))) {
           if (!st.seleccion.has(n.o.id)) seleccionar([n.o.id]);
           if (op.onMenu) op.onMenu(n.o.id, ev.clientX || g.x, ev.clientY || g.y);
-        } else if (op.onMenuVacio) op.onMenuVacio(g.mundo, ev.clientX || g.x, ev.clientY || g.y);
+        } else if (op.onMenuVacio) op.onMenuVacio(g.mundo, ev.clientX || g.x, ev.clientY || g.y, g.id || null);
         return;
       }
       if (g.tipo === "marco") {

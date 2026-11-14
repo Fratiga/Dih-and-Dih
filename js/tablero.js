@@ -608,7 +608,7 @@
       },
       onNiebla: n => { if (TB.yo.esGM && TB.escenaId) TB.guardarEscena(TB.escenaId, { niebla: n }); },
       onZoom: z => TB.lanzar("zoom", z),
-      onMenuVacio: (p, x, y) => TBPaneles.menuVacio(p, x, y),
+      onMenuVacio: (p, x, y, id) => TBPaneles.menuVacio(p, x, y, id),
       onPin: id => TBPaneles.abrirPin(id),
       onCursor: (x, y) => {
         const ahora = Date.now();
