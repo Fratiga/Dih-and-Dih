@@ -4,7 +4,10 @@
    aparte para que no giren con la ficha. No guarda nada: avisa a la app (opciones.on*) y la app decide.
 ============================================================================= */
 (function () {
-  const COLORES_BARRA = ["#5cb85c", "#4f8fd6", "#d9534f"];
+  const COLORES_BARRA = ["#80c080", "#7a9acb", "#b81c1c"];
+  // Alto de cada barra y el hueco entre barras, según el ancho de la ficha (como en Roll20, crecen con ella)
+  const altoBarra = o => ((o.datos || {}).barraEstilo === "compacto" ? Math.max(4, Math.min(8, o.ancho * 0.06)) : Math.max(10, Math.min(26, o.ancho * 0.18)));
+  const sepBarra = o => Math.max(1.5, altoBarra(o) * 0.09);
   const COLORES_BURBUJA = ["#78c878", "#7598d0", "#c0201d"];
   const AZUL_SEL = "#6b84f5";
   // Rueda dentada de la tuerca (8 dientes) y el icono de estados, dibujados a mano
@@ -526,16 +529,21 @@
       if (st.turno === o.id) n.aura.add(new Konva.Circle({ radius: r0 + 5, stroke: "#f5b41f", strokeWidth: 4, opacity: 0.95 }));
       // Barras
       const compacto = d.barraEstilo === "compacto";
-      const hb = compacto ? 4 : 9, w = Math.max(o.ancho, 30);
+      const hb = altoBarra(o), sb = sepBarra(o), w = Math.max(o.ancho, 30);
       const barras = disfrazado ? [] : (d.barras || []).map((b, i) => ({ b, i })).filter(({ b }) => b && Number(b.max) > 0 && (st.esGM || controla(o) || b.ver));
       const debajo = d.barraPos === "debajo";
       barras.forEach(({ b, i }, k) => {
-        const y = debajo ? o.alto / 2 + 3 + k * (hb + 2) : -o.alto / 2 - 3 - (barras.length - k) * (hb + 2);
+        const y = debajo ? o.alto / 2 + 3 + k * (hb + sb) : -o.alto / 2 - 3 - (barras.length - k) * (hb + sb);
         const frac = Math.max(0, Math.min(1, Number(b.valor) / Number(b.max)));
-        n.deco.add(new Konva.Rect({ x: -w / 2, y, width: w, height: hb, fill: "rgba(30,30,30,.65)", cornerRadius: 2 }));
-        n.deco.add(new Konva.Rect({ x: -w / 2, y, width: w * frac, height: hb, fill: COLORES_BARRA[i], cornerRadius: 2 }));
+        n.deco.add(new Konva.Rect({ x: -w / 2, y, width: w, height: hb, fill: "#d6d6d6", cornerRadius: hb / 2 }));
+        if (frac > 0) n.deco.add(new Konva.Rect({ x: -w / 2, y, width: Math.max(hb, w * frac), height: hb, fill: COLORES_BARRA[i], cornerRadius: hb / 2 }));
         const verTexto = !compacto && ((b.texto || "editores") === "todos" || ((b.texto || "editores") === "editores" && (st.esGM || controla(o))));
-        if (verTexto) n.deco.add(new Konva.Text({ x: -w / 2, y: y + 1, width: w, align: "center", text: `${b.valor}/${b.max}`, fontSize: 7.5, fontStyle: "bold", fill: "#fff" }));
+        if (verTexto) {
+          const fs = hb * 0.74, comun = { fontSize: fs, fontFamily: "Arial, Helvetica, sans-serif", fontStyle: "bold", fill: "#fff", stroke: "#000", strokeWidth: fs * 0.2, lineJoin: "round", fillAfterStrokeEnabled: true, y: y + (hb - fs) / 2 + fs * 0.06 };
+          n.deco.add(new Konva.Text(Object.assign({ x: -w / 2, width: w, align: "center", text: `${b.valor}/${b.max}` }, comun)));
+          // Por encima del máximo, un «+» al final de la barra
+          if (Number(b.valor) > Number(b.max)) n.deco.add(new Konva.Text(Object.assign({ x: w / 2 - hb * 0.95, text: "+" }, comun)));
+        }
       });
       if (o.tipo === "pin" && d.titulo) {
         const etq = new Konva.Label({ y: o.alto / 2 + 3 });
@@ -545,7 +553,7 @@
         n.deco.add(etq);
       }
       if (d.verNombre && d.nombre && o.tipo !== "texto" && o.tipo !== "pin") {
-        const etq = new Konva.Label({ y: o.alto / 2 + 4 + (debajo ? barras.length * (hb + 2) : 0) });
+        const etq = new Konva.Label({ y: o.alto / 2 + 4 + (debajo ? barras.length * (hb + sb) : 0) });
         etq.add(new Konva.Tag({ fill: "rgba(20,20,20,.72)", cornerRadius: 3 }));
         etq.add(new Konva.Text({ text: d.nombre, fontSize: 12, fill: "#fff", padding: 3 }));
         etq.offsetX(etq.width() / 2);
@@ -555,7 +563,7 @@
       pintarEstados(n);
       if (d.muerte && o.tipo === "imagen") {
         const m = d.muerte, r = Math.max(3.5, Math.min(7, o.ancho * 0.05)), paso = r * 2.6, hueco = r * 1.6;
-        const y = o.alto / 2 + 4 + (debajo ? barras.length * (hb + 2) : 0) + (d.verNombre && d.nombre ? 22 : 0) + r + 2;
+        const y = o.alto / 2 + 4 + (debajo ? barras.length * (hb + sb) : 0) + (d.verNombre && d.nombre ? 22 : 0) + r + 2;
         const ancho = paso * 6 + hueco;
         n.deco.add(new Konva.Rect({ x: -ancho / 2, y: y - r - 3, width: ancho, height: r * 2 + 6, fill: "rgba(20,20,20,.72)", cornerRadius: r + 3 }));
         for (let i = 0; i < 6; i++) {
@@ -636,9 +644,12 @@
       if (st.opc.arribaMias && !st.esGM) nodos.forEach(n => { if (controla(n.o)) n.g.moveToTop(); });
     }
 
-    function upsert(o) {
+    const movLocal = new Map();
+    function marcarLocal(id) { movLocal.set(id, performance.now()); }
+    function upsert(o, remoto) {
       const n = st.nodos.get(o.id);
       if (!n) { crearNodo(o); ordenarCapa(o.capa); lObj.batchDraw(); lMapa.batchDraw(); programarLuz(); return; }
+      if (remoto && performance.now() - (movLocal.get(o.id) || -1e9) < 1500 && (o.x !== n.o.x || o.y !== n.o.y)) o = Object.assign({}, o, { x: n.o.x, y: n.o.y });
       if (n.arrastrando || n.transformando || n.animando) {
         // Mientras se arrastra solo se aceptan los datos, no la posición
         n.o = Object.assign({}, o, { x: n.o.x, y: n.o.y, rot: n.o.rot, ancho: n.o.ancho, alto: n.o.alto });
@@ -693,7 +704,7 @@
       const o = n.o, z = zoom(), k = 1 / z, d = o.datos || {};
       const barras = [0, 1, 2].map(i => Object.assign({ valor: "", max: "" }, (d.barras || [])[i]));
       const nb = (d.barras || []).filter(b => b && Number(b.max) > 0 && (st.esGM || controla(o) || b.ver)).length;
-      const hb = d.barraEstilo === "compacto" ? 6 : 11;
+      const hb = altoBarra(o) + sepBarra(o);
       const ocupaArriba = d.barraPos === "debajo" ? 0 : nb * hb;
       const yArriba = o.y - o.alto / 2 - ocupaArriba - 62 * k;
       const boton = (x, y, titulo, cursor) => {
@@ -793,13 +804,14 @@
       inp.title = "Escribe el valor, o +2 / -2 para sumar o restar";
       Object.assign(inp.style, { left: abs.x - 26 + "px", top: abs.y - 15 + "px", borderColor: COLORES_BARRA[i] });
       contenedor.appendChild(inp);
-      setTimeout(() => { inp.focus(); inp.select(); }, 0);
+      setTimeout(() => { inp.focus({ preventScroll: true }); inp.select(); contenedor.scrollLeft = 0; contenedor.scrollTop = 0; }, 0);
       let hecho = false;
       const fin = guardar => {
         if (hecho) return;
         hecho = true;
         const v = inp.value.trim().replace(",", ".");
         inp.remove();
+        contenedor.scrollLeft = 0; contenedor.scrollTop = 0;
         if (!guardar || v === "" || v === String(b.valor)) return;
         const rel = v.match(/^([+-])\s*(\d+(?:\.\d+)?)$/);
         let nuevo;
@@ -1597,7 +1609,7 @@
         if (st.luzOn) programarLuz();
         if (st.seleccion.has(id)) setTimeout(() => { tr.forceUpdate(); actualizarTransformer(); }, 100);
       },
-      reglaRemota, ping,
+      reglaRemota, ping, marcarLocal,
       // Tecla X: la última ruta de las fichas seleccionadas, unos segundos
       ultimaRuta() {
         const rutas = [...st.seleccion].map(id => st.nodos.get(id)).filter(n => n && n.ultimaRuta && n.ultimaRuta.length > 1);

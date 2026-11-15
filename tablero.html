@@ -13,7 +13,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="css/tablero.css?v=20271230">
+  <link rel="stylesheet" href="css/tablero.css?v=20271232">
 </head>
 <body class="tb">
   <div class="tb-carga" id="tbCarga"><div class="tb-carga-caja"><div class="tb-carga-rueda"></div><p id="tbCargaTexto">Abriendo el tablero…</p></div></div>
@@ -38,6 +38,8 @@
       <button type="button" data-cerrar title="Cerrar la ventana (la música sigue sonando)">✕</button></div>
     <div class="tb-repro-yt"><div id="tbReproYT"></div></div>
     <div class="tb-repro-sp"><div id="tbReproSP"></div></div>
+    <div class="tb-repro-avance" hidden><button type="button" data-rs="-10" title="Atrás 10 segundos">−10</button><button type="button" data-rpausa title="Pausa">❚❚</button>
+      <input type="range" min="0" max="1" step="0.5" value="0" data-rav aria-label="Posición de la canción"><span data-rt>0:00</span><button type="button" data-rs="10" title="Adelante 10 segundos">+10</button></div>
   </div>
   <div class="tb-avisos" id="tbAvisos" aria-live="polite"></div>
 
@@ -64,18 +66,18 @@
   <script src="data/reglas.js?v=20271111"></script>
   <script src="data/stats.js?v=20271154"></script>
   <script src="js/stats-roll20.js?v=20271111"></script>
-  <script src="js/tablero-dados.js?v=20271230"></script>
-  <script src="js/tablero-dados3d.js?v=20271230"></script>
-  <script src="js/tablero-red.js?v=20271230"></script>
-  <script src="js/tablero-marcas.js?v=20271230"></script>
-  <script src="js/tablero-iconos.js?v=20271230"></script>
-  <script src="js/tablero-luz.js?v=20271230"></script>
-  <script src="js/tablero-lienzo.js?v=20271230"></script>
-  <script src="js/tablero-fx.js?v=20271230"></script>
-  <script src="js/tablero-ventanas.js?v=20271230"></script>
-  <script src="js/tablero-paneles.js?v=20271230"></script>
-  <script src="js/tablero-tiradas.js?v=20271230"></script>
-  <script src="js/tablero-lado.js?v=20271230"></script>
-  <script src="js/tablero.js?v=20271230"></script>
+  <script src="js/tablero-dados.js?v=20271232"></script>
+  <script src="js/tablero-dados3d.js?v=20271232"></script>
+  <script src="js/tablero-red.js?v=20271232"></script>
+  <script src="js/tablero-marcas.js?v=20271232"></script>
+  <script src="js/tablero-iconos.js?v=20271232"></script>
+  <script src="js/tablero-luz.js?v=20271232"></script>
+  <script src="js/tablero-lienzo.js?v=20271232"></script>
+  <script src="js/tablero-fx.js?v=20271232"></script>
+  <script src="js/tablero-ventanas.js?v=20271232"></script>
+  <script src="js/tablero-paneles.js?v=20271232"></script>
+  <script src="js/tablero-tiradas.js?v=20271232"></script>
+  <script src="js/tablero-lado.js?v=20271232"></script>
+  <script src="js/tablero.js?v=20271232"></script>
 </body>
 </html>

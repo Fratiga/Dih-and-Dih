@@ -250,7 +250,7 @@
   function escucharRed() {
     const r = TB.red;
     r.on("objeto", o => {
-      if (o.escena === TB.escenaId) TB.L.upsert(o);
+      if (o.escena === TB.escenaId) TB.L.upsert(o, true);
       else if (TB.L.objeto(o.id)) TB.L.quitar(o.id);
     });
     r.on("objetoBorrado", id => TB.L.quitar(id));
@@ -403,6 +403,28 @@
     }
     return ids;
   };
+  const colaPos = new Map();
+  TB.guardarPosicion = function (id, x, y) {
+    TB.L.marcarLocal(id);
+    let c = colaPos.get(id);
+    if (!c) colaPos.set(id, c = { enVuelo: false, sig: null, reloj: null });
+    c.sig = { x, y };
+    clearTimeout(c.reloj);
+    c.reloj = setTimeout(() => enviarPosicion(id, c), 90);
+  };
+  async function enviarPosicion(id, c) {
+    if (c.enVuelo) return;
+    c.enVuelo = true;
+    while (c.sig) {
+      const p = c.sig;
+      c.sig = null;
+      TB.L.marcarLocal(id);
+      try { if (TB.yo.esGM) await TB.red.actualizarObjeto(id, p); else await TB.red.moverPropio(id, p.x, p.y); }
+      catch (e) { aviso(mensajeError(e), true); if (!TB.yo.esGM) { c.sig = null; cargarEscena(TB.escenaId); } }
+    }
+    c.enVuelo = false;
+    TB.L.marcarLocal(id);
+  }
   TB.cambiarObjeto = async function (id, cambios, { sinDeshacer } = {}) {
     const o = TB.L.objeto(id);
     if (!o) return;
@@ -653,11 +675,7 @@
   function callbacksLienzo() {
     return {
       onCambiar: (id, cambios) => TB.cambiarObjeto(id, cambios),
-      onMovido: async o => {
-        if (TB.yo.esGM) { TB.cambiarObjeto(o.id, { x: o.x, y: o.y }); return; }
-        try { await TB.red.moverPropio(o.id, o.x, o.y); }
-        catch (e) { aviso(mensajeError(e), true); cargarEscena(TB.escenaId); }
-      },
+      onMovido: o => TB.guardarPosicion(o.id, o.x, o.y),
       onMovEnCurso: (id, x, y, ruta) => TB.red.emitir("mov", { id, x, y, escena: TB.escenaId, ruta: Array.isArray(ruta) ? ruta.slice(0, 25).map(p => ({ x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 })) : undefined }),
       // En la capa Iluminación, lo que se dibuja son muros (del tipo elegido en el panel de iluminación)
       onCrear: filas => TB.crearObjetos(filas.map(f => f.capa === "luz" && f.tipo === "dibujo"
@@ -772,8 +790,17 @@
       e.preventDefault();
       const t = e.shiftKey ? TB.L.tamCelda() / 5 : TB.L.tamCelda();
       const dx = e.key === "ArrowLeft" ? -t : e.key === "ArrowRight" ? t : 0, dy = e.key === "ArrowUp" ? -t : e.key === "ArrowDown" ? t : 0;
-      if (TB.yo.esGM) TB.cambiarVarios(sel.map(id => { const o = TB.L.objeto(id); return { id, cambios: { x: o.x + dx, y: o.y + dy } }; }));
-      else for (const id of sel) { const o = TB.L.objeto(id); if (TB.L.cruzaMuro({ x: o.x, y: o.y }, { x: o.x + dx, y: o.y + dy })) { aviso("Hay un muro en medio."); continue; } try { await TB.red.moverPropio(id, o.x + dx, o.y + dy); TB.red.emitir("mov", { id, x: o.x + dx, y: o.y + dy, escena: TB.escenaId }); } catch (err) { aviso(mensajeError(err), true); } }
+      if (TB.yo.esGM && !e.repeat) apuntar({ tipo: "cambiar", cambios: sel.map(id => { const o = TB.L.objeto(id) || {}; return { id, antes: { x: o.x, y: o.y } }; }) });
+      for (const id of sel) {
+        const o = TB.L.objeto(id);
+        if (!o) continue;
+        const x = o.x + dx, y = o.y + dy;
+        if (!TB.yo.esGM && TB.L.cruzaMuro({ x: o.x, y: o.y }, { x, y })) { aviso("Hay un muro en medio."); continue; }
+        TB.L.marcarLocal(id);
+        TB.L.upsert(Object.assign({}, o, { x, y }));
+        if (o.capa !== "gm") TB.red.emitir("mov", { id, x, y, escena: TB.escenaId });
+        TB.guardarPosicion(id, x, y);
+      }
     }
   });
   document.addEventListener("keyup", e => {

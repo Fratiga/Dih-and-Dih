@@ -44,6 +44,8 @@ alter table tablero_estado add column if not exists musica jsonb not null defaul
 alter table tablero_estado add column if not exists pausa boolean not null default false;
 -- Listas de la gramola y efectos del soundboard del DJ
 alter table tablero_estado add column if not exists gramola jsonb not null default '{}'::jsonb;
+-- Orden de las carpetas del diario (lo elige el DJ arrastrándolas)
+alter table tablero_estado add column if not exists carpetas jsonb not null default '[]'::jsonb;
 
 insert into tablero_estado (id) values (1) on conflict (id) do nothing;
 

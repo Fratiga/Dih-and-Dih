@@ -16,6 +16,7 @@ cargar admin/tablero.sql
 cargar admin/tablero.sql          # se puede repetir sin romper nada
 comprobar "las trece tablas existen" "13" "$(sql "select count(*) from pg_tables where tablename like 'tablero\_%'")"
 comprobar "hay una sola fila de estado" "1" "$(sql "select count(*) from tablero_estado")"
+comprobar "el estado guarda el orden de las carpetas del diario" "[]" "$(sql "select carpetas from tablero_estado")"
 
 sql "delete from tablero_escenas; delete from tablero_diario; delete from tablero_macros; delete from tablero_arte; truncate tablero_mensajes; insert into tablero_estado (id) values (1) on conflict (id) do nothing; update tablero_estado set escena_jugadores = null, iniciativa = '{\"lista\": [], \"turno\": 0, \"ronda\": 1, \"visible\": false}'" >/dev/null
 S1=$(como "$ADMIN" "insert into tablero_escenas (nombre) values ('Cripta') returning id;" | head -1)

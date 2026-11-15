@@ -624,6 +624,11 @@ body.tb.tb-oscuro .tb-avatares .tb-av-nombre { background: rgba(0,0,0,.7); }
 
 /* ---------------------------------------------------------------- reproductor: solo audio y cerrado (el iframe sigue vivo para que suene) */
 .tb-repro-cab button[hidden] { display: none; }
+.tb-repro-avance { display: flex; align-items: center; gap: calc(6px * var(--tb-k)); padding: calc(5px * var(--tb-k)) calc(8px * var(--tb-k)); font-size: calc(11px * var(--tb-k)); color: var(--tb-suave); }
+.tb-repro-avance[hidden], .tb-reproductor.cerrado .tb-repro-avance, .tb-reproductor.plegado .tb-repro-avance { display: none; }
+.tb-repro-avance input[type=range] { flex: 1; min-width: 0; }
+.tb-repro-avance button { border: 0; background: none; cursor: pointer; color: var(--tb-texto); font-size: calc(12px * var(--tb-k)); padding: 0 calc(2px * var(--tb-k)); }
+.tb-repro-avance span { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .tb-repro-abrir { display: none; }
 .tb-reproductor.solo-audio .tb-repro-yt, .tb-reproductor.cerrado .tb-repro-yt, .tb-reproductor.cerrado .tb-repro-sp { position: absolute; left: 0; top: 0; width: 2px; height: 2px; overflow: hidden; opacity: 0.01; pointer-events: none; }
 .tb-reproductor.solo-audio { width: calc(240px * var(--tb-k)); }
@@ -652,6 +657,11 @@ body.tb.tb-oscuro .tb-avatares .tb-av-nombre { background: rgba(0,0,0,.7); }
 .tb-token-zona span { display: none; padding: calc(16px * var(--tb-k)); font-size: calc(12px * var(--tb-k)); color: #777; }
 .tb-token-zona.vacia span { display: block; }
 .tb-token-zona:hover, .tb-token-zona.soltando { box-shadow: 0 0 0 3px #d6127e; }
+.tb-lista-carpeta[draggable="true"] { cursor: grab; }
+.tb-lista-carpeta.arrastrando { opacity: .45; }
+.tb-lista-carpeta.soltar-antes { box-shadow: inset 0 2px 0 #d6127e; }
+.tb-lista-carpeta.soltar-despues { box-shadow: inset 0 -2px 0 #d6127e; }
+.tb-lista-carpeta.soltar-dentro { background: rgba(214,18,126,.14); }
 .tb-tablas { margin-top: calc(16px * var(--tb-k)); border-top: 1px solid rgba(127,127,127,.25); padding-top: calc(4px * var(--tb-k)); }
 .tb-tabla-item { display: flex; align-items: center; gap: calc(8px * var(--tb-k)); padding: calc(6px * var(--tb-k)) 0; border-bottom: 1px solid rgba(127,127,127,.15); }
 .tb-tabla-item > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -669,7 +679,7 @@ body.tb.tb-oscuro .tb-dados-iconos button svg { color: #b8bcc4; }
 .tb-dados-iconos button:hover svg { color: var(--tb-acento); }
 
 /* ---------------------------------------------------------------- editar una barra desde su esfera */
-.tb-burbuja-edit { position: absolute; z-index: 30; width: calc(52px * var(--tb-k)); height: calc(30px * var(--tb-k)); border-radius: 999px; border: 3px solid #5cb85c; background: #2b2b2b; color: #fff;
+.tb input.tb-burbuja-edit { position: absolute; z-index: 30; width: calc(52px * var(--tb-k)); min-height: 0; padding: 0; height: calc(30px * var(--tb-k)); border-radius: 999px; border: 3px solid #5cb85c; background: #2b2b2b; color: #fff;
   text-align: center; font: 700 calc(14px * var(--tb-k)) var(--tb-fuente); outline: none; box-shadow: 0 2px 8px rgba(0,0,0,.45); }
 
 /* ---------------------------------------------------------------- mis apariencias */

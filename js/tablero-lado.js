@@ -71,6 +71,8 @@
     if (window.TBDados3D && (TB.prefs.dados || {}).tresD !== false) setTimeout(() => TBDados3D.precargar(), 4000);
     TB.on("mensajes", pintarMensajes);
     TB.on("diario", () => { pintarDiario(); pintarComo(); });
+    let ordenVisto = "";
+    TB.on("estado", () => { const k = JSON.stringify((TB.estado || {}).carpetas || []); if (k !== ordenVisto) { ordenVisto = k; pintarDiario(); } });
     TB.on("jugadores", pintarDiario);
     TB.on("musica", sincronizarMusica);
     TB.on("gramola", () => pintarGramola());
@@ -82,6 +84,32 @@
     repro.querySelector("[data-audio]").addEventListener("click", () => { TB.prefs.soloAudio = !TB.prefs.soloAudio; TB.guardarPrefs(); estadoRepro(); });
     repro.querySelector("[data-cerrar]").addEventListener("click", () => { reproCerrado = (TB.estado.musica || {}).src || null; estadoRepro(); });
     repro.querySelector("[data-abrir]").addEventListener("click", () => { reproCerrado = null; if (TB.prefs.soloAudio) { TB.prefs.soloAudio = false; TB.guardarPrefs(); } estadoRepro(); });
+    // Barra para avanzar y retroceder en la propia ventana (solo el DJ: mueve la música de todos)
+    if (TB.esGM()) {
+      const barra = repro.querySelector(".tb-repro-avance"), rav = barra.querySelector("[data-rav]"), rt = barra.querySelector("[data-rt]"), rp = barra.querySelector("[data-rpausa]");
+      barra.hidden = false;
+      let tocando = false;
+      rav.addEventListener("input", () => { tocando = true; rt.textContent = mmss(+rav.value) + " / " + mmss(duracionActual()); });
+      rav.addEventListener("change", () => { tocando = false; irAPosicion(+rav.value); });
+      barra.querySelectorAll("[data-rs]").forEach(b => b.addEventListener("click", () => irAPosicion(posicionDe(TB.estado.musica || {}) + Number(b.dataset.rs))));
+      rp.addEventListener("click", () => {
+        const m = TB.estado.musica || {};
+        if (m.pausado) cambiarMusica({ pausado: false, inicio: Date.now() - (m.pos || 0) * 1000 });
+        else cambiarMusica({ pausado: true, pos: posicionDe(m) });
+      });
+      setInterval(() => {
+        const m = TB.estado.musica || {};
+        if (repro.hidden || tocando || !m.src) return;
+        const d = duracionActual();
+        let p = posicionDe(m);
+        if (d) { if (m.bucle) p = p % d; p = Math.min(p, d); }
+        rav.max = d || Math.max(60, p + 30);
+        rav.value = p;
+        rt.textContent = mmss(p) + " / " + (d ? mmss(d) : "–:––");
+        rp.textContent = m.pausado ? "▶" : "❚❚";
+        rp.title = m.pausado ? "Seguir" : "Pausa";
+      }, 500);
+    }
     aplicarAjustes();
     TB.on("arte", pintarArte);
     pintarBarraMacros();
@@ -414,12 +442,105 @@
     }
     const lista = el(`<div class="tb-pes-scroll"></div>`);
     c.append(cab, lista);
+    // Carpetas: «Padre/Hijo» es una subcarpeta. El orden (y las carpetas vacías) se guardan en el estado del tablero.
+    const padreDe = c => (c.includes("/") ? c.slice(0, c.lastIndexOf("/")) : "");
+    const hojaDe = c => c.slice(c.lastIndexOf("/") + 1);
+    const ordenCarpetas = () => ((TB.estado || {}).carpetas || []).filter(x => typeof x === "string" && x.trim());
+    async function guardarOrden(l) {
+      TB.estado.carpetas = [...new Set(l)];
+      pintarLista();
+      try { await TB.red.actualizarEstado({ carpetas: TB.estado.carpetas }); }
+      catch (err) { aviso(/carpetas/.test(String(err && err.message)) ? "Falta volver a correr tablero.sql para guardar las carpetas." : mensajeError(err), true); }
+    }
+    const dentroDe = (e, cp) => e.carpeta === cp || (e.carpeta || "").startsWith(cp + "/");
+    async function cambiarEntradas(lista, cambio) {
+      for (const e of lista) {
+        const c = cambio(e);
+        try { await TB.red.actualizarDiario(e.id, c); TB.diario.set(e.id, Object.assign({}, e, c)); } catch (err) { aviso(mensajeError(err), true); }
+      }
+    }
+    async function renombrarCarpeta(viejo, nuevo) {
+      nuevo = nuevo.split("/").map(s => s.trim()).filter(Boolean).join("/");
+      if (!nuevo || nuevo === viejo) return;
+      if (nuevo.length > 60) { aviso("El nombre completo de la carpeta no puede pasar de 60 letras.", true); return; }
+      if (nuevo.startsWith(viejo + "/")) { aviso("Una carpeta no puede ir dentro de sí misma.", true); return; }
+      const mover = c => (c === viejo ? nuevo : c.startsWith(viejo + "/") ? nuevo + c.slice(viejo.length) : c);
+      await cambiarEntradas([...TB.diario.values()].filter(e => dentroDe(e, viejo)), e => ({ carpeta: mover(e.carpeta) }));
+      await guardarOrden(ordenCarpetas().map(mover).concat([nuevo]));
+    }
+    async function nuevaEntrada(tipo, carpeta) {
+      try { const e = await TB.red.crearDiario({ tipo, nombre: tipo === "nota" ? "Nueva nota" : "Nuevo personaje", carpeta }); TB.diario.set(e.id, e); pintarLista(); editarEntrada(e.id); }
+      catch (err) { aviso(mensajeError(err), true); }
+    }
+    function menuCarpeta(cp, x, y) {
+      const contenido = [...TB.diario.values()].filter(e => dentroDe(e, cp));
+      menu(x, y, [
+        { texto: "Añadir subcarpeta", accion: async () => {
+          const n = await pedir("Nueva subcarpeta", "", { etiqueta: "Nombre" });
+          if (!n || !n.trim()) return;
+          const ruta = cp + "/" + n.trim().replace(/\//g, "-");
+          if (ruta.length > 60) { aviso("El nombre completo de la carpeta no puede pasar de 60 letras.", true); return; }
+          plegadas.delete(cp);
+          guardarOrden(ordenCarpetas().concat([ruta]));
+        } },
+        { texto: "Añadir personaje", accion: () => nuevaEntrada("personaje", cp) },
+        { texto: "Añadir nota", accion: () => nuevaEntrada("nota", cp) },
+        "-",
+        { texto: "Ordenar de la A a la Z", accion: async () => {
+          await cambiarEntradas(contenido.filter(e => e.carpeta === cp && e.orden), () => ({ orden: 0 }));
+          const hijas = ordenCarpetas().filter(c => padreDe(c) === cp).concat([...new Set(contenido.map(e => e.carpeta).filter(c => padreDe(c) === cp))]);
+          const resto = ordenCarpetas().filter(c => padreDe(c) !== cp);
+          guardarOrden(resto.concat([...new Set(hijas)].sort((a, b) => a.localeCompare(b))));
+        } },
+        { texto: "Renombrar carpeta", accion: async () => {
+          const n = await pedir("Renombrar carpeta", hojaDe(cp), { etiqueta: "Nombre" });
+          if (n && n.trim()) renombrarCarpeta(cp, (padreDe(cp) ? padreDe(cp) + "/" : "") + n.trim().replace(/\//g, "-"));
+        } },
+        { texto: "Eliminar carpeta", accion: async () => {
+          // Lo que tenía pasa a la carpeta de arriba
+          const arriba = padreDe(cp);
+          const mover = c => (c === cp ? arriba : c.startsWith(cp + "/") ? (arriba ? arriba + "/" : "") + c.slice(cp.length + 1) : c);
+          await cambiarEntradas(contenido, e => ({ carpeta: mover(e.carpeta) }));
+          guardarOrden(ordenCarpetas().filter(c => c !== cp).map(mover).filter(Boolean));
+        } },
+        { texto: "Eliminar la carpeta y su contenido", peligro: true, accion: async () => {
+          if (!(await confirmar("Eliminar la carpeta", `¿Borrar «${hojaDe(cp)}» y todo lo que tiene dentro (${contenido.length} ${contenido.length === 1 ? "entrada" : "entradas"})? No se puede deshacer. Las fichas del tablero se quedan.`, "Borrar todo"))) return;
+          for (const e of contenido) { try { await TB.red.borrarDiario(e.id); TB.diario.delete(e.id); } catch (err) { aviso(mensajeError(err), true); } }
+          guardarOrden(ordenCarpetas().filter(c => !(c === cp || c.startsWith(cp + "/"))));
+          TB.lanzar("diario");
+        } }
+      ]);
+    }
+    function menuEntrada(e, x, y) {
+      menu(x, y, [
+        { texto: e.ver_todos ? "Ocultar a los jugadores" : "Mostrar a los jugadores", accion: async () => {
+          await cambiarEntradas([e], () => ({ ver_todos: !e.ver_todos })); pintarLista();
+        } },
+        { texto: "Duplicar", accion: async () => {
+          const c = Object.assign({}, e); delete c.id; delete c.creado; delete c.actualizado;
+          c.nombre = (e.nombre + " (copia)").slice(0, 80);
+          try { const n = await TB.red.crearDiario(c); TB.diario.set(n.id, n); pintarLista(); } catch (err) { aviso(mensajeError(err), true); }
+        } },
+        { texto: "Copiar ID al portapapeles", accion: async () => {
+          try { await navigator.clipboard.writeText(e.id); aviso("ID copiado."); } catch (err) { aviso(e.id); }
+        } },
+        { texto: e.archivado ? "Sacar del archivo" : "Archivar", accion: async () => { await cambiarEntradas([e], () => ({ archivado: !e.archivado })); pintarLista(); } },
+        "-",
+        { texto: "Quitar del juego", peligro: true, accion: async () => {
+          if (!(await confirmar("Quitar del juego", `¿Borrar «${e.nombre}» del diario? Las fichas del tablero que lo representan se quedan.`, "Quitar"))) return;
+          try { await TB.red.borrarDiario(e.id); TB.diario.delete(e.id); TB.lanzar("diario"); } catch (err) { aviso(mensajeError(err), true); }
+        } }
+      ]);
+    }
     function item(e) {
       const color = (e.controladores || []).length ? TB.colorJugador(e.controladores[0]) : "#e0632e";
       const it = el(`<div class="tb-lista-item" draggable="${gm}"><span class="tb-lista-av" style="${e.imagen ? `background:url('${esc(e.imagen)}') center/cover` : `background:${e.tipo === "nota" ? "#c9b98a" : "#999"}`}"></span>
         <b>${e.tipo === "nota" ? "📜 " : ""}${esc(e.nombre)}${e.archivado ? " (archivado)" : ""}</b>${gm ? `<span class="tb-lista-punto" style="background:${color}" title="${e.ver_todos ? "Lo ven todos" : (e.ver || []).length ? "Lo ven algunos" : "Solo tú"}"></span>` : ""}</div>`);
       it.addEventListener("click", () => abrirEntrada(e.id));
-      if (gm) it.addEventListener("dragstart", ev => { ev.dataTransfer.setData("text/tablero-diario", e.id); ev.dataTransfer.effectAllowed = "copy"; });
+      if (gm) {
+        it.addEventListener("dragstart", ev => { ev.dataTransfer.setData("text/tablero-diario", e.id); ev.dataTransfer.effectAllowed = "copyMove"; });
+        it.addEventListener("contextmenu", ev => { ev.preventDefault(); menuEntrada(e, ev.clientX, ev.clientY); });
+      }
       return it;
     }
     function pintarLista() {
@@ -427,19 +548,70 @@
       const f = filtroDiario.trim().toLowerCase();
       const todas = [...TB.diario.values()].filter(e => (verArchivados || !e.archivado) && (!f || e.nombre.toLowerCase().includes(f) || (e.etiquetas || []).some(t => t.toLowerCase().includes(f))))
         .sort((a, b) => (a.orden || 0) - (b.orden || 0) || a.nombre.localeCompare(b.nombre));
-      if (!todas.length) { lista.appendChild(el(`<p class="tb-lista-vacia">${gm ? "Crea personajes y notas con los botones de arriba." : "El DJ todavía no ha compartido nada contigo."}</p>`)); return; }
-      const sueltas = todas.filter(e => !e.carpeta);
-      sueltas.forEach(e => lista.appendChild(item(e)));
-      [...new Set(todas.filter(e => e.carpeta).map(e => e.carpeta))].sort((a, b) => a.localeCompare(b)).forEach(cp => {
-        const abierta = !plegadas.has(cp);
-        const t = el(`<div class="tb-lista-carpeta"><i>${abierta ? "−" : "+"}</i>${esc(cp)}</div>`);
+      const orden = ordenCarpetas();
+      // Todas las carpetas: las de las entradas, las vacías que creó el DJ (sin filtro) y sus carpetas de arriba
+      const todasCarpetas = new Set(todas.filter(e => e.carpeta).map(e => e.carpeta).concat(gm && !f ? orden : []));
+      [...todasCarpetas].forEach(c => { const p = c.split("/"); for (let i = 1; i < p.length; i++) todasCarpetas.add(p.slice(0, i).join("/")); });
+      if (!todas.length && !todasCarpetas.size) { lista.appendChild(el(`<p class="tb-lista-vacia">${gm ? "Crea personajes y notas con los botones de arriba." : "El DJ todavía no ha compartido nada contigo."}</p>`)); return; }
+      const hijasDe = padre => [...todasCarpetas].filter(c => padreDe(c) === padre)
+        .sort((a, b) => ((orden.indexOf(a) + 1 || 1e6) - (orden.indexOf(b) + 1 || 1e6)) || hojaDe(a).localeCompare(hojaDe(b)));
+      todas.filter(e => !e.carpeta).forEach(e => lista.appendChild(item(e)));
+      const pintarCarpeta = (cp, destino) => {
+        const abierta = !plegadas.has(cp) || !!f;
+        const t = el(`<div class="tb-lista-carpeta" draggable="${gm}"><i>${abierta ? "−" : "+"}</i>${esc(hojaDe(cp))}</div>`);
         t.addEventListener("click", () => { if (plegadas.has(cp)) plegadas.delete(cp); else plegadas.add(cp); pintarLista(); });
-        lista.appendChild(t);
+        if (gm) {
+          t.addEventListener("contextmenu", ev => { ev.preventDefault(); menuCarpeta(cp, ev.clientX, ev.clientY); });
+          t.addEventListener("dragstart", ev => { ev.stopPropagation(); ev.dataTransfer.setData("text/tablero-carpeta", cp); ev.dataTransfer.effectAllowed = "move"; t.classList.add("arrastrando"); });
+          t.addEventListener("dragend", () => t.classList.remove("arrastrando"));
+          const tipo = ev => [...ev.dataTransfer.types].find(x => x === "text/tablero-carpeta" || x === "text/tablero-diario");
+          t.addEventListener("dragover", ev => {
+            const k = tipo(ev);
+            if (!k) return;
+            ev.preventDefault(); ev.stopPropagation();
+            const r = t.getBoundingClientRect(), y = ev.clientY - r.top;
+            // Una carpeta: arriba o abajo la pone antes o después; en medio, dentro (como subcarpeta)
+            const zona = k === "text/tablero-diario" ? "dentro" : y < r.height * 0.3 ? "antes" : y > r.height * 0.7 ? "despues" : "dentro";
+            t.classList.toggle("soltar-antes", zona === "antes");
+            t.classList.toggle("soltar-despues", zona === "despues");
+            t.classList.toggle("soltar-dentro", zona === "dentro");
+          });
+          t.addEventListener("dragleave", () => t.classList.remove("soltar-antes", "soltar-despues", "soltar-dentro"));
+          t.addEventListener("drop", async ev => {
+            const zona = t.classList.contains("soltar-antes") ? "antes" : t.classList.contains("soltar-despues") ? "despues" : "dentro";
+            t.classList.remove("soltar-antes", "soltar-despues", "soltar-dentro");
+            const movida = ev.dataTransfer.getData("text/tablero-carpeta"), entrada = ev.dataTransfer.getData("text/tablero-diario");
+            ev.preventDefault(); ev.stopPropagation();
+            // Soltar un personaje o nota sobre una carpeta lo mete en ella
+            if (entrada && !movida) {
+              const e = TB.diario.get(entrada);
+              if (!e || e.carpeta === cp) return;
+              await cambiarEntradas([e], () => ({ carpeta: cp }));
+              pintarLista();
+              return;
+            }
+            if (!movida || movida === cp || cp.startsWith(movida + "/")) return;
+            const destinoPadre = zona === "dentro" ? cp : padreDe(cp);
+            let ruta = movida;
+            if (padreDe(movida) !== destinoPadre) {
+              ruta = (destinoPadre ? destinoPadre + "/" : "") + hojaDe(movida);
+              await renombrarCarpeta(movida, ruta);
+            }
+            if (zona === "dentro") { plegadas.delete(cp); pintarLista(); return; }
+            // Reordenar entre hermanas
+            const hermanas = hijasDe(destinoPadre).filter(c => c !== ruta);
+            hermanas.splice(hermanas.indexOf(cp) + (zona === "antes" ? 0 : 1), 0, ruta);
+            guardarOrden(ordenCarpetas().filter(c => !hermanas.includes(c)).concat(hermanas));
+          });
+        }
+        destino.appendChild(t);
         if (!abierta) return;
         const h = el(`<div class="tb-lista-hijos"></div>`);
         todas.filter(e => e.carpeta === cp).forEach(e => h.appendChild(item(e)));
-        lista.appendChild(h);
-      });
+        hijasDe(cp).forEach(sub => pintarCarpeta(sub, h));
+        destino.appendChild(h);
+      };
+      hijasDe("").forEach(cp => pintarCarpeta(cp, lista));
     }
     pintarLista();
   }
@@ -981,6 +1153,12 @@
 
   // Duración de lo que suena (archivo, YouTube o Spotify) y formato m:ss
   let spDuracion = 0;
+  function irAPosicion(s) {
+    const mus = TB.estado.musica || {}, d = duracionActual();
+    s = Math.max(0, d ? Math.min(s, d - 0.5) : s);
+    if (mus.pausado) cambiarMusica({ pos: s });
+    else cambiarMusica({ inicio: Date.now() - s * 1000 });
+  }
   function duracionActual() {
     const m = TB.estado.musica || {};
     if (m.tipo === "youtube") return yt && yt.getDuration ? yt.getDuration() || 0 : 0;
@@ -1041,12 +1219,7 @@
     const avance = q("[data-avance]");
     if (avance) {
       let tocando = false;
-      const irA = s => {
-        const d = duracionActual();
-        s = Math.max(0, d ? Math.min(s, d - 0.5) : s);
-        if (mus.pausado) cambiarMusica({ pos: s });
-        else cambiarMusica({ inicio: Date.now() - s * 1000 });
-      };
+      const irA = irAPosicion;
       avance.addEventListener("input", () => { tocando = true; q("[data-t-actual]").textContent = mmss(+avance.value); });
       avance.addEventListener("change", () => { tocando = false; irA(+avance.value); });
       cuerpo.querySelectorAll("[data-salto]").forEach(b => b.addEventListener("click", () => irA(posicionDe(TB.estado.musica || {}) + Number(b.dataset.salto))));
@@ -1336,7 +1509,7 @@
         if (gm) {
           fila.querySelector("[data-editar]").addEventListener("click", () => editarTabla(t));
           fila.querySelector("[data-borrar]").addEventListener("click", async () => {
-            if (!(await confirmar("¿Borrar la tabla «" + t.nombre + "»?"))) return;
+            if (!(await confirmar("Borrar la tabla", "¿Borrar la tabla «" + t.nombre + "»? No se puede deshacer.", "Borrar"))) return;
             try { await TB.red.borrarTabla(t.id); await cargarTablas(); pintarColecciones(); } catch (e) { aviso(mensajeError(e), true); }
           });
         }
