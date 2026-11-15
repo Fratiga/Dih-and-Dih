@@ -438,3 +438,22 @@ li:nth-child(10) > button > .hj-pta, .hip-juego .hip-insc:nth-child(10) .hip-ins
 body.hip-juego .pagmus, body.hip-juego:not(.has-mini-player) .pagmus { left: auto; right: 12px; bottom: 16px; }
 @media (max-width: 900px) { body.hip-juego .pagmus, body.hip-juego:not(.has-mini-player) .pagmus { bottom: 142px; } }
 @media (max-width: 1099px) { body.hip-juego .pagmus, body.hip-juego:not(.has-mini-player) .pagmus { bottom: 96px; } }
+
+/* ---------------------------------------------------------------- rendimiento (gráficas integradas)
+   El recinto es un SVG fijo a pantalla completa con máscara: cada fotograma de una animación lo repinta entero.
+   Fuera del recinto (con el velo oscuro encima) todo se para; dentro, las animaciones avanzan a saltos de unos
+   15 fotogramas por segundo, que se ve igual de vivo y repinta cuatro veces menos. */
+body.hip-juego:not([data-pestana="inicio"]) .hj-fondo *, html.hip-pleno .hj-fondo * { animation-play-state: paused !important; }
+.hj-vuelta { animation-timing-function: steps(var(--pasos, 690)); --pasos: 690; }
+.hj-vuelta.v2 { --pasos: 795; }
+.hj-vuelta.v3 { --pasos: 915; }
+body[data-fase="corriendo"] .hj-vuelta { --pasos: 135; }
+body[data-fase="corriendo"] .hj-vuelta.v2 { --pasos: 144; }
+body[data-fase="corriendo"] .hj-vuelta.v3 { --pasos: 155; }
+.hj-vuelta .hj-bicho, .hj-vuelta .hj-pata { animation-timing-function: steps(7); }
+body[data-fase="corriendo"] .hj-vuelta .hj-bicho, body[data-fase="corriendo"] .hj-vuelta .hj-pata { animation-timing-function: steps(3); }
+.hj-bandera { animation-timing-function: steps(36); }
+body[data-fase="corriendo"] .hj-bandera { animation-timing-function: steps(10); }
+.hj-nube { animation-timing-function: steps(180); }
+.hj-nube.lenta { animation-timing-function: steps(180); }
+body[data-fase="corriendo"] .hj-gente, .hj-fondo.ovacion .hj-gente { animation-timing-function: steps(5); }

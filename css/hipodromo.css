@@ -572,3 +572,7 @@ body[data-fase="corriendo"] .hip-fase::before { background: var(--hip-rojo); ani
 .hip-novedades ul { margin: 0; padding-left: 18px; display: grid; gap: 9px; }
 .hip-novedades li { line-height: 1.5; }
 .hip-novedades a { color: var(--accent); }
+
+/* Rendimiento: la respiración y la cola de las siluetas avanzan a saltos (unos 10 por segundo), no en cada fotograma */
+.hip-silueta.grande .hip-resp, .hip-silueta.mediana .hip-resp { animation-timing-function: steps(38); }
+.hip-silueta.grande .hip-cola, .hip-silueta.mediana .hip-cola { animation-timing-function: steps(46); }

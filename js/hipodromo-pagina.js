@@ -31,7 +31,7 @@
   const textoDe = (el, t) => { if (el && el._t !== t) { el.textContent = t; el._t = t; } };
 
   let cuadraUI = null, cartasUI = null, online = null;
-  let est = null, m = null, pestana = "inicio", oculto = false, escena = null, fichaId = null, ultimoMarco = 0, ultimoPintado = 0, mostrarMas = 48, nUI = -1, velEfectiva = 1;
+  let est = null, m = null, pestana = "inicio", oculto = false, escena = null, fichaId = null, ultimoMarco = 0, ultimoPintado = 0, ultimaEscena = 0, mostrarMas = 48, nUI = -1, velEfectiva = 1;
   const filtros = { estado: "pista", orden: "vic", q: "" };
   try { oculto = localStorage.getItem(CLAVE_OCULTO) === "1"; pestana = "inicio"; } catch (e) { /* sin almacenamiento */ }
   // la página en vivo manda aquí con #carrera, #noticias... (apostar, resultados completos)
@@ -109,7 +109,7 @@
     if (!est || !m) { ultimoMarco = ts; return; }
     if (online) {          // el reloj es el del servidor: la página no adelanta nada
       est.virtual = online.ahora(); velEfectiva = 1;
-      pintarEscena();
+      if (ts - ultimaEscena >= 32) { ultimaEscena = ts; pintarEscena(); }   // la carrera, como mucho a 30 fps
       if (ts - ultimoPintado > 200) { ultimoPintado = ts; pintarReloj(); }
       return;
     }
@@ -124,7 +124,7 @@
     est.virtual = nuevo;
     let tope = 0;
     while (est.virtual >= m.proxima.hora + C.APLICAR_SEG * 1000 && tope++ < 6) aplicar();
-    pintarEscena();
+    if (ts - ultimaEscena >= 32) { ultimaEscena = ts; pintarEscena(); }   // la carrera, como mucho a 30 fps
     if (ts - ultimoPintado > 200) { ultimoPintado = ts; pintarReloj(); }
   }
 
