@@ -18,7 +18,7 @@
   const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "x" + Date.now().toString(36) + Math.random().toString(36).slice(2));
   const ahora = () => new Date().toISOString();
   const ESTADO_VACIO = () => ({ id: 1, escena_jugadores: null, iniciativa: { lista: [], turno: 0, ronda: 1, visible: false }, musica: {}, gramola: {} });
-  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "fxFin", "camara", "cursor", "sonido", "explorado", "ficha"];
+  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "fxFin", "fxMov", "camara", "cursor", "sonido", "explorado", "ficha"];
 
   /* ============================================================ Supabase */
   function redSupabase() {

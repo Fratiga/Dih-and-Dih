@@ -525,7 +525,7 @@
     const pintar = () => {
       tipo.value = fx.tipo;
       const t = TBFx.TIPOS.find(x => x.id === fx.tipo) || TBFx.TIPOS[0];
-      ayuda.textContent = t.modo === "apuntar" ? "Arrastra desde el origen hasta el objetivo. Sale del centro de la ficha o casilla y llega al centro de la de destino." : t.modo === "mantener" ? "Mantén pulsado el clic: el efecto sigue en el centro de esa ficha o casilla hasta que lo sueltes." : "Haz clic donde quieras el efecto, o arrastra para ver su área y la distancia.";
+      ayuda.textContent = t.modo === "apuntar" ? "Arrastra desde el origen hasta el objetivo. Sale del centro de la ficha o casilla y llega al centro de la de destino." : t.modo === "mantener" ? "Mantén pulsado el clic: el efecto sale del centro de esa ficha o casilla y sigue al ratón hasta que lo sueltes." : "Haz clic donde quieras el efecto, o arrastra para ver su área y la distancia.";
       c.querySelectorAll("[data-c]").forEach(b => b.classList.toggle("activo", b.dataset.c === fx.color));
     };
     tipo.addEventListener("change", () => { fx.tipo = tipo.value; TB.guardarPrefs(); TB.aplicarOpcionesLienzo(); pintar(); pintarExtraFx(); setHerramienta("fx"); });
@@ -1145,7 +1145,7 @@
     }
   }
   function itemsEstados(objs) {
-    const cat = window.TBEstados || [];
+    const cat = (window.TBEstados || []).filter(c => objs.every(q => window.TBEstadoPermitido(c, q, TB.esGM())));
     const tiene = id => objs.length && objs.every(q => ((q.datos || {}).estados || []).some(e => e.id === id));
     const item = c => ({ texto: (tiene(c.id) ? "✓ " : "") + (c.color ? `<i class="tb-estado-punto" style="background:${c.color}"></i>` : `<i class="tb-estado-sil">${window.TBMarcaSVG(c)}</i>`) + c.nombre, accion: async () => {
       if (tiene(c.id)) { ponerEstados(objs, l => l.filter(e => e.id !== c.id)); return; }
@@ -1173,7 +1173,7 @@
     if (!o || !(TB.esGM() || TB.controla(o))) return;
     const ids = TB.esGM() && TB.L.seleccion().length > 1 ? TB.L.seleccion() : [id];
     document.querySelectorAll(".tb-estados-pop").forEach(p => p.remove());
-    const cat = window.TBEstados || [];
+    const cat = (window.TBEstados || []).filter(c => window.TBEstadoPermitido(c, o, TB.esGM()));
     const p = el(`<div class="tb-estados-pop"><div class="tb-estados-cab"><input type="search" placeholder="Buscar.." data-buscar><button type="button" class="tb-btn tb-btn-acento" data-limpiar>Limpiar todo</button></div><div data-cuerpo></div></div>`);
     const objs = () => ids.map(s => TB.L.objeto(s)).filter(q => q && q.tipo === "imagen");
     const activo = c => { const l = objs(); return l.length && l.every(q => ((q.datos || {}).estados || []).some(e => e.id === c.id)); };

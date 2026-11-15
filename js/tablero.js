@@ -298,6 +298,7 @@
     r.on("regla", d => { if (d && (!d.escena || d.escena === TB.escenaId)) TB.L.reglaRemota(d); });
     r.on("fx", d => { if (d && d.escena === TB.escenaId && !TB.prefs.sinFx) TB.fx.reproducir(d); });
     r.on("fxFin", d => { if (d && d.id) TB.fx.parar(d.id); });
+    r.on("fxMov", d => { if (d && d.id) TB.fx.mover(d.id, d.x, d.y); });
     // Un jugador cambió su hoja (PV o salvaciones): el DJ la vuelve a leer para copiarla a las fichas del tablero
     r.on("ficha", () => { if (TB.yo.esGM) refrescarPV(); });
     r.on("presencia", lista => { TB.presencia = lista || []; TB.lanzar("presencia"); });
@@ -652,7 +653,7 @@
   };
 
   /* ------------------------------------------------------------ lienzo → app */
-  let fxMantenido = null, fxTope = null;
+  let fxMantenido = null, fxTope = null, ultimoFxMov = 0;
   // Datos de un efecto con el tipo, color y tamaño del panel de Efectos
   function datosFx(a, b, extra) {
     const t = TBFx.TIPOS.find(x => x.id === TB.prefs.fx.tipo) || TBFx.TIPOS[0];
@@ -714,6 +715,14 @@
         fxTope = setTimeout(() => { if (fxMantenido === d.id) callbacksFxFin(); }, 60000);
       },
       onFxFin: () => callbacksFxFin(),
+      onFxMover: p => {
+        if (!fxMantenido) return;
+        TB.fx.mover(fxMantenido, p.x, p.y);
+        const ahora = Date.now();
+        if (ahora - ultimoFxMov < 50) return;
+        ultimoFxMov = ahora;
+        TB.red.emitir("fxMov", { id: fxMantenido, x: Math.round(p.x), y: Math.round(p.y) });
+      },
       onNiebla: n => { if (TB.yo.esGM && TB.escenaId) TB.guardarEscena(TB.escenaId, { niebla: n }); },
       onZoom: z => TB.lanzar("zoom", z),
       onMenuVacio: (p, x, y, id) => TBPaneles.menuVacio(p, x, y, id),

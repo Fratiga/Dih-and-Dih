@@ -209,6 +209,15 @@ comprobar "el jugador marca estados en su ficha" "envenenado|2" "$(sql "select (
 contiene "no en la ficha de otro" "$(como "$U2" "select tablero_estados('$F1', '[]');")" "no es tuya"
 contiene "solo una lista" "$(como "$U1" "select tablero_estados('$F1', '{}');")" "no válidos"
 comprobar "y no toca nada más de la ficha" "Laia" "$(sql "select datos ->> 'nombre' from tablero_objetos where id = '$F1'")"
+contiene "un estado de otro personaje no se lo pone el jugador" "$(como "$U1" "select tablero_estados('$F1', '[{\"id\": \"casteo_notas\"}]');")" "de otro personaje"
+como "$ADMIN" "update tablero_objetos set datos = jsonb_set(datos, '{estados}', '[{\"id\": \"fumando\"}]') where id = '$F1';" >/dev/null
+como "$U1" "select tablero_estados('$F1', '[{\"id\": \"fumando\"}, {\"id\": \"derribado\"}]');" >/dev/null
+comprobar "pero puede dejar el que le puso el DJ y añadir condiciones" "fumando|derribado" "$(sql "select (datos -> 'estados' -> 0 ->> 'id') || '|' || (datos -> 'estados' -> 1 ->> 'id') from tablero_objetos where id = '$F1'")"
+sql "update tablero_objetos set datos = datos || '{\"nombre\": \"Ryn Feycrown\"}' where id = '$F1'" >/dev/null
+como "$U1" "select tablero_estados('$F1', '[{\"id\": \"casteo_notas\"}]');" >/dev/null
+comprobar "el de su personaje sí" "casteo_notas" "$(sql "select datos -> 'estados' -> 0 ->> 'id' from tablero_objetos where id = '$F1'")"
+contiene "y el de otro no aunque tenga el suyo" "$(como "$U1" "select tablero_estados('$F1', '[{\"id\": \"casteo_notas\"}, {\"id\": \"furia_salvaje\"}]');")" "de otro personaje"
+sql "update tablero_objetos set datos = (datos || '{\"nombre\": \"Laia\"}') - 'estados' where id = '$F1'" >/dev/null
 
 echo "== Copiar apariencias"
 contiene "sin permiso del DJ no cambia de aspecto" "$(como "$U1" "select tablero_apariencia('$F1', '{\"src\": \"https://x.com/lobo.png\", \"nombre\": \"Lobo\"}');")" "no puede cambiar"

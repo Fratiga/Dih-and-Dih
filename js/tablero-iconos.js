@@ -33,9 +33,17 @@
     m("agarrado", "Agarrado", "grab", { cond: true }), m("asustado", "Asustado", "screaming", { cond: true }),
     m("granada", "Granada", "grenade"), m("torreta", "Torreta", "sentry-gun"),
     m("todos_a_una", "Todos a una", "all-for-one"), m("bendecido", "Bendecido", "angel-outfit"), m("diana", "Diana", "archery-target"),
-    m("casteo_notas", "Casteo: notas musicales", "musical-notes", { anim: true }), m("casteo_cartas", "Casteo: cartas", "poker-hand", { anim: true }),
-    m("fumando", "Fumando", "smoking-pipe", { anim: true }), m("raudo", "Raudo", "sprint", { anim: true })
+    m("casteo_notas", "Casteo: aura musical", "musical-notes", { anim: true, solo: "ryn" }), m("casteo_cartas", "Casteo: cartas", "poker-hand", { anim: true, solo: "eledar" }),
+    m("fumando", "Fumando", "smoking-pipe", { anim: true, solo: "torvrena|cassius" }), m("raudo", "Raudo", "sprint", { anim: true, solo: "cassius" }),
+    m("furia_salvaje", "Furia de la magia salvaje", "magic-swirl", { anim: true, solo: "hooey" })
   ];
+  // Los estados de un personaje solo los pone su jugador en su ficha (el servidor lo comprueba igual). Se mira el nombre
+  // original de la ficha, no el de una apariencia copiada.
+  window.TBEstadoPermitido = (c, o, esGM) => {
+    if (esGM || !c || !c.solo) return true;
+    const d = (o && o.datos) || {}, nombre = String((d.original && d.original.nombre) || d.nombre || "").toLowerCase();
+    return new RegExp("(^|[^a-z])(" + c.solo + ")([^a-z]|$)").test(nombre);
+  };
   // Lo que dice el reglamento (data/reglas.js, sección Estados) de un marcador; vacío si no es una condición
   window.TBReglaEstado = (c, nombre) => {
     const sec = (window.REGLAS || []).find(s => s.titulo === "Estados");

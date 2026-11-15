@@ -185,7 +185,7 @@
     const opcLuz = () => (st.escena && st.escena.opciones && st.escena.opciones.luz) || {};
     function bloqueaMovimiento() { const L = opcLuz(), b = L.bloquear || "luz"; return !!window.TBLuz && (b === "siempre" || (b === "luz" && !!L.activa)); }
     let luzPendiente = false;
-    const ANIMADOS = { casteo_notas: 1, casteo_cartas: 1, fumando: 1, raudo: 1 };
+    const ANIMADOS = { casteo_notas: 1, casteo_cartas: 1, fumando: 1, raudo: 1, furia_salvaje: 1 };
     const animForma = new Konva.Shape({
       listening: false,
       sceneFunc(ctx) {
@@ -230,16 +230,104 @@
     function dibujarAnimado(c, id, x, y, R, t) {
       c.save();
       if (id === "casteo_notas") {
-        // Notas musicales moradas girando alrededor
-        const notas = ["corchea", "doble", "semi", "negra"], tonos = ["#b57bff", "#d9b3ff", "#9b59ff", "#c38dff"];
-        c.globalAlpha = 0.18; c.strokeStyle = "#b57bff"; c.lineWidth = R * 0.05;
-        c.beginPath(); c.ellipse(x, y, R * 1.28, R * 1.08, 0, 0, Math.PI * 2); c.stroke();
-        c.globalAlpha = 0.95; c.textAlign = "center"; c.textBaseline = "middle";
-        for (let i = 0; i < 6; i++) {
-          const a = t * 0.9 + i * Math.PI / 3, rr = R * (1.28 + Math.sin(t * 2 + i) * 0.06);
-          const px = x + Math.cos(a) * rr, py = y + Math.sin(a) * rr * 0.85 + Math.sin(t * 3.2 + i * 1.3) * R * 0.08;
-          const tam = R * (0.42 + 0.06 * Math.sin(t * 2.6 + i));
-          figura(c, notas[i % 4], px, py, tam, tonos[i % 4], "rgba(40,10,70,.75)");
+        // Aura musical naranja: un halo cálido que respira, dos cintas onduladas como un pentagrama que fluye
+        // y notas que van subidas a la onda, meciéndose
+        const notas = ["corchea", "doble", "semi", "negra"], tonos = ["#ff8a1f", "#ffb347", "#ffd27a", "#ff9d45"];
+        const onda = (th, fase, amp) => R * (1.26 + Math.sin(th * 4 + t * 1.3 + fase) * amp + Math.sin(th * 7 - t * 0.9 + fase) * amp * 0.35);
+        const halo = c.createRadialGradient(x, y, R * 0.92, x, y, R * 1.5);
+        halo.addColorStop(0, "rgba(255,150,40,0)");
+        halo.addColorStop(0.45, `rgba(255,150,40,${0.13 + 0.05 * Math.sin(t * 1.8)})`);
+        halo.addColorStop(1, "rgba(255,150,40,0)");
+        c.fillStyle = halo; c.beginPath(); c.arc(x, y, R * 1.5, 0, Math.PI * 2); c.fill();
+        c.lineCap = "round"; c.lineJoin = "round";
+        [[0, 0.055, "#ff9a3c", 0.5, 0.05], [Math.PI * 0.6, 0.04, "#ffd27a", 0.32, 0.03], [Math.PI * 1.3, 0.03, "#ffe6b0", 0.2, 0.02]].forEach(([fase, amp, color, alfa, grosor]) => {
+          c.beginPath();
+          for (let j = 0; j <= 120; j++) {
+            const th = j / 120 * Math.PI * 2, r = onda(th, fase, amp);
+            const px = x + Math.cos(th) * r, py = y + Math.sin(th) * r * 0.93;
+            if (j) c.lineTo(px, py); else c.moveTo(px, py);
+          }
+          c.globalAlpha = alfa; c.strokeStyle = color; c.lineWidth = R * grosor; c.stroke();
+        });
+        for (let i = 0; i < 5; i++) {
+          const th = t * 0.5 + i * Math.PI * 2 / 5, r = onda(th, 0, 0.055);
+          const px = x + Math.cos(th) * r, py = y + Math.sin(th) * r * 0.93 - Math.sin(t * 2.2 + i * 1.3) * R * 0.05;
+          // una estela de puntitos detrás de cada nota
+          for (let k = 1; k <= 4; k++) {
+            const tk = th - k * 0.07, rk = onda(tk, 0, 0.055);
+            c.globalAlpha = 0.35 * (1 - k / 5); c.fillStyle = "#ffd27a";
+            c.beginPath(); c.arc(x + Math.cos(tk) * rk, y + Math.sin(tk) * rk * 0.93, R * 0.025 * (1 - k / 6), 0, Math.PI * 2); c.fill();
+          }
+          c.save();
+          c.globalAlpha = 0.8 + 0.2 * Math.sin(t * 1.7 + i);
+          c.translate(px, py); c.rotate(Math.sin(t * 1.5 + i * 1.1) * 0.28);
+          figura(c, notas[i % 4], 0, 0, R * (0.36 + 0.05 * Math.sin(t * 2 + i)), tonos[i % 4], "rgba(110,40,0,.75)");
+          c.restore();
+        }
+      } else if (id === "furia_salvaje") {
+        // Furia de la magia salvaje: aura de colores arcanos que cambian sin parar, relámpagos que bailan sobre la ficha,
+        // motas de magia descontrolada, fuegos fatuos que suben y brotes que nacen y se marchitan a sus pies
+        const h0 = (t * 80) % 360, pulso = 1 + 0.06 * Math.sin(t * 7) + 0.04 * Math.sin(t * 11.3);
+        const aura = c.createRadialGradient(x, y, R * 0.85, x, y, R * 1.6 * pulso);
+        aura.addColorStop(0, `hsla(${h0},95%,60%,0)`);
+        aura.addColorStop(0.3, `hsla(${h0},95%,62%,.34)`);
+        aura.addColorStop(0.65, `hsla(${(h0 + 120) % 360},95%,60%,.16)`);
+        aura.addColorStop(1, `hsla(${(h0 + 240) % 360},95%,60%,0)`);
+        c.fillStyle = aura; c.beginPath(); c.arc(x, y, R * 1.6 * pulso, 0, Math.PI * 2); c.fill();
+        // anillo partido en trozos de colores que giran a saltos
+        c.lineCap = "round";
+        for (let k = 0; k < 6; k++) {
+          const a0 = t * (k % 2 ? 1.4 : -1.1) + k * Math.PI / 3;
+          c.globalAlpha = 0.55; c.strokeStyle = `hsl(${(h0 + k * 60) % 360},100%,68%)`; c.lineWidth = R * 0.035;
+          c.beginPath(); c.arc(x, y, R * (1.08 + 0.03 * Math.sin(t * 9 + k)), a0, a0 + 0.55); c.stroke();
+        }
+        c.globalAlpha = 1;
+        c.globalCompositeOperation = "lighter";
+        // relámpagos: se rehacen 8 veces por segundo, con una semilla que depende del tiempo
+        const semilla = Math.floor(t * 8), az = n => { const v = Math.sin(semilla * 12.9898 + n * 78.233) * 43758.5453; return v - Math.floor(v); };
+        for (let k = 0; k < 3; k++) {
+          if (az(k * 11) < 0.3) continue;
+          const a1 = az(k * 11 + 1) * Math.PI * 2, largo = (0.7 + az(k * 11 + 2)) * (az(k * 11 + 3) < 0.5 ? 1 : -1);
+          c.beginPath();
+          for (let j = 0; j <= 7; j++) {
+            const a = a1 + largo * j / 7, r = R * (0.96 + (j % 7 ? (az(k * 11 + 4 + j) - 0.5) * 0.32 : 0));
+            const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
+            if (j) c.lineTo(px, py); else c.moveTo(px, py);
+          }
+          const col = `hsl(${(h0 + 90 + k * 100) % 360},100%,78%)`;
+          c.strokeStyle = col; c.lineWidth = R * 0.028; c.shadowColor = col; c.shadowBlur = R * 0.3; c.stroke();
+        }
+        c.shadowBlur = 0;
+        // motas de magia
+        for (let i = 0; i < 10; i++) {
+          const a = t * (0.7 + i * 0.12) * (i % 2 ? 1 : -1) + i * 2.1, rr = R * (1.12 + 0.28 * Math.sin(t * 1.6 + i * 3.1));
+          c.globalAlpha = 0.7 + 0.3 * Math.sin(t * 6 + i);
+          c.fillStyle = `hsl(${(h0 + i * 37) % 360},100%,70%)`;
+          c.beginPath(); c.arc(x + Math.cos(a) * rr, y + Math.sin(a) * rr, R * 0.045 * (1 + 0.5 * Math.sin(t * 5 + i)), 0, Math.PI * 2); c.fill();
+        }
+        // fuegos fatuos que suben
+        for (let i = 0; i < 5; i++) {
+          const f = (t * 0.55 + i / 5) % 1, ang = i * 1.26 + 0.4;
+          const bx = x + Math.cos(ang) * R * 1.02 + Math.sin(t * 2 + i) * R * 0.05, by = y + Math.sin(ang) * R * 1.02 - f * R * 0.8;
+          const g2 = c.createRadialGradient(bx, by, 0, bx, by, R * 0.12);
+          g2.addColorStop(0, `hsla(${(h0 + 180) % 360},100%,80%,${0.8 * (1 - f)})`); g2.addColorStop(1, `hsla(${(h0 + 180) % 360},100%,60%,0)`);
+          c.globalAlpha = 1; c.fillStyle = g2; c.beginPath(); c.arc(bx, by, R * 0.12, 0, Math.PI * 2); c.fill();
+        }
+        c.globalCompositeOperation = "source-over";
+        // brotes que nacen y se marchitan abajo
+        for (let i = 0; i < 3; i++) {
+          const s2 = Math.sin(((t * 0.32 + i / 3) % 1) * Math.PI), ang = Math.PI / 2 + (i - 1) * 0.6;
+          if (s2 < 0.05) continue;
+          const bx = x + Math.cos(ang) * R * 0.97, by = y + Math.sin(ang) * R * 0.97, hacia = ang + (i - 1) * 0.3;
+          const tx = bx + Math.cos(hacia) * R * 0.32 * s2, ty = by + Math.sin(hacia) * R * 0.32 * s2;
+          c.globalAlpha = s2; c.strokeStyle = "#3f9e3a"; c.lineWidth = R * 0.03;
+          c.beginPath(); c.moveTo(bx, by); c.quadraticCurveTo(bx + Math.cos(hacia + 0.6) * R * 0.15 * s2, by + Math.sin(hacia + 0.6) * R * 0.15 * s2, tx, ty); c.stroke();
+          c.fillStyle = "#62d45a";
+          [-0.7, 0.7].forEach(lado => {
+            c.save(); c.translate(tx, ty); c.rotate(hacia + lado);
+            c.beginPath(); c.ellipse(R * 0.07 * s2, 0, R * 0.08 * s2, R * 0.035 * s2, 0, 0, Math.PI * 2); c.fill();
+            c.restore();
+          });
         }
       } else if (id === "casteo_cartas") {
         // Cartas moradas barajándose en órbita: se acercan, se alejan y se dan la vuelta
@@ -1347,7 +1435,8 @@
         return;
       }
       if (gesto.tipo === "fx") {
-        if (gesto.mantener) return;
+        // Mantener: el efecto sigue al ratón mientras el botón está pulsado
+        if (gesto.mantener) { if (op.onFxMover) op.onFxMover(p); if ((st.opc.fxPrevia || {}).mostrar !== false) previaFx(p, p); return; }
         const fin = (st.opc.fxPrevia || {}).modo === "apuntar" ? centroFx(p) : p;
         if (op.onFxPrevia) op.onFxPrevia(gesto.inicio, fin);
         gesto.fin = fin;

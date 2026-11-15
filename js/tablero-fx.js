@@ -74,10 +74,29 @@
         const ang = Math.atan2(b.y - a.y, b.x - a.x), L = Math.hypot(b.x - a.x, b.y - a.y), m = op.grados ? op.grados * Math.PI / 360 : 0.46;
         return { dur: 0.9, paso() { for (let i = 0; i < 14; i++) { const d = ang + azar(-m, m), v = azar(0.7, 1.1) * L / 0.75; nueva(c, a.x, a.y, Math.cos(d) * v, Math.sin(d) * v, azar(0.6, 0.85), azar(5, 11) * s, { roce: 0.95, crece: 1.5 }); } } };
       },
+      // Haz: un rayo cuya punta viaja de A a B dejando el trazo encendido, que luego se apaga; al llegar, un impacto
       haz(c, a, b, s, op) {
-        const L = Math.hypot(b.x - a.x, b.y - a.y) || 1, px = -(b.y - a.y) / L, py = (b.x - a.x) / L, w = (op.anchoPx || 40) / 2;
-        const n = Math.round(18 * Math.max(1, Math.min(4, w / 20)));
-        return { dur: 0.6, paso() { for (let i = 0; i < n; i++) { const t = Math.random(), o = azar(-w, w) * 0.9; nueva(c, a.x + (b.x - a.x) * t + px * o, a.y + (b.y - a.y) * t + py * o, azar(-20, 20), azar(-20, 20), azar(0.25, 0.5), azar(3, 7) * s); } } };
+        const L = Math.hypot(b.x - a.x, b.y - a.y) || 1, px = -(b.y - a.y) / L, py = (b.x - a.x) / L;
+        const w = Math.min((op.anchoPx || 40) / 2, 26 * s), viaje = Math.min(0.5, Math.max(0.16, L / 1500));
+        let t = 0, antes = 0, impacto = false;
+        const punto = (f, o) => ({ x: a.x + (b.x - a.x) * f + px * o, y: a.y + (b.y - a.y) * f + py * o });
+        return { dur: viaje + 0.45, paso(dt) {
+          t += dt;
+          const f = Math.min(1, t / viaje);
+          // estela en el tramo que la punta acaba de recorrer
+          const n = Math.max(6, Math.round((f - antes) * L / 4));
+          for (let i = 0; i < n; i++) {
+            const q = punto(antes + (f - antes) * Math.random(), azar(-w, w) * 0.35);
+            nueva(c, q.x, q.y, px * azar(-25, 25), py * azar(-25, 25), azar(0.3, 0.55), azar(2.5, 5) * s);
+          }
+          if (f < 1) { const h = punto(f, 0); nueva(c, h.x, h.y, 0, 0, 0.16, 10 * s, { crece: 0.8 }); }
+          else {
+            // el rayo entero sigue chispeando un momento
+            for (let i = 0; i < 8; i++) { const q = punto(Math.random(), azar(-w, w) * 0.2); nueva(c, q.x, q.y, 0, 0, azar(0.15, 0.3), azar(2, 4) * s); }
+            if (!impacto) { impacto = true; lanzarEmisor(estallido(c, b, s, 26, 170)); }
+          }
+          antes = f;
+        } };
       },
       cohete(c, a, b, s) { return proyectil(c, a, b, s, 1, 0.7, 5); },
       misil(c, a, b, s) { return proyectil(c, a, b, s, 3, 0.55, 3); },
@@ -173,6 +192,7 @@
         const c = COLORES.find(x => x.id === d.color) || COLORES[0];
         const f = comportamientos[d.tipo] || comportamientos.explotar;
         const s = d.escala || 1;
+        if (d.mantener) d.a = { x: d.a.x, y: d.a.y };
         const e = f(c, d.a, d.b || d.a, s, d);
         if (d.mantener && d.id) {
           // Los continuos emiten en cada fotograma; los de un golpe (destello) se repiten cada poco mientras se mantiene
@@ -184,10 +204,15 @@
             if (espera <= 0) { espera = 0.55; e.paso(dt); }
           } };
           if (mantenidos.has(d.id)) mantenidos.get(d.id).dur = 0;
+          m.punto = d.a;
           mantenidos.set(d.id, m);
           lanzarEmisor(m);
         } else lanzarEmisor(e);
         if (particulas.length > 2500) particulas.splice(0, particulas.length - 2500);
+      },
+      mover(id, x, y) {
+        const m = mantenidos.get(id);
+        if (m && m.punto) { m.punto.x = x; m.punto.y = y; }
       },
       parar(id) {
         const m = mantenidos.get(id);

@@ -666,6 +666,8 @@ set search_path = public
 as $$
 declare
   o tablero_objetos;
+  nombre text;
+  nuevo text;
 begin
   if auth.uid() is null then raise exception 'Inicia sesión.'; end if;
   if jsonb_typeof(p_estados) <> 'array' or jsonb_array_length(p_estados) > 30 or pg_column_size(p_estados) > 4000 then raise exception 'Estados no válidos.'; end if;
@@ -673,6 +675,21 @@ begin
   if not found then raise exception 'Esa ficha ya no existe.'; end if;
   if not fichas_es_admin() and not ((o.controlan_todos or auth.uid() = any(o.controladores)) and o.capa = 'fichas' and tablero_escena_visible(o.escena)) then
     raise exception 'Esa ficha no es tuya.';
+  end if;
+  -- Los estados animados son de un personaje: el jugador solo pone los del suyo (mirando su nombre original,
+  -- no el de una apariencia copiada). Los que ya tenía puestos por el DJ se pueden dejar o quitar.
+  if not fichas_es_admin() then
+    nombre := lower(coalesce(o.datos -> 'original' ->> 'nombre', o.datos ->> 'nombre', ''));
+    for nuevo in select e ->> 'id' from jsonb_array_elements(p_estados) e
+        where not exists (select 1 from jsonb_array_elements(coalesce(o.datos -> 'estados', '[]'::jsonb)) v where v ->> 'id' = e ->> 'id') loop
+      if (nuevo = 'casteo_notas' and nombre !~ '\mryn\M')
+        or (nuevo = 'casteo_cartas' and nombre !~ '\meledar\M')
+        or (nuevo = 'fumando' and nombre !~ '\m(torvrena|cassius)\M')
+        or (nuevo = 'raudo' and nombre !~ '\mcassius\M')
+        or (nuevo = 'furia_salvaje' and nombre !~ '\mhooey\M') then
+        raise exception 'Ese estado es de otro personaje.';
+      end if;
+    end loop;
   end if;
   update tablero_objetos set datos = jsonb_set(coalesce(datos, '{}'::jsonb), '{estados}', p_estados), actualizado = now() where id = p_objeto;
 end;
