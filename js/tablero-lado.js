@@ -11,7 +11,7 @@
   const PESTANAS = [
     { id: "chat", icono: "chat", titulo: "Chat de texto" },
     { id: "tiradas", icono: "dado", titulo: "Tiradas de tu ficha" },
-    { id: "arte", icono: "arte", titulo: "Biblioteca de arte", gm: true },
+    { id: "arte", icono: "arte", titulo: "Biblioteca de arte" },
     { id: "diario", icono: "diario", titulo: "Diario" },
     { id: "compendio", icono: "compendio", titulo: "Compendio" },
     { id: "gramola", icono: "gramola", titulo: "Gramola", gm: true },
@@ -374,6 +374,8 @@
       <input type="search" data-buscar style="margin-top:calc(6px * var(--tb-k))">
       <p class="tb-arte-ayuda">Arrastra para colocar el arte, <b>arrastra pulsando Alt</b> para mantener las dimensiones. Suelta aquí las imágenes de tu PC para subirlas (o encima de una carpeta para meterlas en ella). Clic derecho en una carpeta para más opciones.</p>
       <div class="tb-fila" style="justify-content:flex-end"><input type="file" accept="image/*" multiple hidden data-archivo><button type="button" class="tb-btn" data-carpeta-nueva title="Nueva carpeta">＋ Carpeta</button><button type="button" class="tb-btn" data-cargar>⬆ Cargar</button><button type="button" class="tb-btn" data-url>＋ Añadir URL</button></div></div>`);
+    const gmArte = TB.esGM();
+    if (!gmArte) { tipoArte = "subidas"; cab.querySelector("[data-tipo]").hidden = true; }
     const buscar = cab.querySelector("[data-buscar]"), tipo = cab.querySelector("[data-tipo]"), archivo = cab.querySelector("[data-archivo]");
     buscar.value = filtroArte; tipo.value = tipoArte;
     buscar.addEventListener("input", () => { filtroArte = buscar.value; pintarLista(); });
@@ -389,7 +391,7 @@
       btnCargar.disabled = true;
       for (const [i, f] of archivos.entries()) {
         btnCargar.innerHTML = `<span class="tb-girando"></span> ${archivos.length > 1 ? `${i + 1} de ${archivos.length}` : "Subiendo…"}`;
-        try { const src = await TB.red.subirImagen(f); const a = await TB.red.crearArte({ src, nombre: f.name.replace(/\.[^.]+$/, "").slice(0, 120), carpeta: carpeta || "" }); TB.arte.unshift(a); }
+        try { const src = await (gmArte ? TB.red.subirImagen(f) : TB.red.subirPropio(f)); const a = await TB.red.crearArte({ src, nombre: f.name.replace(/\.[^.]+$/, "").slice(0, 120), carpeta: carpeta || "" }); TB.arte.unshift(a); }
         catch (e) { aviso(/carpeta/.test(String(e && e.message)) ? "Falta volver a correr tablero.sql para las carpetas del arte." : f.name + ": " + mensajeError(e), true); }
       }
       btnCargar.disabled = false; btnCargar.innerHTML = texto;
@@ -419,9 +421,11 @@
     // Carpetas: «Padre/Hijo» es una subcarpeta; el orden y las vacías se guardan en el estado del tablero
     const padreDe = x => (x.includes("/") ? x.slice(0, x.lastIndexOf("/")) : "");
     const hojaDe = x => x.slice(x.lastIndexOf("/") + 1);
-    const orden = () => ((TB.estado || {}).carpetas_arte || []).filter(x => typeof x === "string" && x.trim());
+    const leerOrdenJug = () => { try { return JSON.parse(localStorage.getItem("tbCarpetasArte:" + TB.yo.uid) || "[]"); } catch (e) { return []; } };
+    const orden = () => (gmArte ? (TB.estado || {}).carpetas_arte || [] : leerOrdenJug()).filter(x => typeof x === "string" && x.trim());
     const dentro = (a, cp) => a.carpeta === cp || (a.carpeta || "").startsWith(cp + "/");
     async function guardarOrden(l) {
+      if (!gmArte) { try { localStorage.setItem("tbCarpetasArte:" + TB.yo.uid, JSON.stringify([...new Set(l)].slice(0, 200))); } catch (e) { /* nada */ } pintarLista(); return; }
       TB.estado.carpetas_arte = [...new Set(l)];
       pintarLista();
       try { await TB.red.actualizarEstado({ carpetas_arte: TB.estado.carpetas_arte }); }

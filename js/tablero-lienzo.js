@@ -51,8 +51,9 @@
     stage.add(lAnim);
     lAnim.zIndex(3);
     // La página: el lienzo donde van los mapas; fuera de ella se ve el color del tablero
-    const pagina = new Konva.Rect({ x: 0, y: 0, width: 2800, height: 2800, fill: "#ffffff", listening: false, shadowColor: "#000", shadowBlur: 24, shadowOpacity: 0.35 });
-    lMapa.add(pagina);
+    const paginaSombra = new Konva.Rect({ x: 5, y: 7, width: 2800, height: 2800, fill: "rgba(0,0,0,.28)", listening: false, perfectDrawEnabled: false });
+    const pagina = new Konva.Rect({ x: 0, y: 0, width: 2800, height: 2800, fill: "#ffffff", listening: false, perfectDrawEnabled: false });
+    lMapa.add(paginaSombra, pagina);
 
     // Cada capa: auras (debajo), objetos y deco (barras, nombres, encima)
     const grupos = {};
@@ -120,7 +121,11 @@
       redibujarVista();
       if (op.onZoom) op.onZoom(s);
     }
-    function redibujarVista() { lGrid.batchDraw(); lNiebla.batchDraw(); stage.batchDraw(); if (st.seleccion && st.seleccion.size === 1) pintarSeleccionUI(); }
+    let zoomSel = 0;
+    function redibujarVista() {
+      stage.batchDraw();
+      if (st.seleccion && st.seleccion.size === 1 && zoom() !== zoomSel) pintarSeleccionUI();
+    }
     // Centra la página entera (Inicio)
     function ajustarVista() {
       const m = medidas();
@@ -203,7 +208,7 @@
     function actualizarAnim() {
       const hay = [...st.nodos.values()].some(n => ((n.o.datos || {}).estados || []).some(e => e && ANIMADOS[e.id]));
       if (hay && !bucleAnim) {
-        bucleAnim = new Konva.Animation(f => { if (f.time - ultimoCuadro < 42) return false; ultimoCuadro = f.time; }, lAnim);
+        bucleAnim = new Konva.Animation(f => { if (document.hidden || f.time - ultimoCuadro < 50) return false; ultimoCuadro = f.time; }, lAnim);
         bucleAnim.start();
       } else if (!hay && bucleAnim) { bucleAnim.stop(); bucleAnim = null; lAnim.batchDraw(); }
     }
@@ -295,9 +300,10 @@
             if (j) c.lineTo(px, py); else c.moveTo(px, py);
           }
           const col = `hsl(${(h0 + 90 + k * 100) % 360},100%,78%)`;
-          c.strokeStyle = col; c.lineWidth = R * 0.028; c.shadowColor = col; c.shadowBlur = R * 0.3; c.stroke();
+          // resplandor con un trazo ancho y tenue en vez de una sombra difuminada (mucho más barato)
+          c.globalAlpha = 0.25; c.strokeStyle = col; c.lineWidth = R * 0.12; c.stroke();
+          c.globalAlpha = 1; c.lineWidth = R * 0.028; c.stroke();
         }
-        c.shadowBlur = 0;
         // motas de magia
         for (let i = 0; i < 10; i++) {
           const a = t * (0.7 + i * 0.12) * (i % 2 ? 1 : -1) + i * 2.1, rr = R * (1.12 + 0.28 * Math.sin(t * 1.6 + i * 3.1));
@@ -510,6 +516,20 @@
     function opacidadNiebla() { lNiebla.opacity(st.esGM && !st.vistaJugador ? 0.42 : 1); }
 
     /* ------------------------------------------------------------ imágenes */
+    function reducida(e, lado) {
+      const im = e.img, nw = im.naturalWidth, nh = im.naturalHeight;
+      if (!nw || !nh || Math.max(nw, nh) <= lado * 1.3) return im;
+      e.red = e.red || {};
+      if (!e.red[lado]) {
+        const k = lado / Math.max(nw, nh), cv = document.createElement("canvas");
+        cv.width = Math.max(1, Math.round(nw * k)); cv.height = Math.max(1, Math.round(nh * k));
+        const cx = cv.getContext("2d");
+        cx.imageSmoothingQuality = "high";
+        cx.drawImage(im, 0, 0, cv.width, cv.height);
+        e.red[lado] = cv;
+      }
+      return e.red[lado];
+    }
     function imagen(src, alListo) {
       if (!src) return null;
       let e = st.imgs.get(src);
@@ -575,7 +595,9 @@
       if (!e || !e.listo) {
         return new Konva.Rect({ width: w, height: h, fill: e && e.error ? "#7a3434" : "rgba(120,120,120,.45)", cornerRadius: Math.min(w, h) / 2, stroke: "#888", strokeWidth: 1 });
       }
-      const k = new Konva.Image({ image: e.img, width: w, height: h });
+      // En el mapa la imagen va entera; en el resto, a una resolución que aguanta acercarse hasta el doble
+      const lado = Math.min(1024, Math.pow(2, Math.ceil(Math.log2(Math.max(64, Math.max(w, h) * Konva.pixelRatio * 2)))));
+      const k = new Konva.Image({ image: o.capa === "mapa" ? e.img : reducida(e, lado), width: w, height: h, perfectDrawEnabled: false });
       if (d.voltearH) { k.scaleX(-1); k.x(w); }
       if (d.voltearV) { k.scaleY(-1); k.y(h); }
       if (d.tinte) {
@@ -785,6 +807,7 @@
     const selUI = new Konva.Group({ name: "selui" });
     lUI.add(selUI);
     function pintarSeleccionUI() {
+      zoomSel = zoom();
       selUI.destroyChildren();
       const ids = [...st.seleccion];
       const n = ids.length === 1 && st.nodos.get(ids[0]);
@@ -1311,6 +1334,7 @@
       }
       const factor = e.evt.deltaY > 0 ? 1 / 1.1 : 1.1;
       ponerZoom(zoom() * factor, stage.getPointerPosition());
+      if (gesto && (gesto.tipo === "camara" || gesto.tipo === "derecho")) { gesto.pos = stage.position(); gesto.x = e.evt.clientX; gesto.y = e.evt.clientY; }
     });
 
     function polilineaPuntos(pts) {
@@ -1666,6 +1690,7 @@
         programarLuz();
         const m = medidas();
         pagina.setAttrs({ width: m.w, height: m.h, fill: (escena && escena.fondo) || "#ffffff", visible: !!escena });
+        paginaSombra.setAttrs({ width: m.w, height: m.h, visible: !!escena });
         contenedor.style.background = (escena && escena.opciones && escena.opciones.colorTablero) || "#3d4048";
         lMapa.batchDraw();
         st.nodos.forEach(pintarDeco);

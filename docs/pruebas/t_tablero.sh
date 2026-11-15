@@ -52,6 +52,12 @@ contiene "sin side no escribe ni tira" "$(como "$U4" "select tablero_tirar('1d20
 sql "update perfiles set side = 'B' where user_id = '$U4'" >/dev/null
 comprobar "con side, sí" "1" "$(uno "$U4" "select count(*) from tablero_escenas;")"
 
+echo "== Imágenes propias en el tablero"
+IMG=$(como "$U1" "select tablero_crear_propio('$S1', 'imagen', 100, 100, 70, 70, '{\"src\": \"https://x.com/lobo.png\", \"nombre\": \"Lobo\", \"cambiaformas\": true, \"barras\": [{\"valor\": 99}]}');" | tail -1)
+comprobar "el jugador pone una imagen suya y solo se guardan la imagen y el nombre" "imagen|fichas|https://x.com/lobo.png|Lobo||" "$(sql "select tipo || '|' || capa || '|' || (datos ->> 'src') || '|' || (datos ->> 'nombre') || '|' || coalesce(datos ->> 'cambiaformas', '') || '|' || coalesce(datos ->> 'barras', '') from tablero_objetos where id = '$IMG'")"
+contiene "solo imágenes https" "$(como "$U1" "select tablero_crear_propio('$S1', 'imagen', 1, 1, 70, 70, '{\"src\": \"data:image/png;base64,AAAA\"}');")" "no vale"
+sql "delete from tablero_objetos where id = '$IMG'" >/dev/null
+
 echo "== Quién mueve qué"
 como "$U1" "update tablero_objetos set x = 999 where id = '$F1';" >/dev/null
 comprobar "el jugador no puede escribir la tabla directamente" "0" "$(sql "select x from tablero_objetos where id = '$F1'")"
@@ -89,7 +95,7 @@ comprobar "el GM cambia cualquier barra, aunque la ficha no tuviera barras" "50|
 echo "== Dibujos de jugadores"
 D1=$(uno "$U1" "select tablero_crear_propio('$S1', 'dibujo', 10, 10, 50, 50, '{\"puntos\": [0, 0, 50, 50], \"trazo\": \"#ff0000\"}');")
 comprobar "el jugador dibuja en la capa de fichas de su escena" "fichas|dibujo|$S1" "$(sql "select capa || '|' || tipo || '|' || escena from tablero_objetos where id = '$D1'")"
-contiene "no crea otra cosa que dibujos o texto" "$(como "$U1" "select tablero_crear_propio('$S1', 'imagen', 0, 0, 10, 10, '{}');")" "Solo puedes dibujar"
+contiene "no crea otra cosa que dibujos, texto o imágenes" "$(como "$U1" "select tablero_crear_propio('$S1', 'pin', 0, 0, 10, 10, '{}');")" "Solo puedes dibujar"
 comprobar "otro jugador no borra el dibujo ajeno" "0" "$(uno "$U2" "select tablero_borrar_propio(array['$D1']::uuid[]);")"
 contiene "no dibuja en una escena que no ve" "$(como "$U1" "select tablero_crear_propio('$S2', 'dibujo', 0, 0, 10, 10, '{}');")" "No puedes dibujar"
 comprobar "no borra fichas aunque las controle" "0" "$(uno "$U1" "select tablero_borrar_propio(array['$F1']::uuid[]);")"
@@ -249,6 +255,13 @@ contiene "sin sesión no se ve nada" "$(anonimo "select count(*) from tablero_pe
 echo "== Arte y macros"
 como "$ADMIN" "insert into tablero_arte (src, nombre) values ('x.png', 'Mapa');" >/dev/null
 comprobar "la biblioteca de arte es solo del GM" "0|1" "$(uno "$U1" "select count(*) from tablero_arte;")|$(uno "$ADMIN" "select count(*) from tablero_arte;")"
+como "$U1" "insert into tablero_arte (src, nombre) values ('https://x.com/mio.png', 'Mío');" >/dev/null
+comprobar "cada jugador tiene su biblioteca: ve la suya y no la de otros ni la del DJ" "1|Mío|0" "$(uno "$U1" "select count(*) from tablero_arte;")|$(uno "$U1" "select nombre from tablero_arte;")|$(uno "$U2" "select count(*) from tablero_arte;")"
+contiene "no sube a nombre de otro" "$(como "$U2" "insert into tablero_arte (autor, src) values ('$U1', 'https://x.com/a.png');")" "row-level security"
+contiene "solo enlaces https" "$(como "$U2" "insert into tablero_arte (src) values ('javascript:alert(1)');")" "row-level security"
+como "$U2" "delete from tablero_arte;" >/dev/null
+comprobar "y no borra la de otros" "2" "$(sql "select count(*) from tablero_arte")"
+sql "delete from tablero_arte where autor = '$U1'" >/dev/null
 como "$ADMIN" "update tablero_arte set carpeta = 'Mapas/Cuevas';" >/dev/null
 comprobar "el arte se guarda en carpetas" "Mapas/Cuevas" "$(sql "select carpeta from tablero_arte limit 1")"
 como "$U1" "insert into tablero_macros (nombre, texto) values ('Ataque', '/r 1d20+5');" >/dev/null

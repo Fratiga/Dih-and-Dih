@@ -137,7 +137,12 @@
       async crearDiario(f) { return ok(await sb.from("tablero_diario").insert(f).select().single()); },
       async actualizarDiario(id, c) { ok(await sb.from("tablero_diario").update(Object.assign({ actualizado: ahora() }, c)).eq("id", id)); },
       async borrarDiario(id) { ok(await sb.from("tablero_diario").delete().eq("id", id)); },
-      async arte() { return ok(await sb.from("tablero_arte").select("*").order("creado", { ascending: false })) || []; },
+      // El DJ ve su biblioteca (las antiguas no tienen autor); cada jugador, la suya
+      async arte() {
+        let q = sb.from("tablero_arte").select("*").order("creado", { ascending: false });
+        q = yo.esGM ? q.or(`autor.is.null,autor.eq.${yo.uid}`) : q.eq("autor", yo.uid);
+        return ok(await q) || [];
+      },
       async crearArte(f) { return ok(await sb.from("tablero_arte").insert(f).select().single()); },
       async borrarArte(id) { ok(await sb.from("tablero_arte").delete().eq("id", id)); },
       async actualizarArte(id, c) { ok(await sb.from("tablero_arte").update(c).eq("id", id)); },
@@ -395,8 +400,8 @@
       },
       async actualizarDiario(id, c) { const e = d.diario.find(x => x.id === id); if (e) { Object.assign(e, c); publicar("diario", e); } },
       async borrarDiario(id) { d.diario = d.diario.filter(x => x.id !== id); publicar("diarioBorrado", id); },
-      async arte() { leer(); return d.arte.slice(); },
-      async crearArte(f) { const a = Object.assign({ id: uuid(), creado: ahora() }, f); d.arte.unshift(a); guardar(); return a; },
+      async arte() { leer(); return d.arte.filter(a => (a.autor || GM) === yo.uid); },
+      async crearArte(f) { leer(); const a = Object.assign({ id: uuid(), creado: ahora(), autor: yo.uid }, f); d.arte.unshift(a); guardar(); return a; },
       async borrarArte(id) { d.arte = d.arte.filter(a => a.id !== id); guardar(); },
       async actualizarArte(id, c) { const a = d.arte.find(x => x.id === id); if (a) Object.assign(a, c); guardar(); },
       async macros() { leer(); return d.macros.filter(m => m.autor === yo.uid); },

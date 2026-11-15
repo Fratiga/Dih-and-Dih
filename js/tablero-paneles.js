@@ -1502,7 +1502,24 @@
     return TB.crearObjetos([fila]);
   }
   async function soltarEnTablero(dt, p, alt) {
-    if (!TB.esGM()) { aviso("Solo el DJ coloca cosas en el tablero."); return; }
+    if (!TB.esGM()) {
+      const archivosJ = [...(dt.files || [])].filter(f => /^image\//.test(f.type));
+      for (const f of archivosJ) {
+        try {
+          aviso("Subiendo " + f.name + "…");
+          const src = await TB.red.subirPropio(TB.prefs.webp !== false ? await aWebp(f) : f);
+          const nombre = f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
+          TB.red.crearArte({ src, nombre }).then(a => { if (TB.arte) { TB.arte.unshift(a); TB.lanzar("arte"); } }).catch(() => {});
+          await crearImagenEn(src, nombre, p, alt);
+          p = { x: p.x + TB.L.tamCelda(), y: p.y };
+        } catch (e) { aviso(mensajeError(e), true); }
+      }
+      if (archivosJ.length) return;
+      const srcJ = dt.getData("text/tablero-src");
+      if (srcJ && /^https:\/\//i.test(srcJ)) { await crearImagenEn(srcJ, dt.getData("text/tablero-nombre"), p, alt); return; }
+      aviso("Eso solo lo coloca el DJ.");
+      return;
+    }
     const uvtt = [...(dt.files || [])].find(f => /\.(dd2vtt|uvtt|df2vtt)$/i.test(f.name));
     if (uvtt) { importarUVTT(uvtt); return; }
     const archivos = [...(dt.files || [])].filter(f => /^image\//.test(f.type));

@@ -399,7 +399,7 @@
     }
     const ids = [];
     for (const f of filas) {
-      if (f.tipo !== "dibujo" && f.tipo !== "texto") continue;
+      if (f.tipo !== "dibujo" && f.tipo !== "texto" && f.tipo !== "imagen") continue;
       try { ids.push(await TB.red.crearPropio(TB.escenaId, f.tipo, f.x, f.y, f.ancho, f.alto, f.datos || {})); }
       catch (e) { aviso(mensajeError(e), true); }
     }

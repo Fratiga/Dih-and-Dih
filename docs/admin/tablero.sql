@@ -139,6 +139,9 @@ create table if not exists tablero_arte (
 );
 -- Carpeta de la biblioteca de arte («Padre/Hijo» es una subcarpeta)
 alter table tablero_arte add column if not exists carpeta text not null default '' check (char_length(carpeta) <= 60);
+-- De quién es cada imagen: el DJ (null en las antiguas) o un jugador, que tiene su propia biblioteca
+alter table tablero_arte add column if not exists autor uuid default auth.uid() references auth.users(id) on delete cascade;
+create index if not exists tablero_arte_autor on tablero_arte (autor);
 
 -- Macros de cada jugador (la barra de macros de abajo)
 create table if not exists tablero_macros (
@@ -245,6 +248,11 @@ create policy "tablero_mensajes_gm_borrar" on tablero_mensajes
 drop policy if exists "tablero_arte_gm" on tablero_arte;
 create policy "tablero_arte_gm" on tablero_arte
   for all using (fichas_es_admin()) with check (fichas_es_admin());
+-- Cada jugador con side ve y cambia solo su biblioteca; solo enlaces https (lo que sube va a su carpeta del almacén)
+drop policy if exists "tablero_arte_propio" on tablero_arte;
+create policy "tablero_arte_propio" on tablero_arte
+  for all to authenticated using (autor = auth.uid() and tablero_i_jugador())
+  with check (autor = auth.uid() and tablero_i_jugador() and src ~ '^https://');
 
 drop policy if exists "tablero_macros_propias" on tablero_macros;
 create policy "tablero_macros_propias" on tablero_macros
@@ -347,8 +355,13 @@ declare
   v_id uuid;
 begin
   if auth.uid() is null then raise exception 'Inicia sesión.'; end if;
-  if p_tipo not in ('dibujo', 'texto') then raise exception 'Solo puedes dibujar o escribir.'; end if;
+  if not tablero_i_jugador() then raise exception 'Para jugar en el tablero necesitas tener un side. Pídeselo al DJ.'; end if;
+  if p_tipo not in ('dibujo', 'texto', 'imagen') then raise exception 'Solo puedes dibujar, escribir o poner imágenes.'; end if;
   if not tablero_escena_visible(v_escena) then raise exception 'No puedes dibujar en esa escena.'; end if;
+  if p_tipo = 'imagen' then
+    if coalesce(p_datos ->> 'src', '') !~ '^https://' or char_length(p_datos ->> 'src') > 1000 then raise exception 'Esa imagen no vale.'; end if;
+    p_datos := jsonb_build_object('src', p_datos ->> 'src', 'nombre', left(coalesce(p_datos ->> 'nombre', ''), 60));
+  end if;
   if abs(p_x) > 1000000 or abs(p_y) > 1000000 or p_ancho <= 0 or p_alto <= 0 or p_ancho > 100000 or p_alto > 100000 then raise exception 'Tamaño no válido.'; end if;
   if char_length(coalesce(p_datos, '{}'::jsonb)::text) > 40000 then raise exception 'Dibujo demasiado grande.'; end if;
   if (select count(*) from tablero_objetos where escena = v_escena and autor = auth.uid()) >= 300 then
@@ -853,6 +866,21 @@ begin
   return new;
 end;
 $$;
+create or replace function tablero_i_tope_arte()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not fichas_es_admin() and (select count(*) from tablero_arte where autor = new.autor) >= 300 then
+    raise exception 'Ya tienes 300 imágenes en tu biblioteca: borra alguna antes.';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists tablero_tope_arte on tablero_arte;
+create trigger tablero_tope_arte before insert on tablero_arte for each row execute function tablero_i_tope_arte();
 drop trigger if exists tablero_tope_gifs on tablero_gifs;
 create trigger tablero_tope_gifs before insert on tablero_gifs for each row execute function tablero_i_tope_gifs();
 revoke all on function tablero_i_tope_gifs() from public, anon, authenticated;
