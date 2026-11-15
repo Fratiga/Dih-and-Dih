@@ -157,6 +157,20 @@ alter table tablero_macros enable row level security;
 alter table tablero_arte enable row level security;
 
 -- ============================================================ políticas
+-- Solo juegan en el tablero quienes tienen un side (A o B) en su perfil, además del DJ
+create or replace function tablero_i_jugador()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select auth.uid() is not null and (fichas_es_admin()
+    or exists (select 1 from perfiles p where p.user_id = auth.uid() and coalesce(btrim(p.side), '') <> ''))
+$$;
+-- También anon: las políticas la llaman y para quien no inició sesión siempre da falso
+grant execute on function tablero_i_jugador() to anon, authenticated;
+
 -- La escena que ven los jugadores (sin pasar por RLS, para usarla dentro de las políticas)
 create or replace function tablero_escena_jugadores()
 returns uuid
@@ -181,21 +195,21 @@ $$;
 
 drop policy if exists "tablero_escenas_ver" on tablero_escenas;
 create policy "tablero_escenas_ver" on tablero_escenas
-  for select using (fichas_es_admin() or (auth.uid() is not null and tablero_escena_visible(id)));
+  for select using (fichas_es_admin() or (tablero_i_jugador() and tablero_escena_visible(id)));
 drop policy if exists "tablero_escenas_gm" on tablero_escenas;
 create policy "tablero_escenas_gm" on tablero_escenas
   for all using (fichas_es_admin()) with check (fichas_es_admin());
 
 drop policy if exists "tablero_estado_ver" on tablero_estado;
 create policy "tablero_estado_ver" on tablero_estado
-  for select using (auth.uid() is not null);
+  for select using (tablero_i_jugador());
 drop policy if exists "tablero_estado_gm" on tablero_estado;
 create policy "tablero_estado_gm" on tablero_estado
   for update using (fichas_es_admin()) with check (fichas_es_admin());
 
 drop policy if exists "tablero_objetos_ver" on tablero_objetos;
 create policy "tablero_objetos_ver" on tablero_objetos
-  for select using (fichas_es_admin() or (auth.uid() is not null and capa <> 'gm' and tablero_escena_visible(escena)));
+  for select using (fichas_es_admin() or (tablero_i_jugador() and capa <> 'gm' and tablero_escena_visible(escena)));
 drop policy if exists "tablero_objetos_gm" on tablero_objetos;
 create policy "tablero_objetos_gm" on tablero_objetos
   for all using (fichas_es_admin()) with check (fichas_es_admin());
@@ -206,7 +220,7 @@ create policy "tablero_notas_gm_gm" on tablero_notas_gm
 
 drop policy if exists "tablero_diario_ver" on tablero_diario;
 create policy "tablero_diario_ver" on tablero_diario
-  for select using (fichas_es_admin() or (auth.uid() is not null and (ver_todos or auth.uid() = any(ver) or auth.uid() = any(controladores))));
+  for select using (fichas_es_admin() or (tablero_i_jugador() and (ver_todos or auth.uid() = any(ver) or auth.uid() = any(controladores))));
 drop policy if exists "tablero_diario_gm" on tablero_diario;
 create policy "tablero_diario_gm" on tablero_diario
   for all using (fichas_es_admin()) with check (fichas_es_admin());
@@ -216,7 +230,7 @@ create policy "tablero_diario_gm_gm" on tablero_diario_gm
 
 drop policy if exists "tablero_mensajes_ver" on tablero_mensajes;
 create policy "tablero_mensajes_ver" on tablero_mensajes
-  for select using (fichas_es_admin() or (auth.uid() is not null and (
+  for select using (fichas_es_admin() or (tablero_i_jugador() and (
     modo = 'todos'
     or (modo in ('dj', 'susurro') and autor = auth.uid())
     or (modo = 'susurro' and auth.uid() = any(para)))));
@@ -252,6 +266,7 @@ security definer
 set search_path = public
 as $$
 begin
+  if not tablero_i_jugador() then raise exception 'Para jugar en el tablero necesitas tener un side. Pídeselo al DJ.'; end if;
   if p_como is null then
     nombre := tablero_i_nombre();
     avatar := coalesce((select p.avatar from tablero_perfil p where p.uid = auth.uid()), '');
@@ -856,7 +871,7 @@ alter table tablero_tablas enable row level security;
 drop policy if exists "tablero_tablas_gm" on tablero_tablas;
 create policy "tablero_tablas_gm" on tablero_tablas for all to authenticated using (fichas_es_admin()) with check (fichas_es_admin());
 drop policy if exists "tablero_tablas_ver" on tablero_tablas;
-create policy "tablero_tablas_ver" on tablero_tablas for select to authenticated using (ver_todos);
+create policy "tablero_tablas_ver" on tablero_tablas for select to authenticated using (ver_todos and tablero_i_jugador());
 revoke all on tablero_tablas from anon;
 grant select, insert, update, delete on tablero_tablas to authenticated;
 

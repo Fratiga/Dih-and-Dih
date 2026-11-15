@@ -88,8 +88,11 @@
           throw Object.assign(new Error(est.error.message), { codigo: falta ? "sin-sql" : "error" });
         }
         const { data: esGM } = await sb.rpc("fichas_es_admin");
-        const perfil = await sb.from("perfiles").select("username").eq("user_id", uid).maybeSingle();
-        yo = { uid, esGM: !!esGM, nombre: (perfil.data && perfil.data.username) || "Jugador" };
+        const perfil = await sb.from("perfiles").select("username, side").eq("user_id", uid).maybeSingle();
+        const side = String((perfil.data && perfil.data.side) || "").trim();
+        // Solo juegan quienes tienen un side (el servidor también lo comprueba)
+        if (!esGM && !side) throw Object.assign(new Error("Sin side"), { codigo: "sin-side" });
+        yo = { uid, esGM: !!esGM, side, nombre: (perfil.data && perfil.data.username) || "Jugador" };
 
         conectar();
         // Al volver a la pestaña o recuperar la red, se comprueba el canal

@@ -234,7 +234,7 @@ const MENU_GRUPOS = [
     ["personajes.html", "Personajes"], ["razas.html", "Razas"], ["religion.html", "Religión"]] },
   { nombre: "Archivo", items: [["textos.html", "Textos"], ["pergaminos.html", "Pergaminos"], ["armas.html", "Armas"], ["objetos.html", "Objetos"], ["bestiario.html", "Bestiario"]] },
   { nombre: "Reglas", items: [["reglas.html", "Reglas"], ["economia.html", "Economía"], ["estadisticas.html", "Estadísticas"]] },
-  { nombre: "Jugar", items: [["minijuegos.html", "Minijuegos"], ["rocola.html", "Rocola"]] },
+  { nombre: "Jugar", items: [["tablero.html", "Tablero"], ["minijuegos.html", "Minijuegos"], ["rocola.html", "Rocola"]] },
   { nombre: "Comunidad", items: [["fanarts.html", "Fanarts"], ["peticiones.html", "Peticiones"], ["fichas.html", "Mis personajes"], ["biblioteca.html", "Biblioteca"], ["discord.html", "Tablón de Discord"]] }
 ];
 

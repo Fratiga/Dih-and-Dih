@@ -45,6 +45,13 @@ comprobar "la página del GM que no es la de los jugadores no se ve ni se toca" 
 como "$ADMIN" "insert into tablero_notas_gm (objeto, texto) values ('$F2', 'Es un traidor');" >/dev/null
 comprobar "las notas del DJ no las ve ningún jugador" "0|1" "$(uno "$U2" "select count(*) from tablero_notas_gm;")|$(uno "$ADMIN" "select count(*) from tablero_notas_gm;")"
 
+echo "== Solo con side"
+sql "update perfiles set side = null where user_id = '$U4'" >/dev/null
+comprobar "sin side no ve escenas, fichas, estado ni chat" "0|0|0|0" "$(uno "$U4" "select count(*) from tablero_escenas;")|$(uno "$U4" "select count(*) from tablero_objetos;")|$(uno "$U4" "select count(*) from tablero_estado;")|$(uno "$U4" "select count(*) from tablero_mensajes;")"
+contiene "sin side no escribe ni tira" "$(como "$U4" "select tablero_tirar('1d20');")" "necesitas tener un side"
+sql "update perfiles set side = 'B' where user_id = '$U4'" >/dev/null
+comprobar "con side, sí" "1" "$(uno "$U4" "select count(*) from tablero_escenas;")"
+
 echo "== Quién mueve qué"
 como "$U1" "update tablero_objetos set x = 999 where id = '$F1';" >/dev/null
 comprobar "el jugador no puede escribir la tabla directamente" "0" "$(sql "select x from tablero_objetos where id = '$F1'")"

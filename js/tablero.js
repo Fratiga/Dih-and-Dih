@@ -66,6 +66,7 @@
     } catch (e) {
       carga.classList.add("sin-rueda");
       if (e.codigo === "sin-sesion") texto.innerHTML = `Inicia sesión en el compendio para entrar al tablero.<br><br><a href="index.html">Ir al compendio</a>`;
+      else if (e.codigo === "sin-side") texto.innerHTML = `Para jugar en el tablero necesitas tener un side en tu perfil.<br>Pídeselo al DJ.<br><br><a href="index.html">Volver al compendio</a>`;
       else if (e.codigo === "sin-sql") texto.innerHTML = `El tablero todavía no está instalado en el servidor.<br>Falta correr <code>docs/admin/tablero.sql</code> en Supabase.<br><br><a href="tablero.html?local=1">Probar en este navegador sin conexión</a>`;
       else texto.innerHTML = `No se pudo abrir el tablero: ${TBUI.esc(mensajeError(e))}<br><br><a href="tablero.html">Reintentar</a>`;
       return;
