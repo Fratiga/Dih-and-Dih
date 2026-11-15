@@ -1200,7 +1200,7 @@
         <label class="tb-campo" style="flex:1;margin:0"><span style="font-weight:400">Mi volumen de efectos</span><input type="range" min="0" max="100" data-volef value="${Math.round((TB.prefs.volumenEfectos == null ? 0.8 : TB.prefs.volumenEfectos) * 100)}"></label></div>
       ${gm ? `<hr class="tb-sep">
         <div class="tb-campo"><span>YouTube, Spotify o un enlace a un audio</span>
-          <div class="tb-fila"><input type="text" data-campo="enlace" data-enlace placeholder="Pega aquí el enlace…" style="flex:1"><button type="button" class="tb-btn tb-btn-acento" data-poner>▶</button><button type="button" class="tb-btn" data-alista title="Añadir a una lista">＋</button></div>
+          <div class="tb-fila"><input type="text" data-campo="enlace" data-enlace placeholder="Pega aquí el enlace…" style="flex:1"><button type="button" class="tb-btn tb-btn-acento" data-poner>▶</button><button type="button" class="tb-btn" data-alista title="Añadir a una lista">＋</button><label class="tb-btn" data-subirmus title="Subir canciones de tu PC (mp3, ogg, wav…) y añadirlas a una lista">⇪ Subir<input type="file" accept="audio/*" multiple hidden></label></div>
           <span class="tb-nota" style="font-weight:400">¿No lo tienes? <a class="tb-enlace" data-buscayt href="#">Buscar en YouTube ↗</a> · <a class="tb-enlace" data-buscasp href="#">Buscar en Spotify ↗</a></span></div>
         <div class="tb-subpestanas">${[["canciones", "Canciones"], ["listas", "Listas"], ["efectos", "Soundboard"]].map(([k, t]) => `<button type="button" data-vista="${k}" class="${vistaGramola === k ? "activo" : ""}">${t}</button>`).join("")}</div>
         <div data-vistag></div>` : `<p class="tb-nota" style="margin-top:calc(12px * var(--tb-k))">Solo el DJ elige la música y los efectos.</p>`}
@@ -1257,6 +1257,13 @@
     };
     q("[data-poner]").addEventListener("click", async () => { const p = await leerEnlace(); if (p) { reproducir(p); enlace.value = ""; } });
     enlace.addEventListener("keydown", async ev => { if (ev.key === "Enter") { const p = await leerEnlace(); if (p) { reproducir(p); enlace.value = ""; } } });
+    const subirMus = q("[data-subirmus]");
+    subirMus.querySelector("input").addEventListener("change", async ev => {
+      const archivos = [...ev.target.files]; ev.target.value = "";
+      const r = subirMus.getBoundingClientRect();
+      const pistas = await subirAudios(archivos, subirMus);
+      if (pistas.length) menuAnadirALista(pistas, r.left - 160, r.bottom + 4);
+    });
     q("[data-alista]").addEventListener("click", async ev => { const r = ev.currentTarget.getBoundingClientRect(); const p = await leerEnlace(); if (p) { menuAnadirALista(p, r.left - 160, r.bottom + 4); enlace.value = ""; } });
     q("[data-buscayt]").addEventListener("click", ev => { ev.preventDefault(); window.open("https://www.youtube.com/results?search_query=" + encodeURIComponent(enlace.value.trim() || filtroMusica || "dnd ambience"), "_blank", "noopener"); });
     q("[data-buscasp]").addEventListener("click", ev => { ev.preventDefault(); window.open("https://open.spotify.com/search/" + encodeURIComponent(enlace.value.trim() || filtroMusica || "dnd ambience"), "_blank", "noopener"); });
@@ -1297,21 +1304,39 @@
     buscar.addEventListener("input", () => { filtroMusica = buscar.value; pintar(); });
     pintar();
   }
+  async function subirAudios(archivos, boton) {
+    archivos = archivos.filter(f => /^audio\//.test(f.type) || /\.(mp3|ogg|oga|wav|m4a|aac|opus)$/i.test(f.name));
+    if (!archivos.length) return [];
+    const grandes = archivos.filter(f => f.size > 15 * 1024 * 1024);
+    if (grandes.length) aviso("Cada canción puede pesar como mucho 15 MB: " + grandes.map(f => f.name).join(", ") + " no se sube.", true);
+    archivos = archivos.filter(f => f.size <= 15 * 1024 * 1024);
+    const antes = boton ? boton.innerHTML : "";
+    const entrada = boton && boton.querySelector("input");
+    if (boton) { boton.classList.add("ocupado"); boton.innerHTML = '<span class="tb-girando"></span> Subiendo…'; if (entrada) boton.appendChild(entrada); }
+    const pistas = [];
+    for (const [i, f] of archivos.entries()) {
+      if (boton && archivos.length > 1) boton.firstChild.nextSibling.textContent = ` Subiendo ${i + 1} de ${archivos.length}…`;
+      try { pistas.push({ tipo: "archivo", src: await TB.red.subirImagen(f), nombre: f.name.replace(/\.[^.]+$/, "").slice(0, 80) }); }
+      catch (e) { aviso(/mime|type/i.test(String(e && e.message)) ? "Falta volver a correr tablero.sql para poder subir audio." : f.name + ": " + mensajeError(e), true); }
+    }
+    if (boton) { boton.classList.remove("ocupado"); boton.innerHTML = antes; if (entrada) { const nueva = boton.querySelector("input"); if (nueva) nueva.replaceWith(entrada); } }
+    return pistas;
+  }
   function menuAnadirALista(p, x, y) {
-    const g = gramola();
-    menu(x, y, g.listas.map(l => ({ texto: "A «" + esc(l.nombre) + "»", accion: () => anadirALista(l.id, p) })).concat(g.listas.length ? ["-"] : [], [{ texto: "＋ Lista nueva…", accion: async () => {
+    const g = gramola(), varias = Array.isArray(p) ? p : [p];
+    menu(x, y, g.listas.map(l => ({ texto: "A «" + esc(l.nombre) + "»", accion: () => anadirALista(l.id, varias) })).concat(g.listas.length ? ["-"] : [], [{ texto: "＋ Lista nueva…", accion: async () => {
       const n = await pedir("Lista nueva", "", { etiqueta: "Nombre de la lista (por ejemplo, Combate o Taberna)" });
       if (!n || !n.trim()) return;
-      const l = { id: "l" + Date.now().toString(36), nombre: n.trim().slice(0, 60), pistas: [limpiaPista(p)] };
+      const l = { id: "l" + Date.now().toString(36), nombre: n.trim().slice(0, 60), pistas: varias.map(limpiaPista) };
       guardarGramola({ listas: g.listas.concat([l]) });
       aviso(`Añadida a «${l.nombre}».`);
     } }]));
   }
   function anadirALista(id, p) {
-    const g = gramola();
-    const listas = g.listas.map(l => l.id === id ? Object.assign({}, l, { pistas: l.pistas.concat([limpiaPista(p)]).slice(0, 300) }) : l);
+    const g = gramola(), varias = (Array.isArray(p) ? p : [p]).map(limpiaPista);
+    const listas = g.listas.map(l => l.id === id ? Object.assign({}, l, { pistas: l.pistas.concat(varias).slice(0, 300) }) : l);
     guardarGramola({ listas });
-    aviso("Añadida a la lista.");
+    aviso(varias.length === 1 ? "Añadida a la lista." : varias.length + " canciones añadidas a la lista.");
   }
   function pintarListas(caja, mus) {
     caja.innerHTML = "";
@@ -1336,10 +1361,27 @@
       bloque.querySelector("[data-tocar]").addEventListener("click", () => reproducir(l.pistas[0], { lista: l.id, indice: 0, aleatorio: false, repetirLista: true, volumen: mus.volumen }));
       bloque.querySelector("[data-mas]").addEventListener("click", ev => menu(ev.clientX - 200, ev.clientY + 8, [
         { texto: "Reproducir en orden aleatorio", apagado: !l.pistas.length, accion: () => { const i = Math.floor(Math.random() * l.pistas.length); reproducir(l.pistas[i], { lista: l.id, indice: i, aleatorio: true, repetirLista: true, volumen: mus.volumen }); } },
+        { texto: "Subir canciones de tu PC…", accion: () => subirEnLista.click() },
         { texto: "Cambiar el nombre", accion: async () => { const n = await pedir("Nombre de la lista", l.nombre); if (n && n.trim()) guardarGramola({ listas: gramola().listas.map(x => x.id === l.id ? Object.assign({}, x, { nombre: n.trim().slice(0, 60) }) : x) }); } },
         "-",
         { texto: "Borrar la lista", peligro: true, accion: async () => { if (await confirmar("Borrar lista", `¿Borrar la lista «${l.nombre}»? Las canciones no se borran.`, "Borrar")) guardarGramola({ listas: gramola().listas.filter(x => x.id !== l.id) }); } }
       ]));
+      const subirEnLista = el(`<input type="file" accept="audio/*" multiple hidden>`);
+      bloque.appendChild(subirEnLista);
+      const masBtn = bloque.querySelector("[data-mas]");
+      subirEnLista.addEventListener("change", async ev => {
+        const archivos = [...ev.target.files]; ev.target.value = "";
+        const nuevas = await subirAudios(archivos, masBtn);
+        if (nuevas.length) { listaAbierta = l.id; anadirALista(l.id, nuevas); }
+      });
+      bloque.addEventListener("dragover", ev => { if ([...ev.dataTransfer.types].includes("Files")) { ev.preventDefault(); bloque.classList.add("soltando"); } });
+      bloque.addEventListener("dragleave", () => bloque.classList.remove("soltando"));
+      bloque.addEventListener("drop", async ev => {
+        if (!ev.dataTransfer.files.length) return;
+        ev.preventDefault(); bloque.classList.remove("soltando");
+        const nuevas = await subirAudios([...ev.dataTransfer.files], masBtn);
+        if (nuevas.length) { listaAbierta = l.id; anadirALista(l.id, nuevas); }
+      });
       const pistas = bloque.querySelector("[data-pistas]");
       l.pistas.forEach((p, i) => {
         const fila = filaPista(p, mus, `<span class="tb-gramola-acc"><button type="button" data-a="sube" title="Subir">▲</button><button type="button" data-a="baja" title="Bajar">▼</button><button type="button" data-a="quita" title="Quitar">✕</button></span>`);
@@ -1354,7 +1396,7 @@
         });
         pistas.appendChild(fila);
       });
-      if (!l.pistas.length) pistas.appendChild(el(`<p class="tb-lista-vacia">Vacía. Añade canciones desde la pestaña Canciones o pegando un enlace.</p>`));
+      if (!l.pistas.length) pistas.appendChild(el(`<p class="tb-lista-vacia">Vacía. Añade canciones desde la pestaña Canciones, pegando un enlace de YouTube o soltando aquí tus mp3.</p>`));
       caja.appendChild(bloque);
     });
   }

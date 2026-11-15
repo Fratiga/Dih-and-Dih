@@ -662,6 +662,8 @@ body.tb.tb-oscuro .tb-avatares .tb-av-nombre { background: rgba(0,0,0,.7); }
 .tb-lista-carpeta.soltar-antes { box-shadow: inset 0 2px 0 #d6127e; }
 .tb-lista-carpeta.soltar-despues { box-shadow: inset 0 -2px 0 #d6127e; }
 .tb-lista-carpeta.soltar-dentro { background: rgba(214,18,126,.14); }
+.tb-gramola-lista.soltando { box-shadow: inset 0 0 0 2px #d6127e; }
+label.tb-btn.ocupado, .tb-btn.ocupado { opacity: .7; pointer-events: none; }
 .tb-tablas { margin-top: calc(16px * var(--tb-k)); border-top: 1px solid rgba(127,127,127,.25); padding-top: calc(4px * var(--tb-k)); }
 .tb-tabla-item { display: flex; align-items: center; gap: calc(8px * var(--tb-k)); padding: calc(6px * var(--tb-k)) 0; border-bottom: 1px solid rgba(127,127,127,.15); }
 .tb-tabla-item > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
