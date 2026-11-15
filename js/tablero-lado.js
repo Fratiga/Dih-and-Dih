@@ -82,6 +82,8 @@
     repro.querySelector("[data-plegar]").addEventListener("click", () => repro.classList.toggle("plegado"));
     // Solo audio (se recuerda) y cerrar la ventana de esta pista; la música no se para
     repro.querySelector("[data-audio]").addEventListener("click", () => { TB.prefs.soloAudio = !TB.prefs.soloAudio; TB.guardarPrefs(); estadoRepro(); });
+    repro.querySelector("[data-guardar]").hidden = !TB.esGM();
+    repro.querySelector("[data-guardar]").addEventListener("click", ev => { const r = ev.currentTarget.getBoundingClientRect(); guardarActual(r.left - 140, r.bottom + 4); });
     repro.querySelector("[data-cerrar]").addEventListener("click", () => { reproCerrado = (TB.estado.musica || {}).src || null; estadoRepro(); });
     repro.querySelector("[data-abrir]").addEventListener("click", () => { reproCerrado = null; if (TB.prefs.soloAudio) { TB.prefs.soloAudio = false; TB.guardarPrefs(); } estadoRepro(); });
     // Barra para avanzar y retroceder en la propia ventana (solo el DJ: mueve la música de todos)
@@ -1189,6 +1191,7 @@
             <button type="button" class="tb-btn tb-btn-mini" data-pausa title="${mus.pausado ? "Seguir" : "Pausa"}">${mus.pausado ? "▶" : "❚❚"}</button>
             <button type="button" class="tb-btn tb-btn-mini" data-sig title="Siguiente" ${l ? "" : "disabled"}>⏭</button>
             <button type="button" class="tb-btn tb-btn-mini" data-parar title="Parar">■</button>
+            <button type="button" class="tb-btn tb-btn-mini" data-guardar-actual title="Guardar lo que suena en una lista">＋ A una lista</button>
             <label class="tb-casilla"><input type="checkbox" data-bucle${mus.bucle ? " checked" : ""}> Repetir pista</label>
             ${l ? `<label class="tb-casilla"><input type="checkbox" data-aleatorio${mus.aleatorio ? " checked" : ""}> Aleatorio</label><label class="tb-casilla"><input type="checkbox" data-replista${mus.repetirLista ? " checked" : ""}> Repetir lista</label>` : ""}</div>
           <div class="tb-gramola-avance"><button type="button" class="tb-btn tb-btn-mini" data-salto="-10" title="Atrás 10 segundos">−10 s</button><span data-t-actual>0:00</span>
@@ -1242,6 +1245,7 @@
       else cambiarMusica({ pausado: true, pos: posicionDe(mus) });
     });
     if (q("[data-parar]")) q("[data-parar]").addEventListener("click", () => cambiarMusica({ src: null, nombre: null, pausado: false, lista: null }));
+    if (q("[data-guardar-actual]")) q("[data-guardar-actual]").addEventListener("click", ev => { const r = ev.currentTarget.getBoundingClientRect(); guardarActual(r.left, r.bottom + 4); });
     if (q("[data-ant]")) q("[data-ant]").addEventListener("click", () => saltar(-1));
     if (q("[data-sig]")) q("[data-sig]").addEventListener("click", () => saltar(1));
     if (q("[data-bucle]")) q("[data-bucle]").addEventListener("change", ev => cambiarMusica({ bucle: ev.target.checked }));
@@ -1303,6 +1307,12 @@
     };
     buscar.addEventListener("input", () => { filtroMusica = buscar.value; pintar(); });
     pintar();
+  }
+  // Lo que está sonando (un vídeo de YouTube pegado, por ejemplo) se guarda en una lista
+  function guardarActual(x, y) {
+    const m = TB.estado.musica || {};
+    if (!m.src) { aviso("No está sonando nada."); return; }
+    menuAnadirALista(limpiaPista(m), x, y);
   }
   async function subirAudios(archivos, boton) {
     archivos = archivos.filter(f => /^audio\//.test(f.type) || /\.(mp3|ogg|oga|wav|m4a|aac|opus)$/i.test(f.name));
