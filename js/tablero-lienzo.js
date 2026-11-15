@@ -1367,6 +1367,17 @@
       if (op.onCrear) op.onCrear([Object.assign({ tipo: "dibujo", capa: st.esGM ? st.capa : "fichas" }, datosForma, { datos: Object.assign({ forma }, est, datosForma.datos || {}) })]);
     }
 
+    // Lo seleccionado se puede coger desde cualquier punto de su recuadro, no solo por el trazo (como en Roll20)
+    function seleccionadoBajo(p) {
+      const m = 3 / zoom();
+      for (const id of st.seleccion) {
+        const n = st.nodos.get(id);
+        if (!n || !n.g.visible()) continue;
+        const r = n.g.getClientRect({ relativeTo: stage });
+        if (p.x >= r.x - m && p.x <= r.x + r.width + m && p.y >= r.y - m && p.y <= r.y + r.height + m) return n;
+      }
+      return null;
+    }
     stage.on("mousedown touchstart", e => {
       const boton = e.evt.button;
       contenedor.focus({ preventScroll: true });
@@ -1381,14 +1392,22 @@
       }
       if (boton === 2 && (st.arrastre || (gesto && gesto.tipo === "medida"))) { puntoDeRuta(); return; }
       if (boton === 2) {
-        const tgt = e.target.findAncestor && e.target.findAncestor(".obj", true);
-        gesto = { tipo: "derecho", x: e.evt.clientX, y: e.evt.clientY, pos: stage.position(), id: tgt ? tgt.id() : null, mundo: p };
+        const tgt = e.target.findAncestor && e.target.findAncestor(".obj", true), dentro = !tgt && seleccionadoBajo(p);
+        gesto = { tipo: "derecho", x: e.evt.clientX, y: e.evt.clientY, pos: stage.position(), id: tgt ? tgt.id() : dentro ? dentro.o.id : null, mundo: p };
         return;
       }
       // Las asas del transformador (esquinas y giro) no son «vacío»: si no, la selección se perdía al pulsarlas
       if (e.target.getParent && e.target.getParent() === tr) return;
       if (e.target.findAncestor && e.target.findAncestor(".selui-b", true)) return;
       const vacio = e.target === stage || !e.target.findAncestor || !e.target.findAncestor(".obj", true);
+      if (st.herr === "seleccionar" && vacio && !e.evt.shiftKey) {
+        const dentro = seleccionadoBajo(p);
+        if (dentro) {
+          // pulsar dentro del recuadro coge lo seleccionado (y lo arrastra si se puede)
+          if (puedeArrastrar(dentro.o)) { dentro.pulsado = p; dentro.g.startDrag(); }
+          return;
+        }
+      }
       if (st.herr === "seleccionar") {
         const sp = stage.getPointerPosition();
         pulsacion = { sp, t: setTimeout(() => { pulsacion = null; gesto = null; marco.visible(false); hacerPing(p, e.evt.shiftKey); }, 650) };
