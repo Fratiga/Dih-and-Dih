@@ -641,6 +641,19 @@ body.tb.tb-oscuro .tb-avatares .tb-av-nombre { background: rgba(0,0,0,.7); }
 .tb-traer-item em { font-style: normal; font-size: calc(12px * var(--tb-k)); color: #888; }
 .tb-girando { display: inline-block; width: 1em; height: 1em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; vertical-align: -2px; animation: tb-girar .8s linear infinite; }
 @keyframes tb-girar { to { transform: rotate(360deg); } }
+.tb-tip-estado { position: fixed; z-index: 720; max-width: calc(300px * var(--tb-k)); background: #222; color: #f2f2f2; border-radius: calc(6px * var(--tb-k)); padding: calc(8px * var(--tb-k)) calc(10px * var(--tb-k)); font-size: calc(12.5px * var(--tb-k)); line-height: 1.45; box-shadow: 0 4px 14px rgba(0,0,0,.35); pointer-events: none; }
+.tb-tip-cab { display: flex; align-items: center; gap: calc(7px * var(--tb-k)); font-size: calc(13.5px * var(--tb-k)); }
+.tb-tip-cab span { display: inline-grid; place-items: center; width: calc(20px * var(--tb-k)); height: calc(20px * var(--tb-k)); border-radius: 50%; background: #fff; color: #111; flex: none; }
+.tb-tip-cab span svg { width: 78%; height: 78%; }
+.tb-tip-cab span .tb-estado-punto { margin: 0; }
+.tb-tip-estado p { margin: calc(6px * var(--tb-k)) 0 0; }
+.tb-tip-estado .tb-nota { color: #aaa; }
+.tb-tablas { margin-top: calc(16px * var(--tb-k)); border-top: 1px solid rgba(127,127,127,.25); padding-top: calc(4px * var(--tb-k)); }
+.tb-tabla-item { display: flex; align-items: center; gap: calc(8px * var(--tb-k)); padding: calc(6px * var(--tb-k)) 0; border-bottom: 1px solid rgba(127,127,127,.15); }
+.tb-tabla-item > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tb-tabla-item small { color: #888; font-size: calc(11px * var(--tb-k)); }
+.tb-tabla-item [data-tirar] svg { width: calc(16px * var(--tb-k)); height: calc(16px * var(--tb-k)); color: #d6127e; }
+.tb-tabla-res { font-weight: 700; font-size: 1.08em; margin: calc(3px * var(--tb-k)) 0; }
 .tb-estado-punto { display: inline-block; width: calc(11px * var(--tb-k)); height: calc(11px * var(--tb-k)); border-radius: 50%; margin-right: calc(6px * var(--tb-k)); vertical-align: -1px; border: 1px solid rgba(0,0,0,.25); }
 .tb-submenu { max-height: calc(100vh - 16px); overflow-y: auto; }
 

@@ -838,6 +838,90 @@ revoke all on tablero_perfil, tablero_gifs from anon;
 grant select, insert, update on tablero_perfil to authenticated;
 grant select, insert, delete on tablero_gifs to authenticated;
 
+-- ============================================================ tablas aleatorias
+-- Botín, encuentros, nombres… Las hace el DJ. Los jugadores ven y tiran solo las que él marca (ver_todos).
+-- filas: [{ "texto": "Poción de curación", "peso": 2 }, …]. El peso (1 a 1000) es cuántas veces cuenta esa fila.
+create table if not exists tablero_tablas (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null check (char_length(btrim(nombre)) between 1 and 60),
+  filas jsonb not null default '[]'::jsonb check (jsonb_typeof(filas) = 'array' and jsonb_array_length(filas) <= 500 and pg_column_size(filas) <= 80000),
+  ver_todos boolean not null default false,
+  creado timestamptz not null default now(),
+  actualizado timestamptz not null default now()
+);
+create unique index if not exists tablero_tablas_nombre on tablero_tablas (lower(btrim(nombre)));
+alter table tablero_tablas enable row level security;
+drop policy if exists "tablero_tablas_gm" on tablero_tablas;
+create policy "tablero_tablas_gm" on tablero_tablas for all to authenticated using (fichas_es_admin()) with check (fichas_es_admin());
+drop policy if exists "tablero_tablas_ver" on tablero_tablas;
+create policy "tablero_tablas_ver" on tablero_tablas for select to authenticated using (ver_todos);
+revoke all on tablero_tablas from anon;
+grant select, insert, update, delete on tablero_tablas to authenticated;
+
+-- Tira una tabla en el servidor y deja el resultado en el chat. El DJ tira cualquiera; un jugador, las que ve.
+create or replace function tablero_tirar_tabla(p_tabla uuid, p_modo text default 'todos', p_como uuid default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  tb record;
+  c record;
+  total int;
+  r int;
+  acc int := 0;
+  elegida jsonb;
+  f jsonb;
+  t jsonb;
+begin
+  if auth.uid() is null then raise exception 'Inicia sesión para tirar.'; end if;
+  if coalesce(p_modo, 'todos') not in ('todos', 'dj', 'secreta') then raise exception 'Modo no válido.'; end if;
+  select * into tb from tablero_tablas where id = p_tabla and (ver_todos or fichas_es_admin());
+  if not found then raise exception 'Esa tabla no existe.'; end if;
+  select coalesce(sum(case when x->>'peso' ~ '^[0-9]{1,4}$' then greatest(1, least(1000, (x->>'peso')::int)) else 1 end), 0)
+    into total from jsonb_array_elements(tb.filas) x where coalesce(btrim(x->>'texto'), '') <> '';
+  if total = 0 then raise exception 'La tabla está vacía.'; end if;
+  r := 1 + floor(random() * total)::int;
+  for f in select x from jsonb_array_elements(tb.filas) x where coalesce(btrim(x->>'texto'), '') <> '' loop
+    acc := acc + case when f->>'peso' ~ '^[0-9]{1,4}$' then greatest(1, least(1000, (f->>'peso')::int)) else 1 end;
+    elegida := f;
+    exit when r <= acc;
+  end loop;
+  select * into c from tablero_i_como(p_como);
+  t := jsonb_build_object('expr', '1t', 'total', r, 'partes', '[]'::jsonb, 'etiqueta', left(tb.nombre, 60),
+    'tabla', jsonb_build_object('nombre', left(tb.nombre, 60), 'texto', left(btrim(elegida->>'texto'), 500), 'de', total));
+  insert into tablero_mensajes (autor, nombre, avatar, texto, tirada, modo)
+  values (auth.uid(), c.nombre, coalesce(c.avatar, ''), '', t, coalesce(p_modo, 'todos'));
+  return case when p_modo = 'secreta' and not fichas_es_admin() then jsonb_build_object('secreta', true) else t end;
+end;
+$$;
+revoke all on function tablero_tirar_tabla(uuid, text, uuid) from public, anon;
+grant execute on function tablero_tirar_tabla(uuid, text, uuid) to authenticated;
+
+-- ============================================================ salvaciones contra la muerte
+-- El dueño de la ficha o el DJ apuntan éxitos y fallos (0 a 3) en la ficha del compendio (combate.salvMuerte).
+create or replace function tablero_ficha_muerte(p_ficha uuid, p_exitos int, p_fallos int)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then raise exception 'Inicia sesión.'; end if;
+  if not exists (select 1 from fichas_personajes where id = p_ficha and (owner_id = auth.uid() or fichas_es_admin())) then
+    raise exception 'Esa ficha no es tuya.';
+  end if;
+  update fichas_personajes set
+    data = jsonb_set(case when jsonb_typeof(data->'combate') = 'object' then data else jsonb_set(data, '{combate}', '{}'::jsonb) end,
+      '{combate,salvMuerte}', jsonb_build_object('exitos', greatest(0, least(3, coalesce(p_exitos, 0))), 'fallos', greatest(0, least(3, coalesce(p_fallos, 0))))),
+    updated_at = now()
+  where id = p_ficha;
+end;
+$$;
+revoke all on function tablero_ficha_muerte(uuid, int, int) from public, anon;
+grant execute on function tablero_ficha_muerte(uuid, int, int) to authenticated;
+
 -- Imágenes del tablero (mapas, fichas, diario) y efectos de sonido del soundboard: bucket público, solo el GM sube o
 -- borra. Hasta 15 MB. Cada jugador puede subir lo suyo (avatar y GIFs) en su carpeta u/<su id>/.
 do $$

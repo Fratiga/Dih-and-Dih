@@ -1195,7 +1195,7 @@
       const muerto = cat.find(c => c.id === "muerto");
       cuerpo.innerHTML = `<div class="tb-estados-colores"><span class="tb-estados-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M6.6 9.2A6 6 0 0 1 9.6 6.4L11 9.6A2.6 2.6 0 0 0 9.7 10.6z" fill="currentColor"/></svg></span>${ver.filter(c => c.color).map(c => `<button type="button" data-id="${c.id}" class="punto${activo(c) ? " activo" : ""}" style="background:${c.color}" title="${esc(c.nombre)} (clic derecho: con número)">${numeroDe(c) != null && activo(c) ? numeroDe(c) : ""}</button>`).join("")}
         ${muerto && (!f || muerto.nombre.toLowerCase().includes(f)) ? `<button type="button" data-id="muerto" class="muerto${activo(muerto) ? " activo" : ""}" title="Muerto">X</button>` : ""}</div>
-        <div class="tb-estados-rejilla">${ver.filter(c => !c.color && c.id !== "muerto").map(c => `<button type="button" data-id="${c.id}" class="${activo(c) ? "activo" : ""}${c.anim ? " anim" : ""}" title="${esc(c.nombre)}${c.anim ? " (animado)" : ""}">${window.TBMarcaSVG(c)}${numeroDe(c) != null && activo(c) ? `<i>${numeroDe(c)}</i>` : ""}</button>`).join("")}</div>`;
+        <div class="tb-estados-rejilla">${ver.filter(c => !c.color && c.id !== "muerto").map(c => `<button type="button" data-id="${c.id}" class="${activo(c) ? "activo" : ""}${c.anim ? " anim" : ""}" title="${esc(c.nombre)}${c.anim ? " (animado)" : ""}${window.TBReglaEstado(c) ? "&#10;&#10;" + esc(window.TBReglaEstado(c)) : ""}">${window.TBMarcaSVG(c)}${numeroDe(c) != null && activo(c) ? `<i>${numeroDe(c)}</i>` : ""}</button>`).join("")}</div>`;
       if (!ver.length) cuerpo.innerHTML = `<p class="tb-nota" style="padding:calc(8px * var(--tb-k))">Nada con ese nombre.</p>`;
     };
     p.addEventListener("click", e => { const b = e.target.closest("[data-id]"); if (b) alternar(cat.find(c => c.id === b.dataset.id)); });
@@ -1211,6 +1211,19 @@
     p.style.top = Math.max(6, Math.min(y + 14, window.innerHeight - p.offsetHeight - 6)) + "px";
     const fuera = e => { if (!p.contains(e.target) && !e.target.closest(".tb-modal")) { p.remove(); document.removeEventListener("mousedown", fuera, true); } };
     setTimeout(() => document.addEventListener("mousedown", fuera, true), 0);
+  }
+  let tipEst = null;
+  function tipEstado(b, x, y) {
+    if (!b) { if (tipEst) { tipEst.remove(); tipEst = null; } return; }
+    const c = (window.TBEstados || []).find(q => q.id === b.id);
+    if (!c) return;
+    const regla = window.TBReglaEstado(c), muriendo = b.id === "inconsciente" && b.muriendo ? window.TBReglaEstado(null, "Muriendo") : "";
+    if (!tipEst) { tipEst = el(`<div class="tb-tip-estado" role="tooltip"></div>`); document.body.appendChild(tipEst); }
+    tipEst.innerHTML = `<div class="tb-tip-cab"><span>${window.TBMarcaSVG(c) || `<i class="tb-estado-punto" style="background:${c.color}"></i>`}</span><b>${esc(c.nombre)}${b.n != null && b.n !== "" ? " " + esc(String(b.n)) : ""}</b></div>
+      ${regla ? `<p>${esc(regla)}</p>` : ""}${muriendo ? `<p><b>Muriendo.</b> ${esc(muriendo)}</p>` : ""}${!regla && !muriendo ? `<p class="tb-nota">Marcador sin regla propia.</p>` : ""}`;
+    const w = tipEst.offsetWidth, h = tipEst.offsetHeight;
+    tipEst.style.left = Math.max(6, Math.min(x + 14, window.innerWidth - w - 6)) + "px";
+    tipEst.style.top = Math.max(6, Math.min(y + 16, window.innerHeight - h - 6)) + "px";
   }
   function establecerDimensiones(todos) {
     const t = TB.L.tamCelda(), o = todos[0];
@@ -1562,5 +1575,5 @@
     setCapa("fichas");
   }
 
-  window.TBPaneles = { iniciar, menuEstados, ajustesLuz, ajustesFicha, menuFicha, menuVacio, abrirPin, soltarEnTablero, elegirDibujo, setHerramienta, setCapa, alternarPaginas, alternarTurno, configPagina, medirImagen };
+  window.TBPaneles = { iniciar, menuEstados, tipEstado, ajustesLuz, ajustesFicha, menuFicha, menuVacio, abrirPin, soltarEnTablero, elegirDibujo, setHerramienta, setCapa, alternarPaginas, alternarTurno, configPagina, medirImagen };
 })();

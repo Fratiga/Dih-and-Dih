@@ -18,7 +18,7 @@
   const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "x" + Date.now().toString(36) + Math.random().toString(36).slice(2));
   const ahora = () => new Date().toISOString();
   const ESTADO_VACIO = () => ({ id: 1, escena_jugadores: null, iniciativa: { lista: [], turno: 0, ronda: 1, visible: false }, musica: {}, gramola: {} });
-  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "fxFin", "camara", "cursor", "sonido", "explorado"];
+  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "fxFin", "camara", "cursor", "sonido", "explorado", "ficha"];
 
   /* ============================================================ Supabase */
   function redSupabase() {
@@ -143,6 +143,14 @@
         return ok(await sb.from("tablero_macros").insert(f).select().single());
       },
       async borrarMacro(id) { ok(await sb.from("tablero_macros").delete().eq("id", id)); },
+      async tablas() { return ok(await sb.from("tablero_tablas").select("id, nombre, filas, ver_todos").order("nombre")) || []; },
+      async guardarTabla(f) {
+        const fila = { nombre: f.nombre, filas: f.filas, ver_todos: !!f.ver_todos, actualizado: ahora() };
+        if (f.id) return ok(await sb.from("tablero_tablas").update(fila).eq("id", f.id).select("id, nombre, filas, ver_todos").single());
+        return ok(await sb.from("tablero_tablas").insert(fila).select("id, nombre, filas, ver_todos").single());
+      },
+      async borrarTabla(id) { ok(await sb.from("tablero_tablas").delete().eq("id", id)); },
+      async tirarTabla(id, modo, como) { return ok(await sb.rpc("tablero_tirar_tabla", { p_tabla: id, p_modo: modo || "todos", p_como: como || null })); },
       async subirImagen(archivo) {
         const limpio = archivo.name.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9._-]+/g, "_").replace(/^_+|_+$/g, "") || "imagen.png";
         const ruta = `${uuid()}/${limpio}`;
@@ -184,6 +192,7 @@
       },
       async gastarMunicion(ficha, ataque) { return ok(await sb.rpc("fichas_gastar_municion", { p_ficha: ficha, p_ataque: ataque })); },
       async fichaPV(ficha, cambios) { ok(await sb.rpc("tablero_ficha_pv", { p_ficha: ficha, p_actual: cambios.actual, p_max: cambios.max, p_temp: cambios.temp })); },
+      async fichaMuerte(ficha, exitos, fallos) { ok(await sb.rpc("tablero_ficha_muerte", { p_ficha: ficha, p_exitos: exitos, p_fallos: fallos })); },
       async canciones() {
         // Las canciones que se subieron a la rocola (tabla rocola_canciones); las del sitio vienen en data/musica.js
         const { data, error } = await sb.from("rocola_canciones").select("ruta, titulo, artista").order("creada", { ascending: false });
@@ -202,7 +211,8 @@
     let d;
     const leer = () => {
       try { d = JSON.parse(localStorage.getItem(CLAVE) || "null"); } catch (e) { d = null; }
-      d = Object.assign({ escenas: [], estado: ESTADO_VACIO(), objetos: [], mensajes: [], diario: [], diarioGM: {}, notasGM: {}, arte: [], macros: [] }, d || {});
+      d = Object.assign({ escenas: [], estado: ESTADO_VACIO(), objetos: [], mensajes: [], diario: [], diarioGM: {}, notasGM: {}, arte: [], macros: [], tablas: [],
+        fichas: [{ id: "local-ficha", owner: "local-jugador", nombre: "Jugador de prueba", combate: { pvActual: 18, pvMax: 24, pvTemp: 0, salvMuerte: { exitos: 0, fallos: 0 } }, retrato: "", raza: "Humano", clase: "Guerrero", nivel: 3 }] }, d || {});
     };
     const guardar = () => { try { localStorage.setItem(CLAVE, JSON.stringify(d)); } catch (e) { console.warn("[tablero] sin espacio local"); } };
     leer();
@@ -388,6 +398,30 @@
         const m = Object.assign({ id: uuid(), autor: yo.uid, en_barra: true, orden: 0 }, f); d.macros.push(m); guardar(); return m;
       },
       async borrarMacro(id) { d.macros = d.macros.filter(m => m.id !== id); guardar(); },
+      async tablas() { leer(); return d.tablas.filter(t => yo.esGM || t.ver_todos).sort((a, b) => a.nombre.localeCompare(b.nombre)); },
+      async guardarTabla(f) {
+        if (!yo.esGM) throw new Error("Solo el DJ hace tablas.");
+        if (d.tablas.some(t => t.id !== f.id && t.nombre.trim().toLowerCase() === f.nombre.trim().toLowerCase())) throw new Error("Ya hay una tabla con ese nombre.");
+        let t = f.id && d.tablas.find(x => x.id === f.id);
+        if (t) Object.assign(t, f); else { t = Object.assign({ id: uuid() }, f); d.tablas.push(t); }
+        guardar(); return t;
+      },
+      async borrarTabla(id) { d.tablas = d.tablas.filter(t => t.id !== id); guardar(); },
+      async tirarTabla(id, modo, comoId) {
+        const tb = d.tablas.find(t => t.id === id && (yo.esGM || t.ver_todos));
+        if (!tb) throw new Error("Esa tabla no existe.");
+        const filas = (tb.filas || []).filter(f => String(f.texto || "").trim());
+        const peso = f => Math.max(1, Math.min(1000, parseInt(f.peso, 10) || 1));
+        const total = filas.reduce((s, f) => s + peso(f), 0);
+        if (!total) throw new Error("La tabla está vacía.");
+        const r = 1 + Math.floor(Math.random() * total);
+        let acc = 0, elegida = filas[0];
+        for (const f of filas) { acc += peso(f); elegida = f; if (r <= acc) break; }
+        const c = como(comoId);
+        const t = { expr: "1t", total: r, partes: [], etiqueta: tb.nombre, tabla: { nombre: tb.nombre, texto: String(elegida.texto).trim().slice(0, 500), de: total } };
+        msg({ nombre: c.nombre, avatar: c.avatar, tirada: t, modo: modo || "todos" });
+        return modo === "secreta" && !yo.esGM ? { secreta: true } : t;
+      },
       async perfil() { return { avatar: perfilLocal().avatar || "" }; },
       async guardarPerfil(c) { localStorage.setItem("tbPerfilLocal:" + yo.uid, JSON.stringify(Object.assign(perfilLocal(), c))); },
       async gifs() { try { return JSON.parse(localStorage.getItem("tbGifsLocal:" + yo.uid) || "[]"); } catch (e) { return []; } },
@@ -396,7 +430,7 @@
       async subirPropio(archivo) { return this.subirImagen(archivo); },
       async subirImagen(archivo) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(archivo); }); },
       async jugadores() { return jugadores.slice(); },
-      async fichas() { return [{ id: "local-ficha", owner: JUG, nombre: "Jugador de prueba", combate: { pvActual: 18, pvMax: 24, pvTemp: 0 }, retrato: "", raza: "Humano", clase: "Guerrero", nivel: 3 }]; },
+      async fichas() { leer(); return JSON.parse(JSON.stringify(d.fichas)); },
       emitir(evento, x) { if (bc) bc.postMessage({ evento, x }); },
       presencia(extra) { setTimeout(() => ev.lanzar("presencia", [Object.assign({ uid: yo.uid, nombre: yo.nombre, gm: yo.esGM }, extra)]), 0); },
       async fichaCompleta() { return null; },
@@ -407,7 +441,8 @@
             { id: "s2", categoria: "Salvaciones", texto: "Destreza: +4", cmd: { normal: "Salvación de Destreza: [[?{Tipo de tirada|Normal,1d20|Ventaja,2d20kh1|Desventaja,2d20kl1}+4+?{Bonificación adicional|0}]]" } }] }];
       },
       async gastarMunicion() { return 0; },
-      async fichaPV() {},
+      async fichaPV(ficha, c) { leer(); const f = d.fichas.find(x => x.id === ficha); if (!f) return; ["actual", "max", "temp"].forEach(k => { if (c[k] != null) f.combate["pv" + k[0].toUpperCase() + k.slice(1)] = c[k]; }); guardar(); },
+      async fichaMuerte(ficha, exitos, fallos) { leer(); const f = d.fichas.find(x => x.id === ficha); if (!f) return; f.combate.salvMuerte = { exitos: Math.max(0, Math.min(3, exitos | 0)), fallos: Math.max(0, Math.min(3, fallos | 0)) }; guardar(); },
       async canciones() { return []; }
     };
   }

@@ -553,6 +553,17 @@
       }
       if (o.bloqueado && st.esGM && o.capa === st.capa) n.deco.add(new Konva.Text({ x: o.ancho / 2 - 12, y: -o.alto / 2 - 2, text: "🔒", fontSize: 11 }));
       pintarEstados(n);
+      if (d.muerte && o.tipo === "imagen") {
+        const m = d.muerte, r = Math.max(3.5, Math.min(7, o.ancho * 0.05)), paso = r * 2.6, hueco = r * 1.6;
+        const y = o.alto / 2 + 4 + (debajo ? barras.length * (hb + 2) : 0) + (d.verNombre && d.nombre ? 22 : 0) + r + 2;
+        const ancho = paso * 6 + hueco;
+        n.deco.add(new Konva.Rect({ x: -ancho / 2, y: y - r - 3, width: ancho, height: r * 2 + 6, fill: "rgba(20,20,20,.72)", cornerRadius: r + 3 }));
+        for (let i = 0; i < 6; i++) {
+          const exito = i < 3, lleno = exito ? i < (m.exitos | 0) : i - 3 < (m.fallos | 0);
+          const x = -ancho / 2 + paso / 2 + i * paso + (exito ? 0 : hueco);
+          n.deco.add(new Konva.Circle({ x, y, radius: r, stroke: exito ? "#5cd65c" : "#ff4d4d", strokeWidth: Math.max(1, r * 0.3), fill: lleno ? (exito ? "#5cd65c" : "#ff4d4d") : "transparent" }));
+        }
+      }
     }
 
     // Marcadores de estado: una fila de iconos en la esquina de arriba a la derecha (y una X roja si está muerto)
@@ -707,7 +718,9 @@
         g.on("click tap", ev => { ev.cancelBubble = true; editarBurbuja(n, i, g); });
       });
       // Debajo, abajo a la izquierda: la tuerca y, algo más abajo y hacia el centro, los estados
-      const yAbajo = o.y + o.alto / 2 + (d.barraPos === "debajo" ? nb * hb : 0);
+      // Debajo de la ficha pueden ir su nombre y el contador de salvaciones: los botones van más abajo
+      const bajoFicha = (d.verNombre && d.nombre ? 22 : 0) + (d.muerte ? Math.max(3.5, Math.min(7, o.ancho * 0.05)) * 2 + 8 : 0);
+      const yAbajo = o.y + o.alto / 2 + (d.barraPos === "debajo" ? nb * hb : 0) + bajoFicha;
       const dx = Math.max(o.ancho * 0.27, 36 * k);
       const tuerca = boton(o.x - dx, yAbajo + 44 * k, "Ajustes de la ficha", "pointer");
       disco(tuerca);
@@ -719,6 +732,14 @@
       est.add(new Konva.Circle({ radius: 4.6, stroke: "#fff", strokeWidth: 2, listening: false }));
       est.add(new Konva.Arc({ innerRadius: 4.6, outerRadius: 9, angle: 80, rotation: -130, fill: "#fff", listening: false }));
       est.on("click tap", ev => { ev.cancelBubble = true; if (op.onEstados) op.onEstados(o.id, ev.evt.clientX, ev.evt.clientY); });
+      const m = d.muerte;
+      if (m && (m.exitos | 0) < 3 && (m.fallos | 0) < 3 && window.TBMarcas) {
+        const sal = boton(o.x + dx, yAbajo + 44 * k, "Tirar la salvación contra la muerte", "pointer");
+        disco(sal, "#c0201d");
+        const q = 19 / 512;
+        sal.add(new Konva.Path({ data: TBMarcas["skull-crossed-bones"], fill: "#fff", scaleX: q, scaleY: q, x: -9.5, y: -9.5, listening: false }));
+        sal.on("click tap", ev => { ev.cancelBubble = true; if (op.onSalvacion) op.onSalvacion(o.id); });
+      }
       // Punto azul para girar, arriba a la derecha y fuera del marco (solo si el marco tiene tiradores)
       if (tr.nodes().length === 1 && tr.nodes()[0] === n.g) {
         const rad = (o.rot || 0) * Math.PI / 180, lx = o.ancho / 2 + 18 * k, ly = -o.alto / 2 - 20 * k;
@@ -1446,6 +1467,33 @@
       }
     }
     stage.on("mouseup touchend", terminarGesto);
+    function estadoBajo(p) {
+      const cat = window.TBEstados || [];
+      for (const n of st.nodos.values()) {
+        const o = n.o, l = (o.datos || {}).estados;
+        if (!l || !l.length || !n.deco.visible() || o.tipo === "pin" || o.tipo === "luz") continue;
+        const dx = p.x - n.deco.x(), dy = p.y - n.deco.y();
+        if (Math.abs(dx) > o.ancho / 2 + 2 || dy < -o.alto / 2 - 2 || dy > o.alto / 2) continue;
+        const lista = l.filter(e => e && e.id && e.id !== "muerto" && (cat.find(c => c.id === e.id) || {}).id && !cat.find(c => c.id === e.id).anim);
+        const sz = Math.max(11, Math.min(22, Math.min(o.ancho, o.alto) * 0.27)), porFila = Math.max(1, Math.floor(o.ancho / (sz + 1)));
+        for (let i = 0; i < lista.length; i++) {
+          const fila = Math.floor(i / porFila), col = i % porFila;
+          const cx = o.ancho / 2 - sz / 2 - col * (sz + 1), cy = -o.alto / 2 + sz / 2 + fila * (sz + 1);
+          if (Math.hypot(dx - cx, dy - cy) <= sz / 2 + 1) return { id: lista[i].id, n: lista[i].n, muriendo: !!(o.datos || {}).muerte };
+        }
+      }
+      return null;
+    }
+    let tipEstado = null;
+    stage.on("mousemove.estados", e => {
+      if (!op.onEstadoEncima) return;
+      const b = st.herr === "seleccionar" && !gesto && !st.arrastre ? estadoBajo(punteroMundo()) : null;
+      const clave = b ? b.id + ":" + b.n : null;
+      if (clave === tipEstado && !b) return;
+      tipEstado = clave;
+      op.onEstadoEncima(b, e.evt.clientX, e.evt.clientY);
+    });
+    stage.on("mouseleave.estados", () => { if (tipEstado && op.onEstadoEncima) { tipEstado = null; op.onEstadoEncima(null); } });
     // Si se suelta el ratón fuera del tablero (sobre una ventana), el gesto también termina
     window.addEventListener("mouseup", e => {
       if (!gesto || gesto.tipo === "pluma" || gesto.tipo === "nieblaPoli") return;

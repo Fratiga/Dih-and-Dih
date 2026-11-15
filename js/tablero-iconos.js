@@ -12,10 +12,10 @@
     { id: "amarillo", nombre: "Punto amarillo", color: "#E5EB75", numero: true },
     m("muerto", "Muerto", null),
     m("calavera", "Calavera", "skull-crossed-bones"), m("inconsciente", "Inconsciente", "sleepy", { cond: true }),
-    m("agotamiento", "Agotamiento", "half-heart", { cond: true, numero: true }), m("ardiendo", "Ardiendo", "half-haze"),
+    m("agotamiento", "Agotamiento", "half-heart", { cond: true, numero: true, regla: "Cansancio" }), m("ardiendo", "Ardiendo", "half-haze"),
     m("ensordecido", "Ensordecido", "interdiction", { cond: true }), m("ralentizado", "Ralentizado", "snail"),
     m("paralizado", "Paralizado", "lightning-helix", { cond: true }), m("llave", "Llave", "spanner"),
-    m("encantado", "Encantado", "chained-heart", { cond: true }), m("envenenado", "Envenenado", "chemical-bolt", { cond: true }),
+    m("encantado", "Encantado", "chained-heart", { cond: true, regla: "Hechizado" }), m("envenenado", "Envenenado", "chemical-bolt", { cond: true }),
     m("maldito", "Maldito", "death-zone"), m("pocion", "Poción", "drink-me"),
     m("petrificado", "Petrificado", "edge-crack", { cond: true }), m("invisible", "Invisible", "ninja-mask", { cond: true }),
     m("cronometro", "Cronómetro", "stopwatch"), m("apresado", "Apresado", "fishing-net", { cond: true }),
@@ -36,6 +36,13 @@
     m("casteo_notas", "Casteo: notas musicales", "musical-notes", { anim: true }), m("casteo_cartas", "Casteo: cartas", "poker-hand", { anim: true }),
     m("fumando", "Fumando", "smoking-pipe", { anim: true }), m("raudo", "Raudo", "sprint", { anim: true })
   ];
+  // Lo que dice el reglamento (data/reglas.js, sección Estados) de un marcador; vacío si no es una condición
+  window.TBReglaEstado = (c, nombre) => {
+    const sec = (window.REGLAS || []).find(s => s.titulo === "Estados");
+    const buscado = String(nombre || (c && (c.regla || c.nombre)) || "").toLowerCase();
+    const it = sec && buscado && sec.items.find(i => i.label.split(" (")[0].trim().toLowerCase() === buscado);
+    return it ? it.detalle : "";
+  };
   // Silueta de un marcador como SVG en línea (toma el color del texto)
   window.TBMarcaSVG = c => {
     const d = c && c.ic && window.TBMarcas && window.TBMarcas[c.ic];

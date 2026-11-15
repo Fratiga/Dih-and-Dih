@@ -14,7 +14,7 @@ uno() { como "$1" "$2" | tail -1; }
 echo "== Instalación"
 cargar admin/tablero.sql
 cargar admin/tablero.sql          # se puede repetir sin romper nada
-comprobar "las doce tablas existen" "12" "$(sql "select count(*) from pg_tables where tablename like 'tablero\_%'")"
+comprobar "las trece tablas existen" "13" "$(sql "select count(*) from pg_tables where tablename like 'tablero\_%'")"
 comprobar "hay una sola fila de estado" "1" "$(sql "select count(*) from tablero_estado")"
 
 sql "delete from tablero_escenas; delete from tablero_diario; delete from tablero_macros; delete from tablero_arte; truncate tablero_mensajes; insert into tablero_estado (id) values (1) on conflict (id) do nothing; update tablero_estado set escena_jugadores = null, iniciativa = '{\"lista\": [], \"turno\": 0, \"ronda\": 1, \"visible\": false}'" >/dev/null
@@ -235,6 +235,39 @@ comprobar "la biblioteca de arte es solo del GM" "0|1" "$(uno "$U1" "select coun
 como "$U1" "insert into tablero_macros (nombre, texto) values ('Ataque', '/r 1d20+5');" >/dev/null
 comprobar "cada jugador ve solo sus macros" "1|0" "$(uno "$U1" "select count(*) from tablero_macros;")|$(uno "$U2" "select count(*) from tablero_macros;")"
 contiene "no crea macros a nombre de otro" "$(como "$U2" "insert into tablero_macros (autor, nombre) values ('$U1', 'X');")" "row-level security"
+
+echo "== Tablas aleatorias"
+sql "delete from tablero_tablas" >/dev/null
+T1=$(como "$ADMIN" "insert into tablero_tablas (nombre, filas) values ('Botín', '[{\"texto\": \"Poción\", \"peso\": 3}, {\"texto\": \"Espada\"}, {\"texto\": \"  \"}]') returning id;" | head -1)
+T2=$(como "$ADMIN" "insert into tablero_tablas (nombre, filas, ver_todos) values ('Nombres', '[{\"texto\": \"Ana\"}]', true) returning id;" | head -1)
+T3=$(como "$ADMIN" "insert into tablero_tablas (nombre, ver_todos) values ('Vacía', true) returning id;" | head -1)
+comprobar "el jugador ve solo las tablas que el DJ comparte" "2|Nombres" "$(uno "$U1" "select count(*) from tablero_tablas;")|$(uno "$U1" "select nombre from tablero_tablas order by nombre limit 1;")"
+contiene "el jugador no crea tablas" "$(como "$U1" "insert into tablero_tablas (nombre) values ('X');")" "row-level security"
+como "$U1" "update tablero_tablas set ver_todos = true where id = '$T1';" >/dev/null
+comprobar "ni cambia las del DJ" "f" "$(sql "select ver_todos from tablero_tablas where id = '$T1'")"
+contiene "dos tablas no se llaman igual" "$(como "$ADMIN" "insert into tablero_tablas (nombre) values ('botín ');")" "duplicate"
+como "$U1" "select tablero_tirar_tabla('$T2');" >/dev/null
+comprobar "el jugador tira una tabla compartida y sale en el chat" "Ana|Nombres|1|1" "$(sql "select (tirada->'tabla'->>'texto') || '|' || (tirada->'tabla'->>'nombre') || '|' || (tirada->>'total') || '|' || (tirada->'tabla'->>'de') from tablero_mensajes order by id desc limit 1")"
+contiene "no tira una tabla que no ve" "$(como "$U1" "select tablero_tirar_tabla('$T1');")" "no existe"
+contiene "una tabla vacía no se tira" "$(como "$U1" "select tablero_tirar_tabla('$T3');")" "vacía"
+contiene "sin sesión no se tira" "$(anonimo "select tablero_tirar_tabla('$T2');")" "permission denied"
+como "$ADMIN" "select count(tablero_tirar_tabla('$T1', 'secreta')) from generate_series(1, 400);" >/dev/null
+comprobar "el peso cuenta (3 a 1) y las filas en blanco no salen" "true|0|4" "$(sql "select (count(*) filter (where tirada->'tabla'->>'texto' = 'Poción') > 2 * count(*) filter (where tirada->'tabla'->>'texto' = 'Espada'))::text from tablero_mensajes where tirada->'tabla'->>'nombre' = 'Botín'")|$(sql "select count(*) from tablero_mensajes where tirada->'tabla'->>'nombre' = 'Botín' and tirada->'tabla'->>'texto' not in ('Poción', 'Espada')")|$(sql "select distinct tirada->'tabla'->>'de' from tablero_mensajes where tirada->'tabla'->>'nombre' = 'Botín'")"
+comprobar "las tiradas secretas del DJ no las ve el jugador" "0" "$(uno "$U1" "select count(*) from tablero_mensajes where tirada->'tabla'->>'nombre' = 'Botín';")"
+
+echo "== Salvaciones contra la muerte"
+sql "create table if not exists fichas_personajes (id uuid primary key default gen_random_uuid(), owner_id uuid not null, archivado boolean not null default false, data jsonb not null, created_at timestamptz not null default now(), updated_at timestamptz not null default now(), roll20 jsonb)" >/dev/null
+FP=$(sql "insert into fichas_personajes (owner_id, data) values ('$U1', '{\"combate\": {\"pvActual\": 0, \"pvMax\": 20}}') returning id")
+FS=$(sql "insert into fichas_personajes (owner_id, data) values ('$U1', '{\"identidad\": {\"nombre\": \"Sin combate\"}}') returning id")
+como "$U1" "select tablero_ficha_muerte('$FP', 1, 2);" >/dev/null
+comprobar "el dueño apunta éxitos y fallos en su hoja" '{"exitos": 1, "fallos": 2}' "$(sql "select data->'combate'->'salvMuerte' from fichas_personajes where id = '$FP'")"
+contiene "otro jugador no toca esa hoja" "$(como "$U2" "select tablero_ficha_muerte('$FP', 3, 0);")" "no es tuya"
+como "$ADMIN" "select tablero_ficha_muerte('$FP', 9, -4);" >/dev/null
+comprobar "el DJ también, y los valores quedan entre 0 y 3" '{"exitos": 3, "fallos": 0}' "$(sql "select data->'combate'->'salvMuerte' from fichas_personajes where id = '$FP'")"
+comprobar "el resto de la hoja no cambia" "0|20" "$(sql "select (data->'combate'->>'pvActual') || '|' || (data->'combate'->>'pvMax') from fichas_personajes where id = '$FP'")"
+como "$U1" "select tablero_ficha_muerte('$FS', 0, 1);" >/dev/null
+comprobar "una hoja sin combate lo crea" '1|Sin combate' "$(sql "select (data->'combate'->'salvMuerte'->>'fallos') || '|' || (data->'identidad'->>'nombre') from fichas_personajes where id = '$FS'")"
+sql "delete from fichas_personajes where id in ('$FP', '$FS')" >/dev/null
 
 echo "== Cambiar la escena de los jugadores"
 como "$ADMIN" "update tablero_estado set escena_jugadores = '$S2' where id = 1;" >/dev/null

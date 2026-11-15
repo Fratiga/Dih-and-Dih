@@ -15,12 +15,14 @@
     { id: "diario", icono: "diario", titulo: "Diario" },
     { id: "compendio", icono: "compendio", titulo: "Compendio" },
     { id: "gramola", icono: "gramola", titulo: "Gramola", gm: true },
-    { id: "colecciones", icono: "colecciones", titulo: "Colecciones (macros)" },
+    { id: "colecciones", icono: "colecciones", titulo: "Colecciones (macros y tablas)" },
     { id: "ajustes", icono: "ajustes", titulo: "Ajustes" }
   ];
 
   function iniciar(tb) {
     TB = tb;
+    TB.cargarTablas = cargarTablas;
+    TB.tirarTabla = tirarTabla;
     const nav = document.getElementById("tbPestanas"), cuerpo = document.getElementById("tbLadoCuerpo");
     PESTANAS.filter(p => !p.gm || TB.esGM()).forEach(p => {
       const b = el(`<button type="button" data-p="${p.id}" title="${esc(p.titulo)}">${I[p.icono]}</button>`);
@@ -186,7 +188,8 @@
       <li>Ventaja y desventaja: <b>/r</b> 2d20kh1+5 · <b>/r</b> 2d20kl1+5</li>
       <li>Tiradas dentro de un mensaje: Ataco con [[1d20+5]]</li>
       <li>Susurra a un jugador o personaje<br><b>/w</b> nombre mensaje · <b>/w</b> "Nombre con espacios" mensaje<br><b>/w gm</b> mensaje</li>
-      <li>Acciones: <b>/em</b> se esconde tras la columna${TB.esGM() ? " · Narración: <b>/desc</b> texto" : ""}</li></ul>
+      <li>Acciones: <b>/em</b> se esconde tras la columna${TB.esGM() ? " · Narración: <b>/desc</b> texto" : ""}</li>
+      <li>Tablas aleatorias: <b>/tabla</b> nombre</li></ul>
       <button type="button" class="tb-enlace" data-ocultar-consejos>Ocultar estos consejos</button></div>`;
   }
   function pintarMensajes() {
@@ -231,7 +234,7 @@
     const av = m.avatar ? `style="background-image:url('${esc(m.avatar)}')"` : `style="background-color:${TB.colorJugador(m.autor)}"`;
     const nodo = el(`<div class="tb-msg ${esc(m.modo)}${seguido ? " seguido" : ""}${emote ? " emote" : ""}${desc ? " desc" : ""}">
       <span class="tb-msg-av" ${av}>${m.avatar ? "" : esc(ini.toUpperCase())}</span>
-      <div class="tb-msg-cuerpo">${TB.prefs.horas && m.creado ? `<span class="tb-msg-hora">${new Date(m.creado).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}</span>` : ""}${etq ? `<span class="tb-msg-etq">${esc(etq)}</span>` : ""}${seguido ? "" : `<span class="tb-msg-nombre">${esc(m.nombre)}${emote ? "" : ":"}</span>`}${cuerpoTxt}${tirada ? TBDados.tiradaHtml(tirada) : ""}</div></div>`);
+      <div class="tb-msg-cuerpo">${TB.prefs.horas && m.creado ? `<span class="tb-msg-hora">${new Date(m.creado).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}</span>` : ""}${etq ? `<span class="tb-msg-etq">${esc(etq)}</span>` : ""}${seguido ? "" : `<span class="tb-msg-nombre">${esc(m.nombre)}${emote ? "" : ":"}</span>`}${cuerpoTxt}${tirada ? (tirada.tabla ? tablaHtml(tirada) : TBDados.tiradaHtml(tirada)) : ""}</div></div>`);
     lista.appendChild(nodo);
     if (abajo || (animado && m.autor === TB.yo.uid)) lista.scrollTop = lista.scrollHeight;
     // Cuando carga el GIF cambia el alto: que el chat siga abajo
@@ -1192,6 +1195,56 @@
     caja.append(cab, rejilla, pie, el(`<p class="tb-nota">Un clic lanza el efecto para todos. Con «Editar» ocultas los de serie o quitas los tuyos.</p>`));
   }
 
+  function tablaHtml(t) {
+    const b = t.tabla;
+    return `<div class="tb-tirada tb-tirada-tabla"><div class="tb-tirada-etq">Tabla «${esc(b.nombre)}»</div>
+      <div class="tb-tabla-res">${esc(b.texto)}</div><div class="tb-tirada-expr">sale ${t.total} de ${b.de}</div></div>`;
+  }
+
+  /* ============================================================ tablas aleatorias */
+  // El DJ las hace (a mano o rellenándolas con el compendio) y elige cuáles ven los jugadores. Se tiran aquí o con /tabla nombre.
+  async function cargarTablas() { try { TB.tablas = await TB.red.tablas(); } catch (e) { TB.tablas = TB.tablas || []; } return TB.tablas; }
+  async function tirarTabla(t, modo) {
+    try { await TB.red.tirarTabla(t.id, modo || "todos", cuerpos.chat.querySelector("[data-como]").value || null); }
+    catch (e) { aviso(/tablero_tirar_tabla|tablero_tablas/.test(String(e && e.message)) ? "Falta volver a correr tablero.sql para las tablas." : mensajeError(e), true); }
+  }
+  const textoFilas = filas => (filas || []).map(f => ((parseInt(f.peso, 10) || 1) > 1 ? f.peso + " | " : "") + f.texto).join("\n");
+  const leerFilas = txt => String(txt || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean).slice(0, 500).map(l => {
+    const m = l.match(/^(\d{1,4})\s*\|\s*(.+)$/);
+    return m ? { texto: m[2].slice(0, 500), peso: Math.max(1, Math.min(1000, parseInt(m[1], 10))) } : { texto: l.slice(0, 500), peso: 1 };
+  });
+  function editarTabla(t) {
+    t = t || { nombre: "", filas: [], ver_todos: false };
+    const fuentes = { BESTIARIO: "Bestiario", OBJETOS: "Objetos", ARMAS: "Armas", PERSONAJES: "Personajes", LUGARES: "Lugares", RAZAS: "Pueblos" };
+    const c = el(`<div><label class="tb-campo"><span>Nombre</span><input type="text" maxlength="60" data-n placeholder="Botín de la cripta"></label>
+      <label class="tb-campo"><span>Filas, una por línea. Para que una salga más, ponle delante cuántas veces cuenta: <b>3 | Poción de curación</b></span>
+        <textarea rows="12" data-f style="font-family:Consolas,monospace;font-size:calc(13px * var(--tb-k))"></textarea></label>
+      <div class="tb-fila"><select data-fuente><option value="">Rellenar con el compendio…</option>${Object.entries(fuentes).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select>
+        <span class="tb-nota" data-cuenta></span><span style="flex:1"></span><label class="tb-casilla"><input type="checkbox" data-v> La ven y tiran los jugadores</label></div></div>`);
+    const n = c.querySelector("[data-n]"), f = c.querySelector("[data-f]"), cuenta = c.querySelector("[data-cuenta]");
+    n.value = t.nombre; f.value = textoFilas(t.filas); c.querySelector("[data-v]").checked = !!t.ver_todos;
+    const contar = () => { cuenta.textContent = leerFilas(f.value).length + " filas"; };
+    contar(); f.addEventListener("input", contar);
+    c.querySelector("[data-fuente]").addEventListener("change", async e => {
+      const k = e.target.value; e.target.value = "";
+      if (!k) return;
+      await cargarCompendio();
+      const nombres = [...new Set((window[k] || []).map(x => x.title || x.nombre).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+      f.value = (f.value.trim() ? f.value.trim() + "\n" : "") + nombres.join("\n");
+      if (!n.value.trim()) n.value = fuentes[k];
+      contar();
+    });
+    [n, f].forEach(x => x.addEventListener("keydown", e => e.stopPropagation()));
+    modal({ titulo: t.id ? "Editar tabla" : "Nueva tabla", cuerpo: c, ancho: 560, alAceptar: async () => {
+      const nombre = n.value.trim().slice(0, 60), filas = leerFilas(f.value);
+      if (!nombre) { aviso("Ponle un nombre."); return false; }
+      if (!filas.length) { aviso("La tabla necesita al menos una fila."); return false; }
+      try { await TB.red.guardarTabla({ id: t.id, nombre, filas, ver_todos: c.querySelector("[data-v]").checked }); }
+      catch (e) { aviso(/duplicate|unique|tablero_tablas_nombre|Ya hay/.test(String(e && e.message)) ? "Ya hay una tabla con ese nombre." : mensajeError(e), true); return false; }
+      await cargarTablas(); pintarColecciones();
+    } });
+  }
+
   /* ============================================================ colecciones (macros) */
   function pintarBarraMacros() {
     const b = document.getElementById("tbMacros");
@@ -1228,6 +1281,29 @@
         try { await TB.red.borrarMacro(m.id); TB.macros = TB.macros.filter(x => x.id !== m.id); pintarColecciones(); pintarBarraMacros(); } catch (e) { aviso(mensajeError(e), true); }
       });
       lista.appendChild(caja);
+    });
+    const gm = TB.esGM();
+    const secTablas = el(`<div class="tb-tablas"><div class="tb-pes-cab" style="padding-left:0;padding-right:0"><h2>Tablas aleatorias</h2>${gm ? '<button type="button" class="tb-btn" data-nueva-tabla>＋ Tabla</button>' : ""}</div>
+      <p class="tb-nota" style="margin-top:0">${gm ? "Botín, encuentros, nombres… Tíralas aquí o en el chat con <b>/tabla nombre</b> (o <b>/gtabla nombre</b> para que solo lo veas tú). Las que marques como visibles las pueden tirar los jugadores." : "Las tablas que el DJ comparte contigo. También se tiran en el chat con <b>/tabla nombre</b>."}</p><div data-tablas><p class="tb-nota">Cargando…</p></div></div>`);
+    lista.appendChild(secTablas);
+    if (gm) secTablas.querySelector("[data-nueva-tabla]").addEventListener("click", () => editarTabla(null));
+    cargarTablas().then(l => {
+      const caja = secTablas.querySelector("[data-tablas]");
+      caja.innerHTML = l.length ? "" : `<p class="tb-nota">${gm ? "Todavía no hay tablas." : "El DJ no ha compartido ninguna tabla."}</p>`;
+      l.forEach(t => {
+        const fila = el(`<div class="tb-tabla-item"><button type="button" class="tb-btn tb-btn-mini" data-tirar title="Tirar en el chat">${TBIconoDado.d20}</button>
+          <span><b>${esc(t.nombre)}</b><small>${(t.filas || []).length} filas${gm ? (t.ver_todos ? " · la ven los jugadores" : " · solo tú") : ""}</small></span>
+          ${gm ? '<button type="button" class="tb-btn tb-btn-mini" data-editar>Editar</button><button type="button" class="tb-btn tb-btn-mini" data-borrar title="Borrar">✕</button>' : ""}</div>`);
+        fila.querySelector("[data-tirar]").addEventListener("click", () => TB.tirarTabla(t, "todos"));
+        if (gm) {
+          fila.querySelector("[data-editar]").addEventListener("click", () => editarTabla(t));
+          fila.querySelector("[data-borrar]").addEventListener("click", async () => {
+            if (!(await confirmar("¿Borrar la tabla «" + t.nombre + "»?"))) return;
+            try { await TB.red.borrarTabla(t.id); await cargarTablas(); pintarColecciones(); } catch (e) { aviso(mensajeError(e), true); }
+          });
+        }
+        caja.appendChild(fila);
+      });
     });
   }
 

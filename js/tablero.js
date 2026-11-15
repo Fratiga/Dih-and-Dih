@@ -155,20 +155,73 @@
   function sincronizarPV() {
     if (!TB.yo.esGM || !TB.L) return;
     const porId = new Map((TB.fichas || []).map(f => [f.id, f]));
+    const reiniciadas = new Set();
     TB.L.objetos().forEach(o => {
       const barras = (o.datos && o.datos.barras) || [];
-      let cambia = false;
+      let cambia = false, hoja = null;
       const nuevas = barras.map(b => {
         const f = b && b.enlace && porId.get(b.enlace), c = f && f.combate;
         if (!c) return b;
+        hoja = hoja || f;
         const valor = Number(c.pvActual) || 0, max = Number(c.pvMax) || 0;
         if (Number(b.valor) === valor && Number(b.max) === max) return b;
         cambia = true;
         return Object.assign({}, b, { valor, max });
       });
-      if (cambia) TB.cambiarObjeto(o.id, { datos: Object.assign({}, o.datos, { barras: nuevas }) }, { sinDeshacer: true });
+      const datos = Object.assign({}, o.datos, { barras: nuevas });
+      // A 0 PV: Inconsciente y el contador de salvaciones; con 3 fallos, muerto. Al curarse se quita lo que se puso solo.
+      if (hoja && o.tipo === "imagen") {
+        const c = hoja.combate, sm = c.salvMuerte || {};
+        const muriendo = Number(c.pvMax) > 0 && Number(c.pvActual) <= 0;
+        const muerte = muriendo ? { exitos: Math.min(3, sm.exitos | 0), fallos: Math.min(3, sm.fallos | 0) } : null;
+        if (JSON.stringify(muerte) !== JSON.stringify(datos.muerte || null)) { datos.muerte = muerte; cambia = true; }
+        const antes = (datos.estados || []).slice();
+        let est = antes.filter(e => !(e.auto && ((e.id === "inconsciente" && !muriendo) || (e.id === "muerto" && !(muerte && muerte.fallos >= 3)))));
+        if (muriendo && !est.some(e => e.id === "inconsciente")) est = est.concat([{ id: "inconsciente", auto: true }]);
+        if (muerte && muerte.fallos >= 3 && !est.some(e => e.id === "muerto")) est = est.concat([{ id: "muerto", auto: true }]);
+        if (JSON.stringify(est) !== JSON.stringify(antes)) { datos.estados = est; cambia = true; }
+        if (!muriendo && ((sm.exitos | 0) || (sm.fallos | 0)) && !reiniciadas.has(hoja.id)) {
+          reiniciadas.add(hoja.id);
+          c.salvMuerte = { exitos: 0, fallos: 0 };
+          TB.red.fichaMuerte(hoja.id, 0, 0).catch(() => {});
+        }
+      }
+      if (cambia) TB.cambiarObjeto(o.id, { datos }, { sinDeshacer: true });
     });
   }
+  // Salvación contra la muerte de una ficha a 0 PV: d20 en el servidor, a la vista de todos, y se apunta en la hoja
+  TB.salvacionMuerte = async function (id) {
+    const o = TB.L.objeto(id);
+    if (!o) return;
+    const enlace = ((o.datos || {}).barras || []).map(b => b && b.enlace).find(Boolean);
+    if (!enlace) { aviso("Esta ficha no está enlazada a una hoja de «Mis personajes»."); return; }
+    let f;
+    try { f = (await TB.red.fichas()).find(x => x.id === enlace); } catch (e) { f = null; }
+    if (!f || !f.combate) { aviso("No encuentro la hoja de este personaje.", true); return; }
+    const c = f.combate, sm = c.salvMuerte || {};
+    let exitos = sm.exitos | 0, fallos = sm.fallos | 0;
+    if (!(Number(c.pvMax) > 0 && Number(c.pvActual) <= 0)) { aviso("Solo se tira con 0 PV."); return; }
+    if (exitos >= 3 || fallos >= 3) { aviso(exitos >= 3 ? "Ya está estable." : "Ya ha muerto."); return; }
+    const nombre = (o.datos && o.datos.nombre) || f.nombre;
+    const t = await TB.tirar("1d20", "Salvación contra la muerte de " + nombre, "todos");
+    if (!t || t.total == null) return;
+    const v = t.total;
+    let texto = "";
+    try {
+      if (v === 20) {
+        await TB.red.fichaPV(enlace, { actual: 1, max: null, temp: null });
+        exitos = 0; fallos = 0;
+        texto = nombre + " saca un 20 y vuelve en sí con 1 PV.";
+      } else {
+        if (v === 1) fallos = Math.min(3, fallos + 2); else if (v >= 10) exitos++; else fallos++;
+        if (fallos >= 3) texto = nombre + " ha muerto.";
+        else if (exitos >= 3) texto = nombre + " queda estable.";
+      }
+      await TB.red.fichaMuerte(enlace, exitos, fallos);
+      if (texto) await TB.red.decir(texto, "todos", null, null);
+    } catch (e) { aviso(mensajeError(e), true); }
+    if (TB.yo.esGM) refrescarPV(); else TB.red.emitir("ficha", { id: enlace });
+  };
   TB.sincronizarPV = sincronizarPV;
   function leerCamara(id) { try { return JSON.parse(sessionStorage.getItem("tbCam:" + id) || "null"); } catch (e) { return null; } }
   function guardarCamara() {
@@ -244,6 +297,8 @@
     r.on("regla", d => { if (d && (!d.escena || d.escena === TB.escenaId)) TB.L.reglaRemota(d); });
     r.on("fx", d => { if (d && d.escena === TB.escenaId && !TB.prefs.sinFx) TB.fx.reproducir(d); });
     r.on("fxFin", d => { if (d && d.id) TB.fx.parar(d.id); });
+    // Un jugador cambió su hoja (PV o salvaciones): el DJ la vuelve a leer para copiarla a las fichas del tablero
+    r.on("ficha", () => { if (TB.yo.esGM) refrescarPV(); });
     r.on("presencia", lista => { TB.presencia = lista || []; TB.lanzar("presencia"); });
     r.on("cursor", d => { if (d && d.escena === TB.escenaId) TB.L.cursorRemoto(d); });
     r.on("sonido", d => { if (d && window.TBLado) TBLado.sonar(d); });
@@ -380,7 +435,8 @@
       if (!b.editar) { aviso("El DJ no te deja cambiar esa barra."); return; }
       try { await TB.red.barra(id, i + 1, Number(valor) || 0, Number(b.max) || 0); } catch (e) { aviso(mensajeError(e), true); return; }
     }
-    if (b.enlace) TB.red.fichaPV(b.enlace, { actual: Number(valor) || 0, max: null, temp: null }).catch(() => {});
+    if (b.enlace) TB.red.fichaPV(b.enlace, { actual: Number(valor) || 0, max: null, temp: null })
+      .then(() => { if (TB.yo.esGM) refrescarPV(); else TB.red.emitir("ficha", { id: b.enlace }); }).catch(() => {});
   };
   TB.cambiarVarios = async function (lista) {
     // lista: [{id, cambios}]
@@ -516,6 +572,14 @@
   }
   async function procesarLinea(linea, como) {
     let m;
+    if ((m = linea.match(/^\/(g?)tabla\s+(.+)$/i)) || (m = linea.match(/^\/(?:(g)r(?:oll)?|r(?:oll)?)\s+1?t\[([^\]]+)\]\s*$/i))) {
+      const nombre = m[2].trim().toLowerCase();
+      const l = TB.cargarTablas ? await TB.cargarTablas() : [];
+      const t = l.find(x => x.nombre.trim().toLowerCase() === nombre) || l.find(x => x.nombre.toLowerCase().startsWith(nombre));
+      if (!t) { aviso("No hay ninguna tabla que se llame «" + m[2].trim() + "».", true); return; }
+      await TB.red.tirarTabla(t.id, m[1] ? "dj" : "todos", como);
+      return;
+    }
     if ((m = linea.match(/^\/(r|roll|gr|gmroll)\s+(.+)$/i))) {
       const modo = /^g/i.test(m[1]) ? "dj" : "todos";
       let resto = m[2];
@@ -605,6 +669,8 @@
       onSeleccion: ids => TB.lanzar("seleccion", ids),
       onAbrirAjustes: id => TBPaneles.ajustesFicha(id),
       onEstados: (id, x, y) => TBPaneles.menuEstados(id, x, y),
+      onEstadoEncima: (b, x, y) => TBPaneles.tipEstado(b, x, y),
+      onSalvacion: id => TB.salvacionMuerte(id),
       onBarra: (id, i, valor) => TB.cambiarBarra(id, i, valor),
       onMenu: (id, x, y) => TBPaneles.menuFicha(id, x, y),
       onRegla: d => {
