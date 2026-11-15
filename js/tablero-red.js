@@ -172,8 +172,10 @@
         return `${window.FICHAS_SUPABASE_URL}/storage/v1/object/public/tablero/${ruta}`;
       },
       async jugadores() {
-        const { data } = await sb.from("perfiles").select("user_id, username");
-        return (data || []).filter(p => p.username).map(p => ({ uid: p.user_id, nombre: p.username }));
+        const [otros, mio] = await Promise.all([sb.rpc("cartas_jugadores"), sb.from("perfiles").select("user_id, username").eq("user_id", yo.uid).maybeSingle()]);
+        const l = ((otros && otros.data) || []).filter(p => p.username).map(p => ({ uid: p.user_id, nombre: p.username }));
+        if (mio && mio.data && mio.data.username) l.push({ uid: mio.data.user_id, nombre: mio.data.username });
+        return l.sort((a, b) => a.nombre.localeCompare(b.nombre));
       },
       async fichas() {
         const { data, error } = await sb.from("fichas_personajes").select("id, owner_id, data").eq("archivado", false);

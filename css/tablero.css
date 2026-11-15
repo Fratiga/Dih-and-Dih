@@ -648,6 +648,10 @@ body.tb.tb-oscuro .tb-avatares .tb-av-nombre { background: rgba(0,0,0,.7); }
 .tb-tip-cab span .tb-estado-punto { margin: 0; }
 .tb-tip-estado p { margin: calc(6px * var(--tb-k)) 0 0; }
 .tb-tip-estado .tb-nota { color: #aaa; }
+.tb-token-zona { position: relative; width: calc(150px * var(--tb-k)); height: calc(150px * var(--tb-k)); margin: 0 auto calc(10px * var(--tb-k)); border-radius: 50%; background: #eee center/cover; cursor: pointer; display: grid; place-items: center; text-align: center; }
+.tb-token-zona span { display: none; padding: calc(16px * var(--tb-k)); font-size: calc(12px * var(--tb-k)); color: #777; }
+.tb-token-zona.vacia span { display: block; }
+.tb-token-zona:hover, .tb-token-zona.soltando { box-shadow: 0 0 0 3px #d6127e; }
 .tb-tablas { margin-top: calc(16px * var(--tb-k)); border-top: 1px solid rgba(127,127,127,.25); padding-top: calc(4px * var(--tb-k)); }
 .tb-tabla-item { display: flex; align-items: center; gap: calc(8px * var(--tb-k)); padding: calc(6px * var(--tb-k)) 0; border-bottom: 1px solid rgba(127,127,127,.15); }
 .tb-tabla-item > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }

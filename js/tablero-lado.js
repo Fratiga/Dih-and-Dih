@@ -524,7 +524,8 @@
       <div style="display:grid;grid-template-columns:calc(300px * var(--tb-k)) 1fr;gap:calc(24px * var(--tb-k))">
         <div><div class="tb-etq" style="margin-bottom:calc(6px * var(--tb-k))">${esPj ? "Avatar" : "Imagen"}</div><div data-avatar></div>
           ${esPj ? `<div class="tb-etq" style="margin:calc(16px * var(--tb-k)) 0 calc(6px * var(--tb-k))">Token predeterminado (opcional)</div>
-            <div data-token style="width:calc(150px * var(--tb-k));height:calc(150px * var(--tb-k));margin:0 auto calc(10px * var(--tb-k));border-radius:50%;background:#eee center/cover"></div>
+            <div data-token class="tb-token-zona" title="Suelta aquí una imagen, o haz clic para subirla"><span>Suelta una imagen o haz clic</span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div>
+            <button type="button" class="tb-btn" data-tok="avatar" style="width:100%;margin-bottom:calc(8px * var(--tb-k))">Usar el avatar como token</button>
             <div style="display:flex;flex-direction:column;gap:calc(8px * var(--tb-k))">
               <button type="button" class="tb-btn tb-btn-azul" data-tok="editar">Editar propiedades de token</button>
               <button type="button" class="tb-btn" data-tok="usar">Usar token seleccionado</button>
@@ -562,13 +563,50 @@
       q("[data-ficha]").value = e.ficha || "";
       q("[data-grupo]").checked = !!e.grupo;
       const tok = q("[data-token]");
-      const pintarTok = () => { const s = (e.token && e.token.datos && e.token.datos.src) || ""; tok.style.backgroundImage = s ? `url('${s.replace(/'/g, "%27")}')` : ""; };
+      const pintarTok = () => {
+        const s = (e.token && e.token.datos && e.token.datos.src) || "";
+        tok.style.backgroundImage = s ? `url('${s.replace(/'/g, "%27")}')` : "";
+        tok.classList.toggle("vacia", !s);
+      };
       pintarTok();
+      // Token con una imagen: una casilla, su nombre y, si tiene hoja de «Mis personajes», la barra 1 enlazada a sus PV
+      const ponerImagenToken = async src => {
+        if (!src) return;
+        const t = TB.L.tamCelda();
+        const datos = Object.assign({ nombre: q("[data-nombre]").value.trim() || e.nombre }, e.token && e.token.datos, { src, representa: id });
+        const fichaId = q("[data-ficha]").value || e.ficha;
+        if (fichaId && !((datos.barras || [])[0] || {}).enlace) {
+          const f = (TB.fichas || []).find(x => x.id === fichaId), c = (f && f.combate) || {};
+          const barras = (datos.barras || []).slice();
+          barras[0] = Object.assign({ ver: true, editar: true, texto: "editores" }, barras[0], { enlace: fichaId, valor: Number(c.pvActual) || 0, max: Number(c.pvMax) || 0 });
+          datos.barras = barras;
+        }
+        e.token = { ancho: (e.token && e.token.ancho) || t, alto: (e.token && e.token.alto) || t, datos };
+        try { await TB.red.actualizarDiario(id, { token: e.token }); pintarTok(); aviso("Token predeterminado guardado."); }
+        catch (err) { aviso(mensajeError(err), true); }
+      };
+      const archTok = tok.querySelector("input[type=file]");
+      tok.addEventListener("click", () => archTok.click());
+      archTok.addEventListener("change", async () => {
+        const f = archTok.files[0]; archTok.value = "";
+        if (!f || !/^image\//.test(f.type)) return;
+        try { aviso("Subiendo…"); await ponerImagenToken(await TB.red.subirImagen(f)); } catch (err) { aviso(mensajeError(err), true); }
+      });
+      tok.addEventListener("dragover", ev => { ev.preventDefault(); tok.classList.add("soltando"); });
+      tok.addEventListener("dragleave", () => tok.classList.remove("soltando"));
+      tok.addEventListener("drop", async ev => {
+        ev.preventDefault(); tok.classList.remove("soltando");
+        const f = ev.dataTransfer.files[0];
+        if (f && /^image\//.test(f.type)) { try { aviso("Subiendo…"); await ponerImagenToken(await TB.red.subirImagen(f)); } catch (err) { aviso(mensajeError(err), true); } return; }
+        const u = (ev.dataTransfer.getData("text/tablero-src") || ev.dataTransfer.getData("text/uri-list") || "").trim();
+        if (/^(https:\/\/|data:image\/)/.test(u)) ponerImagenToken(u);
+      });
       cuerpo.querySelectorAll("[data-tok]").forEach(b => b.addEventListener("click", async () => {
         const a = b.dataset.tok;
         if (a === "editar") { TBUI.cerrarModal(); TBPaneles.ajustesFicha(null, { diario: id }); return; }
+        if (a === "avatar") { const s = avatar.valor(); if (!s) { aviso("Este personaje todavía no tiene avatar."); return; } ponerImagenToken(s); return; }
         const sel = TB.L.seleccion().map(s => TB.L.objeto(s)).filter(o => o && o.tipo === "imagen");
-        if (!sel.length) { aviso("Selecciona primero una ficha en el tablero."); return; }
+        if (!sel.length) { aviso("No hay ninguna ficha seleccionada. Cierra esta ventana, selecciona la ficha en el tablero y vuelve a abrirla.", true); return; }
         if (a === "usar") {
           e.token = { ancho: sel[0].ancho, alto: sel[0].alto, datos: Object.assign({}, sel[0].datos, { representa: id }) };
           await TB.red.actualizarDiario(id, { token: e.token });
