@@ -949,6 +949,157 @@ const simsDe = i => ((i + 1) >= CARRERAS / 4 && (i + 1) % 5 === 0 ? C.SIMS : 12)
     todosArr.filter(c => c.salidas >= 12).slice(0, 80).forEach(c => { const bak = c.salidas; const z = (c.rating - 1500) / 110; const ruido = k => { c.salidas = k; const e = M.estrellas(c); c.salidas = bak; return e - clamp(Math.round((3 + 1.2 * z) * 2) / 2); }; const clamp = x => Math.min(5, Math.max(0.5, x)); rs.push(Math.abs(ruido(2))); rj.push(Math.abs(ruido(bak))); });
     ok(media(rs) > media(rj), `las estrellas son más fiables con más salidas (error ${media(rs).toFixed(2)} con 2, ${media(rj).toFixed(2)} con muchas)`); } }
 
+// 5a) La cuadra como casa: divisa, palmarés, patrocinio de carreras, obras (plazas e instalaciones) y subastas
+{ const mk = () => M.crearMundo("prestigio", { calentar: 30, t0: Date.UTC(2026, 0, 1), simsCalentar: 8 });
+  const avanza = (w, k, evs) => { for (let i = 0; i < k; i++) { const ev = M.avanzar(w, { sims: 8 }); if (evs) evs.push(ev); } };
+  const proc = (w, o, saldos) => M.procesarOrdenes(w, [Object.assign({ oid: 1 }, o)], saldos);
+  const ord = (w, o, saldos) => proc(w, o, saldos).resultados[0];
+  const junta = (evs, k) => evs.reduce((t, e) => t.concat(e[k]), []);
+  // la divisa
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", nombre: "Ana" }); ord(w, { dueno: "u2", tipo: "adoptar", nombre: "Beto" });
+    const c1 = M.cuadraDe(w, "u1")[0], dv = { c1: "rojo", c2: "blanco", patron: "banda", emblema: "estrella" };
+    ok(M.perfil(w, c1).dueno.divisa === null && M.perfil(w, c1).subasta === null, "una cuadra de jugador empieza sin divisa");
+    const a = proc(w, { dueno: "u1", tipo: "divisa", divisa: dv }, { u1: 0 });
+    ok(a.resultados[0].ok && a.resultados[0].costo === 0 && w.duenos.u1.divisa.patron === "banda", "la primera divisa es gratis");
+    ok(a.perfiles.some(p => p.id === c1.id && p.dueno.divisa && p.dueno.divisa.c1 === "rojo") && a.publica === true && w.proxima.cuadras.some(q => q.id === "u1" && q.divisa.c1 === "rojo" && q.nombre === "Ana"), "la divisa sale en el perfil de sus criaturas y en las cuadras del programa");
+    ok(M.lote(w, [], a).programas.length === 1 && M.lote(w, [], a).programas[0].publico.cuadras.length >= 1 && !M.lote(w, [], a).programas[0].publico.secreto, "y el programa en curso se vuelve a publicar con ella, sin el resultado");
+    ok(!ord(w, { dueno: "u2", tipo: "divisa", divisa: Object.assign({}, dv, { emblema: "luna" }) }, { u2: 999 }).ok, "dos cuadras no corren con los mismos colores y el mismo dibujo");
+    ok(!ord(w, { dueno: "u1", tipo: "divisa", divisa: Object.assign({}, dv, { c2: "fucsia" }) }, { u1: 999 }).ok && !ord(w, { dueno: "u1", tipo: "divisa", divisa: { c1: "azul", c2: "azul", patron: "aros", emblema: "ninguno" } }, { u1: 999 }).ok && !ord(w, { dueno: "u1", tipo: "divisa" }, { u1: 999 }).ok, "se rechazan los colores que no existen, el dibujo que no se vería y la orden vacía");
+    ok(!ord(w, { dueno: "u1", tipo: "divisa", divisa: dv }, { u1: 999 }).ok, "repetir la misma divisa no cobra nada");
+    const b = ord(w, { dueno: "u1", tipo: "divisa", divisa: Object.assign({}, dv, { c2: "negro" }) }, { u1: 1000 });
+    ok(b.ok && b.costo === C.DIVISA_COSTE && w.duenos.u1.divisa.c2 === "negro", `cambiarla cuesta ${C.DIVISA_COSTE}`);
+    ok(!ord(w, { dueno: "u1", tipo: "divisa", divisa: dv }, { u1: C.DIVISA_COSTE - 1 }).ok && w.duenos.u1.divisa.c2 === "negro", "sin tokens no se cambia");
+    ok(!ord(w, { dueno: "u9", tipo: "divisa", divisa: { c1: "verde", c2: "rosa", patron: "aros", emblema: "hoja" } }, { u9: 999 }).ok && ord(w, { dueno: "u9", tipo: "divisa", nombre: "Caro", divisa: { c1: "verde", c2: "rosa", patron: "aros", emblema: "hoja" } }, { u9: 999 }).ok && w.duenos.u9.nombre === "Caro", "hace falta que la cuadra tenga nombre (vale el que llega con la orden)");
+    const da = M.divisaDe(w, "npc:alguien"), db = M.divisaDe(w, "npc:alguien");
+    ok(da && JSON.stringify(da) === JSON.stringify(db) && M.DIVISA.colores[da.c1] && da.c1 !== da.c2 && M.divisaDe(w, "u2") === null, "las cuadras de la tribuna llevan siempre los mismos colores, que salen de su id");
+    ok(w.proxima.entrantes.every(e => !e.dueno || "divisa" in e.dueno), "las inscritas con dueño llevan la divisa en el programa"); }
+  // el palmarés de la cuadra y su vitrina
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", nombre: "Ana" }); const c = M.cuadraDe(w, "u1")[0];
+    c.salidas = 9; c.vic = 3; c.gp = 1; c.premios = 4200; c.bio = [{ n: 5, t: "Primera victoria, en Premio Uno." }, { n: 12, t: "Gana Gran Premio de la Niebla." }];
+    const pal = M.palmares(w, "u1");
+    ok(pal.salidas === 9 && pal.vic === 3 && pal.gp === 1 && pal.premios === 4200 && w.duenos.u1.trofeos.length === 1 && w.duenos.u1.trofeos[0].carrera === "Gran Premio de la Niebla" && w.duenos.u1.trofeos[0].id === c.id, "el palmarés de una cuadra empieza con lo que ya ganaron sus criaturas y su vitrina con lo que cuentan sus biografías");
+    let corrio = 0;
+    for (let i = 0; i < 40 && !corrio; i++) { c.fatiga = 0; c.lesion = null; if (c.estado === "activo" && !(c.entradas || []).length) ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: w.n + 1 }, { u1: 99999 }); const s0 = c.salidas; avanza(w, 1); if (c.salidas > s0) corrio = 1; }
+    ok(corrio && pal.salidas === c.salidas && pal.premios === c.premios && pal.vic === c.vic, `lo que corre después se suma a la cuadra sin contarse dos veces (${pal.salidas} salidas)`);
+    const pub = w.proxima.cuadras.find(q => q.id === "u1");
+    ok(pub && pub.vic === pal.vic && pub.plazas === C.MAX_CABALLOS && pub.criaturas.includes(c.id) && Array.isArray(pub.trofeos) && pub.inst.vet === 0, "y se publica con cada programa");
+    ok(!w.proxima.cuadras.some(q => /^npc:/.test(q.id)), "las cuadras de la tribuna no salen en esa lista (van en la suya)"); }
+  // patrocinar una carrera
+  { const w = mk(); ord(w, { dueno: "u1", tipo: "adoptar", nombre: "Ana" }); ord(w, { dueno: "u2", tipo: "adoptar", nombre: "Beto" });
+    const n = w.n + 2, antes = M.calendario(w, n, 1)[0], esCopa = !!antes.copa, titulo = esCopa ? "" : "Gran Premio Ana";
+    const r = proc(w, { dueno: "u1", tipo: "patrocinar", n, monto: 2000, titulo }, { u1: 5000 });
+    ok(r.resultados[0].ok && r.pagos.some(p => p.dueno === "u1" && p.monto === -2000) && r.noticias.length === 1 && r.noticias[0].hora <= M.horaDe(w, w.n - 1), "patrocinar cobra lo puesto y sale en las noticias en el momento");
+    const cal = M.calendario(w, n, 1)[0];
+    ok(cal.bolsa === antes.bolsa + 2000 && cal.inscripcion === antes.inscripcion && cal.patrocinio.dueno.id === "u1" && cal.patrocinio.monto === 2000 && (esCopa || cal.nombre === "Gran Premio Ana"), "la bolsa del calendario sube, la inscripción no, y la carrera toma el título");
+    ok(!ord(w, { dueno: "u2", tipo: "patrocinar", n, monto: 500 }, { u2: 5000 }).ok, "una carrera tiene un solo patrocinador");
+    ok(!ord(w, { dueno: "u1", tipo: "patrocinar", n: w.n + 3, monto: C.PATROCINIO_MIN - 1 }, { u1: 5000 }).ok && !ord(w, { dueno: "u1", tipo: "patrocinar", n: w.n, monto: 1000 }, { u1: 5000 }).ok && !ord(w, { dueno: "u1", tipo: "patrocinar", n: w.n + 3, monto: 1000, titulo: "<b>hola</b>" }, { u1: 5000 }).ok && !ord(w, { dueno: "u1", tipo: "patrocinar", n: w.n + 3, monto: 6000 }, { u1: 5000 }).ok, "se rechazan lo que no llega al mínimo, la carrera ya programada, un título con signos raros y lo que no se puede pagar");
+    const mas = ord(w, { dueno: "u1", tipo: "patrocinar", n, monto: 500 }, { u1: 5000 });
+    ok(mas.ok && w.patrocinios[n].monto === 2500 && M.palmares(w, "u1").patrocinios === 1 && M.palmares(w, "u1").patrocinado === 2500, "el mismo dueño puede añadir más a su carrera");
+    avanza(w, 2);
+    ok(w.proxima.n === n && w.proxima.bolsa === antes.bolsa + 2500 && w.proxima.patrocinio && w.proxima.patrocinio.dueno.nombre === "Ana" && (esCopa || w.proxima.nombre === "Gran Premio Ana"), "al programarse, la carrera sale con la bolsa subida y el nombre de su patrocinador");
+    const res = w.proxima.secreto.res;
+    ok(!res || (res.llegada[0].premio === Math.round((antes.bolsa + 2500) * 0.5) && res.nombre === w.proxima.nombre), "y el premio del ganador sale de la bolsa completa");
+    avanza(w, 1);
+    ok(!w.patrocinios[n], "corrida la carrera, el patrocinio se borra");
+    // una carrera que no se corre devuelve lo puesto
+    w.patrocinios[w.proxima.n] = { dueno: "u1", monto: 700, titulo: "" }; M.palmares(w, "u1").patrocinios++; M.palmares(w, "u1").patrocinado += 700; w.proxima.secreto.res = null;
+    const ev = M.avanzar(w, { sims: 8 });
+    ok(ev.pagos.some(p => p.dueno === "u1" && p.monto === 700 && /Patrocinio devuelto/.test(p.concepto)) && ev.avisos.some(a => a.dueno === "u1" && /patrocinio/.test(a.texto)) && M.palmares(w, "u1").patrocinado === 2500, "si la carrera no se corre, el patrocinio vuelve a su dueño con aviso"); }
+  // obras: más plazas, enfermería y pista de entrenamiento
+  { const w = mk();
+    ok(!ord(w, { dueno: "u1", tipo: "ampliar" }, { u1: 99999 }).ok && !ord(w, { dueno: "u1", tipo: "instalacion", objeto: "vet" }, { u1: 99999 }).ok, "sin cuadra no hay obras");
+    ord(w, { dueno: "u1", tipo: "adoptar", nombre: "Ana" }); const c = M.cuadraDe(w, "u1")[0], pc = () => M.perfilCuadra(w, c);
+    ok(M.maxCuadra(w, "u1") === C.MAX_CABALLOS && pc().plazas === C.MAX_CABALLOS && pc().esperaCuidar === C.CUIDADO_ESPERA && pc().carrerasEntreno === C.ENTRENO_CARRERAS && pc().inst.vet === 0, "una cuadra empieza con 6 plazas y sin instalaciones");
+    const a = ord(w, { dueno: "u1", tipo: "ampliar" }, { u1: 99999 }), b = ord(w, { dueno: "u1", tipo: "ampliar" }, { u1: 99999 });
+    ok(a.ok && a.costo === C.AMPLIAR[0] && b.ok && b.costo === C.AMPLIAR[1] && M.maxCuadra(w, "u1") === C.MAX_CABALLOS + 2 && pc().plazas === 8 && pc().ampliacion === 2, "ampliar dos veces deja la cuadra en 8 plazas, cada vez más caro");
+    ok(!ord(w, { dueno: "u1", tipo: "ampliar" }, { u1: 99999 }).ok && M.maxCuadra(w, "npc:x") === C.MAX_CABALLOS, "no se pasa de 8 y la tribuna no amplía");
+    const libres = M.enVenta(w).slice(0, 8); let comprados = 0; libres.forEach(x => { if (ord(w, { dueno: "u1", tipo: "comprar", id: x.id }, { u1: 99999 }).ok) comprados++; });
+    ok(M.cuadraDe(w, "u1").length === 8 && comprados === 7, `con la obra hecha caben 8 criaturas (compró ${comprados})`);
+    ok(!ord(w, { dueno: "u1", tipo: "ampliar" }, { u1: C.AMPLIAR[0] - 1 }).ok, "(la obra sin tokens se rechaza)");
+    const v = ord(w, { dueno: "u1", tipo: "instalacion", objeto: "vet" }, { u1: 99999 });
+    ok(v.ok && v.costo === C.INSTALACION[0] && pc().esperaCuidar === C.CUIDADO_ESPERA - 1 && pc().inst.vet === 1, "la enfermería de nivel 1 deja cuidar una carrera antes");
+    ord(w, { dueno: "u1", tipo: "instalacion", objeto: "vet" }, { u1: 99999 }); const v3 = ord(w, { dueno: "u1", tipo: "instalacion", objeto: "vet" }, { u1: 99999 });
+    ok(v3.ok && v3.costo === C.INSTALACION[2] && pc().esperaCuidar === C.CUIDADO_ESPERA - 3 && !ord(w, { dueno: "u1", tipo: "instalacion", objeto: "vet" }, { u1: 99999 }).ok && !ord(w, { dueno: "u1", tipo: "instalacion", objeto: "piscina" }, { u1: 99999 }).ok, "tiene tres niveles y lo que no existe se rechaza");
+    c.fatiga = 60; c.cuidado = w.n - (C.CUIDADO_ESPERA - 3);
+    ok(pc().puedeCuidar && ord(w, { dueno: "u1", tipo: "cuidar", id: c.id }, { u1: 999 }).ok, "con la enfermería al máximo se cuida cada 3 carreras");
+    ord(w, { dueno: "u1", tipo: "instalacion", objeto: "pista" }, { u1: 99999 }); ord(w, { dueno: "u1", tipo: "instalacion", objeto: "pista" }, { u1: 99999 });
+    c.entradas = []; c.lesion = null; const e = ord(w, { dueno: "u1", tipo: "entrenar", id: c.id, stat: "vel" }, { u1: 999 });
+    ok(e.ok && c.entreno.hasta === w.n + 1 + C.ENTRENO_CARRERAS - 2 && pc().carrerasEntreno === C.ENTRENO_CARRERAS - 2, "con la pista de nivel 2 una sesión dura dos carreras menos");
+    ok(w.proxima.cuadras.some(q => q.id === "u1" && q.plazas === 8 && q.inst.vet === 3 && q.inst.pista === 2), "y las obras se ven en lo público de la cuadra"); }
+  // subastas entre jugadores
+  { const w = mk(); ["Ana", "Beto", "Caro"].forEach((nom, i) => ord(w, { dueno: "u" + (i + 1), tipo: "adoptar", nombre: nom }));
+    const c = M.cuadraDe(w, "u1")[0], tope = M.topePuja(w, c), sub = () => M.subastaDe(w, c.id);
+    ok(!ord(w, { dueno: "u2", tipo: "subastar", id: c.id, precio: 200 }).ok && !ord(w, { dueno: "u1", tipo: "subastar", id: c.id, precio: C.SUBASTA_MIN - 1 }).ok && !ord(w, { dueno: "u1", tipo: "subastar", id: c.id, precio: tope + 10 }).ok, "no se subasta lo ajeno, ni por menos del mínimo, ni con una salida por encima del tope");
+    const s = proc(w, { dueno: "u1", tipo: "subastar", id: c.id, precio: 200 }, { u1: 0 });
+    ok(s.resultados[0].ok && sub().min === 200 && sub().hasta === w.n + C.SUBASTA_CARRERAS && s.perfiles[0].subasta.sigue === 200 && s.perfiles[0].subasta.vendedor.nombre === "Ana" && s.noticias.length === 1, "sacar una criatura al corro no cuesta nada y sale en su perfil público y en las noticias");
+    ok(["vender", "retirar"].every(t => !ord(w, { dueno: "u1", tipo: t, id: c.id }).ok) && !ord(w, { dueno: "u1", tipo: "inscribir", id: c.id, n: w.n + 1 }, { u1: 9999 }).ok && !ord(w, { dueno: "u1", tipo: "entrenar", id: c.id, stat: "vel" }, { u1: 9999 }).ok && !ord(w, { dueno: "u1", tipo: "subastar", id: c.id, precio: 300 }).ok, "mientras está en el corro no se vende, no se retira, no se inscribe, no entrena y no sale dos veces");
+    ok(!ord(w, { dueno: "u1", tipo: "pujar", id: c.id, precio: 300 }, { u1: 9999 }).ok && !ord(w, { dueno: "u2", tipo: "pujar", id: c.id, precio: 190 }, { u2: 9999 }).ok && !ord(w, { dueno: "u2", tipo: "pujar", id: c.id, precio: 200 }, { u2: 100 }).ok && !ord(w, { dueno: "u2", tipo: "pujar", id: 999999, precio: 200 }, { u2: 9999 }).ok, "no se puja por el lote propio, ni por debajo de la salida, ni sin tokens, ni por un lote que no existe");
+    const p1 = proc(w, { dueno: "u2", tipo: "pujar", id: c.id, precio: 200 }, { u2: 9999 });
+    ok(p1.resultados[0].ok && p1.pagos.some(p => p.dueno === "u2" && p.monto === -200) && sub().pujador === "u2" && sub().puja === 200 && p1.avisos.some(a => a.dueno === "u1" && /Pujan 200/.test(a.texto)) && p1.perfiles[0].subasta.sigue === 210, "la puja se cobra al hacerla y el vendedor recibe el aviso");
+    ok(!ord(w, { dueno: "u1", tipo: "subastar", id: c.id, quitar: true }).ok && !ord(w, { dueno: "u2", tipo: "pujar", id: c.id, precio: 400 }, { u2: 9999 }).ok && !ord(w, { dueno: "u3", tipo: "pujar", id: c.id, precio: 205 }, { u3: 9999 }).ok, "con pujas el lote no se retira, quien manda no se supera a sí mismo y hay que subir al menos un 5 %");
+    const sal = { u3: 9999, u2: 0 }, p2 = proc(w, { dueno: "u3", tipo: "pujar", id: c.id, precio: 300 }, sal);
+    ok(p2.resultados[0].ok && p2.pagos.some(p => p.dueno === "u2" && p.monto === 200) && sal.u2 === 200 && sal.u3 === 9699 && p2.avisos.some(a => a.dueno === "u2" && /superado/.test(a.texto)) && sub().pujas === 2, "al superarla, la puja anterior vuelve entera a su dueño, con aviso");
+    ok(!ord(w, { dueno: "u2", tipo: "pujar", id: c.id, precio: tope + 10 }, { u2: 999999 }).ok, `ninguna puja pasa del tope del lote (${tope})`);
+    const evs = []; avanza(w, C.SUBASTA_CARRERAS - 1, evs);
+    ok(sub() && c.dueno === "u1", "hasta que vence, la criatura sigue con su dueño");
+    avanza(w, 1, evs); const pagos = junta(evs, "pagos"), avisos = junta(evs, "avisos");
+    ok(c.dueno === "u3" && !sub() && M.cuadraDe(w, "u3").includes(c) && pagos.some(p => p.dueno === "u1" && p.monto === Math.round(300 * (1 - C.SUBASTA_COMISION)) && /Subasta/.test(p.concepto)), "al vencer se la lleva la puja más alta y el vendedor cobra menos la comisión");
+    ok(avisos.some(a => a.dueno === "u1" && /se adjudica/.test(a.texto)) && avisos.some(a => a.dueno === "u3" && /Te adjudicas/.test(a.texto)) && junta(evs, "noticias").some(x => x.tipo === "subasta" && /adjudicada/.test(x.titulo)) && (c.bio || []).some(b => /en subasta/.test(b.t)), "con aviso a los dos, noticia y una línea en su biografía");
+    ok(pagos.every(p => !/^npc:/.test(p.dueno)) && avisos.every(a => !/^npc:/.test(a.dueno)), "ningún pago ni aviso de la tribuna sale del mundo"); }
+  // un lote sin pujas, uno que se retira y uno que se anula
+  { const w = mk(); ["Ana", "Beto"].forEach((nom, i) => ord(w, { dueno: "u" + (i + 1), tipo: "adoptar", nombre: nom }));
+    const c = M.cuadraDe(w, "u1")[0], x = M.enVenta(w)[0]; ord(w, { dueno: "u1", tipo: "comprar", id: x.id }, { u1: 99999 });
+    const y = M.enVenta(w)[0]; ord(w, { dueno: "u1", tipo: "comprar", id: y.id }, { u1: 99999 });
+    ok(ord(w, { dueno: "u1", tipo: "subastar", id: c.id }).ok && M.subastaDe(w, c.id).min === Math.max(C.SUBASTA_MIN, M.valorVenta(w, c)), "sin precio, la salida es lo que pagaría la casa");
+    ok(ord(w, { dueno: "u1", tipo: "subastar", id: x.id, precio: 100 }).ok && !ord(w, { dueno: "u1", tipo: "subastar", id: y.id, precio: 100 }).ok, `un dueño tiene como mucho ${C.SUBASTA_MAX} lotes a la vez`);
+    ok(ord(w, { dueno: "u1", tipo: "subastar", id: x.id, quitar: true }).ok && !M.subastaDe(w, x.id) && !ord(w, { dueno: "u1", tipo: "subastar", id: x.id, quitar: true }).ok, "un lote sin pujas se puede retirar");
+    ord(w, { dueno: "u1", tipo: "subastar", id: x.id, precio: 100 }); ord(w, { dueno: "u2", tipo: "pujar", id: x.id, precio: 100 }, { u2: 9999 });
+    w.vivos.splice(w.vivos.indexOf(x), 1);   // el lote desaparece del mundo (una muerte, por ejemplo)
+    const ev = M.avanzar(w, { sims: 8 });
+    ok(!M.subastaDe(w, x.id) && ev.pagos.some(p => p.dueno === "u2" && p.monto === 100 && /anulada/.test(p.concepto)) && ev.avisos.some(a => a.dueno === "u2" && /se anula/.test(a.texto)), "si el lote ya no puede venderse, la subasta se anula y la puja vuelve");
+    const evs = []; avanza(w, C.SUBASTA_CARRERAS, evs);
+    ok(c.dueno === "u1" && !M.subastaDe(w, c.id) && junta(evs, "avisos").some(a => a.dueno === "u1" && /Nadie pujó/.test(a.texto)), "un lote sin pujas vuelve a su cuadra con aviso"); }
+  // la cuadra llena no puja; lo que va ganando ocupa sitio
+  { const w = mk(); ["Ana", "Beto"].forEach((nom, i) => ord(w, { dueno: "u" + (i + 1), tipo: "adoptar", nombre: nom }));
+    const c = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "subastar", id: c.id, precio: 100 });
+    M.enVenta(w).slice(0, C.MAX_CABALLOS - 2).forEach(x => ord(w, { dueno: "u2", tipo: "comprar", id: x.id }, { u2: 999999 }));
+    ok(M.cuadraDe(w, "u2").length === C.MAX_CABALLOS - 1 && ord(w, { dueno: "u2", tipo: "pujar", id: c.id, precio: 100 }, { u2: 9999 }).ok, "con una plaza libre se puede pujar");
+    ok(!ord(w, { dueno: "u2", tipo: "comprar", id: M.enVenta(w)[0].id }, { u2: 999999 }).ok, "y esa plaza queda reservada mientras su puja manda"); }
+  // el lote diario de la casa y las pujas de la tribuna
+  { const w = M.crearMundo("prestigio-casa", { calentar: 300, t0: Date.UTC(2026, 9, 1, 2), simsCalentar: 8 });
+    ord(w, { dueno: "u1", tipo: "adoptar", nombre: "Ana" });
+    const casa = () => (w.subastas || []).find(x => !x.vendedor) || null;
+    // el lote abierto durante la historia previa se deja vencer y se espera al siguiente, para verlo nacer
+    const viejo = casa(), evs = []; let lote = null;
+    for (let i = 0; i < 60 && !lote; i++) { avanza(w, 1, evs); const x = casa(); if (x && (!viejo || x.desde !== viejo.desde)) lote = x; }
+    const c = lote ? M.buscar(w, lote.id) : null;
+    ok(lote && c && !c.dueno && M.edadAnios(lote.hasta, c) < C.DEBUT && lote.min >= 10 && lote.desde % 24 === C.SUBASTA_CASA_HORA && (!viejo || lote.id !== viejo.id) && junta(evs, "noticias").some(x => x.tipo === "subasta" && /Sale a subasta/.test(x.titulo) && x.ids[0] === lote.id && x.hora <= M.horaDe(w, lote.desde - 1)), "una vez al día la casa saca a subasta una cría sin dueño que no repite, con una noticia que se lee en el momento");
+    if (lote && c) {
+      const p = M.perfil(w, c);
+      ok(p.precio === null && p.subasta && p.subasta.vendedor === null && p.subasta.sigue === lote.min && !M.enVenta(w).includes(c) && !ord(w, { dueno: "u1", tipo: "comprar", id: c.id }, { u1: 99999 }).ok, "mientras está en el corro no se compra en el mercado");
+      ok((w.subastas || []).filter(x => !x.vendedor).length === 1, "la casa tiene un solo lote a la vez");
+      const mio = M.sigPuja(lote), r = ord(w, { dueno: "u1", tipo: "pujar", id: c.id, precio: mio }, { u1: 99999 });
+      const evs2 = []; let guardia = 0; while (M.subastaDe(w, c.id) && guardia++ < 80) avanza(w, 1, evs2);
+      const pagos = junta(evs2, "pagos"), devuelto = pagos.filter(q => q.dueno === "u1" && /Subasta/.test(q.concepto)).reduce((t, q) => t + q.monto, 0);
+      ok(r.ok && !M.subastaDe(w, c.id) && (c.dueno === "u1" ? devuelto === 0 : devuelto === mio), `el lote de la casa se adjudica (se lo lleva ${c.dueno === "u1" ? "el jugador" : c.dueno || "nadie"}) y, si la tribuna lo supera, la puja del jugador vuelve`);
+      ok(pagos.every(q => !/^npc:/.test(q.dueno)) && junta(evs2, "avisos").every(a => !/^npc:/.test(a.dueno)), "sin pagos ni avisos a la tribuna en lo que va al servidor"); } }
+  // la tribuna puja con su cartera: lo que pone sale de su caja y vuelve a ella si la superan
+  { const w = M.crearMundo("prestigio-casa", { calentar: 300, t0: Date.UTC(2026, 9, 1, 2), simsCalentar: 8 });
+    ["Ana", "Beto"].forEach((nom, i) => ord(w, { dueno: "u" + (i + 1), tipo: "adoptar", nombre: nom }));
+    const npc = Object.keys(w.duenos).find(id => /^npc:/.test(id) && M.cuadraDe(w, id).length < C.MAX_CABALLOS);
+    ok(!!npc, "en un mundo con historia hay personajes con cuadra");
+    if (npc) {
+      const c = M.cuadraDe(w, "u1")[0]; ord(w, { dueno: "u1", tipo: "subastar", id: c.id, precio: 100 });
+      w.duenos[npc].saldo = 5000; const hueco = C.MAX_CABALLOS - M.cuadraDe(w, npc).length;
+      const pn = hueco > 0 ? M.procesarOrdenes(w, [{ oid: 1, dueno: npc, tipo: "pujar", id: c.id, precio: 100 }], { [npc]: 5000 }) : null;
+      if (pn && pn.resultados[0].ok) {
+        w.duenos[npc].saldo = 4900;
+        const sal = { u2: 9999 }, p = proc(w, { dueno: "u2", tipo: "pujar", id: c.id, precio: 200 }, sal);
+        ok(p.resultados[0].ok && w.duenos[npc].saldo === 5000 && p.pagos.every(q => q.dueno !== npc) && p.avisos.every(a => a.dueno !== npc), "superar a un personaje le devuelve la puja a su cartera, sin pagos al servidor");
+      } else ok(true, "(el personaje no tenía hueco para pujar)");
+    } else ok(true, "(mundo sin personajes)"); }
+}
+
 // 5b) Vida fuera de la pista, generaciones, nombres de homenaje y perfil ampliado
 { const rng = M.crearRng("homenaje"), usados = { peregrino: 1 };
   const a = N.nombrar(rng, { sexo: "m", homenaje: "Peregrino", usados }), b = N.nombrar(rng, { sexo: "f", homenaje: "Peregrino", usados }), c2 = N.nombrar(rng, { sexo: "m", homenaje: "Peregrino II", usados });

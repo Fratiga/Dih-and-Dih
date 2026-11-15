@@ -73,7 +73,20 @@
     VENTA: 0.4,                  // lo que paga la casa por una criatura, respecto a lo que costaría comprarla
     CASTIGO_TACTICA: 0.012,      // lo que cuesta ir contra la naturaleza de la criatura (por unidad de diferencia)
     POZO_RETENCION: 0.10,        // el pozo se queda con el 10 % de lo apostado
-    POZO_BOTE: 50                // y la casa le suma 50 tokens a cada pozo para que apostar solo también tenga premio
+    POZO_BOTE: 50,               // y la casa le suma 50 tokens a cada pozo para que apostar solo también tenga premio
+    // la cuadra como casa (noviembre de 2026): divisa, patrocinio de carreras, obras y subastas
+    DIVISA_COSTE: 300,           // cambiar la divisa de la cuadra (la primera es gratis)
+    PATROCINIO_MIN: 500, PATROCINIO_MAX: 100000,   // lo que un dueño puede añadir a la bolsa de una carrera
+    AMPLIAR: [4000, 10000],      // lo que cuestan la 7.ª y la 8.ª plaza de la cuadra
+    INSTALACION: [1500, 4000, 9000],   // cada nivel de la enfermería o de la pista de entrenamiento
+    SUBASTA_CARRERAS: 24,        // lo que dura una subasta (un día)
+    SUBASTA_PRORROGA: 2,         // una puja en el último momento la alarga hasta que queden estas carreras
+    SUBASTA_SUBE: 0.05,          // cada puja sube al menos un 5 % (y nunca menos de 10 tokens)
+    SUBASTA_COMISION: 0.05,      // la casa se queda el 5 % de lo que cobra el vendedor
+    SUBASTA_MAX: 2,              // lotes de un mismo dueño a la vez
+    SUBASTA_MIN: 50,             // el precio de salida más bajo
+    SUBASTA_TOPE: 10,            // ninguna puja pasa de 10 veces lo que vale la criatura en el mercado (ni baja de 1000): una subasta no sirve para regalar tokens
+    SUBASTA_CASA_HORA: 12        // a qué carrera del día (de 0 a 23) saca la casa su lote
   };
   const ESPECIE = { singular: "cérvago", plural: "cérvagos", provisional: true };   // nombre de la especie, un solo sitio para cambiarlo
   const AJUSTE = {          // puntos de afinación de la simulación (los calibra tools/probar-hipodromo.js)
@@ -642,16 +655,18 @@
     // las estrellas del mundo llegan descansadas a una copa (las que tienen dueño llegan como las deje su dueño): sin esto, una criatura que solo corre copas siempre ganaba por frescura
     if (GRADOS[grado].copa) cs.forEach(c => { if (delMundo(c)) c.fatiga = Math.min(c.fatiga, C.FATIGA_COPA); });
     const jornada = Math.floor(n / C.JORNADA);
+    const pat = m.patrocinios && m.patrocinios[n];   // lo que un dueño añadió a la bolsa (docs/hipodromo.md): la inscripción no sube
     const prog = {
       n, hora: horaDe(m, n), cierre: horaDe(m, n) - C.CIERRE_SEG * 1000,
-      grado, nombre: N.nombrarCarrera(crearRng(m.semilla, "nombre-carrera", n), grado),
-      pista: pistaDeJornada(m.semilla, jornada), dist, bolsa: GRADOS[grado].bolsa,
+      grado, nombre: pat && pat.titulo ? pat.titulo : N.nombrarCarrera(crearRng(m.semilla, "nombre-carrera", n), grado),
+      pista: pistaDeJornada(m.semilla, jornada), dist, bolsa: GRADOS[grado].bolsa + (pat ? pat.monto : 0),
       climaPrevio: m.clima.estado,
       mojadoPrevio: (n % C.JORNADA === 0 && n > 0) ? m.clima.mojado * 0.5 : m.clima.mojado,
       pron: ESTADOS_CLIMA.map((w, i) => ({ clima: w, prob: MARKOV[m.clima.estado][i] })),
-      entrantes: cs.map((c, i) => ({ id: c.id, nombre: c.nombre, puerta: i + 1, gan: 0, pod: 0, dueno: c.dueno ? { id: c.dueno, nombre: nombreDueno(m, c.dueno) } : null })),
+      entrantes: cs.map((c, i) => ({ id: c.id, nombre: c.nombre, puerta: i + 1, gan: 0, pod: 0, dueno: c.dueno ? duenoPublico(m, c.dueno) : null })),
       mercado: {}, rumores: [], secreto: null
     };
+    if (pat) prog.patrocinio = { dueno: duenoPublico(m, pat.dueno), monto: pat.monto };
     if (cs.length < 3) {
       m.vivos.forEach(c => (c.entradas || []).filter(en => en.n === n && !RECHAZADAS.some(r => r.id === c.id)).forEach(en => rechazar(m, c, en, "la carrera se suspendió")));
       prog.suspendida = true; prog.secreto = { clima: m.clima.estado, base: m.clima.mojado, res: null, rechazadas: RECHAZADAS.slice() }; m.proxima = prog; return prog;
@@ -736,10 +751,18 @@
     }
     res.llegada.forEach((l, q) => {
       const c = cs[q]; if (!c) return;
+      const pal = c.dueno ? palmares(m, c.dueno) : null;   // antes de sumarle nada a la criatura: la primera vez el palmarés se calcula con lo que ya tenía
       c.rating += delta[q];
       c.salidas++; if (q === 0) { c.vic++; if (GRADOS[res.grado].gp) c.gp++; if (GRADOS[res.grado].copa) c.copas = (c.copas || 0) + 1; } else if (q === 1) c.seg++; else if (q === 2) c.ter++;
       c.racha = q === 0 ? c.racha + 1 : 0;
       c.premios += l.premio;
+      if (pal) {
+        pal.salidas++; pal.premios += l.premio;
+        if (q === 0) {
+          pal.vic++; if (GRADOS[res.grado].gp) pal.gp++; if (GRADOS[res.grado].copa) pal.copas++;
+          if (GRADOS[res.grado].gp || GRADOS[res.grado].copa) { const tr = m.duenos[c.dueno].trofeos; tr.push({ n: res.n, carrera: res.nombre, grado: res.grado, id: c.id, nombre: c.nombre }); if (tr.length > 40) tr.shift(); }
+        }
+      }
       if (c.dueno) {
         if (l.premio) ev.pagos.push({ dueno: c.dueno, monto: l.premio, concepto: `Premio: ${c.nombre}, ${l.pos}º en ${res.nombre}`, n: res.n });
         ev.avisos.push({ dueno: c.dueno, id: c.id, n: res.n, texto: `${c.nombre} llegó ${l.pos}º de ${campo} en ${res.nombre}${l.premio ? ` y cobró ${l.premio} tokens` : ""}.` });
@@ -986,7 +1009,7 @@
     return e;
   }
   function perfil(m, c) {
-    const apt = aptitudes(c), edad = edadAnios(m.n, c);
+    const apt = aptitudes(c), edad = edadAnios(m.n, c), sub = subastaDe(m, c.id);
     return {
       id: c.id, nombre: c.nombre, sexo: c.sexo, nac: c.nac, estado: c.estado, etapa: etapaDe(edad, c.estado), gen: c.gen, capa: capaTexto(c),
       cuerpo: cuerpo(c), silueta: silueta(c), arquetipo: arquetipo(c), perfilDist: perfilDistancia(c), estilo: c.salidas >= 3 ? estiloTexto(c.ritmo) : null,
@@ -995,8 +1018,10 @@
       secuelas: STATS.filter(k => c.perm[k] < 0).map(k => SECUELAS[k]), secuelasCod: STATS.filter(k => c.perm[k] < 0), rasgos: HR.completo(rasgosDe(c)), mut: c.mut || [], manias: maniasDe(c), bio: c.bio || [], anc: c.anc || [], consanguinea: !!c.consanguinea,
       lesion: c.lesion ? { tipo: c.lesion.tipo, gravedad: c.lesion.gravedad, hasta: c.lesion.hasta } : null,
       padre: c.padre, madre: c.madre, crias: c.crias, leyenda: esLeyenda(c), muerte: c.muerte,
-      dueno: c.dueno ? { id: c.dueno, nombre: nombreDueno(m, c.dueno) } : null,
-      precio: !c.dueno && c.estado === "activo" && !mejoresDelMundo(m).has(c.id) ? precioCompra(m, c) : null, montaPrecio: c.estado === "criador" ? precioMonta(m, c) : null,
+      dueno: c.dueno ? duenoPublico(m, c.dueno) : null,
+      // si está en el corro de subastas: quién vende (null = la casa), la puja que manda y lo mínimo que hay que ofrecer ahora
+      subasta: sub ? { vendedor: sub.vendedor ? duenoPublico(m, sub.vendedor) : null, min: sub.min, puja: sub.puja, pujador: sub.pujador ? duenoPublico(m, sub.pujador) : null, pujas: sub.pujas, hasta: sub.hasta, sigue: sigPuja(sub), tope: topePuja(m, c), valor: precioCompra(m, c) } : null,
+      precio: !c.dueno && c.estado === "activo" && !sub && !mejoresDelMundo(m).has(c.id) ? precioCompra(m, c) : null, montaPrecio: c.estado === "criador" ? precioMonta(m, c) : null,
       montaBase: c.estado === "criador" ? precioMontaBase(m, c) : null, montaCfg: c.montaCfg != null ? c.montaCfg : null
     };
   }
@@ -1008,6 +1033,123 @@
   const redondea10 = x => Math.max(10, Math.round(x / 10) * 10);
   const nombreDueno = (m, id) => (m.duenos && m.duenos[id] && m.duenos[id].nombre) || "";
   const cuadraDe = (m, dueno) => m.vivos.concat(m.criadores).filter(c => c.dueno === dueno);
+  /* ---- la cuadra como casa: divisa, palmarés, plazas, instalaciones y subastas (docs/hipodromo.md, «Prestigio y dinero grande») */
+  /* La divisa: los colores con los que corre una cuadra. Dos colores, un dibujo y un emblema; la pinta js/hipodromo-dibujo.js */
+  const DIVISA = {
+    colores: { rojo: "#b23a2e", granate: "#6e1f2b", naranja: "#d2702a", amarillo: "#d9a92e", verde: "#2f7d4a", celeste: "#6fb3cf", azul: "#2f5d8c", morado: "#6b3f8c", rosa: "#d77a9a", blanco: "#f2edd5", gris: "#8a8f96", negro: "#1d1d1f" },
+    patrones: ["liso", "banda", "aros", "mitades", "cuartos", "rombos", "galones", "lunares"],
+    emblemas: ["ninguno", "herradura", "estrella", "corona", "hoja", "rayo", "luna", "llave", "torre", "espada"]
+  };
+  /* Las cuadras de la tribuna no eligen: sus colores salen de su id y son siempre los mismos */
+  function divisaAuto(id) {
+    const r = crearRng(id, "divisa"), cs = Object.keys(DIVISA.colores), c1 = r.pick(cs);
+    let c2 = r.pick(cs); if (c2 === c1) c2 = cs[(cs.indexOf(c1) + 5) % cs.length];
+    return { c1, c2, patron: r.pick(DIVISA.patrones), emblema: "ninguno" };
+  }
+  const divisaDe = (m, id) => { const d = m.duenos && m.duenos[id]; return (d && d.divisa) || (esNpcId(id) ? divisaAuto(id) : null); };
+  const duenoPublico = (m, id) => ({ id, nombre: nombreDueno(m, id), divisa: divisaDe(m, id) });
+  const limpiaNombre = t => String(t || "").replace(/[<>&"]/g, "").replace(/\s+/g, " ").trim().slice(0, 24);
+  /* El dueño de una orden: se crea si no existía y, si todavía no tiene nombre, toma el que venga en la orden */
+  function asegurarDueno(m, d, o) {
+    const du = m.duenos[d] || (m.duenos[d] = {});
+    if (!du.nombre && o && o.nombre) du.nombre = limpiaNombre(o.nombre);
+    return du;
+  }
+  const conNombre = (m, d, o) => !!(nombreDueno(m, d) || limpiaNombre(o && o.nombre));
+  /* Cuántas criaturas caben: 6, más las plazas que el dueño haya construido (las cuadras de la tribuna no amplían) */
+  const maxCuadra = (m, id) => C.MAX_CABALLOS + (esNpcId(id) ? 0 : Math.min(C.AMPLIAR.length, (m.duenos && m.duenos[id] && m.duenos[id].ampliacion) || 0));
+  /* Las instalaciones de la cuadra: tres niveles cada una. La enfermería deja cuidar más seguido y la pista acorta las sesiones de entrenamiento */
+  const INSTALACIONES = {
+    vet: { nombre: "Enfermería", texto: "Un cuarto con botiquín y un mozo de guardia.", ben: n => `cuidar cada ${C.CUIDADO_ESPERA - n} carreras` },
+    pista: { nombre: "Pista de entrenamiento", texto: "Un óvalo de arena para trabajar sin salir de casa.", ben: n => `cada sesión dura ${C.ENTRENO_CARRERAS - n} carreras` }
+  };
+  const nivelInst = (m, id, k) => (esNpcId(id) ? 0 : Math.min(C.INSTALACION.length, (m.duenos && m.duenos[id] && m.duenos[id].inst && m.duenos[id].inst[k]) || 0));
+  /* El palmarés de una cuadra: lo que ganan sus criaturas se le apunta a ella y se queda aunque la criatura se venda o muera.
+     La primera vez se calcula con las criaturas que tiene en ese momento, y la vitrina se llena con las copas y grandes premios que cuentan sus biografías. */
+  function palmares(m, id) {
+    const d = m.duenos[id] || (m.duenos[id] = {});
+    if (!d.pal) {
+      const cs = cuadraDe(m, id), suma = k => cs.reduce((t, c) => t + (c[k] || 0), 0);
+      d.pal = { salidas: suma("salidas"), vic: suma("vic"), gp: suma("gp"), copas: suma("copas"), premios: suma("premios"), patrocinios: 0, patrocinado: 0 };
+      d.trofeos = [];
+      cs.forEach(c => (c.bio || []).forEach(b => { const x = /^Gana (.+)\.$/.exec(b.t); if (x) d.trofeos.push({ n: b.n, carrera: x[1], grado: gradoDe(m, b.n), id: c.id, nombre: c.nombre }); }));
+      d.trofeos.sort((a, b) => a.n - b.n);
+    }
+    if (!d.trofeos) d.trofeos = [];
+    return d.pal;
+  }
+  /* Lo que se publica de las cuadras de los jugadores con cada programa: divisa, palmarés, vitrina, plazas e instalaciones */
+  function cuadrasPublicas(m) {
+    return Object.keys(m.duenos || {}).filter(id => !esNpcId(id)).map(id => {
+      const d = m.duenos[id], cs = cuadraDe(m, id);
+      if (!cs.length && !(d.trofeos && d.trofeos.length) && !(d.pal && d.pal.patrocinios)) return null;
+      const pal = palmares(m, id);
+      return { id, nombre: d.nombre || "", divisa: d.divisa || null, criaturas: cs.map(c => c.id), plazas: maxCuadra(m, id), inst: { vet: nivelInst(m, id, "vet"), pista: nivelInst(m, id, "pista") },
+        salidas: pal.salidas, vic: pal.vic, gp: pal.gp, copas: pal.copas, premios: pal.premios, patrocinios: pal.patrocinios, patrocinado: pal.patrocinado, trofeos: d.trofeos.slice(-12) };
+    }).filter(Boolean);
+  }
+  /* Tokens para un dueño: los de un jugador salen en la lista de pagos (los cobra el servidor); los de un personaje de la tribuna van a su cartera, que vive en el mundo
+     (un pago a un «npc:» no puede llegar al servidor: allí los dueños son usuarios) */
+  function pagarA(m, lista, dueno, monto, concepto) {
+    if (!dueno || !monto) return;
+    if (esNpcId(dueno)) { const d = m.duenos[dueno]; if (d) d.saldo = redondea((d.saldo || 0) + monto, 2); return; }
+    lista.push({ dueno, monto, concepto, n: m.n });
+  }
+  const avisarA = (lista, dueno, id, n, texto) => { if (lista && dueno && !esNpcId(dueno)) lista.push({ dueno, id, n, texto }); };
+  /* ---- las subastas: m.subastas = [{ id (la criatura), nombre, vendedor (null = la casa), min, puja, pujador, pujas, desde, hasta }]
+     La puja se cobra al hacerla y se devuelve entera a quien la pierde. Se adjudica cuando termina la carrera «hasta − 1». */
+  const subastaDe = (m, id) => (m.subastas || []).find(x => x.id === id) || null;
+  const sigPuja = x => (x.pujador ? Math.ceil(Math.max(x.puja * (1 + C.SUBASTA_SUBE), x.puja + 10) / 10) * 10 : x.min);
+  const topePuja = (m, c) => Math.max(1000, C.SUBASTA_TOPE * precioCompra(m, c));
+  function cerrarSubastas(m, ev) {
+    if (!m.subastas || !m.subastas.length) return;
+    const quedan = [];
+    m.subastas.forEach(x => {
+      const c = buscar(m, x.id), vale = c && (c.estado === "activo" || c.estado === "criador") && (c.dueno || null) === (x.vendedor || null);
+      if (!vale) {   // murió, se retiró del todo o cambió de manos: el lote se anula y la puja vuelve a su dueño
+        pagarA(m, ev.pagos, x.pujador, x.puja, `Subasta anulada: ${x.nombre}`);
+        avisarA(ev.avisos, x.pujador, x.id, m.n, `La subasta de ${x.nombre} se anula y se te devuelven ${x.puja} tokens.`);
+        avisarA(ev.avisos, x.vendedor, x.id, m.n, `La subasta de ${x.nombre} se anula.`);
+        if (c) ev.cambios.add(c.id);
+        return;
+      }
+      if (x.hasta > m.n) { quedan.push(x); return; }
+      ev.cambios.add(c.id);
+      if (!x.pujador) {
+        avisarA(ev.avisos, x.vendedor, c.id, m.n, `Nadie pujó por ${c.nombre}: sigue en tu cuadra.`);
+        if (!x.vendedor) ev.noticias.push(noticia(m, "subasta", `${c.nombre} se queda sin comprador`, `Nadie pujó por ${c.nombre} en el corro de subastas. Vuelve al mercado.`, [c.id], m.n - 1));
+        return;
+      }
+      const cobra = Math.round(x.puja * (1 - C.SUBASTA_COMISION)), gana = nombreDueno(m, x.pujador) || "un jugador", vende = x.vendedor ? nombreDueno(m, x.vendedor) || "un jugador" : "";
+      if (x.vendedor) {
+        pagarA(m, ev.pagos, x.vendedor, cobra, `Subasta: vendes a ${c.nombre}`);
+        avisarA(ev.avisos, x.vendedor, c.id, m.n, `${c.nombre} se adjudica a la cuadra de ${gana} por ${x.puja} tokens. Cobras ${cobra} (la casa se queda el ${Math.round(C.SUBASTA_COMISION * 100)} %).`);
+      }
+      c.dueno = x.pujador; c.entradas = []; c.tactica = null; c.entreno = null;
+      bio(m, c, `Pasa a la cuadra de ${gana} en subasta, por ${x.puja} tokens.`);
+      avisarA(ev.avisos, x.pujador, c.id, m.n, `Te adjudicas a ${c.nombre} por ${x.puja} tokens. Ya está en tu cuadra.`);
+      if (cuadraDe(m, x.pujador).length > maxCuadra(m, x.pujador)) avisarA(ev.avisos, x.pujador, c.id, m.n, `Tu cuadra pasa del límite (${maxCuadra(m, x.pujador)}): vende o suelta a alguna antes de comprar o cruzar.`);
+      ev.noticias.push(noticia(m, "subasta", `${c.nombre}, adjudicada por ${x.puja} tokens`, `${vende ? `La cuadra de ${vende} vende a ${c.nombre}` : `La casa vende a ${c.nombre}`} en el corro de subastas. Se la lleva la cuadra de ${gana} tras ${x.pujas} ${x.pujas === 1 ? "puja" : "pujas"}.`, [c.id], m.n - 1));
+    });
+    m.subastas = quedan;
+  }
+  /* Una vez al día la casa saca a subasta a la cría sin dueño de mejor linaje (la que más vale), si no tiene ya un lote abierto */
+  function abrirSubastaCasa(m, ev) {
+    if (((m.n % 24) + 24) % 24 !== C.SUBASTA_CASA_HORA) return;
+    const l = m.subastas || (m.subastas = []);
+    if (l.some(x => !x.vendedor)) return;
+    const hasta = m.n + C.SUBASTA_CARRERAS;
+    const ya = m.subastasCasa || (m.subastasCasa = []);   // los últimos lotes de la casa: no repite criatura
+    const cand = m.vivos.filter(c => !c.dueno && c.estado === "activo" && !c.lesion && edadAnios(hasta + 3 * C.SUBASTA_PRORROGA, c) < C.DEBUT && !subastaDe(m, c.id) && !ya.includes(c.id));
+    if (!cand.length) return;
+    const c = cand.reduce((a, b) => { const pa = precioCompra(m, a), pb = precioCompra(m, b); return pb > pa || (pb === pa && b.id < a.id) ? b : a; });
+    const min = redondea10(precioCompra(m, c) * 0.6);
+    l.push({ id: c.id, nombre: c.nombre, vendedor: null, min, puja: 0, pujador: null, pujas: 0, desde: m.n, hasta });
+    ya.push(c.id); if (ya.length > 20) ya.shift();
+    ev.cambios.add(c.id);
+    ev.noticias.push(noticia(m, "subasta", `Sale a subasta ${c.nombre}`, `${c.padre && c.madre ? `${c.nombre}, ${c.sexo === "f" ? "hija" : "hijo"} de ${c.padre.nombre} y ${c.madre.nombre},` : c.nombre} sale al corro de subastas con una salida de ${min} tokens. Se adjudica al terminar la carrera ${hasta - 1}.`, [c.id], m.n - 1));
+  }
+
   /* Lo que cuesta una criatura. Solo usa lo que sabe todo el mundo: el linaje de las crías, y las estrellas y el palmarés de las demás. */
   function precioCompra(m, c) {
     const a = edadAnios(m.n, c);
@@ -1042,7 +1184,8 @@
       e.cuidar += f.cuidar || 0; e.entrenar += f.entrenar || 0; e.fatiga += f.fatiga || 0; e.lesion += f.lesion || 0;
       if (f.joven && c && edadAnios(m.n, c) < 2) e.entrenar += f.joven;
     });
-    return { costeCuidar: Math.max(20, C.CUIDADO_COSTE + e.cuidar), costeEntrenar: Math.max(15, C.ENTRENO_COSTE + e.entrenar), quitaFatiga: 20 + e.fatiga, quedaLesion: Math.max(0.3, 0.6 + e.lesion) };
+    return { costeCuidar: Math.max(20, C.CUIDADO_COSTE + e.cuidar), costeEntrenar: Math.max(15, C.ENTRENO_COSTE + e.entrenar), quitaFatiga: 20 + e.fatiga, quedaLesion: Math.max(0.3, 0.6 + e.lesion),
+      esperaCuidar: C.CUIDADO_ESPERA - nivelInst(m, dueno, "vet"), carrerasEntreno: C.ENTRENO_CARRERAS - nivelInst(m, dueno, "pista") };   // la enfermería y la pista de la cuadra
   }
   const precioMontaBase = (m, c) => Math.min(800, Math.max(60, redondea10(60 + 3 * Math.max(0, c.rating - 1450) + 12 * c.vic)));
   /* Lo que cuesta montar a un semental: el precio que le puso su dueño (de 40 a 2000) o, si no puso ninguno, el que sale de su palmarés */
@@ -1051,7 +1194,7 @@
   /* Las que se pueden comprar: vivas, activas, sin dueño y que no estén ya en la carrera que está programada */
   function enVenta(m) {
     const en = new Set(m.proxima ? m.proxima.entrantes.map(e => e.id) : []), mejores = mejoresDelMundo(m);
-    return m.vivos.filter(c => !c.dueno && c.estado === "activo" && !en.has(c.id) && !mejores.has(c.id));
+    return m.vivos.filter(c => !c.dueno && c.estado === "activo" && !en.has(c.id) && !mejores.has(c.id) && !subastaDe(m, c.id));
   }
   /* Lo que se sabe de las carreras que vienen sin haberlas programado todavía (lo fija la semilla) */
   function calendario(m, desde, cuantas) {
@@ -1059,8 +1202,10 @@
     for (let n = desde; n < desde + cuantas; n++) {
       const grado = gradoDe(m, n), dist = crearRng(m.semilla, "prog", n).peso(DISTANCIAS[grado]), G = GRADOS[grado];
       const ocupadas = m.vivos.reduce((t, c) => t + (c.entradas || []).filter(en => en.n === n).length, 0);
-      out.push(Object.assign({ n, hora: horaDe(m, n), grado, gradoNombre: G.nombre, nombre: raiz.HipodromoNombres.nombrarCarrera(crearRng(m.semilla, "nombre-carrera", n), grado),
-        pista: pistaDeJornada(m.semilla, Math.floor(n / C.JORNADA)), dist, bolsa: G.bolsa, inscripcion: inscripcionDe(G), plazas: Math.max(0, G.campo[1] - 3 - ocupadas) },
+      const pat = m.patrocinios && m.patrocinios[n];   // un dueño puede haber puesto tokens en la bolsa (y, si quiso, su nombre a la carrera)
+      out.push(Object.assign({ n, hora: horaDe(m, n), grado, gradoNombre: G.nombre, nombre: pat && pat.titulo ? pat.titulo : raiz.HipodromoNombres.nombrarCarrera(crearRng(m.semilla, "nombre-carrera", n), grado),
+        pista: pistaDeJornada(m.semilla, Math.floor(n / C.JORNADA)), dist, bolsa: G.bolsa + (pat ? pat.monto : 0), inscripcion: inscripcionDe(G), plazas: Math.max(0, G.campo[1] - 3 - ocupadas) },
+        pat ? { patrocinio: { dueno: duenoPublico(m, pat.dueno), monto: pat.monto } } : {},
         // en las copas: cuánto hay que haber corrido (quién llega lo sabe cada dueño por su entrenador: perfilCuadra.copas)
         G.copa ? { copa: true, salidasMin: G.copa.salidas } : {}));
     }
@@ -1077,10 +1222,13 @@
   function perfilCuadra(m, c) {
     const b = statsBase(c), r5 = x => Math.round(x / 5) * 5, cap = {};
     STATS.forEach(k => { cap[k] = r5(b[k]); });
+    const ef = efectosCriadero(m, c.dueno, c), du = (m.duenos && m.duenos[c.dueno]) || {};
     return { id: c.id, dueno: c.dueno, tactica: c.tactica || null, entreno: c.entreno || null, entradas: (c.entradas || []).map(en => ({ n: en.n, pago: en.pago })),
-      costeCuidar: efectosCriadero(m, c.dueno, c).costeCuidar, costeEntrenar: efectosCriadero(m, c.dueno, c).costeEntrenar, quitaFatiga: efectosCriadero(m, c.dueno, c).quitaFatiga, quitaLesion: Math.round((1 - efectosCriadero(m, c.dueno, c).quedaLesion) * 100),
-      forma: textoForma(c.forma), fatiga: Math.round(c.fatiga), capacidades: cap, mejoras: c.perm, venta: valorVenta(m, c), puedeCuidar: m.n - (c.cuidado == null ? -999 : c.cuidado) >= C.CUIDADO_ESPERA,
-      objetos: ((m.duenos && m.duenos[c.dueno] && m.duenos[c.dueno].objetos) || []).slice(),
+      costeCuidar: ef.costeCuidar, costeEntrenar: ef.costeEntrenar, quitaFatiga: ef.quitaFatiga, quitaLesion: Math.round((1 - ef.quedaLesion) * 100), esperaCuidar: ef.esperaCuidar, carrerasEntreno: ef.carrerasEntreno,
+      forma: textoForma(c.forma), fatiga: Math.round(c.fatiga), capacidades: cap, mejoras: c.perm, venta: valorVenta(m, c), mercado: precioCompra(m, c), puedeCuidar: m.n - (c.cuidado == null ? -999 : c.cuidado) >= ef.esperaCuidar,
+      objetos: (du.objetos || []).slice(),
+      // lo de la cuadra entera viaja en lo privado de cada criatura: plazas, obras hechas y divisa
+      plazas: maxCuadra(m, c.dueno), ampliacion: Math.min(C.AMPLIAR.length, du.ampliacion || 0), inst: { vet: nivelInst(m, c.dueno, "vet"), pista: nivelInst(m, c.dueno, "pista") }, divisa: du.divisa || null,
       copas: copasQueCorre(m, c), renombrada: !!c.renombrada, cruce: (m.cruces || []).filter(x => x.madre === c.id).map(x => ({ n: x.n, padre: x.padreNombre })) };
   }
   function terminarEntreno(m, c, ev, rng) {
@@ -1131,7 +1279,7 @@
         const grande = (h.mut || []).map(id => HR.MUT[id]).find(u => u && u.g);
         ev.avisos.push({ dueno: x.dueno, id: h.id, n: m.n, texto: `Ha nacido ${h.nombre}, cría de ${madre.nombre} y ${padre.nombre}.${grande ? ` Trae una mutación fuera de lo común: ${grande.n}.` : ""} Puedes ponerle otro nombre.` });
       });
-      if (cuadraDe(m, x.dueno).length > C.MAX_CABALLOS) ev.avisos.push({ dueno: x.dueno, id: c.id, n: m.n, texto: `Tu cuadra pasa del límite (${C.MAX_CABALLOS}): vende o suelta a alguna antes de comprar o cruzar.` });
+      if (cuadraDe(m, x.dueno).length > maxCuadra(m, x.dueno)) ev.avisos.push({ dueno: x.dueno, id: c.id, n: m.n, texto: `Tu cuadra pasa del límite (${maxCuadra(m, x.dueno)}): vende o suelta a alguna antes de comprar o cruzar.` });
     });
     m.cruces = quedan;
   }
@@ -1147,12 +1295,13 @@
     if (!m.cruces) m.cruces = [];
     const mia = id => { const c = buscar(m, id); return c && c.dueno === d ? c : null; };
     const enCarrera = c => !!(m.proxima && m.proxima.entrantes.some(e => e.id === c.id));
-    const nCuadra = cuadraDe(m, d).length;
-    const res = { ok: true, costo: 0, ingreso: 0, pagos: [], cambios: [], noticias: [], texto: "" };
+    const nCuadra = cuadraDe(m, d).length, tope = maxCuadra(m, d);
+    const nPujas = (m.subastas || []).filter(x => x.pujador === d).length;   // lo que va ganando en el corro también ocupa sitio
+    const res = { ok: true, costo: 0, ingreso: 0, pagos: [], cambios: [], noticias: [], avisos: [], texto: "" };
     switch (o.tipo) {
       case "adoptar": {
         if (m.duenos[d] && m.duenos[d].adoptada) return err("Ya recibiste tu criatura de la casa.");
-        if (nCuadra >= C.MAX_CABALLOS) return err(`Tu cuadra está llena (${C.MAX_CABALLOS}).`);
+        if (nCuadra + nPujas >= tope) return err(`Tu cuadra está llena (${tope}).`);
         if (prueba) return res;
         const du = m.duenos[d] || (m.duenos[d] = {});
         du.nombre = String(o.nombre || du.nombre || "").replace(/[<>&"]/g, "").trim().slice(0, 24); du.adoptada = true;
@@ -1167,8 +1316,9 @@
         if (!c || c.estado !== "activo" || !m.vivos.includes(c)) return err("Esa criatura no está a la venta.");
         if (c.dueno) return err("Esa criatura ya tiene dueño.");
         if (mejoresDelMundo(m).has(c.id)) return err("Es de las mejores del mundo y no se vende. Tendrás que criar y entrenar a la tuya.");
+        if (subastaDe(m, c.id)) return err("Está en subasta: puja por ella en el corro.");
         if (enCarrera(c)) return err("Está inscrita en la carrera de ahora; espera a que termine.");
-        if (nCuadra >= C.MAX_CABALLOS) return err(`Tu cuadra está llena (${C.MAX_CABALLOS}).`);
+        if (nCuadra + nPujas >= tope) return err(`Tu cuadra está llena (${tope}).`);
         res.costo = precioCompra(m, c);
         if (prueba) return res;
         c.dueno = d; c.entradas = []; c.tactica = null;
@@ -1178,6 +1328,7 @@
       }
       case "vender": {
         const c = mia(o.id); if (!c) return err("Esa criatura no es tuya.");
+        if (subastaDe(m, c.id)) return err("Está en subasta: retírala del corro antes de venderla.");
         if (enCarrera(c)) return err("Está inscrita en la carrera de ahora; espera a que termine.");
         res.ingreso = valorVenta(m, c) + (c.entradas || []).reduce((t, en) => t + (en.pago || 0), 0);
         if (prueba) return res;
@@ -1202,6 +1353,7 @@
           return res;
         }
         if (ya) return err("Ya está inscrita en esa carrera.");
+        if (subastaDe(m, c.id)) return err("Está en subasta.");
         if (c.estado !== "activo") return err("Ya no corre.");
         if (edadAnios(n, c) < C.DEBUT) return err("Todavía es demasiado joven para correr en esa fecha.");
         if (c.lesion && c.lesion.gravedad === "grave") return err("No volverá a correr.");
@@ -1221,24 +1373,26 @@
         const c = mia(o.id); if (!c) return err("Esa criatura no es tuya.");
         if (!STATS.includes(o.stat)) return err("Ese entrenamiento no existe.");
         if (c.estado !== "activo") return err("Ya no corre.");
+        if (subastaDe(m, c.id)) return err("Está en subasta.");
         if (c.entreno) return err("Ya está entrenando.");
         if (c.lesion) return err("No puede entrenar lesionada.");
         if (enCarrera(c)) return err("Está inscrita en la carrera de ahora.");
         if (edadAnios(m.n, c) < 0.5) return err("Es demasiado pequeña para entrenar.");
-        if ((c.entradas || []).some(en => en.n <= m.n + C.ENTRENO_CARRERAS)) return err("Tiene inscripciones en las próximas carreras: cancélalas antes.");
+        const efE = efectosCriadero(m, d, c);   // con pista propia las sesiones son más cortas
+        if ((c.entradas || []).some(en => en.n <= m.n + efE.carrerasEntreno)) return err("Tiene inscripciones en las próximas carreras: cancélalas antes.");
         if (c.perm[o.stat] >= C.ENTRENO_TOPE) return err("Ya no puede mejorar más en eso.");
-        res.costo = efectosCriadero(m, d, c).costeEntrenar;
+        res.costo = efE.costeEntrenar;
         if (prueba) return res;
-        c.entreno = { stat: o.stat, hasta: m.n + 1 + C.ENTRENO_CARRERAS };
-        res.id = c.id; res.cambios.push(c.id); res.texto = `${c.nombre} empieza a entrenar ${NOMBRE_STAT[o.stat]}: ${C.ENTRENO_CARRERAS} carreras.`; res.concepto = `Entrenamiento: ${c.nombre}`;
+        c.entreno = { stat: o.stat, hasta: m.n + 1 + efE.carrerasEntreno };
+        res.id = c.id; res.cambios.push(c.id); res.texto = `${c.nombre} empieza a entrenar ${NOMBRE_STAT[o.stat]}: ${efE.carrerasEntreno} carreras.`; res.concepto = `Entrenamiento: ${c.nombre}`;
         return res;
       }
       case "cuidar": {
         const c = mia(o.id); if (!c) return err("Esa criatura no es tuya.");
         if (c.estado !== "activo" && c.estado !== "criador") return err("Ya no está.");
-        if (m.n - (c.cuidado == null ? -999 : c.cuidado) < C.CUIDADO_ESPERA) return err(`Se la cuidó hace poco: espera ${C.CUIDADO_ESPERA} carreras entre cuidados.`);
+        const ef = efectosCriadero(m, d, c);   // con enfermería propia se puede cuidar más seguido
+        if (m.n - (c.cuidado == null ? -999 : c.cuidado) < ef.esperaCuidar) return err(`Se la cuidó hace poco: espera ${ef.esperaCuidar} carreras entre cuidados.`);
         if (!(c.fatiga > 5) && !(c.lesion && c.lesion.gravedad !== "grave" && c.lesion.tipo !== "desaparecido")) return err("No necesita cuidados.");
-        const ef = efectosCriadero(m, d, c);
         res.costo = ef.costeCuidar;
         if (prueba) return res;
         c.fatiga = Math.max(0, c.fatiga - ef.quitaFatiga); c.cuidado = m.n;
@@ -1301,6 +1455,7 @@
       case "retirar": {
         const c = mia(o.id); if (!c) return err("Esa criatura no es tuya.");
         if (c.estado !== "activo" || !m.vivos.includes(c)) return err("Ya no corre.");
+        if (subastaDe(m, c.id)) return err("Está en subasta.");
         if (enCarrera(c)) return err("Está inscrita en la carrera de ahora.");
         if (edadAnios(m.n, c) >= 12) return err("Es demasiado mayor para criar.");
         if (prueba) return res;
@@ -1318,9 +1473,10 @@
         if (edadAnios(m.n, madre) >= 12 || edadAnios(m.n, padre) >= 12) return err("Alguno de los dos es demasiado mayor.");
         if (m.n - madre.ultimaCria < C.GESTACION || madre.crias >= 8) return err("La madre necesita descansar más antes de otra cría.");
         if ((m.cruces || []).some(x => x.madre === madre.id)) return err("Ya espera cría.");
+        if (subastaDe(m, madre.id) || subastaDe(m, padre.id)) return err("Una de las dos está en subasta.");
         const parentesco = HR.parentesco(madre, padre);
         const pendientes = (m.cruces || []).filter(x => x.dueno === d).length;
-        if (nCuadra + pendientes >= C.MAX_CABALLOS) return err(`No hay sitio en tu cuadra para la cría (${C.MAX_CABALLOS}): vende o suelta a alguna antes de cruzar.`);
+        if (nCuadra + nPujas + pendientes >= tope) return err(`No hay sitio en tu cuadra para la cría (${tope}): vende o suelta a alguna antes de cruzar.`);
         // el semental de otra cuadra cobra lo que haya puesto su dueño; con uno propio se paga el precio de siempre a la casa (criar no es gratis)
         const precio = padre.dueno === d ? precioMontaBase(m, padre) : precioMonta(m, padre);
         res.costo = precio;
@@ -1329,6 +1485,123 @@
         m.cruces.push({ madre: madre.id, padre: padre.id, padreNombre: padre.nombre, dueno: d, n: m.n + C.CRUCE_ESPERA, pago: precio, cercanos: parentesco >= 0.2 });
         madre.ultimaCria = m.n;
         res.id = madre.id; res.cambios.push(madre.id); res.texto = `${madre.nombre} espera una cría de ${padre.nombre} para dentro de ${C.CRUCE_ESPERA} carreras.`; res.concepto = `Monta de ${padre.nombre}`;
+        return res;
+      }
+      /* ---- la cuadra como casa: divisa, patrocinio, obras y subastas */
+      case "divisa": {
+        const v = o.divisa || {}, du0 = m.duenos[d] || {};
+        if (!conNombre(m, d, o)) return err("Tu cuadra todavía no tiene nombre.");
+        if (!DIVISA.colores[v.c1] || !DIVISA.colores[v.c2] || !DIVISA.patrones.includes(v.patron) || !DIVISA.emblemas.includes(v.emblema)) return err("Esa divisa no existe.");
+        if (v.c1 === v.c2 && v.patron !== "liso") return err("Con los dos colores iguales no se ve el dibujo: cambia un color o elige el liso.");
+        const igual = (a, b) => !!a && !!b && a.c1 === b.c1 && a.patron === b.patron && (a.patron === "liso" || a.c2 === b.c2);
+        if (igual(du0.divisa, v) && du0.divisa.emblema === v.emblema && du0.divisa.c2 === v.c2) return err("Ya corres con esa divisa.");
+        if (Object.keys(m.duenos).some(id => id !== d && !esNpcId(id) && igual(m.duenos[id].divisa, v))) return err("Otra cuadra ya corre con esos colores y ese dibujo.");
+        res.costo = du0.divisa ? C.DIVISA_COSTE : 0;
+        if (prueba) return res;
+        const du = asegurarDueno(m, d, o);
+        du.divisa = { c1: v.c1, c2: v.c2, patron: v.patron, emblema: v.emblema };
+        cuadraDe(m, d).forEach(c => res.cambios.push(c.id));
+        res.publica = true; res.texto = "Tu cuadra corre desde ahora con esta divisa."; res.concepto = "Divisa de la cuadra";
+        return res;
+      }
+      case "patrocinar": {
+        const n = Math.floor(Number(o.n)), monto = Math.round(Number(o.monto));
+        const cal = calendarioVisible(m).find(x => x.n === n);
+        if (!cal) return err("Esa carrera no está en el calendario.");
+        if (!(monto >= C.PATROCINIO_MIN && monto <= C.PATROCINIO_MAX)) return err(`El patrocinio va de ${C.PATROCINIO_MIN} a ${C.PATROCINIO_MAX} tokens.`);
+        const ya = (m.patrocinios && m.patrocinios[n]) || null;
+        if (ya && ya.dueno !== d) return err("Esa carrera ya tiene patrocinador.");
+        if (ya && ya.monto + monto > C.PATROCINIO_MAX) return err(`Entre todo no puedes poner más de ${C.PATROCINIO_MAX} tokens en una carrera.`);
+        const titulo = String(o.titulo || "").replace(/\s+/g, " ").trim();
+        if (titulo && cal.copa) return err("Las copas conservan su nombre: patrocínala sin título.");
+        if (titulo && !/^[\p{L}\p{N}][\p{L}\p{N} '.\-]{2,31}$/u.test(titulo)) return err("El título debe tener de 3 a 32 letras, números, espacios, apóstrofos, puntos o guiones.");
+        if (!conNombre(m, d, o)) return err("Tu cuadra todavía no tiene nombre.");
+        res.costo = monto;
+        if (prueba) return res;
+        const du = asegurarDueno(m, d, o), G = GRADOS[cal.grado];
+        if (!m.patrocinios) m.patrocinios = {};
+        const pt = m.patrocinios[n] || (m.patrocinios[n] = { dueno: d, monto: 0, titulo: "" });
+        pt.monto += monto; if (titulo) pt.titulo = titulo;
+        const pal = palmares(m, d); if (!ya) pal.patrocinios++; pal.patrocinado += monto;
+        res.noticias.push(noticia(m, "patrocinio", `La cuadra de ${du.nombre} patrocina la carrera ${n}`, `${pt.titulo ? `Se correrá con el nombre de «${pt.titulo}». ` : ""}La bolsa de esa carrera (${G.nombre}) sube ${pt.monto} tokens y queda en ${G.bolsa + pt.monto}.`, [], m.n - 1));
+        res.publica = true; res.texto = `Patrocinas la carrera ${n}: su bolsa queda en ${G.bolsa + pt.monto} tokens.`; res.concepto = `Patrocinio: carrera ${n}`;
+        return res;
+      }
+      case "ampliar": {
+        const du0 = m.duenos[d] || {}, k = Math.min(C.AMPLIAR.length, du0.ampliacion || 0);
+        if (!nCuadra && !du0.adoptada) return err("Primero necesitas una cuadra: adopta o compra una criatura.");
+        if (k >= C.AMPLIAR.length) return err(`Tu cuadra ya tiene las ${C.MAX_CABALLOS + k} plazas que caben.`);
+        res.costo = C.AMPLIAR[k];
+        if (prueba) return res;
+        (m.duenos[d] || (m.duenos[d] = {})).ampliacion = k + 1;
+        res.publica = true; res.texto = `Obra terminada: tu cuadra tiene ahora ${C.MAX_CABALLOS + k + 1} plazas.`; res.concepto = "Obra: ampliar la cuadra";
+        return res;
+      }
+      case "instalacion": {
+        const k = String(o.objeto || ""), def = INSTALACIONES[k], du0 = m.duenos[d] || {};
+        if (!def) return err("Esa instalación no existe.");
+        if (!nCuadra && !du0.adoptada) return err("Primero necesitas una cuadra: adopta o compra una criatura.");
+        const niv = nivelInst(m, d, k);
+        if (niv >= C.INSTALACION.length) return err(`${def.nombre} ya está en su nivel más alto.`);
+        res.costo = C.INSTALACION[niv];
+        if (prueba) return res;
+        const du = m.duenos[d] || (m.duenos[d] = {});
+        (du.inst || (du.inst = {}))[k] = niv + 1;
+        res.publica = true; res.texto = `${def.nombre}, nivel ${niv + 1}: ${def.ben(niv + 1)}.`; res.concepto = `Obra: ${def.nombre.toLowerCase()}, nivel ${niv + 1}`;
+        return res;
+      }
+      case "subastar": {
+        const c = mia(o.id); if (!c) return err("Esa criatura no es tuya.");
+        const ya = subastaDe(m, c.id);
+        if (o.quitar) {
+          if (!ya) return err("No está en subasta.");
+          if (ya.pujador) return err("Ya hay pujas: el lote no se puede retirar.");
+          if (prueba) return res;
+          m.subastas = m.subastas.filter(x => x !== ya);
+          res.id = c.id; res.cambios.push(c.id); res.texto = `${c.nombre} sale del corro y sigue en tu cuadra.`; res.concepto = "Subasta retirada";
+          return res;
+        }
+        if (ya) return err("Ya está en subasta.");
+        if (c.estado !== "activo" && c.estado !== "criador") return err("Ya no está.");
+        if (enCarrera(c)) return err("Está inscrita en la carrera de ahora; espera a que termine.");
+        if ((c.entradas || []).length) return err("Tiene inscripciones: quítalas antes de subastarla.");
+        if (c.entreno) return err("Está entrenando: espera a que termine.");
+        if (c.lesion && (c.lesion.gravedad === "grave" || c.lesion.tipo === "desaparecido")) return err("Así no puede salir al corro.");
+        if ((m.cruces || []).some(x => x.madre === c.id)) return err("Espera cría: no puede salir al corro hasta que nazca.");
+        if ((m.subastas || []).filter(x => x.vendedor === d).length >= C.SUBASTA_MAX) return err(`Solo puedes tener ${C.SUBASTA_MAX} lotes en el corro a la vez.`);
+        const max = topePuja(m, c), min = o.precio == null || o.precio === "" ? Math.max(C.SUBASTA_MIN, valorVenta(m, c)) : Math.round(Number(o.precio));
+        if (!(min >= C.SUBASTA_MIN && min <= max)) return err(`El precio de salida de ${c.nombre} va de ${C.SUBASTA_MIN} a ${max} tokens.`);
+        if (!conNombre(m, d, o)) return err("Tu cuadra todavía no tiene nombre.");
+        if (prueba) return res;
+        asegurarDueno(m, d, o);
+        const hasta = m.n + C.SUBASTA_CARRERAS;
+        (m.subastas || (m.subastas = [])).push({ id: c.id, nombre: c.nombre, vendedor: d, min, puja: 0, pujador: null, pujas: 0, desde: m.n, hasta });
+        res.noticias.push(noticia(m, "subasta", `Sale a subasta ${c.nombre}`, `La cuadra de ${nombreDueno(m, d)} lleva a ${c.nombre} al corro de subastas, con una salida de ${min} tokens. Se adjudica al terminar la carrera ${hasta - 1}.`, [c.id], m.n - 1));
+        res.id = c.id; res.cambios.push(c.id); res.texto = `${c.nombre} sale al corro con una salida de ${min} tokens. Se adjudica al terminar la carrera ${hasta - 1}.`; res.concepto = "Subasta";
+        return res;
+      }
+      case "pujar": {
+        const x = subastaDe(m, Number(o.id)), c = x ? buscar(m, x.id) : null;
+        if (!x || !c) return err("Ese lote ya no está en el corro.");
+        if (x.vendedor === d) return err("Es tu propio lote.");
+        if (x.pujador === d) return err("Ya llevas la puja más alta.");
+        const precio = Math.round(Number(o.precio)), sig = sigPuja(x), max = topePuja(m, c);
+        if (sig > max) return err(`${c.nombre} ya está en su tope (${max} tokens): no admite más pujas.`);
+        if (!(precio >= sig)) return err(`Hay que ofrecer al menos ${sig} tokens.`);
+        if (precio > max) return err(`Por ${c.nombre} no se admiten pujas de más de ${max} tokens.`);
+        if (nCuadra + nPujas + (m.cruces || []).filter(q => q.dueno === d).length >= tope) return err(`No hay sitio en tu cuadra (${tope}): vende o suelta a alguna antes de pujar.`);
+        if (!conNombre(m, d, o)) return err("Tu cuadra todavía no tiene nombre.");
+        res.costo = precio;
+        if (prueba) return res;
+        asegurarDueno(m, d, o);
+        if (x.pujador) {   // la puja superada vuelve entera a quien la puso
+          pagarA(m, res.pagos, x.pujador, x.puja, `Subasta: te superan en ${c.nombre}`);
+          avisarA(res.avisos, x.pujador, c.id, m.n, `Te han superado en la subasta de ${c.nombre}: ahora manda una puja de ${precio} tokens. Se te devuelven los ${x.puja} que habías puesto.`);
+        }
+        avisarA(res.avisos, x.vendedor, c.id, m.n, `Pujan ${precio} tokens por ${c.nombre}.`);
+        x.puja = precio; x.pujador = d; x.pujas++;
+        if (x.hasta - m.n < C.SUBASTA_PRORROGA) x.hasta = m.n + C.SUBASTA_PRORROGA;   // una puja de última hora deja tiempo para contestar
+        res.id = c.id; res.cambios.push(c.id); res.texto = `Tu puja de ${precio} tokens por ${c.nombre} manda en el corro.`; res.concepto = `Puja: ${c.nombre}`;
         return res;
       }
       default: return err("Orden desconocida.");
@@ -1350,10 +1623,14 @@
       if (r.ingreso) { out.pagos.push({ dueno: o.dueno, monto: r.ingreso, concepto: r.concepto, n: m.n }); mueve(o.dueno, r.ingreso); }
       (r.pagos || []).forEach(q => { out.pagos.push(q); mueve(q.dueno, q.monto); });
       (r.cambios || []).forEach(id => tocadas.add(id));
+      (r.avisos || []).forEach(a => out.avisos.push(a));
+      if (r.publica) out.publica = true;
       out.noticias = out.noticias.concat(r.noticias || []);
       out.resultados.push({ oid: o.oid, ok: true, costo: r.costo || 0, ingreso: r.ingreso || 0, texto: r.texto, criatura: r.id });
     });
     tocadas.forEach(id => { const c = buscar(m, id); if (c) out.perfiles.push(perfil(m, c)); });
+    // si cambió algo de lo que se publica de las cuadras (divisa, obras, patrocinio), el programa en curso se vuelve a publicar con ello
+    if (out.publica && m.proxima) m.proxima.cuadras = cuadrasPublicas(m);
     return out;
   }
 
@@ -1392,11 +1669,23 @@
     if (res) aplicarResultado(m, prog, res, ev);
     if (res && NPC) NPC.liquidar(m, X, prog, res, ev);
     else ev.noticias.push(noticia(m, "suspendida", "Jornada suspendida", `No hay criaturas en condiciones de correr ${prog ? prog.nombre : "esta carrera"}. Se aplaza.`, []));
+    // el patrocinio de esta carrera ya iba en su bolsa; si no se corrió, vuelve a quien lo puso
+    if (prog && m.patrocinios && m.patrocinios[prog.n]) {
+      const pt = m.patrocinios[prog.n];
+      if (!res) {
+        pagarA(m, ev.pagos, pt.dueno, pt.monto, "Patrocinio devuelto: la carrera no se corrió");
+        avisarA(ev.avisos, pt.dueno, null, m.n, `La carrera ${prog.n} no se corrió y se te devuelve el patrocinio (${pt.monto} tokens).`);
+        const pal = palmares(m, pt.dueno); pal.patrocinios = Math.max(0, pal.patrocinios - 1); pal.patrocinado = Math.max(0, pal.patrocinado - pt.monto);
+      }
+      delete m.patrocinios[prog.n];
+    }
     cicloVital(m, ev);
     m.n++;
+    cerrarSubastas(m, ev); abrirSubastaCasa(m, ev);   // lo que vencía se adjudica y, a su hora, la casa saca su lote del día
     if (NPC) { NPC.iniciar(m, X, ev); NPC.turno(m, X, ev); }   // las órdenes de las cuadras virtuales, antes de fijar el campo de la carrera que toca
     const sig = programar(m, opc);
     if (NPC) { NPC.apuestas(m, X, sig); sig.cuadrasNpc = NPC.publico(m); }   // la tribuna apuesta con lo que ya es público
+    sig.cuadras = cuadrasPublicas(m);   // y las cuadras de los jugadores: divisa, palmarés y vitrina
     // lo que los dueños pagaron por correr y no pudo ser se les devuelve; las inscripciones ya pasadas se borran
     ((sig.secreto && sig.secreto.rechazadas) || []).forEach(r => {
       ev.pagos.push({ dueno: r.dueno, monto: r.monto, concepto: `Inscripción devuelta: ${r.nombre}`, n: sig.n });
@@ -1437,7 +1726,7 @@
     if (ordenes) ordenes.perfiles.forEach(p => cri.set(p.id, filaCriatura(m, p)));
     eventos.forEach(ev => ev.perfiles.forEach(p => cri.set(p.id, filaCriatura(m, p))));
     return { mundo: m, criaturas: [...cri.values()],
-      programas: eventos.map(ev => ({ n: ev.programa.n, hora: ev.programa.hora, cierre: ev.programa.cierre, publico: ev.programa })),
+      programas: (ordenes && ordenes.publica && !eventos.length && m.proxima ? [filaPrograma(m.proxima)] : []).concat(eventos.map(ev => ({ n: ev.programa.n, hora: ev.programa.hora, cierre: ev.programa.cierre, publico: ev.programa }))),
       carreras: eventos.filter(ev => ev.programada).map(ev => ({ n: ev.programa.n, hora: ev.programa.hora, resultado: ev.programada })),
       noticias: (ordenes ? ordenes.noticias : []).concat(eventos.reduce((a, ev) => a.concat(ev.noticias), [])),
       aplicadas: eventos.filter(ev => ev.aplicada != null).map(ev => ev.aplicada),
@@ -1491,14 +1780,15 @@
   /* Las piezas del motor que usa js/hipodromo-npc.js (un personaje juega con las mismas órdenes que un jugador y solo mira lo público) */
   const npcAcepta = (m, c, grado, dist, n) => { const NPC = raiz.HipodromoNPC; return !NPC || NPC.acepta(m, npcX(), c, grado, dist, n); };   // ¿acepta su dueño virtual esa categoría y distancia?
   function npcX() {
-    return { C, GRADOS, STATS, PISTAS, EMPAREJA, crearRng, edadAnios, buscar, perfil, perfilCuadra, procesarOrdenes, calendarioVisible, clasificadas, enVenta, cuadraDe, noticia, horaDe, programaPublico, etiquetaPista };
+    return { C, GRADOS, STATS, PISTAS, EMPAREJA, crearRng, edadAnios, buscar, perfil, perfilCuadra, procesarOrdenes, calendarioVisible, clasificadas, enVenta, cuadraDe, noticia, horaDe, programaPublico, etiquetaPista,
+      precioCompra, sigPuja, subastas: m => m.subastas || [] };
   }
 
   raiz.HipodromoMotor = {
     C, AJUSTE, ESPECIE, PISTAS, REGLAS_ARCANAS, CLIMAS, ESTADOS_CLIMA, MARKOV, GRADOS, CICLO, DISTANCIAS, LESIONES, CUERPO, TIPOS_APUESTA, STATS, GENES,
     crearRng, hash, crearMundo, programar, avanzar, avanzarHasta, loteInicial, lote, paso, programaPublico, perfil, buscar, horaDe, ventana,
-    OBJETOS_CRIADERO, efectosCriadero, cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
-    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, mejoresDelMundo, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, esNpcId, TACTICAS, _interno: { npcX, retirar, fallecer, pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
+    OBJETOS_CRIADERO, efectosCriadero, DIVISA, INSTALACIONES, maxCuadra, nivelInst, divisaDe, duenoPublico, cuadrasPublicas, palmares, subastaDe, sigPuja, topePuja, cuotaApuesta, cuotaExacta, liquidar, pagarPozo, cuotaPozo, favoritoDe, fmtTiempo, fmtCuota, fmtMargen, etiquetaPista, edadAnios, cuerpo, capaTexto, perfilDistancia, estrellas, etapaDe, arquetipo, silueta, esLeyenda,
+    zonasArcanas, ordenar, procesarOrdenes, perfilCuadra, calendario, calendarioVisible, gradoDe, copaDe, clasificadas, mejoresDelMundo, inscripcionDe, cuadraDe, precioCompra, precioMonta, valorVenta, enVenta, nombreDueno, esNpcId, TACTICAS, _interno: { npcX, retirar, fallecer, cerrarSubastas, abrirSubastaCasa, pistaDeJornada, simular, efectivo, condiciones, ordenLlegada, montecarlo, mercado, statsBase, fragilidad, edadMult, nuevaCriatura, mezclarGenes, cicloVital, inscribir, elegibles, muestraClima, puntos, nivelDe, probLesion, rumores, fuerzas }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.HipodromoMotor;
 })(typeof window !== "undefined" ? window : globalThis);

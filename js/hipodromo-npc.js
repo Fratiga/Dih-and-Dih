@@ -311,10 +311,24 @@
         const elegida = cand.map(p => ({ p, s: puntua(p) })).sort((a, b) => b.s - a.s)[0];
         if (elegida) pedir({ tipo: "comprar", id: elegida.p.id }, elegida.p.precio);
       }
+      // pujar en el corro de subastas: con hueco en la cuadra y sin pasar de lo que cree que vale (por lo de un jugador nunca paga más que el mercado). Como mucho, una puja por turno
+      if (P.compra && X.subastas && !ordenes.some(o => o.tipo === "comprar")) {
+        const lotes = X.subastas(m), enJuego = lotes.filter(x => x.pujador === P.id).length, rp = X.crearRng(m.semilla, "npc-puja", P.id, m.n);
+        if (mias.length + enJuego < P.compra.tamano) lotes.some(x => {
+          if (x.pujador === P.id || x.vendedor === P.id || rp.f() > 0.3) return false;
+          const c = X.buscar(m, x.id); if (!c) return false;
+          const gana = X.crearRng(m.semilla, "npc-vale", P.id, x.id).f(), vale = X.precioCompra(m, c) * (x.vendedor ? 0.55 + 0.4 * gana : 0.7 + 0.6 * gana), sig = X.sigPuja(x);
+          if (sig > vale || sig > libre()) return false;
+          pedir({ tipo: "pujar", id: x.id, precio: sig }, sig); return true;
+        });
+      }
       if (!ordenes.length) return;
       const saldos = {}; saldos[P.id] = d.saldo;
       const out = X.procesarOrdenes(m, ordenes, saldos);
       d.saldo = redondea(saldos[P.id], 2);
+      // lo que una orden suya le debe a un jugador (la puja que le superó) y los avisos que le tocan salen con esta carrera
+      out.pagos.forEach(q => { if (q.dueno !== P.id) ev.pagos.push(q); });
+      (out.avisos || []).forEach(a => ev.avisos.push(a));
       out.resultados.forEach(r => {
         const o = ordenes[r.oid];
         if (r.criatura != null) ev.cambios.add(r.criatura);
