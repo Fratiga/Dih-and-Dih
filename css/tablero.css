@@ -732,3 +732,4 @@ body.tb.tb-oscuro .tb-estado-sil, body.tb.tb-oscuro .tb-estados-rejilla button {
 .tb-lista-carpeta small { margin-left: auto; color: #888; font-weight: 400; font-size: calc(11px * var(--tb-k)); }
 /* Los mensajes fuera de la vista no se pintan: los GIF de más arriba dejan de gastar CPU */
 .tb-chat-lista .tb-msg { content-visibility: auto; contain-intrinsic-size: auto 48px; }
+.tb-lista-hijos.soltando { background: rgba(214,18,126,.08); box-shadow: inset 2px 0 0 #d6127e; }

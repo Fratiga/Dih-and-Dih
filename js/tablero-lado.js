@@ -546,6 +546,18 @@
           const h = el(`<div class="tb-lista-hijos"></div>`);
           sub.filter(a => a.carpeta === cp).forEach(a => h.appendChild(item(a.src, a.nombre, a)));
           hijas(cp).forEach(x => pintarCarpeta(x, h));
+          // la carpeta abierta entera recibe lo que se suelta (la subcarpeta más profunda gana, por eso se para la propagación)
+          const vale = ev => { const ts = [...ev.dataTransfer.types]; return ts.includes("Files") || ts.includes("text/tablero-arte"); };
+          h.addEventListener("dragover", ev => { if (!vale(ev)) return; ev.preventDefault(); ev.stopPropagation(); t.classList.add("soltar-dentro"); h.classList.add("soltando"); });
+          h.addEventListener("dragleave", ev => { if (!h.contains(ev.relatedTarget)) { t.classList.remove("soltar-dentro"); h.classList.remove("soltando"); } });
+          h.addEventListener("drop", async ev => {
+            if (!vale(ev)) return;
+            ev.preventDefault(); ev.stopPropagation();
+            t.classList.remove("soltar-dentro"); h.classList.remove("soltando"); lista.classList.remove("soltando");
+            if (ev.dataTransfer.files.length) { subirArte(ev.dataTransfer.files, cp); return; }
+            const a = TB.arte.find(x => x.id === ev.dataTransfer.getData("text/tablero-arte"));
+            if (a && a.carpeta !== cp) { await moverArte([a], () => ({ carpeta: cp })); pintarLista(); }
+          });
           destino.appendChild(h);
         };
         hijas("").forEach(cp => pintarCarpeta(cp, lista));
@@ -752,6 +764,18 @@
         const h = el(`<div class="tb-lista-hijos"></div>`);
         todas.filter(e => e.carpeta === cp).forEach(e => h.appendChild(item(e)));
         hijasDe(cp).forEach(sub => pintarCarpeta(sub, h));
+        if (gm) {
+          const vale = ev => [...ev.dataTransfer.types].includes("text/tablero-diario");
+          h.addEventListener("dragover", ev => { if (!vale(ev)) return; ev.preventDefault(); ev.stopPropagation(); t.classList.add("soltar-dentro"); h.classList.add("soltando"); });
+          h.addEventListener("dragleave", ev => { if (!h.contains(ev.relatedTarget)) { t.classList.remove("soltar-dentro"); h.classList.remove("soltando"); } });
+          h.addEventListener("drop", async ev => {
+            if (!vale(ev)) return;
+            ev.preventDefault(); ev.stopPropagation();
+            t.classList.remove("soltar-dentro"); h.classList.remove("soltando");
+            const e = TB.diario.get(ev.dataTransfer.getData("text/tablero-diario"));
+            if (e && e.carpeta !== cp) { await cambiarEntradas([e], () => ({ carpeta: cp })); pintarLista(); }
+          });
+        }
         destino.appendChild(h);
       };
       hijasDe("").forEach(cp => pintarCarpeta(cp, lista));
