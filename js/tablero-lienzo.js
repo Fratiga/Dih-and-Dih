@@ -498,7 +498,7 @@
         const ult = st.arrastre.ruta[st.arrastre.ruta.length - 1];
         if (Math.hypot(p.x - ult.x, p.y - ult.y) < 1) return;
         st.arrastre.ruta.push(p);
-        dibujarRuta(guiaMedida, st.arrastre.ruta.concat([{ x: f.x(), y: f.y() }]), "#d6127e", true);
+        moverFantasma();
         lUI.batchDraw();
         return;
       }
@@ -990,7 +990,15 @@
       const lider = st.nodos.get(a.lider), p = { x: a.fantasma.x(), y: a.fantasma.y() };
       if (lider && st.opc.moverMide !== false && lider.o.capa !== "mapa") {
         const ruta = a.ruta.concat([p]);
-        dibujarRuta(guiaMedida, ruta, "#d6127e", true);
+        if (!a.fija || a.fijaN !== a.ruta.length || a.fijaZ !== zoom() || !a.fija.getParent()) {
+          guiaMedida.destroyChildren();
+          a.fija = new Konva.Group({ listening: false }); a.viva = new Konva.Group({ listening: false });
+          guiaMedida.add(a.fija, a.viva);
+          a.acumFijo = a.ruta.length > 1 ? dibujarRuta(a.fija, a.ruta, "#d6127e", false, { soloParadas: true }) : 0;
+          a.fijaN = a.ruta.length; a.fijaZ = zoom();
+        }
+        a.viva.destroyChildren();
+        dibujarRuta(a.viva, [a.ruta[a.ruta.length - 1], p], "#d6127e", false, { acum: a.acumFijo });
         if (st.opc.transmitir !== false && op.onRegla && lider.o.capa !== "gm") op.onRegla({ forma: "ruta", puntos: ruta, mov: true });
       }
       lUI.batchDraw();
@@ -1156,24 +1164,29 @@
       return v + " " + (c.unidad || "pies");
     }
     // Ruta con puntos de paso: se suma tramo a tramo (cada tramo con la regla de diagonales de la página)
-    function dibujarRuta(grupo, puntos, color, limpiar) {
+    // opc.soloParadas: todos los puntos son paradas y no hay caja final (los tramos fijos de un arrastre);
+    // opc.acum: celdas ya recorridas antes del primer punto. Devuelve las celdas acumuladas.
+    function dibujarRuta(grupo, puntos, color, limpiar, opc) {
+      opc = opc || {};
       if (limpiar) grupo.destroyChildren();
       const z = zoom(), k = 1 / z;
       const pl = [];
       puntos.forEach(p => pl.push(p.x, p.y));
-      grupo.add(new Konva.Line({ points: pl, stroke: color, strokeWidth: 4 * k, lineJoin: "round", lineCap: "round" }));
+      grupo.add(new Konva.Line({ points: pl, stroke: color, strokeWidth: 4 * k, lineJoin: "round", lineCap: "round", listening: false, perfectDrawEnabled: false }));
       const piesDe = celdas => Math.round(celdas * pies() * 10) / 10;
-      let acum = 0;
+      let acum = opc.acum || 0;
       puntos.forEach((p, i) => {
         if (i > 0) acum += celdasEntre(puntos[i - 1], p);
-        grupo.add(new Konva.Circle({ x: p.x, y: p.y, radius: 5 * k, fill: color }));
-        if (i > 0 && i < puntos.length - 1) {
-          const g = new Konva.Group({ x: p.x, y: p.y - 24 * k, scaleX: k, scaleY: k });
-          g.add(new Konva.Circle({ radius: 17, fill: "#6e6e6e", stroke: color, strokeWidth: 2, shadowColor: "#000", shadowBlur: 3, shadowOpacity: 0.3 }));
+        grupo.add(new Konva.Circle({ x: p.x, y: p.y, radius: 5 * k, fill: color, listening: false, perfectDrawEnabled: false }));
+        if (i > 0 && (opc.soloParadas || i < puntos.length - 1)) {
+          const g = new Konva.Group({ x: p.x, y: p.y - 24 * k, scaleX: k, scaleY: k, listening: false });
+          g.add(new Konva.Circle({ radius: 18.5, fill: "rgba(0,0,0,.25)" }));
+          g.add(new Konva.Circle({ radius: 17, fill: "#6e6e6e", stroke: color, strokeWidth: 2 }));
           g.add(new Konva.Text({ text: String(piesDe(acum)), fontSize: 14, fontStyle: "bold", fill: "#fff", width: 40, align: "center", x: -20, y: -7 }));
           grupo.add(g);
         }
       });
+      if (opc.soloParadas) return acum;
       const b = puntos[puntos.length - 1];
       const t1 = new Konva.Text({ text: piesDe(acum) + " " + (cuad().unidad || "pies"), fontSize: 17, fontStyle: "bold", fill: "#fff" });
       const t2 = new Konva.Text({ text: (Math.round(acum * 10) / 10) + " cuad.", fontSize: 11, fontStyle: "bold", fill: "#fff" });
@@ -1183,6 +1196,7 @@
       t1.setAttrs({ x: -t1.width() / 2, y: -16 }); t2.setAttrs({ x: -t2.width() / 2, y: 4 });
       caja.add(t1, t2);
       grupo.add(caja);
+      return acum;
     }
     function celdasEntre(a, b) {
       const t = tam(), c = cuad(), libre = (st.opc.ajusteMedida || "centro") === "ninguno";
