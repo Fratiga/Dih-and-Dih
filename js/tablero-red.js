@@ -140,6 +140,7 @@
       async arte() { return ok(await sb.from("tablero_arte").select("*").order("creado", { ascending: false })) || []; },
       async crearArte(f) { return ok(await sb.from("tablero_arte").insert(f).select().single()); },
       async borrarArte(id) { ok(await sb.from("tablero_arte").delete().eq("id", id)); },
+      async actualizarArte(id, c) { ok(await sb.from("tablero_arte").update(c).eq("id", id)); },
       async macros() { return ok(await sb.from("tablero_macros").select("*").order("orden").order("nombre")) || []; },
       async guardarMacro(f) {
         if (f.id) { const { id, ...c } = f; ok(await sb.from("tablero_macros").update(c).eq("id", id)); return f; }
@@ -397,6 +398,7 @@
       async arte() { leer(); return d.arte.slice(); },
       async crearArte(f) { const a = Object.assign({ id: uuid(), creado: ahora() }, f); d.arte.unshift(a); guardar(); return a; },
       async borrarArte(id) { d.arte = d.arte.filter(a => a.id !== id); guardar(); },
+      async actualizarArte(id, c) { const a = d.arte.find(x => x.id === id); if (a) Object.assign(a, c); guardar(); },
       async macros() { leer(); return d.macros.filter(m => m.autor === yo.uid); },
       async guardarMacro(f) {
         if (f.id) { const m = d.macros.find(x => x.id === f.id); if (m) Object.assign(m, f); guardar(); return m; }

@@ -16,7 +16,7 @@ cargar admin/tablero.sql
 cargar admin/tablero.sql          # se puede repetir sin romper nada
 comprobar "las trece tablas existen" "13" "$(sql "select count(*) from pg_tables where tablename like 'tablero\_%'")"
 comprobar "hay una sola fila de estado" "1" "$(sql "select count(*) from tablero_estado")"
-comprobar "el estado guarda el orden de las carpetas del diario" "[]" "$(sql "select carpetas from tablero_estado")"
+comprobar "el estado guarda el orden de las carpetas del diario y del arte" "[]|[]" "$(sql "select carpetas::text || '|' || carpetas_arte::text from tablero_estado")"
 
 sql "delete from tablero_escenas; delete from tablero_diario; delete from tablero_macros; delete from tablero_arte; truncate tablero_mensajes; insert into tablero_estado (id) values (1) on conflict (id) do nothing; update tablero_estado set escena_jugadores = null, iniciativa = '{\"lista\": [], \"turno\": 0, \"ronda\": 1, \"visible\": false}'" >/dev/null
 S1=$(como "$ADMIN" "insert into tablero_escenas (nombre) values ('Cripta') returning id;" | head -1)
@@ -240,6 +240,8 @@ contiene "sin sesión no se ve nada" "$(anonimo "select count(*) from tablero_pe
 echo "== Arte y macros"
 como "$ADMIN" "insert into tablero_arte (src, nombre) values ('x.png', 'Mapa');" >/dev/null
 comprobar "la biblioteca de arte es solo del GM" "0|1" "$(uno "$U1" "select count(*) from tablero_arte;")|$(uno "$ADMIN" "select count(*) from tablero_arte;")"
+como "$ADMIN" "update tablero_arte set carpeta = 'Mapas/Cuevas';" >/dev/null
+comprobar "el arte se guarda en carpetas" "Mapas/Cuevas" "$(sql "select carpeta from tablero_arte limit 1")"
 como "$U1" "insert into tablero_macros (nombre, texto) values ('Ataque', '/r 1d20+5');" >/dev/null
 comprobar "cada jugador ve solo sus macros" "1|0" "$(uno "$U1" "select count(*) from tablero_macros;")|$(uno "$U2" "select count(*) from tablero_macros;")"
 contiene "no crea macros a nombre de otro" "$(como "$U2" "insert into tablero_macros (autor, nombre) values ('$U1', 'X');")" "row-level security"

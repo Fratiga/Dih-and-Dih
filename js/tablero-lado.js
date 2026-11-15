@@ -363,6 +363,7 @@
 
   /* ============================================================ arte (GM) */
   let filtroArte = "", tipoArte = "todo";
+  const plegadasArte = new Set();
   function pintarArte() {
     const c = cuerpos.arte;
     if (!c || pestana !== "arte") return;
@@ -371,33 +372,124 @@
     const cab = el(`<div class="tb-pes-cab" style="display:block">
       <div class="tb-fila"><b style="font-weight:500">Buscar:</b><span style="flex:1"></span><select data-tipo style="width:calc(150px * var(--tb-k))"><option value="todo">Todo</option><option value="subidas">Mi biblioteca</option><option value="compendio">Del compendio</option></select></div>
       <input type="search" data-buscar style="margin-top:calc(6px * var(--tb-k))">
-      <p class="tb-arte-ayuda">Arrastra para colocar el arte, <b>arrastra pulsando Alt</b> para mantener las dimensiones. También puedes soltar archivos directamente en el tablero.</p>
-      <div class="tb-fila" style="justify-content:flex-end"><input type="file" accept="image/*" multiple hidden data-archivo><button type="button" class="tb-btn" data-cargar>⬆ Cargar</button><button type="button" class="tb-btn" data-url>＋ Añadir URL</button></div></div>`);
+      <p class="tb-arte-ayuda">Arrastra para colocar el arte, <b>arrastra pulsando Alt</b> para mantener las dimensiones. Suelta aquí las imágenes de tu PC para subirlas (o encima de una carpeta para meterlas en ella). Clic derecho en una carpeta para más opciones.</p>
+      <div class="tb-fila" style="justify-content:flex-end"><input type="file" accept="image/*" multiple hidden data-archivo><button type="button" class="tb-btn" data-carpeta-nueva title="Nueva carpeta">＋ Carpeta</button><button type="button" class="tb-btn" data-cargar>⬆ Cargar</button><button type="button" class="tb-btn" data-url>＋ Añadir URL</button></div></div>`);
     const buscar = cab.querySelector("[data-buscar]"), tipo = cab.querySelector("[data-tipo]"), archivo = cab.querySelector("[data-archivo]");
     buscar.value = filtroArte; tipo.value = tipoArte;
     buscar.addEventListener("input", () => { filtroArte = buscar.value; pintarLista(); });
     tipo.addEventListener("change", () => { tipoArte = tipo.value; pintarLista(); });
-    cab.querySelector("[data-cargar]").addEventListener("click", () => archivo.click());
-    archivo.addEventListener("change", async () => {
-      for (const f of archivo.files) {
-        try { aviso("Subiendo " + f.name + "…"); const src = await TB.red.subirImagen(f); const a = await TB.red.crearArte({ src, nombre: f.name.replace(/\.[^.]+$/, "") }); TB.arte.unshift(a); }
-        catch (e) { aviso(mensajeError(e), true); }
+    const btnCargar = cab.querySelector("[data-cargar]");
+    btnCargar.addEventListener("click", () => { destinoSubida = ""; archivo.click(); });
+    // Subir varias imágenes a una carpeta; la espera se ve en el botón Cargar
+    let destinoSubida = "";
+    async function subirArte(archivos, carpeta) {
+      archivos = [...archivos].filter(f => /^image\//.test(f.type));
+      if (!archivos.length) return;
+      const texto = btnCargar.innerHTML;
+      btnCargar.disabled = true;
+      for (const [i, f] of archivos.entries()) {
+        btnCargar.innerHTML = `<span class="tb-girando"></span> ${archivos.length > 1 ? `${i + 1} de ${archivos.length}` : "Subiendo…"}`;
+        try { const src = await TB.red.subirImagen(f); const a = await TB.red.crearArte({ src, nombre: f.name.replace(/\.[^.]+$/, "").slice(0, 120), carpeta: carpeta || "" }); TB.arte.unshift(a); }
+        catch (e) { aviso(/carpeta/.test(String(e && e.message)) ? "Falta volver a correr tablero.sql para las carpetas del arte." : f.name + ": " + mensajeError(e), true); }
       }
-      archivo.value = ""; pintarLista();
-    });
+      btnCargar.disabled = false; btnCargar.innerHTML = texto;
+      if (carpeta) plegadasArte.delete(carpeta);
+      pintarLista();
+    }
+    archivo.addEventListener("change", async () => { const l = [...archivo.files]; archivo.value = ""; await subirArte(l, destinoSubida); });
     cab.querySelector("[data-url]").addEventListener("click", async () => {
       const u = await pedir("Añadir imagen por dirección", "", { etiqueta: "Dirección de la imagen (https://…)" });
       if (!u || !/^https?:\/\//i.test(u.trim())) return;
       try { const a = await TB.red.crearArte({ src: u.trim(), nombre: decodeURIComponent(u.trim().split("/").pop().split("?")[0]).slice(0, 120) }); TB.arte.unshift(a); pintarLista(); }
       catch (e) { aviso(mensajeError(e), true); }
     });
-    const lista = el(`<div class="tb-pes-scroll"></div>`);
+    cab.querySelector("[data-carpeta-nueva]").addEventListener("click", () => nuevaCarpeta(""));
+    const lista = el(`<div class="tb-pes-scroll tb-arte-lista"></div>`);
     c.append(cab, lista);
-    function item(src, nombre, borrable) {
-      const it = el(`<div class="tb-lista-item cuadrada" draggable="true" title="Arrastra al tablero"><img src="${esc(src)}" alt="" loading="lazy"><b>${esc(nombre || src.split("/").pop())}</b>${borrable ? `<button type="button" class="tb-btn tb-btn-mini" title="Quitar de la biblioteca">✕</button>` : ""}</div>`);
-      it.addEventListener("dragstart", e => { e.dataTransfer.setData("text/tablero-src", src); e.dataTransfer.setData("text/tablero-nombre", nombre || ""); e.dataTransfer.effectAllowed = "copy"; });
+    // Soltar imágenes del explorador en cualquier parte del panel: van a la raíz (o a la carpeta sobre la que se suelten)
+    c._subirArte = subirArte;
+    if (!c._conSoltar) {
+      c._conSoltar = true;
+      const marca = v => { const l = c.querySelector(".tb-arte-lista"); if (l) l.classList.toggle("soltando", v); };
+      c.addEventListener("dragover", ev => { if ([...ev.dataTransfer.types].includes("Files")) { ev.preventDefault(); marca(true); } });
+      c.addEventListener("dragleave", ev => { if (!c.contains(ev.relatedTarget)) marca(false); });
+      c.addEventListener("drop", ev => { marca(false); if (!ev.dataTransfer.files.length) return; ev.preventDefault(); c._subirArte(ev.dataTransfer.files, ""); });
+    }
+
+    // Carpetas: «Padre/Hijo» es una subcarpeta; el orden y las vacías se guardan en el estado del tablero
+    const padreDe = x => (x.includes("/") ? x.slice(0, x.lastIndexOf("/")) : "");
+    const hojaDe = x => x.slice(x.lastIndexOf("/") + 1);
+    const orden = () => ((TB.estado || {}).carpetas_arte || []).filter(x => typeof x === "string" && x.trim());
+    const dentro = (a, cp) => a.carpeta === cp || (a.carpeta || "").startsWith(cp + "/");
+    async function guardarOrden(l) {
+      TB.estado.carpetas_arte = [...new Set(l)];
+      pintarLista();
+      try { await TB.red.actualizarEstado({ carpetas_arte: TB.estado.carpetas_arte }); }
+      catch (err) { aviso(/carpetas_arte/.test(String(err && err.message)) ? "Falta volver a correr tablero.sql para las carpetas del arte." : mensajeError(err), true); }
+    }
+    async function moverArte(lista, cambio) {
+      for (const a of lista) {
+        const c2 = cambio(a);
+        try { await TB.red.actualizarArte(a.id, c2); Object.assign(a, c2); } catch (err) { aviso(/carpeta/.test(String(err && err.message)) ? "Falta volver a correr tablero.sql para las carpetas del arte." : mensajeError(err), true); return; }
+      }
+    }
+    async function nuevaCarpeta(padre) {
+      const n = await pedir(padre ? "Nueva subcarpeta" : "Nueva carpeta", "", { etiqueta: "Nombre" });
+      if (!n || !n.trim()) return;
+      const ruta = (padre ? padre + "/" : "") + n.trim().replace(/\//g, "-");
+      if (ruta.length > 60) { aviso("El nombre completo de la carpeta no puede pasar de 60 letras.", true); return; }
+      if (padre) plegadasArte.delete(padre);
+      guardarOrden(orden().concat([ruta]));
+    }
+    async function renombrar(viejo, nuevo) {
+      if (!nuevo || nuevo === viejo) return;
+      if (nuevo.length > 60) { aviso("El nombre completo de la carpeta no puede pasar de 60 letras.", true); return; }
+      if (nuevo.startsWith(viejo + "/")) { aviso("Una carpeta no puede ir dentro de sí misma.", true); return; }
+      const mover = x => (x === viejo ? nuevo : x.startsWith(viejo + "/") ? nuevo + x.slice(viejo.length) : x);
+      await moverArte(TB.arte.filter(a => dentro(a, viejo)), a => ({ carpeta: mover(a.carpeta) }));
+      await guardarOrden(orden().map(mover).concat([nuevo]));
+    }
+    function menuCarpeta(cp, x, y) {
+      const cont = TB.arte.filter(a => dentro(a, cp));
+      menu(x, y, [
+        { texto: "Añadir subcarpeta", accion: () => nuevaCarpeta(cp) },
+        { texto: "Subir imágenes aquí…", accion: () => { destinoSubida = cp; archivo.click(); } },
+        "-",
+        { texto: "Ordenar de la A a la Z", accion: () => {
+          const hijas = [...new Set(orden().filter(c2 => padreDe(c2) === cp).concat(cont.map(a => a.carpeta).filter(c2 => padreDe(c2) === cp)))].sort((a, b) => a.localeCompare(b));
+          guardarOrden(orden().filter(c2 => padreDe(c2) !== cp).concat(hijas));
+        } },
+        { texto: "Renombrar carpeta", accion: async () => { const n = await pedir("Renombrar carpeta", hojaDe(cp), { etiqueta: "Nombre" }); if (n && n.trim()) renombrar(cp, (padreDe(cp) ? padreDe(cp) + "/" : "") + n.trim().replace(/\//g, "-")); } },
+        { texto: "Eliminar carpeta", accion: async () => {
+          const arriba = padreDe(cp), mover = x => (x === cp ? arriba : x.startsWith(cp + "/") ? (arriba ? arriba + "/" : "") + x.slice(cp.length + 1) : x);
+          await moverArte(cont, a => ({ carpeta: mover(a.carpeta) }));
+          guardarOrden(orden().filter(c2 => c2 !== cp).map(mover).filter(Boolean));
+        } },
+        { texto: "Eliminar la carpeta y su contenido", peligro: true, accion: async () => {
+          if (!(await confirmar("Eliminar la carpeta", `¿Quitar «${hojaDe(cp)}» y sus ${cont.length} ${cont.length === 1 ? "imagen" : "imágenes"} de la biblioteca? Las fichas del tablero que las usan se quedan.`, "Quitar todo"))) return;
+          for (const a of cont) { try { await TB.red.borrarArte(a.id); } catch (err) { aviso(mensajeError(err), true); } }
+          TB.arte = TB.arte.filter(a => !dentro(a, cp));
+          guardarOrden(orden().filter(c2 => !(c2 === cp || c2.startsWith(cp + "/"))));
+        } }
+      ]);
+    }
+    function item(src, nombre, arte) {
+      const it = el(`<div class="tb-lista-item cuadrada" draggable="true" title="Arrastra al tablero"><img src="${esc(src)}" alt="" loading="lazy"><b>${esc(nombre || src.split("/").pop())}</b>${arte ? `<button type="button" class="tb-btn tb-btn-mini" title="Quitar de la biblioteca">✕</button>` : ""}</div>`);
+      it.addEventListener("dragstart", e => { e.dataTransfer.setData("text/tablero-src", src); e.dataTransfer.setData("text/tablero-nombre", nombre || ""); if (arte) e.dataTransfer.setData("text/tablero-arte", arte.id); e.dataTransfer.effectAllowed = "copyMove"; });
       it.addEventListener("click", ev => { if (ev.target.closest("button")) return; TBPaneles.soltarEnTablero({ files: [], getData: k => (k === "text/tablero-src" ? src : k === "text/tablero-nombre" ? nombre || "" : "") }, TB.L.centroVista(), false); });
-      if (borrable) it.querySelector("button").addEventListener("click", async ev => { ev.stopPropagation(); await TB.red.borrarArte(borrable); TB.arte = TB.arte.filter(a => a.id !== borrable); pintarLista(); });
+      if (arte) {
+        const quitar = async () => { await TB.red.borrarArte(arte.id); TB.arte = TB.arte.filter(a => a.id !== arte.id); pintarLista(); };
+        it.querySelector("button").addEventListener("click", ev => { ev.stopPropagation(); quitar(); });
+        it.addEventListener("contextmenu", ev => {
+          ev.preventDefault();
+          menu(ev.clientX, ev.clientY, [
+            { texto: "Cambiar el nombre", accion: async () => { const n = await pedir("Nombre", arte.nombre || ""); if (n === null) return; await moverArte([arte], () => ({ nombre: n.trim().slice(0, 120) })); pintarLista(); } },
+            { texto: "Sacar de la carpeta", apagado: !arte.carpeta, accion: async () => { await moverArte([arte], () => ({ carpeta: "" })); pintarLista(); } },
+            "-",
+            { texto: "Quitar de la biblioteca", peligro: true, accion: quitar }
+          ]);
+        });
+      }
       return it;
     }
     function pintarLista() {
@@ -407,8 +499,53 @@
       if (tipoArte !== "compendio") {
         lista.appendChild(el(`<div class="tb-lista-titulo">▢ Activos cargados</div>`));
         const sub = TB.arte.filter(a => ok(a.nombre));
-        if (!sub.length) lista.appendChild(el(`<p class="tb-lista-vacia">Aún no has subido nada. Usa Cargar o suelta imágenes en el tablero.</p>`));
-        sub.forEach(a => lista.appendChild(item(a.src, a.nombre, a.id)));
+        const ord = orden();
+        const todas = new Set(sub.filter(a => a.carpeta).map(a => a.carpeta).concat(f ? [] : ord));
+        [...todas].forEach(x => { const p = x.split("/"); for (let i = 1; i < p.length; i++) todas.add(p.slice(0, i).join("/")); });
+        if (!sub.length && !todas.size) lista.appendChild(el(`<p class="tb-lista-vacia">Aún no has subido nada. Usa Cargar o suelta aquí las imágenes desde tu carpeta.</p>`));
+        const hijas = padre => [...todas].filter(x => padreDe(x) === padre).sort((a, b) => ((ord.indexOf(a) + 1 || 1e6) - (ord.indexOf(b) + 1 || 1e6)) || hojaDe(a).localeCompare(hojaDe(b)));
+        const pintarCarpeta = (cp, destino) => {
+          const abierta = !plegadasArte.has(cp) || !!f;
+          const t = el(`<div class="tb-lista-carpeta" draggable="true"><i>${abierta ? "−" : "+"}</i>${esc(hojaDe(cp))}<small>${TB.arte.filter(a => dentro(a, cp)).length}</small></div>`);
+          t.addEventListener("click", () => { if (plegadasArte.has(cp)) plegadasArte.delete(cp); else plegadasArte.add(cp); pintarLista(); });
+          t.addEventListener("contextmenu", ev => { ev.preventDefault(); menuCarpeta(cp, ev.clientX, ev.clientY); });
+          t.addEventListener("dragstart", ev => { ev.dataTransfer.setData("text/tablero-carpeta-arte", cp); ev.dataTransfer.effectAllowed = "move"; t.classList.add("arrastrando"); });
+          t.addEventListener("dragend", () => t.classList.remove("arrastrando"));
+          const tipo = ev => { const ts = [...ev.dataTransfer.types]; return ts.includes("Files") ? "archivos" : ts.includes("text/tablero-carpeta-arte") ? "carpeta" : ts.includes("text/tablero-arte") ? "arte" : null; };
+          t.addEventListener("dragover", ev => {
+            const k = tipo(ev);
+            if (!k) return;
+            ev.preventDefault(); ev.stopPropagation();
+            const r = t.getBoundingClientRect(), y = ev.clientY - r.top;
+            const zona = k !== "carpeta" ? "dentro" : y < r.height * 0.3 ? "antes" : y > r.height * 0.7 ? "despues" : "dentro";
+            t.classList.toggle("soltar-antes", zona === "antes"); t.classList.toggle("soltar-despues", zona === "despues"); t.classList.toggle("soltar-dentro", zona === "dentro");
+          });
+          t.addEventListener("dragleave", () => t.classList.remove("soltar-antes", "soltar-despues", "soltar-dentro"));
+          t.addEventListener("drop", async ev => {
+            const zona = t.classList.contains("soltar-antes") ? "antes" : t.classList.contains("soltar-despues") ? "despues" : "dentro";
+            t.classList.remove("soltar-antes", "soltar-despues", "soltar-dentro");
+            ev.preventDefault(); ev.stopPropagation(); lista.classList.remove("soltando");
+            if (ev.dataTransfer.files.length) { subirArte(ev.dataTransfer.files, cp); return; }
+            const idArte = ev.dataTransfer.getData("text/tablero-arte"), movida = ev.dataTransfer.getData("text/tablero-carpeta-arte");
+            if (idArte) { const a = TB.arte.find(x => x.id === idArte); if (a && a.carpeta !== cp) { await moverArte([a], () => ({ carpeta: cp })); plegadasArte.delete(cp); pintarLista(); } return; }
+            if (!movida || movida === cp || cp.startsWith(movida + "/")) return;
+            const destinoPadre = zona === "dentro" ? cp : padreDe(cp);
+            let ruta = movida;
+            if (padreDe(movida) !== destinoPadre) { ruta = (destinoPadre ? destinoPadre + "/" : "") + hojaDe(movida); await renombrar(movida, ruta); }
+            if (zona === "dentro") { plegadasArte.delete(cp); pintarLista(); return; }
+            const hermanas = hijas(destinoPadre).filter(x => x !== ruta);
+            hermanas.splice(hermanas.indexOf(cp) + (zona === "antes" ? 0 : 1), 0, ruta);
+            guardarOrden(orden().filter(x => !hermanas.includes(x)).concat(hermanas));
+          });
+          destino.appendChild(t);
+          if (!abierta) return;
+          const h = el(`<div class="tb-lista-hijos"></div>`);
+          sub.filter(a => a.carpeta === cp).forEach(a => h.appendChild(item(a.src, a.nombre, a)));
+          hijas(cp).forEach(x => pintarCarpeta(x, h));
+          destino.appendChild(h);
+        };
+        hijas("").forEach(cp => pintarCarpeta(cp, lista));
+        sub.filter(a => !a.carpeta).forEach(a => lista.appendChild(item(a.src, a.nombre, a)));
       }
       if (tipoArte !== "subidas") {
         lista.appendChild(el(`<div class="tb-lista-titulo">▢ Del compendio</div>`));

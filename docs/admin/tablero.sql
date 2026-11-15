@@ -46,6 +46,8 @@ alter table tablero_estado add column if not exists pausa boolean not null defau
 alter table tablero_estado add column if not exists gramola jsonb not null default '{}'::jsonb;
 -- Orden de las carpetas del diario (lo elige el DJ arrastrándolas)
 alter table tablero_estado add column if not exists carpetas jsonb not null default '[]'::jsonb;
+-- Orden de las carpetas de la biblioteca de arte
+alter table tablero_estado add column if not exists carpetas_arte jsonb not null default '[]'::jsonb;
 
 insert into tablero_estado (id) values (1) on conflict (id) do nothing;
 
@@ -135,6 +137,8 @@ create table if not exists tablero_arte (
   nombre text not null default '' check (char_length(nombre) <= 120),
   creado timestamptz not null default now()
 );
+-- Carpeta de la biblioteca de arte («Padre/Hijo» es una subcarpeta)
+alter table tablero_arte add column if not exists carpeta text not null default '' check (char_length(carpeta) <= 60);
 
 -- Macros de cada jugador (la barra de macros de abajo)
 create table if not exists tablero_macros (
