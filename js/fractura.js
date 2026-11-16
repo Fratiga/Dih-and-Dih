@@ -166,12 +166,20 @@
     portadaAnim = requestAnimationFrame(paso);
   }
 
+  /* Todas las tropas de un ejército: las de siempre, las propias y las que abre su saber */
+  const tropasDeFac = f => { const fac = FACCIONES[f], l = D.CLASES_BASE.concat(fac.clasesExtra); (window.FracturaSaber ? window.FracturaSaber.posibles(f) : []).forEach(c => { if (!l.includes(c)) l.push(c); }); return l; };
+  const saberQueAbre = (f, cl) => {
+    const SB = window.FracturaSaber; if (!SB || !CLASES[cl].requiere || !CLASES[cl].requiere.saber) return null;
+    for (const r of SB.ramas(f)) for (let i = 0; i < r.escalones.length; i++) if ((r.escalones[i].ef.desbloquea || []).includes(cl)) return `${r.escalones[i].nombre} (${r.nombre} ${["I", "II", "III", "IV", "V", "VI"][i]})`;
+    for (const x of SB.cruces(f)) if ((x.ef.desbloquea || []).includes(cl)) return x.nombre;
+    return null;
+  };
   /* Códice: los trece ejércitos con sus tropas y su héroe, tal como se ven en el mapa */
   function abrirCodice(faccionInicial) {
     const c = $("frCodiceCuerpo");
     const pinta = f => {
       const fac = FACCIONES[f];
-      const clases = D.CLASES_BASE.concat(fac.clasesExtra);
+      const clases = tropasDeFac(f);
       const topeB = fac.naval.barcoMax === undefined ? 3 : fac.naval.barcoMax;
       const barcosCod = D.BARCOS_BASE.concat(fac.naval.barcos || []).filter(cl => CLASES[cl].naval <= topeB);
       c.innerHTML = `<nav class="fr-codice-lista">${Object.keys(FACCIONES).map(k => `<button type="button" class="${k === f ? "sel" : ""}" data-cod="${k}" style="--c:${FACCIONES[k].color}">${figHtml({ faccion: k, clase: "lider", sinAro: true }, 34, 42)}<span>${esc(FACCIONES[k].corto)}</span></button>`).join("")}</nav>
@@ -183,7 +191,7 @@
           <p class="fr-sub">${esc(CURVA_TEXTO[fac.curva] || "")}</p>
           <h4>Tropas</h4>
           <div class="fr-codice-tropas">${clases.concat(["lider"]).map(cl => { const tr = D.tropa(f, cl), k = CLASES[cl]; return `<div class="fr-codice-tropa${fac.clasesExtra.includes(cl) ? " propia" : ""}">${figHtml({ faccion: f, clase: cl }, 64, 78)}<div><strong>${esc(tr.nombre)}</strong><small>${esc(k.rol)}${fac.clasesExtra.includes(cl) ? " · solo este ejército" : ""}</small>
-            <span class="fr-recluta-cifras">${ico("vida")}${k.hp} ${ico("ataque")}${k.atq} ${ico("defensa")}${k.def} ${ico("mov")}${k.mov}${k.alc > 1 ? ` ${ico("alcance")}${k.alc}` : ""}</span><p>${esc(tr.aspecto)}</p><p class="fr-sub">${esc(tr.texto)}</p></div></div>`; }).join("")}</div>
+            <span class="fr-recluta-cifras">${ico("vida")}${k.hp} ${ico("ataque")}${k.atq} ${ico("defensa")}${k.def} ${ico("mov")}${k.mov}${k.alc > 1 ? ` ${ico("alcance")}${k.alc}` : ""}</span><p>${esc(tr.aspecto)}</p><p class="fr-sub">${esc(tr.texto)}${saberQueAbre(f, cl) ? ` Se abre con ${esc(saberQueAbre(f, cl))}.` : ""}</p></div></div>`; }).join("")}</div>
           ${barcosCod.length ? `<h4>Barcos</h4><div class="fr-codice-tropas">${barcosCod.map(cl => { const k = CLASES[cl]; return `<div class="fr-codice-tropa${k.exclusiva ? " propia" : ""}">${figHtml({ faccion: f, clase: cl }, 64, 78)}<div><strong>${esc(k.nombre)}</strong><small>${esc(k.rol)} · pide ${esc(EDIFICIOS[k.requiere.edificio].nombre)}${k.exclusiva ? " · solo este ejército" : ""}</small>
             <span class="fr-recluta-cifras">${ico("vida")}${k.hp} ${ico("ataque")}${k.atq + (fac.naval.barcoAtq || 0)} ${ico("defensa")}${k.def + (fac.naval.barcoDef || 0)} ${ico("mov")}${k.mov + (fac.naval.barcoMov || 0)}${k.alc > 1 ? ` ${ico("alcance")}${k.alc}` : ""}</span><p class="fr-sub">${esc(k.texto)}</p></div></div>`; }).join("")}</div>` : ""}
           <h4>${fac.heroe.length > 1 ? "Héroes (se invoca uno)" : "Héroe"}</h4>
@@ -226,12 +234,12 @@
       const estrella = e ? C.enFila(e).slice().sort((a, b) => b.victorias - a.victorias || a.nacimiento - b.nacimiento)[0] : null;
       return `<article class="fr-ejercito${e ? " fr-fundado" : ""}" style="--c:${fac.color};--b:${fac.bandera};--i:${i}">
         <span class="fr-pendon"></span>
-        <div class="fr-ejercito-ret">${estrella ? retr(estrella, 132, true, f) : retrFaccion(f, 132, true)}</div>
+        <div class="fr-ejercito-ret">${retrFaccion(f, 132, true)}</div>
         <div class="fr-ejercito-cuerpo">
           <h3>${esc(fac.nombre)}</h3>
           <p class="fr-ejercito-titulo">${esc(fac.lider.titulo)} <span class="fr-curva" title="${esc(CURVA_TEXTO[fac.curva] || "")}">${esc(fac.curva)}</span></p>
           <p class="fr-ejercito-resumen">${esc(fac.resumen)}</p>
-          <div class="fr-ejercito-tropas">${D.CLASES_BASE.concat(fac.clasesExtra).map(cl => `<span title="${esc(D.tropa(f, cl).nombre)}">${figHtml({ faccion: f, clase: cl, sinAro: true }, 34, 42)}</span>`).join("")}${fac.heroe.slice(0, 1).map(h => `<span class="heroe" title="Héroe: ${esc(HEROES[h].nombre)}">${figHtml({ faccion: f, clase: "heroe", heroe: h, sinAro: true }, 40, 48)}</span>`).join("")}</div>
+          <div class="fr-ejercito-tropas">${tropasDeFac(f).map(cl => `<span title="${esc(D.tropa(f, cl).nombre)}">${figHtml({ faccion: f, clase: cl, sinAro: true }, 34, 42)}</span>`).join("")}${fac.heroe.slice(0, 1).map(h => `<span class="heroe" title="Héroe: ${esc(HEROES[h].nombre)}">${figHtml({ faccion: f, clase: "heroe", heroe: h, sinAro: true }, 40, 48)}</span>`).join("")}</div>
           <p class="fr-ejercito-ventaja"><strong>Ventaja.</strong> ${esc(fac.ventaja)}</p>
           ${e ? `<p class="fr-ejercito-datos">${esc(e.nombre)} · ${e.guerras} guerra${e.guerras === 1 ? "" : "s"} (${e.ganadas} ganadas) · ${filas} en filas · año ${e.anio}</p>` : ""}
           <div class="fr-fila">${e ? `<button type="button" class="fr-btn fr-btn-principal" data-entrar="${f}">Entrar al cuartel</button>` : `<button type="button" class="fr-btn" data-fundar="${f}">Fundar este ejército</button>`}
@@ -293,8 +301,8 @@ pintarHero();
       <i class="fr-esq"></i><i class="fr-esq"></i><i class="fr-esq"></i><i class="fr-esq"></i>
       <span class="fr-hero-banda"></span>
       <div class="fr-hero-ceniza" aria-hidden="true">${cenizas}</div>
-      <div class="fr-hero-ret">${estrella ? retr(estrella, 170, true) : retrFaccion(ej.faccion, 170, true)}
-        <span>${estrella ? `${esc(nombre(estrella))}, ${estrella.victorias} victoria${estrella.victorias === 1 ? "" : "s"}` : "Sin soldados"}</span></div>
+      <div class="fr-hero-ret">${retrFaccion(ej.faccion, 170, true)}
+        <span>${estrella ? `Su mejor soldado: ${esc(nombre(estrella))}, ${estrella.victorias} victoria${estrella.victorias === 1 ? "" : "s"}` : "Sin soldados"}</span></div>
       <div class="fr-hero-texto">
         <p class="fr-hero-sobre">Año ${ej.anio} de la Fractura</p>
         <h2 class="fr-hero-nombre">${esc(ej.nombre)}</h2>
@@ -494,11 +502,13 @@ pintarHero();
   function pintarFormas(raiz, nb, frentes) {
     const COL = { llanura: "#6f8a44", bosque: "#3f6b3a", montana: "#8a8276", desierto: "#c8a567", agua: "#3f8fa0", magica: "#8a6ac0", huesos: "#a39c8a", vacio: "#0d2a3d" };
     raiz.querySelectorAll("canvas[data-forma], canvas[data-frente]").forEach(cv => {
-      // Una forma se enseña con un mapa de ejemplo; un frente, con su mapa de verdad
+      // Una forma se enseña con un mapa de ejemplo; un frente, con su mapa de verdad; una mesa nueva, con el mapa que tendrá
       const fr = cv.dataset.frente ? (frentes || []).find(f => f.clave === cv.dataset.frente) : null;
       if (cv.dataset.frente && !fr) return;
-      const clave = fr ? `f:${fr.clave}` : `${cv.dataset.forma}:${nb}`;
+      const mm = cv.dataset.mesaMapa ? cv.dataset : null;
+      const clave = fr ? `f:${fr.clave}` : mm ? `m:${mm.tipo}:${mm.forma}:${mm.para}:${mm.tamano}` : `${cv.dataset.forma}:${nb}`;
       let m = miniFormas.get(clave);
+      if (!m && mm) { m = window.FracturaMapa.generarMapa(77, mm.tipo, { bandos: +mm.para, forma: mm.forma, tamano: mm.tamano }); miniFormas.set(clave, m); }
       if (!m) { m = fr ? window.FracturaMapa.generarMapa(fr.semilla, fr.tipo, { bandos: fr.mapaPara || fr.bandos, forma: fr.forma, tamano: fr.tamano }) : window.FracturaMapa.generarMapa(77, "reinos", { bandos: nb, forma: cv.dataset.forma }); miniFormas.set(clave, m); }
       const g = cv.getContext("2d"), k = Math.min(cv.width / m.ancho, cv.height / m.alto), ox = (cv.width - m.ancho * k) / 2, oy = (cv.height - m.alto * k) / 2;
       g.fillStyle = COL.vacio; g.fillRect(0, 0, cv.width, cv.height);
@@ -2144,22 +2154,47 @@ pintarHero();
     return h >= 1 ? `le quedan ${h} h` : `le quedan ${Math.max(1, Math.floor(ms / 60000))} min`;
   };
 
+  /* Una mesa dibujada: el tapete ovalado, las sillas alrededor con el estandarte de cada ejército y lo que hay en juego en el centro.
+     sillas: [{ faccion, nombre, sub, clase (listo, espera, vacio, ia, turno, gano, perdio, yo), apuestas }] */
+  function ovaloMesa(sillas, centro, extra) {
+    const n = Math.max(2, sillas.length), giro = n % 2 ? 0 : Math.PI / n;
+    const html = sillas.map((a, i) => {
+      const ang = Math.PI / 2 + giro + (2 * Math.PI * i) / n;
+      const x = 50 + Math.cos(ang) * 42, y = 50 + Math.sin(ang) * 40;
+      const fac = a.faccion && FACCIONES[a.faccion];
+      return `<div class="fr-asiento ${a.clase || ""}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;--c:${fac ? fac.color : "#5a4e44"};--b:${fac ? fac.bandera : "#2a2420"}" title="${esc(a.titulo || [a.nombre, a.sub].filter(Boolean).join(" · "))}">
+        ${fac ? `<span class="fr-asiento-ban"></span>${retLider(a.faccion, 44, "fr-asiento-ret")}` : `<span class="fr-asiento-hueco">${a.clase && a.clase.includes("ia") ? "⚙" : "+"}</span>`}
+        <b>${esc(a.nombre || "")}</b>${a.sub ? `<small>${esc(a.sub)}</small>` : ""}${a.apuestas ? `<em class="fr-asiento-ap" title="Cartas que apuesta">${a.apuestas}</em>` : ""}</div>`;
+    }).join("");
+    return `<div class="fr-ovalo${extra ? ` ${extra}` : ""}"><div class="fr-pano">${centro || ""}</div>${html}</div>`;
+  }
+  /* Las cartas apostadas, en abanico sobre el tapete */
+  const naipes = cartas => {
+    if (!cartas.length) return `<em class="fr-pano-nada">Sin apuestas</em>`;
+    const vis = cartas.slice(0, 9), m = (vis.length - 1) / 2;
+    return `<span class="fr-naipes">${vis.map((c, i) => `<i class="fr-naipe r-${esc(c.rareza)}" style="transform:rotate(${((i - m) * 9).toFixed(0)}deg) translateY(${(Math.abs(i - m) * 2).toFixed(0)}px)" title="${esc(c.nombre)} · ${esc(RAREZA_NOMBRE[c.rareza] || c.rareza)}"></i>`).join("")}</span>
+      <small>${cartas.length} carta${cartas.length === 1 ? "" : "s"} en juego${cartas.length > vis.length ? ` (se ven ${vis.length})` : ""}</small>`;
+  };
+  const ESTADO_MESA = { abierta: "Abierta", activa: "En guerra", terminada: "Terminada", cancelada: "Cerrada", disputa: "En disputa" };
+
   function tarjetaMesa(m) {
     const cfg = m.config || {}, yo = miUid;
     const TM = window.FracturaMapa.TAMANO_MAPA, para = Math.max(cfg.plazas || 2, cfg.mapaPara || 0);
     const med = window.FracturaMapa.medidas(para, cfg.tamano || "normal", D.FORMAS_MAPA[cfg.forma] && D.FORMAS_MAPA[cfg.forma].maritimo);
-    const lugar = `${TIPOS_FRACTURA[cfg.tipo] ? TIPOS_FRACTURA[cfg.tipo].nombre : "Lugar al azar"} · ${D.FORMAS_MAPA[cfg.forma] ? D.FORMAS_MAPA[cfg.forma].nombre : "Continente"} · ${cfg.plazas} jugadores · mapa ${(TM[cfg.tamano] || TM.normal).nombre.toLowerCase()} para ${para} (${med.w}×${med.h})`;
-    const conApuesta = m.asientos.some(a => a.apuesta && a.apuesta.length);
+    const lugar = `${TIPOS_FRACTURA[cfg.tipo] ? TIPOS_FRACTURA[cfg.tipo].nombre : "Lugar al azar"} · ${D.FORMAS_MAPA[cfg.forma] ? D.FORMAS_MAPA[cfg.forma].nombre : "Continente"}`;
+    const mapaTxt = `${cfg.plazas} jugadores · mapa ${(TM[cfg.tamano] || TM.normal).nombre.toLowerCase()} para ${para} (${med.w}×${med.h})`;
+    const todas = m.asientos.reduce((l, a) => l.concat(a.apuesta || []), []);
+    const cab = `<header><h4>${esc(m.nombre)}</h4><span class="fr-mesa-estado e-${m.estado}">${ESTADO_MESA[m.estado] || m.estado}</span></header>`;
+    const pie = extra => `<p class="fr-mesa-datos">${esc(lugar)}<br>${esc(mapaTxt)}${cfg.equipos ? " · dos equipos" : ""}${extra || ""}</p>`;
     if (m.estado === "abierta") {
       const soyAnfitrion = m.anfitrion === yo, miAsiento = m.asientos.find(a => a.user === yo);
       const libres = cfg.plazas - m.asientos.length;
       const faltan = m.asientos.filter(a => a.user !== m.anfitrion && !a.listo).length;
       const puedeEmpezar = soyAnfitrion && m.asientos.length >= 2 && !faltan;
-      const asientos = m.asientos.map(a => `<li class="fr-silla ${a.listo || a.user === m.anfitrion ? "listo" : ""}" style="--c:${FACCIONES[a.faccion] ? FACCIONES[a.faccion].color : "#8f8498"};--b:${FACCIONES[a.faccion] ? FACCIONES[a.faccion].bandera : "#3a2f25"}">
-          <span class="fr-silla-estandarte"></span>${retLider(a.faccion, 46, "fr-silla-ret")}
-          <span class="fr-mesa-quien"><b>${esc(a.nombre)}</b><small>${esc(nombreFaccion(a.faccion))}${a.user === m.anfitrion ? " · abrió la mesa" : a.listo ? " · listo" : " · aún no está listo"}</small></span>
-          <span class="fr-mesa-apuesta">${chipsApuesta(a.apuesta)}</span></li>`).join("")
-        + Array.from({ length: Math.max(0, libres) }, () => `<li class="fr-silla vacio"><span class="fr-silla-hueco">+</span><span class="fr-mesa-quien"><b>Plaza libre</b><small>${cfg.ia ? "si nadie la ocupa, la juega la máquina" : "esperando a alguien"}</small></span></li>`).join("");
+      const sillas = m.asientos.map(a => ({ faccion: a.faccion, nombre: a.nombre, apuestas: (a.apuesta || []).length,
+        sub: a.user === m.anfitrion ? "abrió la mesa" : a.listo ? "listo" : "pensándolo",
+        clase: `${a.user === m.anfitrion || a.listo ? "listo" : "espera"}${a.user === yo ? " yo" : ""}` }))
+        .concat(Array.from({ length: Math.max(0, libres) }, () => ({ nombre: cfg.ia ? "La máquina" : "Libre", sub: cfg.ia ? "si nadie se sienta" : "", clase: cfg.ia ? "vacio ia" : "vacio" })));
       let acciones = "";
       if (!miAsiento) acciones = libres > 0 ? `<button type="button" class="fr-btn fr-btn-chico fr-btn-principal" data-mesa-acc="sentar" data-id="${m.id}">Sentarme con ${esc(ej.nombre)}</button>` : `<span class="fr-pill">Llena</span>`;
       else {
@@ -2169,33 +2204,37 @@ pintarHero();
             : `<button type="button" class="fr-btn fr-btn-chico fr-btn-listo${miAsiento.listo ? " si" : ""}" aria-pressed="${miAsiento.listo ? "true" : "false"}" data-mesa-acc="${miAsiento.listo ? "nolisto" : "listo"}" data-id="${m.id}">${miAsiento.listo ? "✔ Listo" : "Listo"}</button>`)
           + `<button type="button" class="fr-btn fr-btn-chico fr-btn-peligro" data-mesa-acc="salir" data-id="${m.id}">${soyAnfitrion ? "Cerrar la mesa" : "Levantarme"}</button>`;
       }
-      return `<article class="fr-mesa abierta${miAsiento ? " mia" : ""}">
-        <header><h4>${esc(m.nombre)}</h4><p>${esc(lugar)} · ${cfg.plazas} plazas${cfg.equipos ? " · dos equipos" : ""}${cfg.ia ? " · la máquina ocupa las libres" : ""} · ${cfg.horas || 48} h por turno${m.privada ? " · por invitación" : ""}</p></header>
-        <div class="fr-tapete"><ul class="fr-mesa-asientos">${asientos}</ul>
-          <div class="fr-pozo"><b>En juego</b>${m.asientos.some(a => a.apuesta && a.apuesta.length) ? m.asientos.filter(a => a.apuesta && a.apuesta.length).map(a => `<span class="fr-pozo-fila"><small>${esc(a.nombre)}</small>${chipsApuesta(a.apuesta)}</span>`).join("") : `<em class="fr-ap-nada">Nadie apuesta todavía.</em>`}</div></div>
-        ${miAsiento && !soyAnfitrion && !miAsiento.listo ? `<p class="fr-sub">Mira lo que apuesta cada uno antes de marcar Listo. Si alguien cambia su apuesta, hay que volver a marcarlo.</p>` : ""}
-        ${miAsiento && miAsiento.faccion !== ej.faccion ? `<p class="fr-sub">Estás sentado con ${esc(nombreFaccion(miAsiento.faccion))}. La guerra la jugarás desde ese ejército.</p>` : ""}
-        <div class="fr-fila">${acciones}</div></article>`;
+      const aviso2 = miAsiento && !soyAnfitrion && !miAsiento.listo ? "<br>Mira lo que apuesta cada uno antes de marcar Listo." : miAsiento && miAsiento.faccion !== ej.faccion ? `<br>Te sentaste con ${esc(nombreFaccion(miAsiento.faccion))}.` : "";
+      return `<article class="fr-mesa abierta${miAsiento ? " mia" : ""}">${cab}
+        ${ovaloMesa(sillas, `${naipes(todas)}<small>${libres > 0 ? `${libres} silla${libres === 1 ? "" : "s"} libre${libres === 1 ? "" : "s"}` : "Mesa completa"}</small>`)}
+        ${pie(` · ${cfg.horas || 48} h por turno${m.privada ? " · por invitación" : ""}${aviso2}`)}
+        <div class="fr-fila fr-mesa-acciones">${acciones}</div></article>`;
     }
     const humanos = cfg.humanos || [], miIdx = humanos.indexOf(yo);
-    const nombreDe = i => { const a = m.asientos.find(x => x.user === humanos[i]); return a ? a.nombre : m.bandos && m.bandos[i] ? `la máquina (${nombreFaccion(m.bandos[i].faccion)})` : "?"; };
-    const bandos = (m.bandos || []).map((b, i) => `<i data-ret-lider="${esc(b.faccion)}" style="--c:${FACCIONES[b.faccion] ? FACCIONES[b.faccion].color : "#8f8498"}" class="${humanos[i] ? "" : "ia"}${m.estado === "activa" && m.activo === i ? " activo" : ""}" title="${esc(humanos[i] ? nombreDe(i) : "La máquina")}">${retLider(b.faccion, 26)}${esc(nombreFaccion(b.faccion))}</i>`).join("");
-    const pozo = conApuesta ? `<div class="fr-mesa-pozo">${m.asientos.filter(a => a.apuesta && a.apuesta.length).map(a => `<span><b>${esc(a.nombre)}</b> ${chipsApuesta(a.apuesta)}</span>`).join("")}</div>` : "";
+    const asientoDe = i => m.asientos.find(x => x.user === humanos[i]);
+    const nombreDe = i => { const a = asientoDe(i); return a ? a.nombre : m.bandos && m.bandos[i] ? `la máquina (${nombreFaccion(m.bandos[i].faccion)})` : "?"; };
+    const gan = m.ganadores === "empate" || !m.ganadores ? [] : String(m.ganadores).split(",").map(Number);
+    const sillasDe = fin => (m.bandos || []).map((b, i) => {
+      const a = asientoDe(i);
+      let clase = a ? "" : "ia";
+      if (!fin && m.activo === i) clase += " turno";
+      if (fin && m.estado === "terminada") clase += gan.includes(i) ? " gano" : gan.length ? " perdio" : "";
+      if (i === miIdx) clase += " yo";
+      return { faccion: b.faccion, nombre: a ? a.nombre : "Máquina", sub: nombreFaccion(b.faccion), clase, apuestas: a ? (a.apuesta || []).length : 0 };
+    });
     if (m.estado === "activa") {
       const mio = miIdx >= 0 && m.activo === miIdx, cerrada = (ej.mesasCerradas || []).includes(m.id), reportada = m.reportes && Object.keys(m.reportes).length;
-      return `<article class="fr-mesa activa${mio ? " turno" : ""}">
-        <header><h4>${esc(m.nombre)}</h4><p>${esc(lugar)} · ${m.turnos} turno${m.turnos === 1 ? "" : "s"} jugado${m.turnos === 1 ? "" : "s"}</p></header>
-        <div class="fr-mesa-bandos">${bandos}</div>${pozo}
-        <p class="fr-sub">${reportada ? "La guerra terminó para alguno de los jugadores. Falta que los demás lo confirmen." : mio ? "Es tu turno." : `Turno de ${esc(nombreDe(m.activo))}: ${esc(plazoTexto(m.limite))}.`}</p>
-        <div class="fr-fila"><button type="button" class="fr-btn fr-btn-chico ${mio ? "fr-btn-principal" : ""}" data-mesa-acc="abrir" data-id="${m.id}">${cerrada ? "Ver cómo va" : mio ? "Jugar mi turno" : "Abrir"}</button></div></article>`;
+      const centro = `<strong>Turno ${m.turnos + 1}</strong><small>${reportada ? "Falta confirmar el final" : mio ? "Te toca a ti" : `Juega ${esc(nombreDe(m.activo))}`}</small>${todas.length ? naipes(todas) : ""}${!mio && !reportada ? `<small>${esc(plazoTexto(m.limite))}</small>` : ""}`;
+      return `<article class="fr-mesa activa${mio ? " turno" : ""}">${cab}${ovaloMesa(sillasDe(false), centro)}${pie()}
+        <div class="fr-fila fr-mesa-acciones"><button type="button" class="fr-btn fr-btn-chico ${mio ? "fr-btn-principal" : ""}" data-mesa-acc="abrir" data-id="${m.id}">${cerrada ? "Ver cómo va" : mio ? "Jugar mi turno" : "Abrir"}</button></div></article>`;
     }
-    const gan = m.ganadores === "empate" || !m.ganadores ? [] : m.ganadores.split(",").map(Number);
-    const texto = m.estado === "disputa" ? "Los avisos del final no coinciden. Lo resuelve el admin y las cartas siguen guardadas hasta entonces."
-      : m.estado === "cancelada" ? "La mesa se cerró antes de empezar."
-        : !gan.length ? "Tablas. Cada uno recupera sus cartas." : `Gan${gan.length > 1 ? "an" : "a"} ${gan.map(nombreDe).join(" y ")}.`;
-    return `<article class="fr-mesa fin ${m.estado === "disputa" ? "disputa" : gan.includes(miIdx) ? "gano" : gan.length ? "perdio" : ""}">
-      <header><h4>${esc(m.nombre)}</h4><p>${esc(lugar)}</p></header>
-      ${bandos ? `<div class="fr-mesa-bandos">${bandos}</div>` : ""}${pozo}<p class="fr-sub">${esc(texto)}${m.razon && m.estado === "terminada" ? ` ${esc(m.razon)}` : ""}</p></article>`;
+    const texto = m.estado === "disputa" ? "Los avisos del final no coinciden. Lo resuelve el admin y las cartas siguen guardadas."
+      : m.estado === "cancelada" ? "Se cerró antes de empezar."
+        : !gan.length ? "Tablas. Cada uno recupera sus cartas." : `Gan${gan.length > 1 ? "an" : "a"} ${gan.map(nombreDe).join(" y ")}`;
+    const sillas = (m.bandos || []).length ? sillasDe(true) : m.asientos.map(a => ({ faccion: a.faccion, nombre: a.nombre, sub: nombreFaccion(a.faccion) }));
+    return `<article class="fr-mesa fin ${m.estado === "disputa" ? "disputa" : gan.includes(miIdx) ? "gano" : gan.length && miIdx >= 0 ? "perdio" : ""}">${cab}
+      ${ovaloMesa(sillas, `${gan.length ? `<span class="fr-pano-corona">♛</span>` : ""}<strong>${esc(texto)}</strong>${todas.length ? naipes(todas) : ""}`, "chico")}
+      ${pie(m.razon && m.estado === "terminada" ? `<br>${esc(m.razon)}` : "")}</article>`;
   }
 
   async function vistaDuelos(v, primera) {
@@ -2209,51 +2248,61 @@ pintarHero();
     catch (e) { v.innerHTML = `<p class="fr-vacio">No se pudieron leer las mesas. Falta correr docs/fractura-3_frentes_y_mesas.sql en Supabase. (${esc(e.message || e)})</p>`; return; }
     if (pestana !== "duelos" || $("frCuartel").classList.contains("hidden")) return;   // cambió de pestaña mientras cargaba
     mesasVistas = mesas;
+    pintarSalon(v, mesas, jugadores);
+    // Mientras haya una mesa abierta en la que estoy sentado, la lista se refresca sola
+    if (mesas.some(m => m.estado === "abierta" && m.mia)) mesasTimer = setInterval(() => {
+      if (pestana !== "duelos" || $("frCuartel").classList.contains("hidden") || document.querySelector("dialog[open]") || document.activeElement && document.activeElement.matches("input, select")) return;
+      vistaDuelos($("frVista"));
+    }, 12000);
+  }
+  let ultimosJugadores = [];
+  function pintarSalon(v, mesas, jugadores) {
+    if (jugadores) ultimosJugadores = jugadores;
     const fac = FACCIONES[ej.faccion], n = mesaNueva;
     if (!(n.plazas >= 4 && n.plazas % 2 === 0)) n.equipos = false;
-    const seg = (k, valores, etiqueta) => `<div class="fr-segmentos">${valores.map(x => `<button type="button" class="fr-opcion${n[k] === x ? " sel" : ""}" data-mn="${k}" data-v="${x}">${etiqueta ? etiqueta(x) : x}</button>`).join("")}</div>`;
-    const sino = (k, si, no) => `<div class="fr-segmentos"><button type="button" class="fr-opcion${!n[k] ? " sel" : ""}" data-mn="${k}" data-v="0">${no}</button><button type="button" class="fr-opcion${n[k] ? " sel" : ""}" data-mn="${k}" data-v="1">${si}</button></div>`;
+    if (!(n.mapaPara >= n.plazas)) n.mapaPara = n.plazas;
+    const seg = (k, valores, etiqueta) => `<div class="fr-segmentos fr-seg-fila">${valores.map(x => `<button type="button" class="fr-opcion${n[k] === x ? " sel" : ""}" data-mn="${k}" data-v="${x}">${etiqueta ? etiqueta(x) : x}</button>`).join("")}</div>`;
+    const sino = (k, si, no) => `<div class="fr-segmentos fr-seg-fila"><button type="button" class="fr-opcion${!n[k] ? " sel" : ""}" data-mn="${k}" data-v="0">${no}</button><button type="button" class="fr-opcion${n[k] ? " sel" : ""}" data-mn="${k}" data-v="1">${si}</button></div>`;
+    const maritimo = D.FORMAS_MAPA[n.forma] && D.FORMAS_MAPA[n.forma].maritimo;
+    const med = window.FracturaMapa.medidas(n.mapaPara, n.tamano, maritimo);
+    // La mesa nueva tal como quedará: tu silla y las demás vacías (o de la máquina)
+    const sillas = [{ faccion: ej.faccion, nombre: ej.nombre, sub: "tú", clase: "listo yo" }]
+      .concat(Array.from({ length: n.plazas - 1 }, (x, i) => ({ nombre: n.ia ? "La máquina" : "Libre", sub: n.ia ? DIFICULTADES[n.dificultad].nombre.toLowerCase() : "", clase: n.ia ? "vacio ia" : "vacio", titulo: n.equipos ? `Equipo ${(i + 1) % 2 ? "rival" : "tuyo"}` : "" })));
+    const centro = `<canvas class="fr-pano-mapa" data-mesa-mapa="1" data-tipo="${esc(n.tipo)}" data-forma="${esc(n.tipo === "horizonte" ? "continente" : n.forma)}" data-para="${n.mapaPara}" data-tamano="${esc(n.tamano)}" width="180" height="104"></canvas>
+      <small>${esc(TIPOS_FRACTURA[n.tipo].nombre)} · ${esc(D.FORMAS_MAPA[n.forma].nombre)}<br>${med.w}×${med.h} casillas${n.mapaPara > n.plazas ? `, para ${n.mapaPara}` : ""}</small>`;
     const grupos = [["Te toca", mesas.filter(m => m.estado === "activa" && m.mia && (m.config.humanos || []).indexOf(miUid) === m.activo)],
       ["Mesas abiertas", mesas.filter(m => m.estado === "abierta")],
       ["En curso", mesas.filter(m => m.estado === "activa" && !((m.config.humanos || []).indexOf(miUid) === m.activo))],
       ["En disputa", mesas.filter(m => m.estado === "disputa")],
       ["Terminadas", mesas.filter(m => m.estado === "terminada" || m.estado === "cancelada").slice(0, 6)]];
     v.innerHTML = `
-      <p class="fr-sub">De 2 a 8 jugadores, cada uno con su ejército y su contingente. Si alguien cae, cae de verdad. Cada jugador puede apostar las cartas que quiera, o ninguna: las apuestas no tienen que ser iguales. Quien gana se lleva las de los que pierden.</p>
-      <div class="fr-preparar">
-        <div class="fr-prep-col">
-          <section class="fr-reto" style="--c:${fac.color};--b:${fac.bandera}">
-            <span class="fr-pendon"></span>
-            <h3 class="fr-h3">Abrir una mesa</h3>
-            <p class="fr-sub">Te sientas con ${esc(ej.nombre)} y tu contingente actual (${(ajustesGuerra.ids || []).length} soldados; se cambia en la pestaña Guerra).</p>
-            <label class="fr-campo">Nombre de la mesa<input type="text" class="fr-entrada" data-mesa="nombre" maxlength="60" placeholder="Mesa de ${esc(fac.corto)}" value="${esc(n.nombre)}"></label>
-            <div class="fr-mision-bloque"><h4 class="fr-h4">Plazas</h4>${seg("plazas", [2, 3, 4, 5, 6, 7, 8])}
-              ${n.plazas >= 4 && n.plazas % 2 === 0 ? sino("equipos", "Dos equipos", "Todos contra todos") : ""}</div>
-            <div class="fr-mision-bloque"><h4 class="fr-h4">Mapa</h4>${seg("tamano", Object.keys(window.FracturaMapa.TAMANO_MAPA), x => window.FracturaMapa.TAMANO_MAPA[x].nombre)}
-              <div class="fr-mapa-para"><span>Para</span>${seg("mapaPara", [2, 3, 4, 5, 6, 7, 8].filter(x => x >= n.plazas))}<span>bandos</span></div>
-              <p class="fr-sub">${(() => { const m = window.FracturaMapa.medidas(Math.max(n.plazas, n.mapaPara), n.tamano, D.FORMAS_MAPA[n.forma] && D.FORMAS_MAPA[n.forma].maritimo); return `${m.w} por ${m.h} casillas${n.mapaPara > n.plazas ? ". Las capitales que sobran quedan como ciudades libres." : "."}`; })()}</p></div>
-            <div class="fr-mision-bloque"><h4 class="fr-h4">Plazas que no ocupe nadie</h4>${sino("ia", "Las juega la máquina", "Se quedan vacías")}
-              ${n.ia ? seg("dificultad", Object.keys(DIFICULTADES), x => DIFICULTADES[x].nombre) : ""}</div>
-            <label class="fr-campo">Lugar de la Fractura<select data-mesa="tipo">${Object.keys(TIPOS_FRACTURA).map(t => `<option value="${t}"${n.tipo === t ? " selected" : ""}>${esc(TIPOS_FRACTURA[t].nombre)}</option>`).join("")}</select></label>
-            <label class="fr-campo">Forma del mapa<select data-mesa="forma">${Object.keys(D.FORMAS_MAPA).map(f => `<option value="${f}"${n.forma === f ? " selected" : ""}>${esc(D.FORMAS_MAPA[f].nombre)}${D.FORMAS_MAPA[f].maritimo ? " (de mar)" : ""}</option>`).join("")}</select></label>
-            <div class="fr-mision-bloque"><h4 class="fr-h4">Plazo para jugar cada turno</h4>${seg("horas", [24, 48, 72], x => `${x} h`)}
-              <p class="fr-sub">Si a alguien se le pasa el plazo, cualquier otro jugador puede pedir que ese turno lo juegue la máquina.</p></div>
-            <div class="fr-mision-bloque"><h4 class="fr-h4">Quién puede sentarse</h4>${sino("privada", "Solo quien yo invite", "Cualquiera")}
-              ${n.privada ? `<div class="fr-invitados">${jugadores.map(j => `<button type="button" class="fr-opcion${n.invitados.includes(j.user_id) ? " sel" : ""}" data-mn-invita="${j.user_id}">${esc(j.username)}</button>`).join("") || `<p class="fr-sub">No hay más jugadores con cuenta.</p>`}</div>` : ""}</div>
-            <button type="button" class="fr-empezar" data-mesa-crear><span>Abrir la mesa</span><small>${esc(fac.corto)} · ${n.plazas} plazas · las apuestas se ponen después</small></button>
-          </section>
+      <p class="fr-sub">De 2 a 8 jugadores, cada uno con su ejército y su contingente. Si alguien cae, cae de verdad. Cada jugador apuesta las cartas que quiera, o ninguna. Quien gana se lleva las de los que pierden.</p>
+      <section class="fr-mesa-nueva" style="--c:${fac.color};--b:${fac.bandera}">
+        <div class="fr-mn-vista">
+          <h3 class="fr-h3">Abrir una mesa</h3>
+          ${ovaloMesa(sillas, centro, "grande")}
+          <input type="text" class="fr-entrada" data-mesa="nombre" maxlength="60" placeholder="Mesa de ${esc(fac.corto)}" value="${esc(n.nombre)}" aria-label="Nombre de la mesa">
+          <button type="button" class="fr-empezar" data-mesa-crear><span>Abrir la mesa</span><small>Con ${esc(ej.nombre)} y ${(ajustesGuerra.ids || []).length} soldados · las apuestas se ponen después</small></button>
         </div>
-        <aside class="fr-duelos-lista">
-          <div class="fr-seccion-cab"><h3 class="fr-h3">Mesas</h3><button type="button" class="fr-btn fr-btn-chico" data-mesa-acc="refrescar">Actualizar</button></div>
-          ${grupos.filter(g => g[1].length).map(g => `<h4 class="fr-h4">${g[0]}</h4>${g[1].map(tarjetaMesa).join("")}`).join("") || `<p class="fr-vacio">No hay ninguna mesa. Abre una.</p>`}
-        </aside>
-      </div>`;
+        <div class="fr-mn-controles">
+          <span>Sillas</span>${seg("plazas", [2, 3, 4, 5, 6, 7, 8])}
+          ${n.plazas >= 4 && n.plazas % 2 === 0 ? `<span>Bandos</span>${sino("equipos", "Dos equipos", "Todos contra todos")}` : ""}
+          <span>Mapa</span>${seg("tamano", Object.keys(window.FracturaMapa.TAMANO_MAPA), x => window.FracturaMapa.TAMANO_MAPA[x].nombre)}
+          <span>Hecho para</span>${seg("mapaPara", [2, 3, 4, 5, 6, 7, 8].filter(x => x >= n.plazas))}
+          <span>Lugar</span><div class="fr-mn-dos"><select data-mesa="tipo" aria-label="Lugar de la Fractura">${Object.keys(TIPOS_FRACTURA).map(t => `<option value="${t}"${n.tipo === t ? " selected" : ""}>${esc(TIPOS_FRACTURA[t].nombre)}</option>`).join("")}</select>
+            <select data-mesa="forma" aria-label="Forma del mapa">${Object.keys(D.FORMAS_MAPA).map(f => `<option value="${f}"${n.forma === f ? " selected" : ""}>${esc(D.FORMAS_MAPA[f].nombre)}${D.FORMAS_MAPA[f].maritimo ? " (de mar)" : ""}</option>`).join("")}</select></div>
+          <span>Sillas vacías</span>${sino("ia", "Las juega la máquina", "Se quedan vacías")}
+          ${n.ia ? `<span>Máquina</span>${seg("dificultad", Object.keys(DIFICULTADES), x => DIFICULTADES[x].nombre)}` : ""}
+          <span>Cada turno</span>${seg("horas", [24, 48, 72], x => `${x} h`)}
+          <span>Quién entra</span>${sino("privada", "Solo invitados", "Cualquiera")}
+          ${n.privada ? `<span>Invitados</span><div class="fr-invitados">${ultimosJugadores.map(j => `<button type="button" class="fr-opcion${n.invitados.includes(j.user_id) ? " sel" : ""}" data-mn-invita="${j.user_id}">${esc(j.username)}</button>`).join("") || `<p class="fr-sub">No hay más jugadores con cuenta.</p>`}</div>` : ""}
+          <p class="fr-sub fr-mn-nota">Si a alguien se le pasa el plazo, cualquier otro jugador puede pedir que ese turno lo juegue la máquina.</p>
+        </div>
+      </section>
+      <div class="fr-seccion-cab"><h3 class="fr-h3">Mesas</h3><button type="button" class="fr-btn fr-btn-chico" data-mesa-acc="refrescar">Actualizar</button></div>
+      ${grupos.filter(g => g[1].length).map(g => `<h4 class="fr-h4">${g[0]} <small>${g[1].length}</small></h4><div class="fr-mesas-grid${g[0] === "Terminadas" ? " chicas" : ""}">${g[1].map(tarjetaMesa).join("")}</div>`).join("") || `<p class="fr-vacio">No hay ninguna mesa. Abre una.</p>`}`;
     pintarRetratos(v);
-    // Mientras haya una mesa abierta en la que estoy sentado, la lista se refresca sola
-    if (mesas.some(m => m.estado === "abierta" && m.mia)) mesasTimer = setInterval(() => {
-      if (pestana !== "duelos" || $("frCuartel").classList.contains("hidden") || document.querySelector("dialog[open]") || document.activeElement && document.activeElement.matches("input, select")) return;
-      vistaDuelos($("frVista"));
-    }, 12000);
+    pintarFormas(v);
   }
 
   /* Elegir qué cartas apostar: las libres del jugador más las que ya tiene puestas en esta mesa */
@@ -2291,7 +2340,7 @@ pintarHero();
   }
 
   $("frVista").addEventListener("input", ev => { const i = ev.target.closest('[data-mesa="nombre"]'); if (i) mesaNueva.nombre = i.value; });
-  $("frVista").addEventListener("change", ev => { const s = ev.target.closest("select[data-mesa]"); if (s) mesaNueva[s.dataset.mesa] = s.value; });
+  $("frVista").addEventListener("change", ev => { const s = ev.target.closest("select[data-mesa]"); if (s) { mesaNueva[s.dataset.mesa] = s.value; pintarSalon($("frVista"), mesasVistas); } });
   $("frVista").addEventListener("click", async ev => {
     const t = ev.target;
     const mn = t.closest("[data-mn]"), inv = t.closest("[data-mn-invita]"), crear = t.closest("[data-mesa-crear]"), acc = t.closest("[data-mesa-acc]");
@@ -2300,12 +2349,12 @@ pintarHero();
       const k = mn.dataset.mn, x = mn.dataset.v;
       mesaNueva[k] = k === "plazas" || k === "horas" || k === "mapaPara" ? +x : k === "dificultad" || k === "tamano" ? x : x === "1";
       if (mesaNueva.mapaPara < mesaNueva.plazas) mesaNueva.mapaPara = mesaNueva.plazas;
-      son("clic"); vistaDuelos($("frVista")); return;
+      son("clic"); pintarSalon($("frVista"), mesasVistas); return;
     }
     if (inv) {
       const id = inv.dataset.mnInvita, i = mesaNueva.invitados.indexOf(id);
       if (i >= 0) mesaNueva.invitados.splice(i, 1); else mesaNueva.invitados.push(id);
-      son("clic"); vistaDuelos($("frVista")); return;
+      son("clic"); pintarSalon($("frVista"), mesasVistas); return;
     }
     const boton = crear || acc;
     if (boton.dataset.razon) { aviso(boton.dataset.razon, true); son("error"); return; }

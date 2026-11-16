@@ -219,6 +219,8 @@ window.FracturaFiguras = (function () {
       disco(c, K, o.piel || "#c8a080", 0.5, -31, 4.6);
       poli(c, K, pel, [[-4.8, -31.6], [-4.8, -35.2], [-1.4, -37], [3.6, -36.6], [5.2, -33.8], [3, -34.8], [-2, -34.8]]);
       poli(c, K, pel, [[-1.2, -28.8], [5.2, -29.2], [4, -25.4], [0.4, -25]]);
+      poli(c, K, pel, [[-4.4, -32.6], [-3.2, -32.6], [-1, -28.6], [-2.6, -28]]);
+      poli(c, K, pel, [[1.8, -29.6], [5.4, -29.8], [5.2, -28.8], [2, -28.8]]);
       trazo(c, K, "#0d0b0e", 0.7, -4.6, -34.2, 5, -31.2);
       poli(c, K, "#0d0b0e", [[2.4, -33.6], [5.2, -33.4], [5, -31.2], [2.4, -31.4]]);
       ojoL(c, K, 0.2, -32.4, o.ojo || "#cfe0ff");
@@ -894,6 +896,67 @@ window.FracturaFiguras = (function () {
       alaMembrana(c, K, "#5a48a0", 0, -20, 12, 7, ab);
     }
   };
+  /* Bestias y máquinas que van solas (tropas propias de algunos ejércitos) */
+  Object.assign(MONTURA, {
+    aguila(c, K) {
+      const ab = aleteo(K), pluma = "#6a4a2c";
+      alaPlumas(c, K, oscuro(pluma, 0.2), 0, -20, 18, 1 - ab);
+      poli(c, K, pluma, [[-7, -18], [-15, -15], [-14, -20]]);
+      elipse(c, K, pluma, 0, -19, 8, 4.8);
+      disco(c, K, "#efe6cf", 7, -23, 3.6);
+      poli(c, K, "#e3bb4e", [[9.6, -24], [14, -22.4], [9.6, -21.4]]);
+      ojoL(c, K, 8, -24, "#ffd27a");
+      alaPlumas(c, K, pluma, 1, -19, 18, ab);
+      trazo(c, K, "#3a3530", 1, -1, -15, -2, -11); trazo(c, K, "#3a3530", 1, 2, -15, 2, -11);
+    },
+    tortuga(c, K) {
+      const p = K.mov ? Math.sin(K.fase) * 1.4 : 0;
+      [[-9, p], [-3, -p], [5, p], [10, -p]].forEach(([x, d]) => elipse(c, K, "#5a7a52", x + d * 0.4, -2.2, 2.6, 2));
+      elipse(c, K, "#5a7a52", 15, -7, 4, 3);
+      ojoL(c, K, 16.6, -8, "#ffd27a");
+      c.fillStyle = F(K, metal(K, "#4a6a3a", -14, -22, 14, -4)); c.beginPath(); c.ellipse(0, -6, 14, 9, 0, Math.PI, 0); c.closePath(); c.fill();
+      for (let i = -2; i <= 2; i++) arco(c, K, "#2f4a2a", 0.7, i * 5, -7, 2.6, Math.PI, 0);
+      poli(c, K, "#8a6a44", [[-7, -14], [7, -14], [6, -21], [-6, -21]]);
+      poli(c, K, "#6a4e30", [[-8, -21], [8, -21], [7, -23], [-7, -23]]);
+      trazo(c, K, "#5a3e24", 0.9, 0, -23, 0, -31); poli(c, K, K.col, [[0, -31], [6, -29.4], [0, -27.6]]);
+      disco(c, K, NEGRO, -3, -17.4, 0.9); disco(c, K, NEGRO, 3, -17.4, 0.9);
+    },
+    carro(c, K) {
+      const giro = K.mov ? K.fase * 2 : 0;
+      [[-8, 4.4], [7, 4.4]].forEach(([x, r]) => { disco(c, K, "#2a2a2e", x, -r, r); for (let k = 0; k < 4; k++) { const a = giro + k * Math.PI / 4; trazo(c, K, "#8a8e94", 0.6, x - Math.cos(a) * r, -r - Math.sin(a) * r, x + Math.cos(a) * r, -r + Math.sin(a) * r); } });
+      poli(c, K, metal(K, "#6a6e74", -12, -18, 12, -6), [[-12, -7], [12, -7], [11, -15], [-10, -15]]);
+      elipse(c, K, metal(K, "#a0623c", -10, -24, -2, -14), -5, -18, 5, 5.4);
+      trazo(c, K, "#3a3530", 2.4, -7, -22, -8, -28);
+      trazo(c, K, "#2a2a2e", 3, 8, -13, 17, -15);
+      poli(c, K, K.col, [[-12, -10], [12, -10], [12, -9], [-12, -9]]);
+      const a0 = c.globalAlpha; c.globalAlpha = a0 * 0.4; disco(c, K, "#cfcfcf", -8.6, -30, 2); disco(c, K, "#cfcfcf", -10, -33.4, 2.6); c.globalAlpha = a0;
+    },
+    escorpion(c, K) {
+      [[-7, 3.4], [6, 3.4]].forEach(([x, r]) => { disco(c, K, MADERA, x, -r, r); disco(c, K, "#2a1a0c", x, -r, r * 0.35); });
+      poli(c, K, "#7a5634", [[-11, -6], [11, -6], [10, -9], [-10, -9]]);
+      trazo(c, K, "#6a4a2c", 1.6, -4, -9, 2, -16);
+      trazo(c, K, "#5a3e24", 2.2, -10, -15, 14, -17);
+      c.strokeStyle = F(K, "#6a4a2c"); c.lineWidth = 1.6; c.beginPath(); c.moveTo(4, -26); c.quadraticCurveTo(-2, -16, 4, -6); c.stroke();
+      trazo(c, K, "#d9d1bb", 0.5, 4, -26, -8, -16); trazo(c, K, "#d9d1bb", 0.5, 4, -6, -8, -16);
+      poli(c, K, "#cfd6dc", [[14, -17], [18, -17.2], [14, -15.6]]);
+      poli(c, K, K.col, [[-11, -9], [-6, -9], [-6, -7.6], [-11, -7.6]]);
+    }
+  });
+  /* Las tropas propias nuevas (una más por ejército) */
+  const UNICAS = {
+    heraldo: R("tunica", "capacete", "maza", { estandarte: true, tam: 1.02 }),
+    golem: R("mole", "vacia", "maza", { c: { metal: "#7a7088" }, k: { metal: "#8a8098", ojo: "#c79bff" }, a: { tronco: true, color: "#6a6080" }, tam: 1.32 }),
+    coloso: R("huesos", "calavera", "maza", { a: { tronco: true, color: HUESO }, k: { ojo: "#9af27a" }, tam: 1.42 }),
+    cobrador: R("jubon", "plumas", "maza", { k: { pluma: true } }),
+    halconero: R("cuero", "sombreroAla", "nada", { c: { cuero: "#4a3e30" }, halcon: true }),
+    inquisidor: R("abrigo", "sombreroAla", "maza", { c: { tela: "#8a1f1f" }, k: { tela: "#1a1418", ojo: "#fff0b0" } }),
+    sicario: R("abrigo", "bufanda", "daga", { c: { tela: "#141218" }, k: { ojo: "#ffd27a" }, agachado: true }),
+    aguila: { solo: "aguila", vuela: true, tam: 1.5 },
+    tortuga: { solo: "tortuga", tam: 1.45 },
+    zapadora: R("insecto", "hormiga", "pinzas", { c: { quitina: "#8a6a3a" }, k: { quitina: "#8a6a3a" }, tam: 1.08 }),
+    carro: { solo: "carro", tam: 1.35 },
+    escorpion: { solo: "escorpion", tam: 1.3 }
+  };
   /* Qué montura lleva cada tropa de cada ejército */
   const MONTA = {
     "caballeros-del-reino": { jinete: ["caballo", { col: "#7a5634" }], caballero: ["caballo", { col: "#5a4636", barda: "@col" }], jinete_alado: ["grifo", {}] },
@@ -937,6 +1000,7 @@ window.FracturaFiguras = (function () {
     if (q.clase === "salvaje") return E("bestia", {});
     if (q.clase === "eco") return E("eco", {});
     if (q.clase === "kirin") return HEROE.kirin || E("kirin", { tam: 1.1 });
+    if (UNICAS[q.clase]) return UNICAS[q.clase];
     const fid = D.faccionReal(q.faccion), f = RECETAS[fid] || RECETAS["caballeros-del-reino"];
     const montada = recetaMontada(f, fid, q.clase);
     if (montada) return montada;
@@ -1000,6 +1064,7 @@ window.FracturaFiguras = (function () {
         c.strokeStyle = F(K, claro(r.penacho, 0.35)); c.lineWidth = 0.8; c.beginPath(); c.moveTo(-1, -43); c.quadraticCurveTo(-7, -47.6, -10.6, -41.6); c.stroke();
       }
       if (r.manoOro) halo(c, K, "#ffd24a", -7.4, -17, 2.4);
+      if (r.halcon) { elipse(c, K, "#6a4a2c", 9, -27, 2.6, 1.8, -0.3); disco(c, K, "#efe6cf", 11, -28.6, 1.2); poli(c, K, "#e3bb4e", [[12, -29], [13.6, -28.4], [12, -28]]); poli(c, K, oscuro("#6a4a2c", 0.2), [[8, -27], [4, -31 + Math.sin(K.t * 6)], [7, -26]]); }
       if (r.cadenas) { c.strokeStyle = F(K, "#6d7178"); c.lineWidth = 1.2; c.setLineDash([1.6, 1.4]); c.beginPath(); c.moveTo(-7, -24); c.quadraticCurveTo(-13, -14, -10, -4); c.moveTo(5, -16); c.quadraticCurveTo(10, -9, 7, -3); c.stroke(); c.setLineDash([]); }
       if (r.llamas || r.ceniza) { const a = c.globalAlpha; for (let i = 0; i < 4; i++) { const f = (K.t * 0.9 + i * 0.27) % 1; c.globalAlpha = a * (1 - f) * 0.8; disco(c, K, r.llamas ? (i % 2 ? "#ffb03a" : "#ff6a2a") : "#b8b0a8", -4 + i * 2.8 + Math.sin(K.t * 3 + i) * 1.2, (r.llamas ? -38 : -28) - f * 12, r.llamas ? 1.8 - f : 1); } c.globalAlpha = a; }
       if (montado) { c.restore(); trazo(c, K, K.pierna || "#2a2430", 2.2, 1, -montado + 1, 2.4, -montado + 7.4); }

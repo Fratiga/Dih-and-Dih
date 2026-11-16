@@ -534,3 +534,64 @@ body.fr-pantalla-completa:not(.fr-en-guerra):not(.fr-en-portada) .fr-contenido {
 .fr-esperando span::before { content: ""; display: inline-block; width: .8em; height: .8em; margin-right: .5em; vertical-align: -.1em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: frGira .8s linear infinite; }
 @keyframes frGira { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .fr-esperando span::before { animation: none; opacity: .6; } }
+
+/* =================== Mesas como mesas: tapete ovalado, sillas con estandarte y lo apostado en el centro =================== */
+.fr-mesas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 16px; margin: 6px 0 18px; }
+.fr-mesas-grid.chicas { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.fr-h4 small { color: #8f8498; font-weight: 400; margin-left: 4px; }
+article.fr-mesa { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px 12px; background: var(--fr-tinta); border: 1px solid var(--fr-filete); }
+article.fr-mesa.turno, article.fr-mesa.mia { border-color: var(--accent); }
+article.fr-mesa.gano { border-color: #4a8a5a; }
+article.fr-mesa.perdio { border-color: #7a3a32; }
+article.fr-mesa header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+article.fr-mesa header h4 { margin: 0; font-size: 1rem; color: var(--fr-marfil); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fr-mesa-estado { flex: none; font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; padding: 2px 7px; border: 1px solid var(--fr-filete); color: #b8a99c; }
+.fr-mesa-estado.e-abierta { color: #9fd8a8; border-color: #3f6a48; }
+.fr-mesa-estado.e-activa { color: #f0cf6a; border-color: #6a5420; }
+.fr-mesa-estado.e-disputa { color: #ff9a7a; border-color: #7a3a32; }
+.fr-mesa-datos { margin: 0; font-size: .76rem; line-height: 1.45; color: #b8a99c; text-align: center; }
+.fr-mesa-acciones { justify-content: center; flex-wrap: wrap; }
+
+.fr-ovalo { position: relative; width: 100%; max-width: 560px; aspect-ratio: 16 / 11; margin: 30px auto 34px; }
+.fr-ovalo.chico { aspect-ratio: 16 / 10; }
+.fr-pano { position: absolute; inset: 14% 11%; border-radius: 50%; background: #1d3f31; border: 8px solid #4a3020; outline: 1px solid #2a1a10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 4% 14%; text-align: center; color: #e9e2cf; }
+.fr-pano::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; border: 1px solid rgba(233, 226, 207, .14); pointer-events: none; }
+.fr-pano strong { font-size: .84rem; line-height: 1.25; }
+.fr-pano small { font-size: .68rem; color: #c8d8c8; line-height: 1.3; }
+.fr-pano-nada { font-size: .72rem; color: #9ab0a0; }
+.fr-pano-corona { color: #f0cf6a; font-size: 1.3rem; line-height: 1; }
+.fr-pano-mapa { width: min(180px, 82%); height: auto; border: 1px solid #0e2018; }
+.fr-naipes { display: flex; justify-content: center; align-items: flex-end; height: 34px; padding: 0 10px; }
+.fr-naipe { display: inline-block; width: 20px; height: 29px; margin: 0 -3px; background: #cfc8b8; border: 2px solid #f4efe2; outline: 1px solid #0a0806; transform-origin: 50% 100%; }
+.fr-naipe.r-infrecuente { background: #4f8a4a; }
+.fr-naipe.r-rara { background: #3f6ab0; }
+.fr-naipe.r-legendaria { background: #c08a2a; }
+.fr-naipe.r-limitada { background: #8a4ab0; }
+
+.fr-asiento { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; width: 86px; text-align: center; z-index: 1; }
+.fr-asiento .fr-asiento-ret { display: block; width: 44px; height: auto; border: 2px solid var(--c); background: #120e16; }
+.fr-asiento-ban { position: absolute; top: -8px; left: calc(50% + 14px); width: 9px; height: 18px; background: var(--c); border-bottom: 3px solid var(--b); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%); }
+.fr-asiento b { display: block; max-width: 86px; margin-top: 3px; padding: 1px 5px; font-size: .7rem; font-weight: 600; color: var(--fr-marfil); background: #0f0c12; border-left: 3px solid var(--c); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fr-asiento small { display: block; max-width: 86px; font-size: .62rem; color: #b8a99c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fr-asiento-hueco { display: grid; place-items: center; width: 44px; height: 54px; border: 2px dashed #5a4e44; color: #8f8498; font-size: 1.2rem; background: rgba(15, 12, 18, .6); }
+.fr-asiento.ia .fr-asiento-hueco { border-style: solid; border-color: #4a4458; }
+.fr-asiento.listo b::after { content: " ✔"; color: var(--fr-ok); }
+.fr-asiento.espera .fr-asiento-ret { opacity: .75; }
+.fr-asiento.turno .fr-asiento-ret { outline: 2px solid #f0cf6a; outline-offset: 2px; }
+.fr-asiento.yo b { color: #f0cf6a; }
+.fr-asiento.perdio { opacity: .5; }
+.fr-asiento.gano::before { content: "♛"; position: absolute; top: -20px; color: #f0cf6a; font-size: 15px; }
+.fr-asiento-ap { position: absolute; top: -6px; right: 14px; min-width: 16px; padding: 0 4px; font-style: normal; font-size: .62rem; font-weight: 700; color: #1a1208; background: #c9a24a; }
+
+.fr-mesa-nueva { display: grid; grid-template-columns: minmax(300px, 1.1fr) minmax(280px, 1fr); gap: 22px; padding: 14px 18px 18px; margin: 10px 0 22px; background: var(--fr-tinta); border: 1px solid var(--fr-filete); border-left: 4px solid var(--c); }
+.fr-mn-vista { display: flex; flex-direction: column; gap: 8px; }
+.fr-mn-vista .fr-h3 { margin: 0; }
+.fr-ovalo.grande { margin: 34px 0 40px; }
+.fr-mn-controles { display: grid; grid-template-columns: 104px 1fr; gap: 8px 12px; align-items: center; align-content: start; }
+.fr-mn-controles > span { font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: #b8a99c; }
+.fr-seg-fila { display: flex; flex-wrap: wrap; gap: 4px; }
+.fr-seg-fila .fr-opcion { flex: 1 1 auto; min-width: 36px; padding: 6px 8px; font-size: .8rem; }
+.fr-mn-dos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.fr-mn-nota { grid-column: 1 / -1; margin: 2px 0 0; }
+@media (max-width: 760px) { .fr-mesa-nueva { grid-template-columns: 1fr; } .fr-mn-controles { grid-template-columns: 1fr; } }
+.fr-mn-dos select { width: 100%; min-width: 0; }

@@ -136,6 +136,7 @@
       }
       if (d <= 1 && w !== u && w.clase === "paladin") a.def += 1;
       if (d <= 1 && w !== u && w.clase === "capo") a.atq += 1;
+      if (d <= 1 && w !== u && CLASES[w.clase].auraAtq1) a.atq += CLASES[w.clase].auraAtq1;
       if (w !== u && w.heroe) { const he = HEROES[w.heroe].ef; a.atq += he.auraAtq2 || 0; if (d <= 1) a.def += he.auraDef1 || 0; }
       if (w !== u && w.s && u.s && w.s.capitan && w.s.compania && w.s.compania === u.s.compania) a.def += 1;
     }
@@ -626,7 +627,7 @@
       const c = ciudadEn(est, u.x, u.y);
       if (c && c.dueno === j) { cura += 3 + ((jug.sabEf || VACIO).curaCiudad || 0); if (c.edificios.includes("fortaleza")) cura += 2; }
       else if (casilla(est, u.x, u.y).est === "fortaleza" && est.fortalezasDueno[est.fortalezas.findIndex(p => p.x === u.x && p.y === u.y)] === j) cura += 2;
-      cura += e.cura || 0;
+      cura += (e.cura || 0) + (CLASES[u.clase].regenera || 0);
       // Los barcos se reparan junto a un muelle propio
       if (esBarco(u) && ciudadesDe(est, j).some(q => q.edificios.includes("muelle") && dist(q, u) <= 2)) cura += 3;
       if (consagradaPara(est, j, u.x, u.y)) cura += 1;
@@ -828,7 +829,7 @@
     // Ventajas por tipo de tropa (piqueros contra jinetes, tiradores contra voladores...) y lo aprendido
     const tiposD = tiposDe(d), seA = sab(est, a.dueno), Hh = a.heroe ? HEROES[a.heroe].ef : null;
     tiposD.forEach(tp => { A += ((clA.contra || {})[tp] || 0) + ((seA.contra || {})[tp] || 0) + ((Hh && Hh.contraHeroe && Hh.contraHeroe[tp]) || 0); });
-    if (seA.atqCiudad && enCiudadOFortaleza(est, d)) A += seA.atqCiudad;
+    if ((seA.atqCiudad || clA.atqCiudad) && enCiudadOFortaleza(est, d)) A += (seA.atqCiudad || 0) + (clA.atqCiudad || 0);
     if (Hh && Hh.atqSolo && solo) A += Hh.atqSolo;
     if (sa && sa.spec === "duelista" && solo) A += 2;
     if (sa && sa.spec === "rompelineas" && (enCiudadOFortaleza(est, d) || ED.def >= 3)) A += 2;
@@ -877,7 +878,12 @@
     const murio = dmg > 0 ? aplicarDano(est, d, dmg, a) : false;
     const jug = a.dueno >= 0 ? est.jugadores[a.dueno] : null;
     // Daño en área de los arcanistas
-    if (a.clase === "arcanista" || a.clase === "archimago" || a.clase === "eco") {
+    // El Cobrador se lleva oro del dueño del herido
+    if (CLASES[a.clase].roba && dmg > 0 && jug && d.dueno >= 0 && d.dueno !== a.dueno) {
+      const rob = Math.min(CLASES[a.clase].roba, est.jugadores[d.dueno].recursos.oro);
+      if (rob > 0) { est.jugadores[d.dueno].recursos.oro -= rob; jug.recursos.oro += rob; reg(est, `${nombreUnidad(a)} cobra ${rob} de oro a ${est.jugadores[d.dueno].nombre}.`, "combate"); }
+    }
+    if (a.clase === "arcanista" || a.clase === "archimago" || a.clase === "eco" || CLASES[a.clase].area) {
       const frac = (jug && (jug.sabEf || VACIO).area) || 0.5;
       const vec = [];
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
@@ -893,7 +899,7 @@
       if (w && hostil(est, w.dueno, a.dueno) && est.unidades[w.uid]) { const sp = Math.max(1, Math.floor(dmg * 0.75)); est.ev.push({ k: "golpe", de: a.uid, a: w.uid, x: w.x, y: w.y, dmg: sp, dist: 0, arma: "salpica" }); if (!aplicarDano(est, w, sp, a)) w.efectos.clavado = true; }
       if (est.unidades[d.uid] && a.heroe) d.efectos.clavado = true;
     }
-    const sinResp = a.heroe && HEROES[a.heroe].ef.sinRespuesta;
+    const sinResp = (a.heroe && HEROES[a.heroe].ef.sinRespuesta) || CLASES[a.clase].sinRespuesta;
     if (!sinRetorno && !sinResp && !murio && est.unidades[d.uid] && distancia <= ef(est, d).alc && est.unidades[a.uid] && CLASES[d.clase].atq > 1 && !razonAgua(est, d, a)) {
       const r = Math.max(1, Math.ceil(calcularDano(est, d, a, duelo || undefined) * 0.6));
       reg(est, `${nombreUnidad(d)} responde por ${r}.`, "combate");
