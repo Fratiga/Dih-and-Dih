@@ -129,6 +129,19 @@ window.FracturaRed = (function () {
     if (!s) return [];
     try { return (await pvpRpc("fractura_frentes_cobrados", {})) || []; } catch (e) { return []; }
   }
+  /* Cobrados, intentos gastados en cada frente y cartas de frentes de hoy (tope 2) */
+  async function frentesEstado() {
+    const s = await sesion();
+    if (!s) return { cobrados: [], intentos: {}, hoy: 0, sinSesion: true };
+    try { const r = await pvpRpc("fractura_frentes_estado", {}); return { cobrados: r.cobrados || [], intentos: r.intentos || {}, hoy: r.hoy || 0 }; }
+    catch (e) { return { cobrados: await frentesCobrados(), intentos: {}, hoy: 0 }; }
+  }
+  /* Al empezar un frente: el servidor dice si esta vez puede dar carta y gasta el intento */
+  async function frenteEmpezar(clave) {
+    const s = await sesion();
+    if (!s) return { premio: false, motivo: "sesion" };
+    try { return await pvpRpc("fractura_frente_empezar", { p_clave: clave }); } catch (e) { return { premio: false, motivo: "error", error: e.message }; }
+  }
 
   /* --- Mesas: guerras de 2 a 8 jugadores, con apuestas (docs/fractura-3_frentes_y_mesas.sql) --- */
   const mesasLista = () => pvpRpc("fractura_mesas_lista", {});
@@ -155,6 +168,6 @@ window.FracturaRed = (function () {
     return data;
   }
 
-  return { frentesCobrados, mesasLista, mesaCrear, mesaUnirse, mesaSalir, mesaApostar, mesaListo, mesaEmpezar, mesaTurno, mesaTerminar, misCartas, mesaGet, mesaPulso,
+  return { frentesCobrados, frentesEstado, frenteEmpezar, mesasLista, mesaCrear, mesaUnirse, mesaSalir, mesaApostar, mesaListo, mesaEmpezar, mesaTurno, mesaTerminar, misCartas, mesaGet, mesaPulso,
     pvpJugadores, pvpListar, pvpGet, pvpRetar, pvpResponder, pvpTurno, pvpTerminar, pvpRendirse, listarEjercitos, guardarEjercito, borrarEjercito, guardarGuerra, cargarGuerra, borrarGuerra, registrarGuerra, pedirPremio, historiaDelMundo, sesion };
 })();

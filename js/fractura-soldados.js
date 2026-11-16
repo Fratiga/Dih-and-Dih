@@ -104,10 +104,13 @@
   /* Probabilidad de quedar con 1 de vida en vez de morir (una vez por guerra) */
   const probVoluntad = s => limitar((s.stats.VOL - 4) * 0.07, 0, 0.5);
 
-  function apodoPara(r, s, tipo) {
+  /* usados: los apodos que ya lleva alguien del mismo ejército, para no repetirlos */
+  function apodoPara(r, s, tipo, usados) {
     const lista = APODOS[tipo];
     if (!lista) return null;
-    return elegir(r, lista)[s.sexo === "f" ? 1 : 0];
+    const libres = usados ? lista.filter(par => !usados.has(par[0]) && !usados.has(par[1])) : lista;
+    if (!libres.length) return null;
+    return elegir(r, libres)[s.sexo === "f" ? 1 : 0];
   }
 
   const parentescoEntre = (a, b) => {

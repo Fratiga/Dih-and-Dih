@@ -444,6 +444,8 @@ const CABEZA2 = {
   },
   fedora(c, S, o) {
     const t = o.tela || "#1d1b24";
+    // melena larga por detrás (Ottavia)
+    if (o.melena) relleno(c, "M96 112 C70 170 72 250 90 310 L124 300 C112 246 112 190 118 140 Z M204 112 C230 170 228 250 210 310 L176 300 C188 246 188 190 182 140 Z", cuero(c, 70, 112, 230, 310, o.melena), "#050304", 2);
     // cuello del abrigo subido
     relleno(c, "M92 250 L112 178 L150 214 L188 178 L208 250 Q150 270 92 250 Z", cuero(c, 92, 178, 208, 266, cla(t, 0.08)), "#050407", 2);
     sombraCara(c, S, o, 126);
@@ -526,7 +528,7 @@ const CABEZA2 = {
   },
   bestia(c, S, o) {
     const p = o.pelo || "#4a3626";
-    c.strokeStyle = "#e8e0cb"; c.lineWidth = 12; c.lineCap = "round"; c.beginPath(); c.moveTo(110, 96); c.quadraticCurveTo(44, 84, 40, 22); c.moveTo(190, 96); c.quadraticCurveTo(256, 84, 260, 22); c.stroke();
+    c.strokeStyle = o.cuerno || "#e8e0cb"; c.lineWidth = 12; c.lineCap = "round"; c.beginPath(); c.moveTo(110, 96); c.quadraticCurveTo(44, 84, 40, 22); c.moveTo(190, 96); c.quadraticCurveTo(256, 84, 260, 22); c.stroke();
     c.strokeStyle = "rgba(0,0,0,.25)"; c.lineWidth = 3; c.beginPath(); c.moveTo(112, 100); c.quadraticCurveTo(50, 90, 44, 30); c.stroke();
     relleno(c, "M84 150 C80 88 116 62 150 62 C184 62 220 88 216 150 C214 206 186 252 150 262 C114 252 86 206 84 150 Z", cuero(c, 80, 62, 220, 262, p), "#050304", 2.5);
     c.fillStyle = cla(p, 0.14); for (let i = 0; i < 9; i++) { const x = 106 + i * 11; c.beginPath(); c.moveTo(x, 70 + Math.abs(i - 4) * 3); c.lineTo(x + 5, 96 + Math.abs(i - 4) * 3); c.lineTo(x + 10, 70 + Math.abs(i - 4) * 3); c.fill(); }
@@ -596,6 +598,55 @@ const CABEZA2 = {
     relleno(c, "M84 150 L60 196 L98 176 Z M216 150 L240 196 L202 176 Z", metal(c, 60, 150, 240, 196, osc(m, 0.1)), "#0a0806", 1.8);
     filo(c, "M108 132 Q108 76 148 64", "rgba(255,244,214,.42)", 1.6);
   },
+  /* Necrófago: cráneo alargado y calvo, orejas en punta, ojos hundidos y una boca ancha llena de agujas */
+  necrofago(c, S, o) {
+    const carne = o.carne || "#8f9a90";
+    if (o.capucha) relleno(c, "M70 250 C60 150 90 60 150 40 C210 60 240 150 230 250 L204 250 C210 170 192 108 150 96 C108 108 90 170 96 250 Z", cuero(c, 60, 40, 240, 250, o.capucha), "#050407", 2.2);
+    relleno(c, "M106 140 L58 104 L98 170 Z", metal(c, 58, 104, 106, 170, carne), "#0b0d09", 1.8);
+    relleno(c, "M194 140 L242 104 L202 170 Z", metal(c, 194, 104, 242, 170, carne), "#0b0d09", 1.8);
+    relleno(c, "M104 160 C98 78 120 42 150 40 C180 42 202 78 196 160 C194 210 178 240 150 248 C122 240 106 210 104 160 Z", metal(c, 98, 40, 202, 248, carne), "#0b0d09", 2.5);
+    linea(c, "rgba(40,60,50,.5)", 1.4, 130, 66, 136, 108); linea(c, "rgba(40,60,50,.5)", 1.4, 170, 62, 164, 102);
+    relleno(c, "M114 140 Q130 122 146 142 Q130 162 114 150 Z M186 140 Q170 122 154 142 Q170 162 186 150 Z", "#030205");
+    ojo(S, 131, 143, 7, 5, o.ojo || "#d8f25a"); ojo(S, 169, 143, 7, 5, o.ojo || "#d8f25a");
+    relleno(c, "M146 166 L141 184 L159 184 L154 166 Z", "#1a1a14");
+    relleno(c, "M112 198 Q150 184 188 198 Q178 228 150 232 Q122 228 112 198 Z", "#030205");
+    c.fillStyle = "#e0d8c2";
+    for (let i = 0; i < 9; i++) { const x = 118 + i * 7.6; c.beginPath(); c.moveTo(x, 197); c.lineTo(x + 3, 210); c.lineTo(x + 6, 197); c.fill(); }
+    for (let i = 0; i < 8; i++) { const x = 122 + i * 7.4; c.beginPath(); c.moveTo(x, 226); c.lineTo(x + 3, 215); c.lineTo(x + 6, 226); c.fill(); }
+    linea(c, "rgba(0,0,0,.35)", 2, 112, 176, 126, 196); linea(c, "rgba(0,0,0,.35)", 2, 188, 176, 174, 196);
+  },
+  /* Genichiro: hocico de cocodrilo rojo y escamoso, barba, y el sombrero de paja tapándole la mirada */
+  cocodrilo(c, S, o) {
+    const piel = o.piel || "#a8322a", pp = o.paja || "#c9a964";
+    relleno(c, "M96 150 C92 104 118 86 150 86 C182 86 208 104 204 150 L190 250 Q150 284 110 250 Z", metal(c, 92, 86, 208, 280, piel), "#160505", 2.5);
+    for (let r = 0; r < 6; r++) for (let k = -3; k <= 3; k++) { const x = 150 + k * 16 + (r % 2) * 8, y = 160 + r * 17; if (Math.abs(x - 150) > 46 - r * 3) continue; c.strokeStyle = "rgba(40,8,6,.45)"; c.lineWidth = 1.2; c.beginPath(); c.arc(x, y, 7, 0.2, Math.PI - 0.2); c.stroke(); }
+    [[136, 182], [164, 182], [140, 206], [160, 206]].forEach(p => disco(c, osc(piel, 0.35), p[0], p[1], 3.4));
+    c.fillStyle = "#efe6d0";
+    for (let i = 0; i < 5; i++) [[110 + i * 3, 196 + i * 11, -1], [190 - i * 3, 196 + i * 11, 1]].forEach(([x, y, l]) => { c.beginPath(); c.moveTo(x, y); c.lineTo(x - l * 6, y + 5); c.lineTo(x, y + 8); c.fill(); });
+    disco(c, "#2a0806", 142, 256, 3); disco(c, "#2a0806", 158, 256, 3);
+    relleno(c, "M118 252 C130 262 170 262 182 252 C184 290 168 322 150 338 C132 322 116 290 118 252 Z", cuero(c, 116, 250, 184, 338, o.barba || "#2a2420"), "#050304", 2);
+    for (let i = 0; i < 5; i++) linea(c, "rgba(255,255,255,.12)", 1, 128 + i * 11, 264, 134 + i * 8, 320);
+    relleno(c, "M62 156 Q150 144 238 156 L232 180 Q150 170 68 180 Z", "rgba(0,0,0,.55)", null);
+    ojo(S, 128, 166, 7, 2, o.ojo || "#ffcf3a"); ojo(S, 172, 166, 7, 2, o.ojo || "#ffcf3a");
+    relleno(c, "M12 162 L150 50 L288 162 Q150 138 12 162 Z", metal(c, 12, 50, 288, 164, pp), "#1a1408", 2.5);
+    c.strokeStyle = "rgba(60,40,10,.4)"; c.lineWidth = 1.2; for (let i = 0; i < 9; i++) { c.beginPath(); c.moveTo(150, 52); c.lineTo(30 + i * 30, 158 - Math.abs(i - 4) * 2); c.stroke(); }
+    disco(c, osc(pp, 0.4), 150, 52, 5);
+  },
+  /* Reinhardt: pelo rojo corto, barba corta, una cicatriz y un parche en el ojo */
+  general(c, S, o) {
+    const piel = o.cara || "#c8a080", pelo = o.pelo || "#a8401e";
+    relleno(c, "M104 150 C94 146 92 170 106 176 Z M196 150 C206 146 208 170 194 176 Z", piel, "#1a0c06", 1.4);
+    relleno(c, "M104 132 C104 100 196 100 196 132 L194 190 C190 226 172 246 150 250 C128 246 110 226 106 190 Z", cuero(c, 104, 100, 196, 250, piel), "#1a0c06", 2);
+    relleno(c, "M100 142 C96 84 124 62 150 62 C176 62 204 84 200 142 C192 112 174 100 150 100 C126 100 108 112 100 142 Z", cuero(c, 96, 62, 204, 142, pelo), "#1a0804", 2);
+    linea(c, osc(pelo, 0.2), 4, 118, 136, 142, 140); linea(c, osc(pelo, 0.2), 4, 158, 140, 182, 134);
+    relleno(c, "M120 148 Q131 142 142 150 Q131 156 120 152 Z", "#0a0705"); ojo(S, 131, 150, 5, 2.2, o.ojo || "#cfe0ff");
+    linea(c, "#0d0b0e", 3, 100, 118, 202, 166);
+    relleno(c, "M154 140 Q170 134 186 142 L184 162 Q170 168 156 162 Z", "#0d0b0e", "#000", 1.2);
+    linea(c, osc(piel, 0.45), 2, 150, 152, 146, 184);
+    linea(c, "rgba(120,40,30,.6)", 2, 176, 172, 186, 196);
+    relleno(c, "M108 188 C118 214 132 226 150 228 C168 226 182 214 192 188 L196 200 C192 238 172 258 150 262 C128 258 108 238 104 200 Z", cuero(c, 104, 188, 196, 262, pelo), "#1a0804", 1.6);
+    relleno(c, "M132 206 Q150 200 168 206 Q150 214 132 206 Z", osc(pelo, 0.3));
+  },
   zombi(c, S, o) {
     const carne = o.carne || "#7d8a72", hueso = "#d6cdb4";
     relleno(c, "M98 150 C96 92 122 70 150 70 C178 70 204 92 202 150 C202 196 184 232 150 242 C116 232 98 196 98 150 Z", metal(c, 96, 70, 204, 242, carne), "#0b0d09", 2.5);
@@ -608,6 +659,10 @@ const CABEZA2 = {
     c.fillStyle = hueso; for (let i = 0; i < 6; i++) c.fillRect(128 + i * 8, 200 + Math.abs(i - 2.5) * 0.8, 5.4, o.colmillos && (i === 1 || i === 4) ? 16 : 8);
     linea(c, "#0b0d09", 1.8, 112, 170, 132, 190); for (let i = 0; i < 4; i++) linea(c, "#0b0d09", 1.3, 114 + i * 5, 176 + i * 4.6, 119 + i * 5, 171 + i * 4.6);
     if (o.grillete) { relleno(c, "M104 232 L196 232 L198 256 L102 256 Z", metal(c, 102, 232, 198, 256, "#5d5f66"), "#08080a", 2); disco(c, "#2a2c30", 150, 244, 6); }
+    if (o.yelmo) {
+      relleno(c, "M88 116 Q150 52 212 116 L226 126 Q150 106 74 126 Z", metal(c, 74, 56, 226, 128, "#6a5040"), "#120a06", 2.2);
+      [[116, 96], [168, 84], [190, 108]].forEach(p => disco(c, "rgba(120,60,30,.6)", p[0], p[1], 5));
+    }
   },
   capirote(c, S, o) {
     const t = o.tela || "#14121a";
@@ -688,8 +743,8 @@ const VIS = {
     paladin: T("vacia", "placas", { acero: "#6b6f8a", pesado: true, grupo: "arcano" }), picaro: T("mascaraLisa", "tunica", { tela: "#2a2440", grupo: "arcano" })
   },
   "trono-de-ceniza": {
-    guerrero: T("zombi", "harapos", { grupo: "cripta" }), cazador: T("zombi", "harapos", { colmillos: true, carne: "#8a927a", grupo: "cripta" }), arcanista: T("capirote", "tunica", { tela: "#14121a", grupo: "cripta" }),
-    paladin: T("cosido", "piel", { piel: "#5a6652", grupo: "cripta", ancho: 1.2, cuerpoAncho: 1.3 }), picaro: T("zombi", "harapos", { colmillos: true, carne: "#8a927a", ojo: "#ff8a5a", grupo: "cripta" })
+    guerrero: T("zombi", "harapos", { grupo: "cripta", yelmo: true }), cazador: T("necrofago", "harapos", { carne: "#9aa49a", grupo: "cripta" }), arcanista: T("capirote", "tunica", { tela: "#14121a", grupo: "cripta" }),
+    paladin: T("cosido", "piel", { piel: "#5a6652", grupo: "cripta", ancho: 1.2, cuerpoAncho: 1.3 }), picaro: T("necrofago", "harapos", { carne: "#7a8278", ojo: "#ff8a5a", capucha: "#2a2622", grupo: "cripta" })
   },
   "compania-dorada": {
     guerrero: T("plumas", "jubon"), cazador: T("morrion", "jubon"), arcanista: T("plumas", "tunica", { tela: "#4a3a1e" }), paladin: T("morrion", "placas", { acero: "#c9a23a", metal: "#c9a23a", pesado: true }),
@@ -709,7 +764,8 @@ const VIS = {
   },
   seosan: {
     guerrero: T("cinta", "tunica", { tela: "#24302a" }), cazador: T("kasa", "tunica", { tela: "#3a4a42", grupo: "bosque" }), arcanista: T("kasa", "tunica", { tela: "#c9862e", grupo: "arcano" }),
-    paladin: T("kabuto", "placas", { acero: "#4a2a2a", pesado: true }), picaro: T("picaro", "tunica", { tela: "#15141a" }), maestro: T("cinta", "tunica", { tela: "#e9e4da", ojo: "#fff0b0" })
+    paladin: T("kabuto", "placas", { acero: "#4a2a2a", pesado: true }), picaro: T("picaro", "tunica", { tela: "#15141a" }), maestro: T("cinta", "tunica", { tela: "#e9e4da", ojo: "#fff0b0" }),
+    kirin: T("bestia", "piel", { pelo: "#3f8f72", piel: "#2e6a54", ojo: "#fff6a0", grupo: "arcano", cuerno: "#e8f4d0", tras: "rayos" })
   },
   okran: {
     guerrero: T("barbaro", "piel", { piel: "#5a4632" }), cazador: T("barbaro", "piel", { piel: "#5a4632", barba: false, grupo: "bosque" }), arcanista: T("craneoCiervo", "piel", { piel: "#3a2c20", grupo: "bosque" }),
@@ -794,18 +850,94 @@ const HEROE_VIS = {
   adam: T("adam", "adam", { acero: "#cdd4da", verde: "#1f9a66", ojo: "#dff6ea" }),
   mano_de_oro: T("capacete", "placas", { acero: "#2a2a30", pesado: true, ojo: "#ffd24a" }),
   engranaje: T("lente", "maquina", { metal: "#7a9a72", antena: true, ojo: "#ffd27a" }),
-  ottavio: T("fedora", "abrigo", { tela: "#e9e4da", abrigo: "#15141a", ojo: "#ffd27a", cigarro: true }),
+  ottavio: T("fedora", "abrigo", { tela: "#e9e4da", abrigo: "#15141a", ojo: "#ffd27a", melena: "#2a1e1a" }),
+  genichiro: T("cocodrilo", "placas", { piel: "#a8322a", barba: "#2a2420", acero: "#6a1e18", pesado: true, ojo: "#ffcf3a" }),
+  reinhardt: T("general", "placas", { pelo: "#a8401e", acero: "#26262c", pesado: true, tras: "alabarda" }),
   brasa: T("cogulla", "tunica", { tela: "#8a2a1a", ojo: "#ff8a3a", grupo: "arcano" }),
   humores: T("cogulla", "tunica", { tela: "#3a4a32", ojo: "#9af27a", grupo: "arcano" }),
   umbral: T("cogulla", "tunica", { tela: "#d9d2c0", ojo: "#b98cff", sol: true, grupo: "arcano" }),
   ceniciento: T("vacia", "placas", { acero: "#4a4442", pesado: true, ojo: "#ff8a3a", grupo: "cripta" }),
   vigilante: T("granYelmo", "placas", { halo: true, metal: "#f4f5f6", acero: "#e2e5e8", pesado: true, ojo: "#fff6c8", grupo: "arcano" }),
-  kirin: T("bestia", "piel", { pelo: "#3f8f72", piel: "#2e6a54", ojo: "#fff6a0", grupo: "arcano" }),
-  ebonrabia: T("bestia", "piel", { pelo: "#17141a", piel: "#1d1a20", ojo: "#ff3a2a", grupo: "bosque" }),
+  ebonrabia: T("bestia", "piel", { pelo: "#17141a", piel: "#1d1a20", ojo: "#ff3a2a", cuerno: "#e0b23a", grupo: "bosque", tras: "chispas" }),
   dientesal: T("tricornio", "abrigo", { abrigo: "#8a1f1f", galon: "#ffffff", pluma: true }),
   zaphar: T("hormiga", "quitina", { quitina: "#8a5a22", ojo: "#fff0a0", grupo: "cripta" }),
-  orsa: T("galea", "legion", { metal: "#b07a3c", cresta: true, ancho: 1.2 }),
   rykerd: T("dragon", "dragon", { piel: "#cfc0ca", ojo: "#ff9a3a", grupo: "cripta", ancho: 1.18, cuerpoAncho: 1 })
+};
+
+/* Las tropas nuevas (piqueros, jinetes, voladores...) toman el busto de una tropa a pie de su ejército
+   y llevan detrás lo que las distingue: la pica, la cabeza de su montura o las alas */
+const NUEVA = { piquero: ["guerrero", "pica"], jinete: ["guerrero", "montura"], hostigador: ["cazador", "montura"], catafracto: ["paladin", "montura"], jinete_alado: ["paladin", "alas"], volador: [null, "alas"] };
+const MONTURA_RET = {
+  "caballeros-del-reino": { jinete: ["caballo", "#7a5634"], jinete_alado: ["grifo", "#a57a46"] },
+  "academia-arcana-de-dolbred": { jinete_alado: ["manticora", "#6a3a58"], volador: ["membrana", "#3a2d6b"] },
+  "trono-de-ceniza": { jinete: ["hueso", "#b8b0a0"], jinete_alado: ["membrana", "#6a7a5a"], volador: ["plumas", "#1e1c22"] },
+  "compania-dorada": { jinete: ["caballo", "#8a5a32"], hostigador: ["caballo", "#4a3424"], catafracto: ["caballo", "#c9a24a"] },
+  "hijos-del-acero": { jinete: ["caballo", "#6e6a62"], hostigador: ["caballo", "#5a4636"] },
+  "santos-de-asmodeo": { catafracto: ["caballo", "#f2ede2"], jinete_alado: ["grifo", "#ece6da"] },
+  nikaalia: { jinete: ["caballo", "#1e1a22"], volador: ["membrana", "#2e2630"] },
+  seosan: { hostigador: ["caballo", "#7a4a2e"] },
+  okran: { jinete: ["lobo", "#7d7a74"], hostigador: ["lobo", "#9a8a72"] },
+  mravec: { catafracto: ["escarabajo", "#2f3a2a"], jinete_alado: ["insecto", "#3f8f72"], volador: ["insecto", "#e3b23a"] },
+  nernib: { jinete: ["rueda", "#c79a44"], volador: ["metal", "#c79a44"] },
+  balutia: { jinete: ["caballo", "#5a3a24"], catafracto: ["caballo", "#b07a3c"] }
+};
+/* Los voladores sin jinete: el busto es el de la propia bestia */
+const VOLADOR_RET = {
+  "academia-arcana-de-dolbred": T("bestia", "piel", { pelo: "#141018", piel: "#1a1420", ojo: "#8fe8ff", grupo: "arcano", cuerno: "#141018" }),
+  "trono-de-ceniza": T("bestia", "piel", { pelo: "#1e1c22", piel: "#2a2630", ojo: "#9af27a", grupo: "cripta", cuerno: "#d9d1bb" }),
+  nikaalia: T("bestia", "piel", { pelo: "#2e2630", piel: "#241e26", ojo: "#ff4a4a", grupo: "cripta", cuerno: "#2e2630" }),
+  mravec: T("hormiga", "quitina", { quitina: "#c9962a", ojo: "#1c1a16", grupo: "cripta" }),
+  nernib: T("lente", "maquina", { metal: "#a0623c", antena: true, ojo: "#8fd8ff" })
+};
+function visNueva(facId, clase) {
+  const [de, tras] = NUEVA[clase];
+  const base = clase === "volador" ? VOLADOR_RET[facId] : (VIS[facId] && (VIS[facId][de] || VIS[facId].guerrero)) || T(de, de === "paladin" ? "placas" : de === "cazador" ? "cuero" : "cuero");
+  if (!base) return null;
+  const m = (MONTURA_RET[facId] || {})[clase] || ["caballo", "#6b4a2e"];
+  return Object.assign({}, base, { tras: tras === "montura" ? m[0] : tras === "alas" ? m[0] : tras, trasCol: m[1], barda: clase === "catafracto" ? osc(m[1], 0.1) : null });
+}
+const TRAS = {
+  pica(c, S) { linea(c, "#2a1a0c", 9, 60, 380, 288, 64); linea(c, "#6a4a2c", 6, 60, 380, 288, 64); relleno(c, "M280 76 L300 34 L296 84 Z", "#cfd6dc", "#20262c", 1.6); linea(c, S.col, 4, 266, 98, 280, 106); },
+  alabarda(c, S) { linea(c, "#3a2614", 7, 44, 380, 252, 10); relleno(c, "M246 22 C268 10 284 30 276 52 L256 40 Z", "#9aa0a8", "#20262c", 1.6); relleno(c, "M252 10 L262 -16 L258 14 Z", "#cfd6dc", "#20262c", 1.2); },
+  /* Las monturas asoman abajo a la izquierda, delante del busto */
+  caballo(c, S, o) {
+    const p = o.trasCol || "#6b4a2e", d = osc(p, 0.35);
+    relleno(c, "M18 380 L56 286 L104 298 L120 380 Z", cuero(c, 18, 286, 120, 380, p), "#0a0604", 2);
+    relleno(c, "M96 294 L126 380 L110 380 L86 302 Z", osc(p, 0.55), null);
+    c.save(); c.translate(54, 264); c.rotate(0.55);
+    relleno(c, "M-22 -40 C-26 -10 -20 30 -12 52 C-4 62 12 62 18 50 C24 26 22 -14 16 -42 C6 -54 -14 -52 -22 -40 Z", cuero(c, -26, -54, 24, 62, p), "#0a0604", 2);
+    disco(c, d, -2, 46, 12); disco(c, "#0a0604", -6, 50, 2.2); disco(c, "#0a0604", 4, 50, 2.2);
+    c.restore();
+    relleno(c, "M62 228 L68 202 L78 232 Z", p, "#0a0604", 1.4);
+    disco(c, "#0a0604", 68, 252, 4.4); disco(c, "rgba(255,255,255,.5)", 69.4, 250.6, 1.2);
+    linea(c, S.col, 3, 46, 238, 36, 302);
+    if (o.barda) relleno(c, "M24 380 L52 300 L102 312 L114 380 Z", o.barda, "#0a0604", 1.6);
+  },
+  hueso(c, S, o) { TRAS.caballo(c, S, { trasCol: o.trasCol }); for (let i = 0; i < 4; i++) linea(c, "#2a2622", 2, 40 + i * 16, 320, 50 + i * 16, 380); disco(c, "#9af27a", 68, 252, 4.6); },
+  lobo(c, S, o) {
+    const p = o.trasCol || "#7d7a74";
+    relleno(c, "M10 380 L40 300 L104 310 L118 380 Z", cuero(c, 10, 300, 118, 380, p), "#0a0604", 2);
+    relleno(c, "M30 300 C20 276 30 250 56 244 C84 240 104 262 98 290 L70 316 L18 324 Z", cuero(c, 18, 240, 104, 324, p), "#0a0604", 2);
+    relleno(c, "M40 252 L34 214 L58 246 Z M74 246 L90 212 L92 254 Z", osc(p, 0.25), "#0a0604", 1.4);
+    relleno(c, "M18 318 L4 330 L30 330 Z", "#0a0604"); c.fillStyle = "#efe6cf"; c.beginPath(); c.moveTo(14, 318); c.lineTo(18, 330); c.lineTo(22, 318); c.fill();
+    disco(c, "#ffd27a", 50, 276, 3.6); disco(c, "#ffd27a", 76, 274, 3.6);
+  },
+  escarabajo(c, S, o) { relleno(c, "M0 380 C4 300 50 266 120 280 L130 380 Z", metal(c, 0, 266, 130, 380, o.trasCol || "#2f3a2a"), "#050604", 2); linea(c, "rgba(0,0,0,.5)", 2, 64, 274, 62, 380); relleno(c, "M30 290 L6 250 L44 282 Z", "#1c1a16"); },
+  rueda(c, S, o) { c.strokeStyle = o.trasCol || "#c79a44"; c.lineWidth = 6; c.beginPath(); c.arc(64, 330, 52, 0, 7); c.stroke(); for (let k = 0; k < 6; k++) linea(c, "#8a8e94", 2, 64, 330, 64 + Math.cos(k) * 52, 330 + Math.sin(k) * 52); disco(c, "#3a3c40", 64, 330, 8); },
+  grifo(c, S, o) { TRAS.plumas(c, S, o); },
+  plumas(c, S, o) {
+    const p = o.trasCol || "#6a4a2c";
+    [-1, 1].forEach(l => { for (let i = 0; i < 5; i++) relleno(c, `M${150 + l * 70} 270 L${150 + l * (120 + i * 8)} ${70 + i * 30} L${150 + l * (104 + i * 8)} ${96 + i * 30} Z`, i % 2 ? osc(p, 0.2) : p, "#0a0604", 1.2); });
+  },
+  membrana(c, S, o) {
+    const p = o.trasCol || "#3a2d38";
+    [-1, 1].forEach(l => { relleno(c, `M${150 + l * 66} 270 L${150 + l * 130} 70 L${150 + l * 146} 140 L${150 + l * 140} 210 L${150 + l * 110} 250 Z`, p, "#050304", 1.6); linea(c, osc(p, 0.4), 3, 150 + l * 66, 270, 150 + l * 130, 70); linea(c, osc(p, 0.4), 2, 150 + l * 130, 70, 150 + l * 140, 210); });
+  },
+  manticora(c, S, o) { TRAS.membrana(c, S, o); c.strokeStyle = "#8a5a2a"; c.lineWidth = 8; c.lineCap = "round"; c.beginPath(); c.moveTo(250, 380); c.quadraticCurveTo(300, 260, 250, 190); c.stroke(); relleno(c, "M250 190 L236 164 L262 176 Z", "#2a1a22"); },
+  insecto(c, S, o) { c.save(); c.globalAlpha = 0.5; [-1, 1].forEach(l => { c.fillStyle = "#cfeef0"; c.beginPath(); c.ellipse(150 + l * 104, 150, 70, 22, l * -0.6, 0, 7); c.fill(); c.beginPath(); c.ellipse(150 + l * 96, 206, 60, 18, l * -0.3, 0, 7); c.fill(); }); c.restore(); },
+  metal(c, S, o) { [-1, 1].forEach(l => { linea(c, o.trasCol || "#c79a44", 4, 150 + l * 60, 230, 150 + l * 146, 120); c.save(); c.globalAlpha = 0.75; relleno(c, `M${150 + l * 60} 230 L${150 + l * 146} 120 L${150 + l * 140} 190 Z`, "#d8c9a6", "#3a2a14", 1.2); c.restore(); }); },
+  chispas(c) { for (let i = 0; i < 10; i++) { const x = 40 + (i % 5) * 54, y = 60 + Math.floor(i / 5) * 230; linea(c, "#ffe36a", 2, x, y, x + 10, y - 16); linea(c, "#ffe36a", 2, x + 10, y - 16, x + 2, y - 26); } },
+  rayos(c) { [[30, 40], [252, 70], [40, 300], [260, 310]].forEach(([x, y]) => { linea(c, "#bff2ff", 3, x, y, x + 14, y + 26); linea(c, "#bff2ff", 3, x + 14, y + 26, x + 4, y + 40); linea(c, "#bff2ff", 3, x + 4, y + 40, x + 18, y + 64); }); }
 };
 
 const GRUPO = { guerrero: "ruinas", caballero: "ruinas", paladin: "ruinas", lider: "ruinas", mercenario: "ruinas", ballestero: "ruinas", cazador: "bosque", picaro: "bosque", salvaje: "bosque", arcanista: "arcano", archimago: "arcano", sanador: "arcano", eco: "arcano", esqueleto: "cripta" };
@@ -831,7 +963,8 @@ const OJOS = { guerrero: "#e6b04a", paladin: "#ffd27a", caballero: "#ffb84a" };
     const r = rng(hashStr(String(s.id)));
     // La receta de esta tropa en su ejército; si no tiene, la cabeza y el cuerpo de su clase
     const facId = D.faccionReal ? D.faccionReal(o.faccion) : o.faccion;
-    const vis = (o.heroe && HEROE_VIS[o.heroe]) || (s.clase === "lider" && LIDER_VIS[facId]) || (VIS[facId] && VIS[facId][s.clase]) || null;
+    let vis = (o.heroe && HEROE_VIS[o.heroe]) || (s.clase === "lider" && LIDER_VIS[facId]) || (VIS[facId] && VIS[facId][s.clase]) || null;
+    if (!vis && NUEVA[s.clase]) vis = visNueva(facId, s.clase);
     const BASE = { capo: "picaro", maestro: "guerrero", berserker: "guerrero", barrilero: "mercenario", quimera: "salvaje", automata: "paladin", condenado: "esqueleto", heroe: "lider" };
     const cl = CABEZA[s.clase] ? s.clase : BASE[s.clase] || "guerrero";
     const victorias = s.victorias || 0;
@@ -844,6 +977,8 @@ const OJOS = { guerrero: "#e6b04a", paladin: "#ffd27a", caballero: "#ffb84a" };
     if (cl === "esqueleto" && !vis) S.ban = "#4a3a30";
     if (vis && vis.acero) S.acero = vis.acero;
     escena(cb, S);
+    const DELANTE = { pica: 1, caballo: 1, hueso: 1, lobo: 1, escarabajo: 1, rueda: 1 };
+    if (vis && vis.tras && !DELANTE[vis.tras]) TRAS[vis.tras](cf, S, vis);
     const kcu = vis ? vis.cuerpoAncho || 1.16 : CUERPO_ANCHO[cl] || 1.2;
     cf.save(); cf.translate(150, 0); cf.scale(kcu, 1); cf.translate(-150, 0);
     if (vis) CUERPO2[vis.cuerpo](cf, S, vis); else (CUERPO[cl] || CUERPO.guerrero)(cf, S);
@@ -854,6 +989,7 @@ const OJOS = { guerrero: "#e6b04a", paladin: "#ffd27a", caballero: "#ffb84a" };
     cf.save(); cf.translate(150, 226); cf.scale(S.k, S.ky); cf.translate(-150, -226);
     if (vis) (CABEZA2[vis.cabeza] || CABEZA[vis.cabeza] || CABEZA.guerrero)(cf, S, vis); else (CABEZA[cl] || CABEZA.guerrero)(cf, S);
     cf.restore();
+    if (vis && vis.tras && DELANTE[vis.tras]) TRAS[vis.tras](cf, S, vis);
     // cicatrices: marcas en el yelmo o la capucha
     const nCic = Math.min(4, s.cicatrices || 0);
     for (let i = 0; i < nCic; i++) {

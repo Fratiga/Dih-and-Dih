@@ -254,7 +254,9 @@
     // La forma del mapa: la elegida o una al azar
     const formas = Object.keys(D.FORMAS_MAPA);
     const forma = D.FORMAS_MAPA[opciones.forma] ? opciones.forma : formas[ri(ej, formas.length)];
-    return { semilla, tipo, forma, dificultad: dif, anio: ej.anio, hold: 6, jugadores, rivalFaccion: rival, ids: elegidos.map(s => s.id) };
+    const tamano = opciones.tamano || "normal";
+    const mapaPara = Math.max(jugadores.length, Math.min(8, opciones.mapaPara || jugadores.length));
+    return { semilla, tipo, forma, tamano, mapaPara, dificultad: dif, anio: ej.anio, hold: 6, jugadores, rivalFaccion: rival, ids: elegidos.map(s => s.id) };
   }
 
   /* --- Cerrar una guerra --- */
@@ -262,12 +264,15 @@
 
   function apodoSiProcede(ej, s, r, ctx) {
     if (s.apodo) return;
-    if ((s.cicatrices || 0) >= 1 && rn(ej) < 0.7) s.apodo = S.apodoPara(r, s, "cicatriz");
-    else if (ctx && ctx.bajasG >= 4) s.apodo = S.apodoPara(r, s, "matador");
-    else if (S.rangoIndice(s.victorias) >= 2 && s.stats.VEL >= 8) s.apodo = S.apodoPara(r, s, "veloz");
-    else if (S.rangoIndice(s.victorias) >= 2 && s.stats.INT >= 8) s.apodo = S.apodoPara(r, s, "sabio");
-    else if (S.rangoIndice(s.victorias) >= 2 && s.stats.CON >= 8) s.apodo = S.apodoPara(r, s, "firme");
-    else if (S.rangoIndice(s.victorias) >= 3 && rn(ej) < 0.5) s.apodo = S.apodoPara(r, s, "longevo");
+    // Nadie del ejército (vivo o muerto) repite el apodo de otro
+    const usados = new Set(todos(ej).map(o => o.apodo).filter(Boolean));
+    const ap = tipo => S.apodoPara(r, s, tipo, usados);
+    if ((s.cicatrices || 0) >= 1 && rn(ej) < 0.7) s.apodo = ap("cicatriz");
+    else if (ctx && ctx.bajasG >= 4) s.apodo = ap("matador");
+    else if (S.rangoIndice(s.victorias) >= 2 && s.stats.VEL >= 8) s.apodo = ap("veloz");
+    else if (S.rangoIndice(s.victorias) >= 2 && s.stats.INT >= 8) s.apodo = ap("sabio");
+    else if (S.rangoIndice(s.victorias) >= 2 && s.stats.CON >= 8) s.apodo = ap("firme");
+    else if (S.rangoIndice(s.victorias) >= 3 && rn(ej) < 0.5) s.apodo = ap("longevo");
     if (s.apodo) hito(s, ej.anio, `Empiezan a llamarlo ${s.apodo}.`);
   }
 
@@ -348,7 +353,7 @@
       s.muerte = Object.assign({}, s.muerte, { anio: anioGuerra, guerra: ej.guerras, causa: killer ? killer.nombre : "la Fractura", rivalFaccion });
       hito(s, anioGuerra, `Muere en ${c.region}${killer ? ` a manos de ${killer.nombre}` : ""}.`);
       resumen.muertos.push(s);
-      if (jug.tech.tanato >= 4 && rn(ej) < 0.5) {
+      if ((jug.sabEf || {}).inmortalidad && rn(ej) < 0.5) {
         s.estado = "activo"; s.muerte = null; s.renacido = (s.renacido || 0) + 1; s.cicatrices = (s.cicatrices || 0) + 1;
         s.nacimiento += 2;   // vuelve distinto
         hito(s, anioGuerra, "Regresa como Renaciente.");
@@ -436,7 +441,6 @@
       const i = ej.nemesis.findIndex(n => n.id === c.s.nemesisId);
       if (i >= 0) { resumen.nemesisCaido.push(ej.nemesis[i]); ej.nemesis.splice(i, 1); }
     });
-    if (jug.tech.tanato >= 4) { /* los renacidos ya se contaron */ }
 
     // El tiempo pasa: 1 o 2 años por guerra
     const paso = 1 + (rn(ej) < 0.5 ? 1 : 0);
@@ -580,7 +584,24 @@
   /* Reliquia con su historial de propietarios */
   function historialReliquia(ej, id) { const r = ej.reliquias[id]; return r ? r.propietarios.slice() : []; }
 
+  /* Los ejércitos de antes podían repetir apodos: al segundo que lo lleve se le da otro de la misma lista */
+  function repararApodos(ej) {
+    const vistos = new Set();
+    let cambios = 0;
+    todos(ej).slice().sort((a, b) => (a.nacimiento - b.nacimiento) || (a.id < b.id ? -1 : 1)).forEach(s => {
+      if (!s.apodo) return;
+      if (!vistos.has(s.apodo)) { vistos.add(s.apodo); return; }
+      const tipo = Object.keys(D.APODOS).find(k => D.APODOS[k].some(par => par.includes(s.apodo)));
+      const r = { s: (parseInt(String(s.id).replace(/\D/g, "").slice(0, 8) || "7", 10) * 2654435761) >>> 0 || 7 };
+      const nuevo = S.apodoPara(r, s, tipo || "cicatriz", vistos);
+      s.apodo = nuevo; if (nuevo) vistos.add(nuevo);
+      cambios++;
+    });
+    return cambios;
+  }
+
   raiz.FracturaCampana = {
+    repararApodos,
     MAX_SOLDADOS, MAX_CAPITANES, crearEjercito, todos, vivos, enFila, caidos, retirados, ninos, capitanes, limiteContingente, casas, reliquiasDe, reliquiasLibres,
     nombrarCapitan, quitarCapitan, asignarCompania, equipar, desequipar, renombrarEjercito, elegirContingenteAuto, prepararBando, prepararGuerra, cerrarGuerra,
     disponibles, convaleciente, elegirEspecializacion, pendientesDeAscenso, relaciones, arbolDeCasa, historialReliquia, calcularLogros, hito, clon

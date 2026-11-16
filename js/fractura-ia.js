@@ -12,15 +12,11 @@
 (function (raiz) {
   const D = raiz.FRACTURA_DATOS || (typeof require !== "undefined" ? require("./fractura-datos.js") : null);
   const FM = raiz.FracturaMotor || (typeof require !== "undefined" ? require("./fractura-motor.js") : null);
+  const SB = raiz.FracturaSaber || (typeof require !== "undefined" ? require("./fractura-saber.js") : null);
   const S = raiz.FracturaSoldados || (typeof require !== "undefined" ? require("./fractura-soldados.js") : null);
   const { TERRENOS, CLASES, EDIFICIOS, FACCIONES, DIFICULTADES, HEROES } = D;
   const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
-  const PREF_ESCUELA = {
-    "caballeros-del-reino": ["militar", "tanato", "arcano"], "academia-arcana-de-dolbred": ["arcano", "militar", "tanato"], "trono-de-ceniza": ["tanato", "militar", "arcano"],
-    "compania-dorada": ["militar", "arcano", "tanato"], "hijos-del-acero": ["militar", "arcano", "tanato"], "santos-de-asmodeo": ["militar", "arcano", "tanato"],
-    nikaalia: ["tanato", "militar", "arcano"], mravec: ["tanato", "militar", "arcano"], nernib: ["arcano", "militar", "tanato"]
-  };
   /* Manías de cada ejército con varios rivales. odia: a quién va primero. gusto: "debil" (al que va peor), "fuerte" (al que va mejor),
      "rico" (al que tiene más oro) o "monstruos" (a los ejércitos de monstruos). */
   const PERFIL = {
@@ -201,11 +197,12 @@
     const cfg = DIFICULTADES[nivel];
     // Investigación
     if (cfg.investiga) {
-      const pref = PREF_ESCUELA[jug.faccion] || ["militar", "arcano", "tanato"];
-      for (const esc of pref) {
-        if (FM.razonNoInvestigar(est, j, esc)) continue;
-        if (jug.tech[esc] >= 2 && esc !== pref[0]) continue;
-        if (FM.aplicar(est, { t: "investigar", escuela: esc }).ok) break;
+      // Primero los cruces que ya puede aprender, luego la rama menos avanzada (la primera de su ejército pesa más)
+      const ramas = SB.ramas(jug.faccion).map((r, i) => ({ id: r.id, peso: (jug.tech[r.id] || 0) - (i === 0 ? 1.5 : i === 1 ? 0.5 : 0) }));
+      const cand = SB.cruces(jug.faccion).map(c => ({ id: c.id, peso: -3 })).concat(ramas).sort((a, b) => a.peso - b.peso);
+      for (const c of cand) {
+        if (FM.razonNoInvestigar(est, j, c.id)) continue;
+        if (FM.aplicar(est, { t: "investigar", escuela: c.id }).ok) break;
       }
     }
     // Héroe: en cuanto cumple los requisitos
@@ -222,9 +219,9 @@
       }
     });
     // Reclutamiento
-    const tope = Math.min(FM.MAX_UNIDADES - 1, 5 + Math.floor(est.turno * 0.7) + (nivel === "dificil" ? 2 : 0));
+    const tope = Math.min(FM.limiteTropas(est, j), 5 + Math.floor(est.turno * 0.7) + (nivel === "dificil" ? 2 : 0));
     FM.ciudadesDe(est, j).forEach(c => {
-      if (FM.unidadesDe(est, j).length >= tope) return;
+      if (FM.cuentaTropas(est, j) >= tope) return;
       const cl = escogerClase(est, j, c, azar);
       if (cl) FM.aplicar(est, { t: "reclutar", ciudad: c.id, clase: cl });
     });
@@ -298,11 +295,16 @@
         const ciu = tregua ? null : Object.values(est.ciudades).find(c => esRival(c.dueno) && cheb(u, c) <= 1 && c.edificios.some(e => !(c.desh[e] >= est.turno)));
         if (ciu) { const ed = ciu.edificios.find(e => !(ciu.desh[e] >= est.turno)); if (aplicar({ t: "habilidad", id: "sabotear", uid: u.uid, x: ciu.x, y: ciu.y, edificio: ed }).ok) return; }
       }
-      if (jug.tech.tanato >= 3 && jug.recursos.anima >= 3 && !u.atacado) {
+      if (FM.sab(est, j).reanimar && jug.recursos.anima >= 3 && !u.atacado) {
         const tumba = est.tumbas.find(t => cheb(u, t) <= 1 && !FM.unidadEn(est, t.x, t.y));
         if (tumba && aplicar({ t: "habilidad", id: "reanimar", uid: u.uid, x: tumba.x, y: tumba.y }).ok) return;
       }
       if (habilidadesNuevas(u)) return;
+      // Acoger a los que se quedaron sin bandera, si sobra oro
+      if (!u.atacado && FM.hayHueco(est, j)) {
+        const sb = Object.values(est.unidades).find(w => w.dueno === -1 && w.sinBandera && cheb(u, w) <= 1);
+        if (sb && jug.recursos.oro >= FM.costeAcoger(sb) + 6 && aplicar({ t: "habilidad", id: "acoger", uid: u.uid, x: sb.x, y: sb.y }).ok) return;
+      }
       // Las carracas mercantes no salen de casa: están para dar oro
       if (CLASES[u.clase].oroTurno) return;
       const e = FM.ef(est, u);

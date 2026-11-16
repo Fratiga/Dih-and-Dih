@@ -199,6 +199,30 @@ window.FracturaFiguras = (function () {
     fedora(c, K, o) { const t = o.tela || "#1d1b24"; sombraCara(c, K, o.ojo || "#ff9a5a", false); poli(c, K, claro(t, 0.1), [[-2.6, -29.4], [5.6, -29.4], [5.6, -25.2], [-3, -25.2]]); poli(c, K, t, [[-8.8, -33.2], [9.4, -32.6], [7, -34.6], [-6.4, -35]]); poli(c, K, t, [[-4.8, -34.6], [5, -34.4], [4.4, -39.2], [1, -38.2], [-3.6, -39.6]]); trazo(c, K, K.col, 1.3, -4.6, -35.4, 4.9, -35.2); if (o.cigarro) { trazo(c, K, "#e9e4da", 0.8, 5.4, -28, 8.2, -27.6); halo(c, K, "#ff8a3a", 8.4, -27.6, 0.7); } },
     bufanda(c, K, o) { disco(c, K, "#1d1b24", 0.3, -31, 4.8); poli(c, K, NEGRO, [[-1.5, -33.4], [5.2, -33.4], [5.2, -30.6], [-1.5, -30.6]]); ojoL(c, K, 1.4, -32, o.ojo || "#ffb86a"); ojoL(c, K, 4.2, -32, o.ojo || "#ffb86a"); poli(c, K, K.col, [[-4.6, -30.4], [5.4, -30.4], [5, -25.4], [-4.4, -25.4]]); poli(c, K, oscuro(K.col, 0.2), [[-4, -26], [-8, -19], [-5, -18.4], [-2, -25.6]]); poli(c, K, "#2a2832", [[-5.4, -34], [6.6, -34], [4.4, -36.6], [-3.6, -36.6]]); },
     gafas(c, K, o) { disco(c, K, o.piel || "#c79b78", 0.4, -31, 4.6); poli(c, K, "#4a3722", [[-4.6, -33.8], [5, -33.8], [3.4, -37.8], [-3.2, -37.8]]); trazo(c, K, "#2a2018", 1.6, -4.4, -32, 5.4, -32); halo(c, K, o.ojo || "#9be8ff", 0.6, -32, 1.9); halo(c, K, o.ojo || "#9be8ff", 4, -32, 1.9); c.strokeStyle = F(K, LATON); c.lineWidth = 0.9; c.beginPath(); c.arc(0.6, -32, 2.2, 0, 7); c.arc(4, -32, 2.2, 0, 7); c.stroke(); poli(c, K, "#3a3028", [[-1, -29.4], [5, -29.4], [4, -26], [0, -26]]); },
+    /* Genichiro: cabeza de cocodrilo roja con barba, el sombrero de paja calado hasta los ojos */
+    cocodrilo(c, K, o) {
+      const p = o.piel || "#a8322a";
+      elipse(c, K, metal(K, p, -6, -36, 6, -26), 0, -30.6, 5, 4.4);
+      poli(c, K, p, [[2, -32.6], [11.4, -31], [11.6, -28.6], [2, -27.2]]);
+      trazo(c, K, oscuro(p, 0.5), 0.5, 3, -29.8, 11.2, -29.8);
+      c.fillStyle = F(K, "#efe6d0"); for (let x = 4; x < 11; x += 2) { c.beginPath(); c.moveTo(x, -29.8); c.lineTo(x + 0.6, -28.6); c.lineTo(x + 1.2, -29.8); c.fill(); }
+      disco(c, K, oscuro(p, 0.5), 10.6, -31.4, 0.5);
+      poli(c, K, o.barba || "#2a2420", [[-1.4, -27.8], [4.4, -27.6], [2.6, -21.6], [0.2, -22.6]]);
+      ojoL(c, K, 3, -32.6, o.ojo || "#ffcf3a");
+      const paja = o.paja || "#c9a964";
+      poli(c, K, metal(K, paja, -12, -40, 12, -32), [[-12, -32.8], [12, -32.8], [0.4, -40.6]]);
+      trazo(c, K, oscuro(paja, 0.4), 0.7, -6, -33.6, 0.4, -40); trazo(c, K, oscuro(paja, 0.4), 0.7, 6.4, -33.6, 0.4, -40);
+    },
+    /* Reinhardt: pelo rojo corto, barba corta y un parche en el ojo */
+    general(c, K, o) {
+      const pel = o.pelo || "#a8401e";
+      disco(c, K, o.piel || "#c8a080", 0.5, -31, 4.6);
+      poli(c, K, pel, [[-4.8, -31.6], [-4.8, -35.2], [-1.4, -37], [3.6, -36.6], [5.2, -33.8], [3, -34.8], [-2, -34.8]]);
+      poli(c, K, pel, [[-1.2, -28.8], [5.2, -29.2], [4, -25.4], [0.4, -25]]);
+      trazo(c, K, "#0d0b0e", 0.7, -4.6, -34.2, 5, -31.2);
+      poli(c, K, "#0d0b0e", [[2.4, -33.6], [5.2, -33.4], [5, -31.2], [2.4, -31.4]]);
+      ojoL(c, K, 0.2, -32.4, o.ojo || "#cfe0ff");
+    },
     kasa(c, K, o) { sombraCara(c, K, o.ojo || "#ffd98a", false); poli(c, K, oscuro(K.ban, 0.1), [[-1.6, -29.4], [5.4, -29.4], [4.8, -25.6], [-1.6, -25.6]]); poli(c, K, metal(K, o.paja || "#c9a964", -10, -38, 10, -32), [[-10.5, -32], [10.5, -32], [0.4, -39.6]]); trazo(c, K, oscuro(o.paja || "#c9a964", 0.4), 0.7, -6, -33, 0.4, -39); trazo(c, K, oscuro(o.paja || "#c9a964", 0.4), 0.7, 6.4, -33, 0.4, -39); if (o.cesta) poli(c, K, metal(K, "#b39554", -6, -40, 6, -27), [[-5.4, -27.6], [5.6, -27.6], [4.6, -40], [-4.4, -40]]), poli(c, K, NEGRO, [[0.5, -34], [5.2, -34], [5.2, -32.6], [0.5, -32.6]]), ojoL(c, K, 3.6, -33.3, o.ojo || "#ffd98a"); },
     cinta(c, K, o) { disco(c, K, o.piel || PIEL, 0.5, -31, 4.6); poli(c, K, "#17131a", [[-4.6, -34], [5, -34], [4, -38], [-2, -38.6], [-5, -36]]); poli(c, K, "#17131a", [[-3, -38.4], [-6.4, -42.4], [-1.4, -40.4]]); trazo(c, K, K.col, 1.5, -4.6, -33.8, 5.2, -33.8); poli(c, K, K.col, [[-4.6, -33.8], [-9.6, -31.6], [-9, -29.6], [-5, -32.6]]); disco(c, K, NEGRO, 2.6, -31.6, 0.8); ojoL(c, K, 2.6, -31.6, o.ojo || "#ffe0a0"); poli(c, K, oscuro(K.ban, 0.1), [[-1, -29.6], [5.2, -29.6], [4.6, -26], [-1, -26]]); },
     kabuto(c, K, o) { const m = o.metal || "#2b2a30"; poli(c, K, metal(K, m, -6, -40, 6, -30), [[-5.6, -31.6], [5.8, -31.6], [5, -37.4], [0, -40], [-5, -37.4]]); poli(c, K, metal(K, m, -8, -32, -4, -26), [[-5.8, -32], [-8.6, -26.4], [-4.4, -27.6]]); poli(c, K, metal(K, o.mascara || "#8a1f1f", 0, -32, 6, -26), [[-0.6, -31.8], [5.8, -31.8], [5.2, -26.2], [2.4, -25.2], [-0.4, -26.6]]); poli(c, K, HUESO, [[2, -27.4], [2.8, -25], [3.6, -27.4]]); ojoL(c, K, 1.4, -30, o.ojo || "#ffd24a"); ojoL(c, K, 4.2, -30, o.ojo || "#ffd24a"); c.strokeStyle = F(K, ORO); c.lineWidth = 1.5; c.lineCap = "round"; c.beginPath(); c.moveTo(-2.4, -38.4); c.quadraticCurveTo(-7, -42, -6.4, -47); c.moveTo(2.8, -38.4); c.quadraticCurveTo(7.4, -42, 6.8, -47); c.stroke(); },
@@ -453,6 +477,23 @@ window.FracturaFiguras = (function () {
       trazo(c, K, oscuro(pel, 0.45), 2.6, -12, -16, -17, -20);
       c.restore();
     },
+    /* Ebonrabia: un simio enorme de pelo negro con las puntas doradas, cuernos hacia atrás y chispas en los brazos */
+    simio(c, K, o) {
+      const pel = o.pelo || "#17141a", oro = o.puntas || "#e0b23a", p = K.mov ? Math.sin(K.fase) * 2.4 : 0, emb = Math.max(0, K.sw) * 3;
+      c.save(); c.translate(emb, 0);
+      trazo(c, K, oscuro(pel, 0.3), 5, -4, -14, -5 - p * 0.4, 0); trazo(c, K, oscuro(pel, 0.3), 5, 4, -14, 5 + p * 0.4, 0);
+      trazo(c, K, oscuro(pel, 0.35), 5.4, -6, -30, -11, -16 + p); disco(c, K, oscuro(pel, 0.35), -11, -14 + p, 3);
+      elipse(c, K, metal(K, pel, -10, -40, 10, -12), 0, -24, 10, 12, 0.15);
+      for (let i = 0; i < 6; i++) { const d = Math.abs(i - 2.5); poli(c, K, oro, [[-9 + i * 2.6, -32 + d], [-10 + i * 2.6, -38 + d * 0.8], [-7.4 + i * 2.6, -32.4 + d]]); }
+      elipse(c, K, metal(K, pel, 2, -42, 12, -30), 6, -36, 5.6, 5);
+      poli(c, K, "#3a2a2a", [[7, -35], [12.4, -34], [12, -31], [7.4, -31]]);
+      ojoL(c, K, 8.6, -37.4, o.ojo || "#ff3a2a");
+      c.strokeStyle = F(K, oro); c.lineWidth = 1.8; c.lineCap = "round"; c.beginPath(); c.moveTo(3, -40); c.quadraticCurveTo(-4, -46, -8, -40); c.moveTo(6, -41); c.quadraticCurveTo(0, -49, -5, -45); c.stroke();
+      trazo(c, K, pel, 6.2, 6, -30, 13 + emb, -18 + p * 0.5); disco(c, K, pel, 14 + emb, -16 + p * 0.5, 3.6);
+      const a = c.globalAlpha; c.globalAlpha = a * (0.5 + 0.5 * Math.abs(Math.sin(K.t * 7)));
+      for (let i = 0; i < 4; i++) { const x = 6 + i * 2.6 + emb, y = -28 + i * 3; trazo(c, K, "#ffe36a", 0.7, x, y, x + 1.4, y - 2); trazo(c, K, "#ffe36a", 0.7, x + 1.4, y - 2, x + 0.4, y - 3.4); }
+      c.globalAlpha = a; c.restore();
+    },
     kirin(c, K) {
       const p = K.mov ? Math.sin(K.fase) * 3 : 0, jade = "#3f8f72";
       [[-7, -p], [-3, p], [4, -p], [8, p]].forEach(([x, d]) => { trazo(c, K, oscuro(jade, 0.3), 2.4, x, -14, x + d * 0.5, -2); trazo(c, K, ORO, 2.6, x + d * 0.5, -2.6, x + d * 0.5 + 1.4, -1); });
@@ -645,17 +686,18 @@ window.FracturaFiguras = (function () {
     adam: R("placas", "cerrado", "alabarda", { c: { ancho: 15, metal: "#cdd4da" }, k: { metal: "#dbe1e6", ojo: "#14161a" }, a: { curva: true }, capaCol: "#14503a", capa: 0, tam: 1.24, penacho: "#1f9a66", acebo: "#1f9a66", hombreras: "#1f7a52", faldon: "#14503a" }),
     mano_de_oro: R("placas", "parche", "espadon", { c: { ancho: 14, metal: "#2a2a30", banda: true }, capaCol: "#e0b23a", capa: 0, tam: 1.2, manoOro: true }),
     engranaje: E("engranaje", { tam: 1.24 }),
-    ottavio: R("abrigo", "fedora", "estoque", { c: { tela: "#e9e4da" }, k: { tela: "#15141a", ojo: "#ffd27a" }, capaCol: "#15141a", capa: 0, tam: 1.2 }),
+    ottavio: R("abrigo", "fedora", "estoque", { c: { tela: "#e9e4da" }, k: { tela: "#15141a", ojo: "#ffd27a" }, capaCol: "#15141a", capa: 0, tam: 1.18, melena: "#2a1e1a" }),
+    genichiro: R("placas", "cocodrilo", "sable", { c: { ancho: 14, metal: "#6a1e18" }, k: { piel: "#a8322a", barba: "#2a2420" }, a: { largo: 16 }, capaCol: "#2a1a14", capa: 0, tam: 1.22, cola: "#a8322a" }),
+    reinhardt: R("placas", "general", "alabarda", { c: { ancho: 15, metal: "#26262c", banda: true }, k: { pelo: "#a8401e" }, capaCol: "#3a0e0e", capa: 0, tam: 1.22 }),
     brasa: R("tunica", "capuchaPunta", "baston", { c: { tela: "#8a2a1a" }, k: { tela: "#b0401a", ojo: "#ffd27a" }, a: { orbe: "#ff8a3a", tipo: "rombo" }, tam: 1.2, llamas: true }),
     humores: R("tunica", "capucha", "frasco", { c: { tela: "#3a4a32" }, k: { tela: "#2a3424", pico: true, ojo: "#9af27a" }, tam: 0.92 }),
     umbral: R("tunica", "capuchaPunta", "baston", { c: { tela: "#d9d2c0" }, k: { tela: "#cfc8b4", ojo: "#b98cff" }, a: { orbe: "#b98cff" }, e: "grimorio", tam: 1.22 }),
     ceniciento: R("placas", "corona", "espadon", { c: { ancho: 15, metal: "#3a3432" }, k: { metal: "#3a3432", oro: "#6a5a52", ojo: "#ff8a3a" }, a: { color: "#8a8078" }, capaCol: "#6a6460", capa: 0, tam: 1.22, ceniza: true }),
     vigilante: R("placas", "granYelmo", "espadon", { c: { ancho: 15, metal: "#eceef0" }, k: { halo: true, metal: "#f4f5f6", ojo: "#fff6c8" }, a: { color: "#ffd98a" }, tam: 1.24, alas: true }),
     kirin: E("kirin", { tam: 1.25 }),
-    ebonrabia: E("bestia", { tam: 1.45, eo: { pelo: "#17141a", lomo: true, colmillos: true, ojo: "#ff3a2a" } }),
+    ebonrabia: E("simio", { tam: 1.32 }),
     dientesal: R("abrigo", "tricornio", "pistola", { c: { tela: "#8a1f1f" }, k: { pluma: true, galon: "#ffffff" }, a: { dos: true }, tam: 1.2 }),
     zaphar: E("zaphar", { tam: 1.26 }),
-    orsa: R("legion", "galea", "espada", { c: { metal: BRONCE }, k: { cresta: "t", metal: BRONCE }, a: { largo: 12 }, capaCol: "#6a2a7a", capa: 0, estandarte: true, tam: 1.2 }),
     rykerd: E("rykerd", { tam: 1.42 })
   };
   const BARCO = {
@@ -664,14 +706,244 @@ window.FracturaFiguras = (function () {
     nave_ahogados: E("nave_ahogados", { tam: 1.18, barco: true }), carraca: E("carraca", { tam: 1.18, barco: true })
   };
 
+  /* =========================================================================== MONTURAS Y VOLADORES
+     Se dibujan mirando a la derecha con los pies en y=0. Las monturas devuelven la altura de la silla. */
+  const pata = (c, K, col, x, y0, largo, fase, ancho) => {
+    const a = K.mov ? Math.sin(K.fase + fase) * 0.45 : 0;
+    const rodX = x + Math.sin(a) * largo * 0.5, rodY = y0 + Math.cos(a) * largo * 0.5;
+    trazo(c, K, col, ancho || 2.2, x, y0, rodX, rodY);
+    trazo(c, K, col, (ancho || 2.2) * 0.85, rodX, rodY, rodX - Math.sin(a) * 1.2, 0);
+  };
+  const aleteo = K => Math.sin(K.t * 9 + K.fase) * 0.5 + 0.5;
+  function alaMembrana(c, K, col, x, y, envergadura, alto, abierta) {
+    const sube = -alto * (0.4 + abierta * 0.8);
+    poli(c, K, col, [[x, y], [x - envergadura * 0.3, y + sube], [x - envergadura * 0.65, y + sube * 0.7], [x - envergadura, y + sube * 0.2], [x - envergadura * 0.7, y + 1.4], [x - envergadura * 0.35, y + 0.4]]);
+    trazo(c, K, oscuro(col, 0.4), 0.6, x, y, x - envergadura * 0.3, y + sube);
+    trazo(c, K, oscuro(col, 0.4), 0.6, x, y, x - envergadura * 0.65, y + sube * 0.7);
+  }
+  function alaPlumas(c, K, col, x, y, envergadura, abierta) {
+    const sube = -9 - abierta * 9;
+    for (let i = 0; i < 4; i++) {
+      const t = i / 3;
+      poli(c, K, i % 2 ? oscuro(col, 0.18) : col, [[x - 1, y], [x - envergadura * (0.4 + t * 0.6), y + sube * (1 - t * 0.55)], [x - envergadura * (0.3 + t * 0.6), y + sube * (1 - t * 0.55) + 4], [x, y + 2]]);
+    }
+  }
+  const MONTURA = {
+    caballo(c, K, o) {
+      const pelo = o.col || "#6b4a2e", crin = o.crin || oscuro(pelo, 0.55);
+      pata(c, K, oscuro(pelo, 0.25), -8, -11, 11, Math.PI, 2.4); pata(c, K, oscuro(pelo, 0.25), 7, -11, 11, 0, 2.4);
+      trazo(c, K, crin, 2.2, -12, -15, -16, -8 + (K.mov ? Math.sin(K.fase) : 0));
+      elipse(c, K, pelo, 0, -15, 12.5, 5.4);
+      poli(c, K, pelo, [[7, -17], [11, -19.4], [15, -27], [18, -26], [13, -15], [9, -13]]);
+      elipse(c, K, pelo, 18, -25.4, 4.4, 2.4, 0.5);
+      poli(c, K, crin, [[9, -18], [14.6, -28], [15.6, -26.6], [11, -17]]);
+      poli(c, K, pelo, [[15, -28], [16, -31], [17, -28]]);
+      disco(c, K, NEGRO, 17.4, -26.4, 0.7);
+      pata(c, K, pelo, -6, -11, 11, 0, 2.6); pata(c, K, pelo, 9, -11, 11, Math.PI, 2.6);
+      if (o.barda) {
+        poli(c, K, o.barda, [[-12, -18], [11, -18], [12, -11], [-13, -11]]);
+        poli(c, K, oscuro(o.barda, 0.3), [[-12, -11.6], [12, -11.6], [12, -10.4], [-12, -10.4]]);
+        if (o.escamas) for (let x = -10; x < 10; x += 3) arco(c, K, oscuro(o.barda, 0.35), 0.6, x, -14, 1.4, 0, Math.PI);
+        poli(c, K, o.barda, [[12, -22], [17, -27], [20, -25], [15, -19]]);
+      }
+      poli(c, K, o.silla || "#3a2618", [[-5, -20.4], [5, -20.4], [4, -17], [-4, -17]]);
+      if (o.hueso) { for (let x = -8; x <= 6; x += 3) trazo(c, K, "#2a2622", 0.7, x, -19, x + 1, -12); ojoL(c, K, 18.6, -26, "#9af27a"); }
+      return 20;
+    },
+    lobo(c, K, o) {
+      const pelo = o.col || "#7d7a74";
+      pata(c, K, oscuro(pelo, 0.3), -7, -8, 8, Math.PI, 2.4); pata(c, K, oscuro(pelo, 0.3), 6, -8, 8, 0, 2.4);
+      poli(c, K, pelo, [[-11, -12], [-17, -16], [-15, -10]]);
+      elipse(c, K, pelo, 0, -11.5, 11, 4.6);
+      poli(c, K, pelo, [[7, -14], [12, -17], [17, -15], [18, -12.4], [13, -11], [8, -9]]);
+      poli(c, K, pelo, [[11.6, -16.4], [12.6, -20], [14.4, -16.6]]);
+      poli(c, K, claro(pelo, 0.4), [[15, -13], [18.4, -12.6], [16, -11.4]]);
+      ojoL(c, K, 14.6, -14.8, o.ojo || "#ffd27a");
+      pata(c, K, pelo, -5, -8, 8, 0, 2.6); pata(c, K, pelo, 8, -8, 8, Math.PI, 2.6);
+      return 15;
+    },
+    escarabajo(c, K, o) {
+      const cap = o.col || "#2f3a2a";
+      for (let i = 0; i < 3; i++) { pata(c, K, "#1c1a16", -7 + i * 7, -6, 7, i * 2, 1.2); }
+      elipse(c, K, metal(K, cap, -6, -20, 6, -4), 0, -10, 13, 7);
+      trazo(c, K, oscuro(cap, 0.5), 0.8, 0, -17, 0, -3.4);
+      elipse(c, K, "#1c1a16", 13, -8, 3.6, 3);
+      poli(c, K, "#1c1a16", [[14, -10], [20, -16], [18.4, -10]]);
+      for (let i = 0; i < 3; i++) { pata(c, K, "#2a2620", -5 + i * 7, -5, 7, i * 2 + 1, 1.3); }
+      return 16;
+    },
+    velocipedo(c, K, o) {
+      const giro = K.mov ? K.fase * 2 : 0;
+      const rueda = (x, r) => { arco(c, K, "#2a2a2e", 1.4, x, -r, r, 0, 7); for (let k = 0; k < 6; k++) { const a = giro + k * Math.PI / 3; trazo(c, K, "#8a8e94", 0.5, x, -r, x + Math.cos(a) * r, -r + Math.sin(a) * r); } };
+      rueda(8, 9); rueda(-9, 4.5);
+      trazo(c, K, LATON, 1.6, -9, -4.5, 8, -9); trazo(c, K, LATON, 1.6, 4, -18, 8, -9);
+      elipse(c, K, metal(K, "#a0623c", -8, -18, -2, -8), -4, -12, 4, 5);
+      trazo(c, K, "#3a3530", 1.6, -6, -17, -7, -22);
+      if (K.mov || true) { const a = c.globalAlpha; c.globalAlpha = a * 0.4; disco(c, K, "#cfcfcf", -7.6, -24, 1.8); disco(c, K, "#cfcfcf", -9, -27, 2.4); c.globalAlpha = a; }
+      return 17;
+    },
+    /* --- voladores con jinete --- */
+    grifo(c, K, o) {
+      const pelo = o.col || "#a57a46", pluma = o.pluma || "#6a4a2c", ab = aleteo(K);
+      alaPlumas(c, K, oscuro(pluma, 0.2), -2, -20, 20, 1 - ab);
+      pata(c, K, oscuro(pelo, 0.25), -8, -11, 10, Math.PI, 2.4); pata(c, K, oscuro(pluma, 0.2), 7, -11, 10, 0, 2);
+      poli(c, K, pelo, [[-11, -15], [-16, -20], [-17, -17], [-12, -12]]);
+      elipse(c, K, pelo, 0, -15, 12, 5.4);
+      poli(c, K, pluma, [[7, -18], [12, -20], [15, -27], [19, -26], [14, -15], [9, -13]]);
+      poli(c, K, "#e3bb4e", [[18, -27], [22, -25], [18.4, -24]]);
+      ojoL(c, K, 16.6, -25.4, "#ffd27a");
+      alaPlumas(c, K, pluma, 2, -19, 20, ab);
+      pata(c, K, pelo, -6, -11, 10, 0, 2.6); pata(c, K, "#e3bb4e", 9, -11, 10, Math.PI, 1.6);
+      poli(c, K, o.silla || "#3a2618", [[-5, -20.4], [5, -20.4], [4, -17], [-4, -17]]);
+      return 20;
+    },
+    hipogrifo(c, K, o) { return MONTURA.grifo(c, K, { col: o.col || "#ece6da", pluma: o.pluma || "#d8d2c4", silla: o.silla }); },
+    manticora(c, K, o) {
+      const pelo = o.col || "#b0702e", ab = aleteo(K);
+      alaMembrana(c, K, oscuro("#6a3a58", 0.2), -1, -20, 20, 10, 1 - ab);
+      pata(c, K, oscuro(pelo, 0.25), -8, -11, 10, Math.PI, 2.6); pata(c, K, oscuro(pelo, 0.25), 7, -11, 10, 0, 2.6);
+      c.strokeStyle = F(K, oscuro(pelo, 0.3)); c.lineWidth = 2; c.beginPath(); c.moveTo(-11, -16); c.quadraticCurveTo(-20, -18, -18, -30); c.stroke();
+      poli(c, K, "#2a1a22", [[-18, -30], [-15, -33], [-19.4, -35]]);
+      elipse(c, K, pelo, 0, -15, 12, 5.6);
+      disco(c, K, oscuro(pelo, 0.35), 13, -22, 6);
+      elipse(c, K, claro(pelo, 0.2), 15, -21.4, 3.6, 3.2);
+      ojoL(c, K, 16.4, -22.6, "#ffef9a");
+      alaMembrana(c, K, "#6a3a58", 2, -19, 20, 10, ab);
+      pata(c, K, pelo, -6, -11, 10, 0, 2.8); pata(c, K, pelo, 9, -11, 10, Math.PI, 2.8);
+      poli(c, K, o.silla || "#3a2618", [[-5, -20.6], [5, -20.6], [4, -17], [-4, -17]]);
+      return 20;
+    },
+    wyvern(c, K, o) {
+      const piel = o.col || "#6a7a5a", ab = aleteo(K);
+      alaMembrana(c, K, oscuro(piel, 0.35), -1, -20, 22, 11, 1 - ab);
+      c.strokeStyle = F(K, piel); c.lineWidth = 2.6; c.beginPath(); c.moveTo(-10, -15); c.quadraticCurveTo(-20, -14, -24, -6); c.stroke();
+      pata(c, K, oscuro(piel, 0.3), -4, -11, 11, Math.PI, 2.6);
+      elipse(c, K, piel, 0, -15, 11, 5.4);
+      poli(c, K, piel, [[6, -17], [12, -24], [15, -30], [19, -29], [16, -25], [10, -13]]);
+      poli(c, K, piel, [[15, -31], [23, -29], [22, -27], [16, -27]]);
+      ojoL(c, K, 18, -29.4, "#9af27a");
+      for (let x = -6; x <= 4; x += 3) trazo(c, K, "#d9d1bb", 0.7, x, -19, x + 1, -13);
+      alaMembrana(c, K, piel, 2, -19, 22, 11, ab);
+      [[-14, -19], [-18, -16]].forEach(([x, y]) => poli(c, K, "rgba(20,24,18,.8)", [[x, y], [x + 2, y - 1], [x + 1, y + 3]]));
+      pata(c, K, piel, 4, -11, 11, 0, 2.8);
+      poli(c, K, o.silla || "#2a2420", [[-5, -20.4], [5, -20.4], [4, -17], [-4, -17]]);
+      return 20;
+    },
+    libelula(c, K, o) {
+      const cuerpo = o.col || "#3f8f72", ab = aleteo(K);
+      const ala = (dx, alza) => { const a = c.globalAlpha; c.globalAlpha = a * 0.55; elipse(c, K, "#cfeef0", dx, -22 - alza * 4, 10, 2.4, -0.3 - alza * 0.4); c.globalAlpha = a; };
+      ala(-4, 1 - ab); ala(3, 1 - ab);
+      for (let x = -20; x < -6; x += 2.6) elipse(c, K, x % 5 ? cuerpo : oscuro(cuerpo, 0.35), x, -16, 1.8, 1.6);
+      elipse(c, K, cuerpo, 0, -16, 7, 3.6);
+      disco(c, K, oscuro(cuerpo, 0.2), 8, -17, 3.4); ojoL(c, K, 9.4, -18, "#ff6a5a");
+      for (let i = 0; i < 3; i++) pata(c, K, "#1c1a16", -3 + i * 3, -13, 7, i, 0.9);
+      ala(-3, ab); ala(4, ab);
+      return 19;
+    },
+    /* --- voladores sin jinete (van solos) --- */
+    murcielago(c, K, o) {
+      const piel = o.col || "#2e2630", ab = aleteo(K);
+      alaMembrana(c, K, oscuro(piel, 0.2), 0, -20, 14, 8, 1 - ab);
+      elipse(c, K, piel, 0, -18, 5, 6);
+      poli(c, K, piel, [[-2.4, -23], [-2, -28], [0, -24]]); poli(c, K, piel, [[1.6, -23], [2.6, -28], [3.4, -23]]);
+      ojoL(c, K, 2, -21, o.ojo || "#ff4a4a");
+      if (o.collar) poli(c, K, o.collar, [[-3.4, -16], [3.4, -16], [3, -14.6], [-3, -14.6]]);
+      c.save(); c.scale(-1, 1); alaMembrana(c, K, piel, 0, -20, 14, 8, ab); c.restore();
+    },
+    cuervo(c, K, o) {
+      const pluma = o.col || "#1e1c22", ab = aleteo(K);
+      alaPlumas(c, K, oscuro(pluma, 0.2), 0, -20, 14, 1 - ab);
+      poli(c, K, pluma, [[-6, -18], [-13, -15], [-12, -19]]);
+      elipse(c, K, pluma, 0, -19, 7, 4.4);
+      disco(c, K, pluma, 6, -22, 3.4);
+      poli(c, K, "#3a3530", [[8.6, -23], [13, -21.6], [8.6, -20.6]]);
+      ojoL(c, K, 7, -23, o.ojo || "#9af27a");
+      alaPlumas(c, K, pluma, 1, -19, 14, ab);
+      trazo(c, K, "#d9d1bb", 0.7, -2, -18, 2, -17);
+    },
+    avispa(c, K, o) {
+      const ab = aleteo(K), am = o.col || "#e3b23a";
+      const ala = alza => { const a = c.globalAlpha; c.globalAlpha = a * 0.5; elipse(c, K, "#e6f2f4", -1, -26 - alza * 3, 7, 2.2, -0.6 - alza * 0.5); c.globalAlpha = a; };
+      ala(1 - ab);
+      elipse(c, K, am, -7, -17, 6, 4, 0.3);
+      for (let k = -1; k <= 1; k++) trazo(c, K, "#1c1a16", 1.2, -7 + k * 3, -21, -9 + k * 3, -13);
+      poli(c, K, "#1c1a16", [[-12.4, -15], [-15, -12], [-11.4, -13.6]]);
+      elipse(c, K, "#1c1a16", 1, -20, 3.4, 2.6);
+      disco(c, K, am, 6, -22, 2.8); ojoL(c, K, 7.4, -22.6, "#1c1a16");
+      for (let i = 0; i < 3; i++) trazo(c, K, "#1c1a16", 0.7, -1 + i * 2, -18, -2 + i * 2, -12);
+      ala(ab);
+    },
+    ornitoptero(c, K, o) {
+      const ab = aleteo(K);
+      const ala = alza => { trazo(c, K, LATON, 1, -2, -24, -18, -26 - alza * 8); const a = c.globalAlpha; c.globalAlpha = a * 0.75; poli(c, K, "#d8c9a6", [[-2, -24], [-18, -26 - alza * 8], [-14, -21 - alza * 4], [-3, -21]]); c.globalAlpha = a; };
+      ala(1 - ab);
+      elipse(c, K, metal(K, "#a0623c", -10, -26, 10, -14), 0, -20, 10, 4.4);
+      poli(c, K, LATON, [[-10, -20], [-16, -24], [-16, -16]]);
+      const giro = K.t * 30; trazo(c, K, "#3a3530", 1, 10, -20, 10 + Math.cos(giro) * 0.8, -20 - 6 * Math.sin(giro + 1)); trazo(c, K, "#3a3530", 1, 10, -20, 10 - Math.cos(giro) * 0.8, -20 + 6 * Math.sin(giro + 1));
+      disco(c, K, "#2a2a2e", 3, -24, 2.4); disco(c, K, "#8fd8ff", 4, -24.4, 1);
+      ala(ab);
+    },
+    familiar(c, K, o) {
+      const ab = aleteo(K);
+      alaMembrana(c, K, "#3a2d6b", -1, -20, 12, 7, 1 - ab);
+      c.strokeStyle = F(K, "#141018"); c.lineWidth = 1.4; c.beginPath(); c.moveTo(-6, -17); c.quadraticCurveTo(-12, -16, -11, -24); c.stroke();
+      elipse(c, K, "#141018", -1, -17, 6, 3.6);
+      disco(c, K, "#141018", 5, -21, 3.4);
+      poli(c, K, "#141018", [[3, -23.6], [3.6, -27], [5, -24]]); poli(c, K, "#141018", [[5.6, -24], [7, -27], [7.6, -23.4]]);
+      ojoL(c, K, 6.4, -21.6, "#8fe8ff");
+      alaMembrana(c, K, "#5a48a0", 0, -20, 12, 7, ab);
+    }
+  };
+  /* Qué montura lleva cada tropa de cada ejército */
+  const MONTA = {
+    "caballeros-del-reino": { jinete: ["caballo", { col: "#7a5634" }], caballero: ["caballo", { col: "#5a4636", barda: "@col" }], jinete_alado: ["grifo", {}] },
+    "academia-arcana-de-dolbred": { volador: ["familiar", {}], jinete_alado: ["manticora", {}] },
+    "trono-de-ceniza": { jinete: ["caballo", { col: "#b8b0a0", crin: "#3a3f34", hueso: true, silla: "#2a2420" }], volador: ["cuervo", {}], jinete_alado: ["wyvern", {}] },
+    "compania-dorada": { jinete: ["caballo", { col: "#8a5a32" }], hostigador: ["caballo", { col: "#4a3424" }], catafracto: ["caballo", { col: "#6b4a2e", barda: "#c9a24a" }] },
+    "hijos-del-acero": { jinete: ["caballo", { col: "#6e6a62" }], hostigador: ["caballo", { col: "#5a4636" }] },
+    "santos-de-asmodeo": { catafracto: ["caballo", { col: "#e8e2d6", barda: "#f2ede2" }], jinete_alado: ["hipogrifo", {}] },
+    nikaalia: { jinete: ["caballo", { col: "#1e1a22", crin: "#0b0910" }], volador: ["murcielago", { collar: "@col" }] },
+    seosan: { hostigador: ["caballo", { col: "#7a4a2e", silla: "#8a2a22" }] },
+    okran: { jinete: ["lobo", {}], hostigador: ["lobo", { col: "#9a8a72" }] },
+    mravec: { catafracto: ["escarabajo", {}], volador: ["avispa", {}], jinete_alado: ["libelula", {}] },
+    nernib: { jinete: ["velocipedo", {}], volador: ["ornitoptero", {}] },
+    balutia: { jinete: ["caballo", { col: "#5a3a24" }], catafracto: ["caballo", { col: "#4a3424", barda: "#b07a3c", escamas: true }] }
+  };
+  const SOLO_VUELA = { murcielago: 1, cuervo: 1, avispa: 1, ornitoptero: 1, familiar: 1 };
+  const VUELA = { grifo: 1, hipogrifo: 1, manticora: 1, wyvern: 1, libelula: 1 };
+  /* El jinete de una tropa montada sale de la tropa a pie que más se le parece en ese ejército */
+  const JINETE_DE = { jinete: ["guerrero"], hostigador: ["cazador", "guerrero"], catafracto: ["paladin", "caballero", "guerrero"], jinete_alado: ["paladin", "guerrero"], caballero: ["caballero"] };
+  function recetaMontada(f, faccion, clase) {
+    const m = (MONTA[faccion] || {})[clase];
+    if (!m) return null;
+    const mo = Object.assign({}, m[1]);
+    if (SOLO_VUELA[m[0]]) return { solo: m[0], mo, vuela: true, tam: 1.45 };
+    const base = (JINETE_DE[clase] || ["guerrero"]).map(k => f[k]).find(x => x && !x.entera) || RECETAS["caballeros-del-reino"].guerrero;
+    const jin = Object.assign({}, base, { montura: m[0], mo, vuela: !!VUELA[m[0]], tam: 1.1, e: clase === "hostigador" ? undefined : base.e });
+    if (clase === "jinete" && !["lanza", "alabarda", "naginata"].includes(base.arma)) { jin.arma = "lanza"; jin.a = { largo: 18 }; }
+    if (clase === "catafracto" || clase === "caballero") { jin.arma = "lanza"; jin.a = { largo: 22, pendon: clase === "caballero" }; }
+    return jin;
+  }
+  /* El piquero: la tropa a pie del ejército con una pica larga */
+  function recetaPiquero(f) {
+    const base = f.guerrero && !f.guerrero.entera ? f.guerrero : RECETAS["caballeros-del-reino"].guerrero;
+    const arma = base.arma === "alabarda" || base.arma === "naginata" ? base.arma : "lanza";
+    return Object.assign({}, base, { arma, a: Object.assign({}, base.a, { largo: 27 }), e: undefined, paves: false });
+  }
+
   function receta(q) {
     if (q.heroe && HEROE[q.heroe]) return HEROE[q.heroe];
     if (BARCO[q.clase]) return BARCO[q.clase];
     if (q.clase === "salvaje") return E("bestia", {});
     if (q.clase === "eco") return E("eco", {});
-    const f = RECETAS[D.faccionReal(q.faccion)] || RECETAS["caballeros-del-reino"];
+    if (q.clase === "kirin") return HEROE.kirin || E("kirin", { tam: 1.1 });
+    const fid = D.faccionReal(q.faccion), f = RECETAS[fid] || RECETAS["caballeros-del-reino"];
+    const montada = recetaMontada(f, fid, q.clase);
+    if (montada) return montada;
+    if (q.clase === "piquero") return f.piquero || recetaPiquero(f);
     return f[q.clase] || RECETAS["caballeros-del-reino"][q.clase] || RECETAS["caballeros-del-reino"].guerrero;
   }
+  const opcMontura = (mo, K) => { const o = {}; Object.keys(mo || {}).forEach(k => { o[k] = mo[k] === "@col" ? K.col : mo[k]; }); return o; };
 
   /* Dibuja una figura entera. q: { faccion, clase, heroe }. o: { x, y (píxeles, pies), s (px por casilla), dir, mov, fase, sw, flash, t, cap, rango, herido, luto, alfa, rot, bob, sinAro } */
   function figura(c, q, bando, o) {
@@ -690,15 +962,28 @@ window.FracturaFiguras = (function () {
     if (o.rot) c.rotate(o.rot);
     if (o.alfa !== undefined) c.globalAlpha = o.alfa;
     c.translate(0, (o.bob || 0) + (r.agachado ? 1.5 : 0));
+    // Los que vuelan van por encima de su sombra
+    if (r.vuela) c.translate(0, -8 + Math.sin((o.t || 0) * 3 + (o.fase || 0)) * 1.2);
     // Por el fondo (los muertos de Osses): solo asoma de la cintura para arriba
     const fondo = o.barca === "fondo";
     if (fondo) { c.save(); c.beginPath(); c.rect(-60, -120, 120, 118); c.clip(); c.translate(0, 14); }
     if (o.rango >= 2 && !r.entera && !q.heroe && q.clase !== "lider") poli(c, K, oscuro(bando.col, 0.35), [[-3, -26], [-1, -26], [-6, -6], [-11, -9]]);
     if (o.cap || r.estandarte) { trazo(c, K, "#d8c28a", 1.5, -9, -3, -9, -50); const on = Math.sin((o.t || 0) * 5) * 2; poli(c, K, bando.col, [[-9, -50], [1, -47 + on], [-9, -42]]); }
-    if (r.entera) ENTERA[r.entera](c, K, r.eo || {});
+    if (r.solo) MONTURA[r.solo](c, K, opcMontura(r.mo, K));
+    else if (r.entera) ENTERA[r.entera](c, K, r.eo || {});
     else {
+      // Montado: primero la montura, luego el jinete más pequeño y cortado por la cintura, sentado en la silla
+      let montado = false;
+      if (r.montura) {
+        const silla = MONTURA[r.montura](c, K, opcMontura(r.mo, K)), k = 0.8;
+        c.save(); c.translate(0, -silla + 13 * k); c.scale(k, k);
+        c.beginPath(); c.rect(-60, -120, 120, 107.5); c.clip();
+        montado = silla;
+      }
       if (r.alas) { const a = c.globalAlpha; c.globalAlpha = a * 0.85; [[-1, 0], [-1, 1], [-1, 2]].forEach(([l, i]) => poli(c, K, metal(K, "#e2e5e8", -16, -40, -2, -16), [[-3, -27], [-16 - i * 1.4, -42 + i * 8 + Math.sin(K.t * 2) * 1], [-13, -30 + i * 7], [-4, -20]])); c.globalAlpha = a; void 0; }
       if (r.capa !== undefined) capaAtras(c, K, r.capaCol || oscuro(K.ban, r.capa), -5, -10);
+      if (r.cola) { c.strokeStyle = F(K, r.cola); c.lineCap = "round"; c.lineWidth = 3.4; c.beginPath(); c.moveTo(-3, -13); c.quadraticCurveTo(-12, -10, -17, -2); c.stroke(); c.lineWidth = 1.6; c.beginPath(); c.moveTo(-15, -4); c.lineTo(-20, 0); c.stroke(); }
+      if (r.melena) poli(c, K, r.melena, [[-5, -34.6], [-7.4, -28], [-7.6, -21.4], [-4.6, -22.6], [-3, -27], [-1.6, -32]]);
       if (r.paves) poli(c, K, metal(K, K.col, -10, -30, -3, -12), [[-9.4, -29], [-3.6, -29], [-3.6, -13], [-9.4, -13]]);
       if (r.tubo) trazo(c, K, "#6a5a3a", 3, -7, -29, -3, -16);
       CUERPO[r.cuerpo](c, K, r.c || {});
@@ -717,6 +1002,7 @@ window.FracturaFiguras = (function () {
       if (r.manoOro) halo(c, K, "#ffd24a", -7.4, -17, 2.4);
       if (r.cadenas) { c.strokeStyle = F(K, "#6d7178"); c.lineWidth = 1.2; c.setLineDash([1.6, 1.4]); c.beginPath(); c.moveTo(-7, -24); c.quadraticCurveTo(-13, -14, -10, -4); c.moveTo(5, -16); c.quadraticCurveTo(10, -9, 7, -3); c.stroke(); c.setLineDash([]); }
       if (r.llamas || r.ceniza) { const a = c.globalAlpha; for (let i = 0; i < 4; i++) { const f = (K.t * 0.9 + i * 0.27) % 1; c.globalAlpha = a * (1 - f) * 0.8; disco(c, K, r.llamas ? (i % 2 ? "#ffb03a" : "#ff6a2a") : "#b8b0a8", -4 + i * 2.8 + Math.sin(K.t * 3 + i) * 1.2, (r.llamas ? -38 : -28) - f * 12, r.llamas ? 1.8 - f : 1); } c.globalAlpha = a; }
+      if (montado) { c.restore(); trazo(c, K, K.pierna || "#2a2430", 2.2, 1, -montado + 1, 2.4, -montado + 7.4); }
     }
     if (fondo) { c.restore(); c.strokeStyle = "rgba(236,246,250,.8)"; c.lineWidth = 1; c.beginPath(); c.ellipse(0, -2, 9, 2.4, 0, 0, 7); c.stroke(); c.beginPath(); c.ellipse(0, -2, 13, 3.6, 0, 0.3, 2.8); c.stroke(); }
     else if (o.barca) barca(c, K);
@@ -733,8 +1019,8 @@ window.FracturaFiguras = (function () {
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
     const c = canvas.getContext("2d");
     c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
-    const r = receta(q), tam = r.tam || 1, alto = r.barco ? 46 : r.entera && r.entera !== "barrilero" && r.entera !== "zaphar" && r.entera !== "quimera" && r.entera !== "engranaje" && r.entera !== "rykerd" ? 34 : 50;
-    const s = Math.min(h * 0.82 / (alto * tam / 40), w * 0.9 / ((r.barco ? 44 : 30) * tam / 40));
+    const r = receta(q), tam = r.tam || 1, alto = r.montura || r.solo ? 52 : r.barco ? 46 : r.entera && r.entera !== "barrilero" && r.entera !== "zaphar" && r.entera !== "quimera" && r.entera !== "engranaje" && r.entera !== "rykerd" && r.entera !== "simio" ? 34 : 50;
+    const s = Math.min(h * 0.82 / (alto * tam / 40), w * 0.9 / ((r.barco ? 44 : r.montura || r.solo ? 42 : 30) * tam / 40));
     figura(c, q, bando || colorFaccion(q.faccion || "caballeros-del-reino"), { x: w / 2 + (o.dx || 0), y: h * 0.92, s, dir: 1, t: o.t || 0, sw: o.sw || 0, sinAro: !!o.sinAro, herido: o.herido, cap: o.cap, rango: o.rango, luto: o.luto, barca: o.barca });
   }
 

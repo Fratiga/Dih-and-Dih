@@ -18,6 +18,30 @@
   // Tamaño del mapa según el número de bandos
   const TAMANOS = { 2: [17, 13], 3: [19, 17], 4: [19, 19], 5: [23, 21], 6: [25, 21], 7: [27, 23], 8: [27, 25] };
   const ANCHO = 17, ALTO = 13;
+  /* Tamaños de mapa: la distancia que se busca entre dos capitales vecinas. «Pequeño» es el mapa apretado de antes */
+  const TAMANO_MAPA = {
+    pequeno: { nombre: "Pequeño", sep: 0, turnos: 0, extra: 0 },
+    normal: { nombre: "Normal", sep: 12, turnos: 6, extra: 0 },
+    grande: { nombre: "Grande", sep: 15, turnos: 12, extra: 1 },
+    enorme: { nombre: "Enorme", sep: 18, turnos: 18, extra: 1 }
+  };
+  const impar = n => (n % 2 ? n : n + 1);
+  /* Ancho y alto del mapa según los bandos, el tamaño pedido y si hay mar */
+  function medidas(N, tamano, maritimo) {
+    N = Math.max(2, Math.min(8, N || 2));
+    const t = TAMANO_MAPA[tamano] || TAMANO_MAPA.normal, base = TAMANOS[N];
+    let w = base[0], h = base[1];
+    if (t.sep) {
+      // Capitales en una elipse: la cuerda entre dos vecinas debe medir sep
+      const R = N === 2 ? t.sep * 0.62 : t.sep / (2 * Math.sin(Math.PI / N));
+      const w2 = Math.round((2 * R) / 0.74) + 2;
+      w = Math.max(w, impar(w2));
+      h = N === 4 ? w : Math.max(h, impar(Math.round(w * base[1] / base[0])));
+    }
+    const m = maritimo ? 4 : 0;
+    return { w: Math.min(61, w + m), h: Math.min(61, h + m) };
+  }
+  const turnosDe = (N, maritimo, tamano) => 35 + 5 * (N - 2) + (maritimo ? 10 : 0) + (TAMANO_MAPA[tamano] || TAMANO_MAPA.normal).turnos;
   const dist = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
   const espejo = (x, y, w, h) => ({ x: w - 1 - x, y: h - 1 - y });
   const pasable = c => TERRENOS[c.t].mov > 0;
@@ -72,7 +96,8 @@
     const sinMar = tipoId === "horizonte";
     const forma = !sinMar && D.FORMAS_MAPA[opciones.forma] ? opciones.forma : "continente";
     const maritimo = !!D.FORMAS_MAPA[forma].maritimo;
-    const w = TAMANOS[N][0] + (maritimo ? 4 : 0), h = TAMANOS[N][1] + (maritimo ? 4 : 0);
+    const tam = TAMANO_MAPA[opciones.tamano] ? opciones.tamano : "normal";
+    const { w, h } = medidas(N, tam, maritimo);
     const sim = N === 2 ? 2 : N === 4 ? 4 : 1;
     const r = { s: (semilla >>> 0) || 1 };
     const cx = (w - 1) / 2, cy = (h - 1) / 2;
@@ -249,9 +274,9 @@
         }
       }
     }
-    colocar(sitios, "ciudad", Math.max(1, Math.round(tipo.neutrales / 2)), [4, 6, 5, 7], 4, 3, true);
+    colocar(sitios, "ciudad", Math.max(1, Math.round(tipo.neutrales / 2)) + TAMANO_MAPA[tam].extra, [4, 6, 5, 7], 4, 3, true);
     colocar(fortalezas, "fortaleza", Math.max(1, Math.round(tipo.fortalezas / 2)), [5, 7], 3, 3, true);
-    colocar(ruinas, "ruinas", Math.max(1, Math.round(tipo.ruinas / 2)), [3, 6, 5, 7], 3, 2, false);
+    colocar(ruinas, "ruinas", Math.max(1, Math.round(tipo.ruinas / 2)) + TAMANO_MAPA[tam].extra, [3, 6, 5, 7], 3, 2, false);
 
     // --- Comunicación asegurada: todo sitio importante se alcanza desde la primera capital ---
     const pasa = maritimo ? (c => pasable(c) || c.t === "agua") : pasable;
@@ -323,7 +348,11 @@
     const regiones = semillas.map((sm, i) => {
       const tf = sm.capital !== undefined ? "estable" : sm.nucleo ? (tipoId === "reinos" || tipoId === "archivo" ? "onirico" : "imposible") : pesoElegir(r, tipo.tiposFragmento);
       const pool = barajar(r, FRAGMENTOS[tf]).filter(nm => !nombresUsados.has(nm));
-      const nombre = pool.length ? pool[0] : `${FRAGMENTOS[tf][i % FRAGMENTOS[tf].length]} ${i}`;
+      // Si se acaban los nombres de su clase se toman de las otras; si se acaban todos, el nombre lleva el punto cardinal
+      const otros = pool.length ? pool : barajar(r, [].concat(...Object.values(FRAGMENTOS))).filter(nm => !nombresUsados.has(nm));
+      const rumbo = Math.abs(sm.x - cx) > Math.abs(sm.y - cy) ? (sm.x < cx ? "del Oeste" : "del Este") : (sm.y < cy ? "del Norte" : "del Sur");
+      let nombre = otros.length ? otros[0] : `${FRAGMENTOS[tf][i % FRAGMENTOS[tf].length]} ${rumbo}`;
+      if (nombresUsados.has(nombre)) nombre = `${FRAGMENTOS[tf][i % FRAGMENTOS[tf].length]} ${rumbo === "del Norte" ? "Alto" : "Bajo"}`;
       nombresUsados.add(nombre);
       const e = Math.round(tipo.estab[0] + rnd(r) * (tipo.estab[1] - tipo.estab[0])) + (tf === "estable" ? 15 : tf === "imposible" ? -15 : 0);
       return { id: i, nombre: tf === "estable" ? `Fragmento de ${nombre}` : nombre, tipo: tf, estab: Math.max(5, Math.min(100, e)), dueno: null, sitio: { x: sm.x, y: sm.y }, capitalDe: sm.capital === undefined ? null : sm.capital };
@@ -331,7 +360,8 @@
 
     // --- Costuras: pares de casillas unidas, lejos una de otra ---
     const costuras = [];
-    const pares = Math.max(1, Math.round(tipo.costuras * N / 2));
+    // Pocos portales: uno por cada dos bandos en los tipos normales
+    const pares = Math.max(1, Math.round(tipo.costuras * N / 4));
     const candidatas = [];
     for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) if (valido({ x, y }, 3, 1)) candidatas.push({ x, y });
     const lejos = Math.min(w, h) * 0.34;
@@ -347,7 +377,7 @@
       ocupadas.push(a, b);
     });
 
-    return { ancho: w, alto: h, casillas, regiones, costuras, capitales, nucleo: centro, sitios, fortalezas, ruinas, rng: r.s, sim, bandos: N, forma, maritimo };
+    return { ancho: w, alto: h, casillas, regiones, costuras, capitales, nucleo: centro, sitios, fortalezas, ruinas, rng: r.s, sim, bandos: N, forma, maritimo, tamano: tam };
   }
 
   /* Mueve una costura a otras dos casillas (en los mapas inestables). Devuelve true si algo cambió. */
@@ -369,6 +399,6 @@
     return false;
   }
 
-  raiz.FracturaMapa = { ANCHO, ALTO, TAMANOS, espejo, dist, generarMapa, moverCostura, conectado, pasable };
+  raiz.FracturaMapa = { ANCHO, ALTO, TAMANOS, TAMANO_MAPA, medidas, turnosDe, espejo, dist, generarMapa, moverCostura, conectado, pasable };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FracturaMapa;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -36,91 +36,113 @@
   /* --- Clases. mov = puntos de movimiento; alc = alcance (1 = cuerpo a cuerpo).
          perfil = media de las seis características de un soldado de esa clase (1 a 10). --- */
   const CLASES = {
-    guerrero: { nombre: "Guerrero", rol: "Primera línea", hp: 12, atq: 4, def: 2, mov: 3, alc: 1, atqEstat: "FUE",
+    guerrero: { nombre: "Guerrero", tipo: ["infanteria"], contra: { piquero: 1 }, rol: "Primera línea", hp: 12, atq: 4, def: 2, mov: 3, alc: 1, atqEstat: "FUE",
       perfil: { FUE: 7, CON: 7, VEL: 4, INT: 4, VOL: 6, MAG: 1 }, coste: { comida: 2, oro: 2 }, requiere: {},
       texto: "Mucha vida y buen daño cuerpo a cuerpo. Los aliados a su lado reciben 1 de daño menos." },
-    cazador: { nombre: "Cazador", rol: "Hostigamiento", hp: 9, atq: 3, def: 1, mov: 4, alc: 3, atqEstat: "FUE",
+    cazador: { nombre: "Cazador", tipo: ["tirador"], contra: { volador: 2 }, rol: "Hostigamiento", hp: 9, atq: 3, def: 1, mov: 4, alc: 3, atqEstat: "FUE",
       perfil: { FUE: 5, CON: 4, VEL: 7, INT: 5, VOL: 5, MAG: 2 }, coste: { comida: 2, oro: 2, materiales: 1 }, requiere: {},
       texto: "Ataca de lejos, se mueve mucho y puede retirarse después de disparar. Pega más desde un bosque." },
-    arcanista: { nombre: "Arcanista", rol: "Artillería mágica", hp: 7, atq: 4, def: 0, mov: 3, alc: 2, atqEstat: "MAG",
-      perfil: { FUE: 2, CON: 3, VEL: 4, INT: 8, VOL: 6, MAG: 8 }, coste: { comida: 2, oro: 2, mana: 3 }, requiere: { edificio: "santuario", escuela: ["arcano", 1] },
+    arcanista: { nombre: "Arcanista", tipo: ["magia"], contra: { jinete_pesado: 2, monstruo: 1 }, rol: "Artillería mágica", hp: 7, atq: 4, def: 0, mov: 3, alc: 2, atqEstat: "MAG",
+      perfil: { FUE: 2, CON: 3, VEL: 4, INT: 8, VOL: 6, MAG: 8 }, coste: { comida: 2, oro: 2, mana: 3 }, requiere: { edificio: "santuario", saber: true },
       texto: "Muy frágil. Su golpe alcanza también a los enemigos pegados al objetivo y puede cambiar el terreno." },
-    paladin: { nombre: "Paladín", rol: "Tanque y apoyo", hp: 16, atq: 3, def: 4, mov: 3, alc: 1, atqEstat: "FUE",
+    paladin: { nombre: "Paladín", tipo: ["infanteria"], contra: { jinete: 1 }, rol: "Tanque y apoyo", hp: 16, atq: 3, def: 4, mov: 3, alc: 1, atqEstat: "FUE",
       perfil: { FUE: 6, CON: 8, VEL: 3, INT: 5, VOL: 8, MAG: 3 }, coste: { comida: 3, oro: 4, mineral: 2 }, requiere: { edificio: "cuartel" },
       texto: "Defensa altísima y un aura que da 1 de defensa a quienes lo rodean." },
-    picaro: { nombre: "Pícaro", rol: "Infiltración", hp: 8, atq: 4, def: 1, mov: 4, alc: 1, atqEstat: "FUE",
+    picaro: { nombre: "Pícaro", tipo: ["infanteria"], contra: { magia: 2, tirador: 2 }, rol: "Infiltración", hp: 8, atq: 4, def: 1, mov: 4, alc: 1, atqEstat: "FUE",
       perfil: { FUE: 5, CON: 4, VEL: 8, INT: 6, VOL: 5, MAG: 2 }, coste: { comida: 2, oro: 3 }, requiere: { edificio: "cuartel" },
       texto: "Pega la mitad más si el objetivo está solo, se desengancha sin problema y puede sabotear edificios enemigos." },
-    caballero: { nombre: "Caballero", rol: "Caballería pesada", hp: 14, atq: 5, def: 3, mov: 4, alc: 1, atqEstat: "FUE", exclusiva: "caballeros-del-reino",
+    caballero: { nombre: "Caballero", tipo: ["jinete_pesado"], contra: { infanteria: 2, tirador: 1 }, rol: "Caballería pesada", hp: 14, atq: 5, def: 3, mov: 4, alc: 1, atqEstat: "FUE", exclusiva: "caballeros-del-reino",
       perfil: { FUE: 7, CON: 7, VEL: 6, INT: 4, VOL: 6, MAG: 1 }, coste: { comida: 3, oro: 5, mineral: 2 }, requiere: { edificio: "herreria" },
-      texto: "Si avanza al menos dos casillas antes de atacar, pega 2 más." },
-    archimago: { nombre: "Archimago", rol: "Magia mayor", hp: 9, atq: 6, def: 1, mov: 3, alc: 3, atqEstat: "MAG", exclusiva: "academia-arcana-de-dolbred",
-      perfil: { FUE: 2, CON: 4, VEL: 4, INT: 9, VOL: 7, MAG: 9 }, coste: { comida: 2, oro: 4, mana: 5 }, requiere: { edificio: "torre_magia", escuela: ["arcano", 2] },
+      carga: 2, texto: "Si avanza al menos dos casillas antes de atacar, pega 2 más. Fuerte contra la infantería y débil contra los piqueros." },
+    archimago: { nombre: "Archimago", tipo: ["magia"], contra: { jinete_pesado: 2, monstruo: 1 }, rol: "Magia mayor", hp: 9, atq: 6, def: 1, mov: 3, alc: 3, atqEstat: "MAG", exclusiva: "academia-arcana-de-dolbred",
+      perfil: { FUE: 2, CON: 4, VEL: 4, INT: 9, VOL: 7, MAG: 9 }, coste: { comida: 2, oro: 4, mana: 5 }, requiere: { edificio: "torre_magia", saber: true },
       texto: "Magia de largo alcance con golpe en área." },
-    esqueleto: { nombre: "Legión de huesos", rol: "Tropa barata", hp: 10, atq: 3, def: 1, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "trono-de-ceniza", muertoViviente: true,
+    esqueleto: { nombre: "Legión de huesos", tipo: ["infanteria"], contra: {}, rol: "Tropa barata", hp: 10, atq: 3, def: 1, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "trono-de-ceniza", muertoViviente: true,
       perfil: { FUE: 5, CON: 4, VEL: 4, INT: 2, VOL: 9, MAG: 1 }, coste: { anima: 1 }, requiere: {},
       texto: "Se paga solo con Ánima. No necesita comida y no siente miedo." },
-    ballestero: { nombre: "Ballestero pesado", rol: "Caza mayor", hp: 10, atq: 4, def: 1, mov: 3, alc: 3, atqEstat: "FUE", exclusiva: "hijos-del-acero",
+    ballestero: { nombre: "Ballestero pesado", tipo: ["tirador"], contra: { monstruo: 2, jinete_pesado: 2, volador: 2 }, rol: "Caza mayor", hp: 10, atq: 4, def: 1, mov: 3, alc: 3, atqEstat: "FUE", exclusiva: "hijos-del-acero",
       perfil: { FUE: 6, CON: 5, VEL: 5, INT: 5, VOL: 7, MAG: 1 }, coste: { comida: 2, oro: 3, mineral: 1 }, requiere: { edificio: "cuartel" },
-      texto: "Pega 2 más a monstruos y a unidades muy blindadas." },
-    mercenario: { nombre: "Mercenario", rol: "Contrato", hp: 12, atq: 4, def: 2, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "compania-dorada",
+      texto: "Fuerte contra monstruos, voladores y caballería pesada." },
+    mercenario: { nombre: "Mercenario", tipo: ["piquero", "infanteria"], contra: { jinete: 3, jinete_pesado: 3, volador: 1 }, rol: "Contrato", hp: 12, atq: 4, def: 2, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "compania-dorada",
       perfil: { FUE: 6, CON: 6, VEL: 5, INT: 4, VOL: 5, MAG: 1 }, coste: { oro: 5 }, requiere: {},
-      texto: "No pide comida ni edificio. Se entrena en cualquier ciudad." },
-    sanador: { nombre: "Peregrino sanador", rol: "Curación", hp: 9, atq: 1, def: 1, mov: 3, alc: 1, atqEstat: "VOL", exclusiva: "santos-de-asmodeo", sanador: true,
+      texto: "Piquero de oficio. No pide comida ni edificio y es muy fuerte contra la caballería." },
+    sanador: { nombre: "Peregrino sanador", tipo: ["apoyo"], contra: {}, rol: "Curación", hp: 9, atq: 1, def: 1, mov: 3, alc: 1, atqEstat: "VOL", exclusiva: "santos-de-asmodeo", sanador: true,
       perfil: { FUE: 3, CON: 5, VEL: 4, INT: 6, VOL: 9, MAG: 5 }, coste: { comida: 2, oro: 3 }, requiere: { edificio: "santuario" },
       texto: "Cura 4 de vida a los aliados que tiene al lado al empezar tu turno. Puede consagrar el terreno." },
-    capo: { nombre: "Capo", rol: "Mando", hp: 9, atq: 4, def: 1, mov: 3, alc: 1, atqEstat: "INT", exclusiva: "nikaalia",
+    capo: { nombre: "Capo", tipo: ["infanteria"], contra: {}, rol: "Mando", hp: 9, atq: 4, def: 1, mov: 3, alc: 1, atqEstat: "INT", exclusiva: "nikaalia",
       perfil: { FUE: 5, CON: 5, VEL: 5, INT: 8, VOL: 7, MAG: 1 }, coste: { comida: 2, oro: 4 }, requiere: { edificio: "cuartel" },
       texto: "Los aliados que tiene al lado ganan +1 de ataque." },
-    maestro: { nombre: "Maestro de escuela", rol: "Duelista", hp: 10, atq: 5, def: 1, mov: 4, alc: 1, atqEstat: "VEL", exclusiva: "seosan",
+    maestro: { nombre: "Maestro de escuela", tipo: ["infanteria"], contra: { infanteria: 2 }, rol: "Duelista", hp: 10, atq: 5, def: 1, mov: 4, alc: 1, atqEstat: "VEL", exclusiva: "seosan",
       perfil: { FUE: 6, CON: 5, VEL: 8, INT: 6, VOL: 8, MAG: 2 }, coste: { comida: 3, oro: 4, mineral: 1 }, requiere: { edificio: "cuartel" },
-      texto: "+2 de ataque contra una unidad que está sola, además del Duelo de Seosan." },
-    berserker: { nombre: "Berserker", rol: "Choque", hp: 11, atq: 4, def: 0, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "okran",
+      texto: "+2 de ataque contra una unidad que está sola, además del Duelo de Seosan. Fuerte contra la infantería." },
+    berserker: { nombre: "Berserker", tipo: ["infanteria"], contra: { piquero: 2 }, rol: "Choque", hp: 11, atq: 4, def: 0, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "okran",
       perfil: { FUE: 8, CON: 7, VEL: 5, INT: 2, VOL: 7, MAG: 1 }, coste: { comida: 3, oro: 2 }, requiere: {},
       texto: "Furia reforzada: gana 1 de ataque más cuando baja de la mitad de la vida." },
-    barrilero: { nombre: "Barrilero", rol: "Demolición", hp: 6, atq: 3, def: 0, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "pelgiria",
+    barrilero: { nombre: "Barrilero", tipo: ["asedio"], contra: {}, rol: "Demolición", hp: 6, atq: 3, def: 0, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "pelgiria",
       perfil: { FUE: 5, CON: 4, VEL: 5, INT: 3, VOL: 8, MAG: 1 }, coste: { comida: 1, oro: 3 }, requiere: {},
       texto: "Al morir explota: 3 de daño a todo lo que tenga alrededor, amigo o enemigo." },
-    quimera: { nombre: "Quimera", rol: "Depredador", hp: 11, atq: 4, def: 2, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "mravec",
+    quimera: { nombre: "Quimera", tipo: ["monstruo"], contra: { infanteria: 1 }, rol: "Depredador", hp: 11, atq: 4, def: 2, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "mravec",
       perfil: { FUE: 7, CON: 7, VEL: 5, INT: 3, VOL: 7, MAG: 2 }, coste: { comida: 3, oro: 2, mineral: 2 }, requiere: { edificio: "cuartel" },
       texto: "Devora y adapta: gana un rasgo según lo que mata." },
-    automata: { nombre: "Autómata", rol: "Constructo", hp: 8, atq: 3, def: 2, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "nernib", sinComida: true,
+    automata: { nombre: "Autómata", tipo: ["infanteria"], contra: {}, rol: "Constructo", hp: 8, atq: 3, def: 2, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "nernib", sinComida: true,
       perfil: { FUE: 6, CON: 7, VEL: 3, INT: 2, VOL: 10, MAG: 1 }, coste: { materiales: 2, mineral: 1 }, requiere: { edificio: "taller" },
       texto: "No come. El Taller entrega uno gratis cada 4 turnos." },
-    condenado: { nombre: "Condenado de la Ergástula", rol: "Tropa barata", hp: 8, atq: 3, def: 1, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "balutia",
+    condenado: { nombre: "Condenado de la Ergástula", tipo: ["piquero", "infanteria"], contra: { jinete: 2, jinete_pesado: 2 }, rol: "Tropa barata", hp: 8, atq: 3, def: 1, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "balutia",
       perfil: { FUE: 5, CON: 5, VEL: 4, INT: 3, VOL: 4, MAG: 1 }, coste: { comida: 1, oro: 1 }, requiere: {},
       texto: "Preso de la Ergástula armado a la fuerza. Pega poco y aguanta poco, pero sale en cualquier ciudad." },
+    /* --- Piqueros, jinetes y voladores. Cada tipo es fuerte contra otro (contra) y débil contra un tercero. --- */
+    piquero: { nombre: "Piquero", tipo: ["piquero", "infanteria"], contra: { jinete: 3, jinete_pesado: 3, volador: 1 }, rol: "Contra caballería", hp: 11, atq: 3, def: 2, mov: 3, alc: 1, atqEstat: "FUE",
+      perfil: { FUE: 6, CON: 6, VEL: 4, INT: 4, VOL: 6, MAG: 1 }, coste: { comida: 2, oro: 2, materiales: 1 }, requiere: { edificio: "cuartel" },
+      texto: "Muy fuerte contra jinetes y caballería pesada. Lento y débil contra la infantería de espada." },
+    jinete: { nombre: "Jinete", tipo: ["jinete"], contra: { tirador: 2, magia: 2, asedio: 2 }, rol: "Caballería ligera", hp: 10, atq: 3, def: 1, mov: 5, alc: 1, atqEstat: "VEL",
+      perfil: { FUE: 5, CON: 5, VEL: 8, INT: 5, VOL: 5, MAG: 1 }, coste: { comida: 2, oro: 3 }, requiere: { edificio: "establo" },
+      texto: "Rápido para explorar. Fuerte contra tiradores, magos y máquinas. Débil contra los piqueros." },
+    hostigador: { nombre: "Arquero montado", tipo: ["jinete", "tirador"], contra: { infanteria: 1 }, rol: "Hostigamiento a caballo", hp: 9, atq: 3, def: 1, mov: 5, alc: 2, atqEstat: "VEL", golpeaYSigue: true,
+      perfil: { FUE: 5, CON: 4, VEL: 8, INT: 5, VOL: 5, MAG: 1 }, coste: { comida: 2, oro: 3, materiales: 1 }, requiere: { edificio: "establo", saber: true },
+      texto: "Dispara a 2 casillas y puede seguir moviéndose después. Débil contra los piqueros y los tiradores." },
+    catafracto: { nombre: "Caballería pesada", tipo: ["jinete_pesado"], contra: { infanteria: 2, tirador: 1 }, rol: "Carga", hp: 15, atq: 5, def: 3, mov: 4, alc: 1, atqEstat: "FUE", carga: 2,
+      perfil: { FUE: 7, CON: 7, VEL: 5, INT: 4, VOL: 6, MAG: 1 }, coste: { comida: 3, oro: 5, mineral: 3 }, requiere: { edificio: "establo", saber: true },
+      texto: "Si avanza al menos dos casillas antes de atacar, pega 2 más. Fuerte contra la infantería, débil contra los piqueros y la magia." },
+    volador: { nombre: "Volador", tipo: ["volador"], contra: { asedio: 2, magia: 1 }, rol: "Exploración aérea", hp: 8, atq: 3, def: 1, mov: 5, alc: 1, atqEstat: "VEL", vuela: true, vision: 1,
+      perfil: { FUE: 4, CON: 4, VEL: 9, INT: 5, VOL: 5, MAG: 2 }, coste: { comida: 2, oro: 3 }, requiere: { edificio: "aviario", saber: true },
+      texto: "Vuela: cruza montañas y agua sin gastar más y ve una casilla más. Débil contra los tiradores." },
+    jinete_alado: { nombre: "Montura voladora", tipo: ["volador", "jinete_pesado"], contra: { infanteria: 1, tirador: 1 }, rol: "Caballería del aire", hp: 14, atq: 5, def: 2, mov: 5, alc: 1, atqEstat: "FUE", vuela: true, carga: 1,
+      perfil: { FUE: 7, CON: 6, VEL: 7, INT: 5, VOL: 7, MAG: 2 }, coste: { comida: 3, oro: 6, mana: 2 }, requiere: { edificio: "aviario", saber: true },
+      texto: "Vuela por encima de todo y carga desde el aire. Débil contra los tiradores y los piqueros." },
+    kirin: { nombre: "Kirin", tipo: ["volador", "magia"], contra: { jinete_pesado: 1 }, rol: "Bestia del trueno", hp: 15, atq: 5, def: 2, mov: 5, alc: 2, atqEstat: "MAG", vuela: true, linea: true, unico: 1, exclusiva: "seosan", monstruo: true,
+      perfil: { FUE: 6, CON: 6, VEL: 8, INT: 6, VOL: 8, MAG: 9 }, coste: { mana: 6, oro: 6 }, requiere: { edificio: "aviario", saber: true },
+      texto: "Solo puede haber uno. Su rayo alcanza también a quien esté detrás del objetivo. Vuela." },
     /* --- Barcos. Solo navegan. Se botan en una ciudad con muelle y aparecen en el agua de al lado. No son soldados:
            no ganan experiencia ni pasan al ejército. canon: disparan pólvora. pesado: no pueden moverse y disparar. --- */
-    galera: { nombre: "Galera", rol: "Barco de guerra", naval: 1, hp: 11, atq: 3, def: 1, mov: 4, alc: 2, atqEstat: "FUE", noSoldado: true,
+    galera: { nombre: "Galera", tipo: ["barco"], contra: {}, rol: "Barco de guerra", naval: 1, hp: 11, atq: 3, def: 1, mov: 4, alc: 2, atqEstat: "FUE", noSoldado: true,
       coste: { materiales: 3, oro: 3 }, requiere: { edificio: "muelle" }, texto: "El barco de siempre. Dispara a otros barcos y a quien esté cerca de la orilla." },
-    brulote: { nombre: "Brulote", rol: "Cazabarcos", naval: 2, hp: 8, atq: 4, def: 0, mov: 5, alc: 1, atqEstat: "FUE", noSoldado: true, atqBarco: 3,
+    brulote: { nombre: "Brulote", tipo: ["barco"], contra: {}, rol: "Cazabarcos", naval: 2, hp: 8, atq: 4, def: 0, mov: 5, alc: 1, atqEstat: "FUE", noSoldado: true, atqBarco: 3,
       coste: { materiales: 2, oro: 3 }, requiere: { edificio: "astillero" }, texto: "Un casco viejo cargado de fuego. +3 de ataque contra barcos y tropas embarcadas. Rápido y frágil." },
-    bombarda: { nombre: "Galeón de bombardas", rol: "Asedio desde el mar", naval: 3, hp: 13, atq: 6, def: 1, mov: 3, alc: 3, atqEstat: "FUE", noSoldado: true, canon: true, pesado: true, atqPlaza: 2,
+    bombarda: { nombre: "Galeón de bombardas", tipo: ["barco"], contra: {}, rol: "Asedio desde el mar", naval: 3, hp: 13, atq: 6, def: 1, mov: 3, alc: 3, atqEstat: "FUE", noSoldado: true, canon: true, pesado: true, atqPlaza: 2,
       coste: { materiales: 5, oro: 5, mineral: 3 }, requiere: { edificio: "atarazana" }, texto: "Alcance 3 y +2 contra quien se guarece en una ciudad o una fortaleza. No puede moverse y disparar en el mismo turno." },
-    bergantin: { nombre: "Bergantín de la Hermandad", rol: "Corsario", naval: 1, hp: 11, atq: 4, def: 1, mov: 5, alc: 2, atqEstat: "FUE", noSoldado: true, canon: true, exclusiva: "pelgiria", golpeaYSigue: true,
+    bergantin: { nombre: "Bergantín de la Hermandad", tipo: ["barco"], contra: {}, rol: "Corsario", naval: 1, hp: 11, atq: 4, def: 1, mov: 5, alc: 2, atqEstat: "FUE", noSoldado: true, canon: true, exclusiva: "pelgiria", golpeaYSigue: true,
       coste: { materiales: 3, oro: 3 }, requiere: { edificio: "muelle" }, texto: "Velas negras. Después de disparar puede seguir navegando." },
-    trirreme: { nombre: "Trirreme imperial", rol: "Espolón", naval: 2, hp: 12, atq: 4, def: 1, mov: 4, alc: 1, atqEstat: "FUE", noSoldado: true, exclusiva: "balutia", espolon: 3,
+    trirreme: { nombre: "Trirreme imperial", tipo: ["barco"], contra: {}, rol: "Espolón", naval: 2, hp: 12, atq: 4, def: 1, mov: 4, alc: 1, atqEstat: "FUE", noSoldado: true, exclusiva: "balutia", espolon: 3,
       coste: { materiales: 4, oro: 3 }, requiere: { edificio: "astillero" }, texto: "Si avanza al menos dos casillas antes de atacar, embiste: +3 de ataque." },
-    acorazado: { nombre: "Acorazado de vapor", rol: "Fortaleza flotante", naval: 3, hp: 16, atq: 5, def: 3, mov: 3, alc: 2, atqEstat: "FUE", noSoldado: true, canon: true, exclusiva: "nernib", sinComida: true,
+    acorazado: { nombre: "Acorazado de vapor", tipo: ["barco"], contra: {}, rol: "Fortaleza flotante", naval: 3, hp: 16, atq: 5, def: 3, mov: 3, alc: 2, atqEstat: "FUE", noSoldado: true, canon: true, exclusiva: "nernib", sinComida: true,
       coste: { materiales: 5, mineral: 5, oro: 3 }, requiere: { edificio: "atarazana" }, texto: "Casco de hierro y caldera. Muy difícil de hundir. No come." },
-    nave_ahogados: { nombre: "Nave de los ahogados", rol: "Barco fantasma", naval: 1, hp: 12, atq: 4, def: 1, mov: 3, alc: 2, atqEstat: "VOL", noSoldado: true, exclusiva: "trono-de-ceniza", muertoViviente: true, curaAlMatar: 3,
+    nave_ahogados: { nombre: "Nave de los ahogados", tipo: ["barco"], contra: {}, rol: "Barco fantasma", naval: 1, hp: 12, atq: 4, def: 1, mov: 3, alc: 2, atqEstat: "VOL", noSoldado: true, exclusiva: "trono-de-ceniza", muertoViviente: true, curaAlMatar: 3,
       coste: { anima: 4 }, requiere: { edificio: "muelle" }, texto: "Se paga con Ánima y no come. Cada vez que hunde o mata, se cura 3." },
-    carraca: { nombre: "Carraca mercante", rol: "Comercio armado", naval: 1, hp: 12, atq: 2, def: 1, mov: 3, alc: 2, atqEstat: "FUE", noSoldado: true, canon: true, exclusiva: "compania-dorada", oroTurno: 2,
+    carraca: { nombre: "Carraca mercante", tipo: ["barco"], contra: {}, rol: "Comercio armado", naval: 1, hp: 12, atq: 2, def: 1, mov: 3, alc: 2, atqEstat: "FUE", noSoldado: true, canon: true, exclusiva: "compania-dorada", oroTurno: 2,
       coste: { oro: 6 }, requiere: { edificio: "muelle" }, texto: "Pega poco, pero mientras siga a flote da 2 de oro por turno." },
-    heroe: { nombre: "Héroe", rol: "Héroe", hp: 20, atq: 5, def: 3, mov: 3, alc: 1, atqEstat: "FUE", noReclutable: true,
+    heroe: { nombre: "Héroe", tipo: ["heroe"], contra: {}, rol: "Héroe", hp: 20, atq: 5, def: 3, mov: 3, alc: 1, atqEstat: "FUE", noReclutable: true,
       perfil: { FUE: 8, CON: 8, VEL: 6, INT: 7, VOL: 9, MAG: 5 }, coste: {}, requiere: {}, texto: "Un eco de alguien que dejó huella en el mundo." },
-    eco: { nombre: "Eco", rol: "Magia única", hp: 10, atq: 6, def: 1, mov: 3, alc: 2, atqEstat: "MAG",
-      perfil: { FUE: 2, CON: 5, VEL: 5, INT: 8, VOL: 8, MAG: 10 }, coste: { mana: 6, oro: 4 }, requiere: { edificio: "torre_magia", escuela: ["arcano", 4] },
+    eco: { nombre: "Eco", tipo: ["magia"], contra: { jinete_pesado: 2, monstruo: 1 }, rol: "Magia única", hp: 10, atq: 6, def: 1, mov: 3, alc: 2, atqEstat: "MAG",
+      perfil: { FUE: 2, CON: 5, VEL: 5, INT: 8, VOL: 8, MAG: 10 }, coste: { mana: 6, oro: 4 }, requiere: { edificio: "torre_magia", saber: true },
       texto: "Una manifestación de la Fractura. Magia de alcance con golpe en área." },
-    lider: { nombre: "Líder", rol: "Figura de la facción", hp: 18, atq: 5, def: 3, mov: 3, alc: 1, atqEstat: "FUE", noReclutable: true,
+    lider: { nombre: "Líder", tipo: ["heroe"], contra: {}, rol: "Figura de la facción", hp: 18, atq: 5, def: 3, mov: 3, alc: 1, atqEstat: "FUE", noReclutable: true,
       perfil: { FUE: 8, CON: 8, VEL: 5, INT: 7, VOL: 9, MAG: 4 }, coste: {}, requiere: {}, texto: "Eco de una figura de su facción." },
     // Criaturas sin dueño que guardan ruinas y fortalezas
-    salvaje: { nombre: "Criatura de la Fractura", rol: "Guardián", hp: 14, atq: 4, def: 2, mov: 2, alc: 1, atqEstat: "FUE", noReclutable: true, monstruo: true,
+    salvaje: { nombre: "Criatura de la Fractura", tipo: ["monstruo"], contra: {}, rol: "Guardián", hp: 14, atq: 4, def: 2, mov: 2, alc: 1, atqEstat: "FUE", noReclutable: true, monstruo: true,
       perfil: { FUE: 6, CON: 7, VEL: 4, INT: 2, VOL: 8, MAG: 3 }, coste: {}, requiere: {}, texto: "Nacida de un fragmento inestable." }
   };
   // Clases que sale a la venta por defecto (las exclusivas entran según la facción)
-  const CLASES_BASE = ["guerrero", "cazador", "arcanista", "paladin", "picaro"];
+  const CLASES_BASE = ["guerrero", "cazador", "arcanista", "paladin", "picaro", "piquero"];
   // Barcos que cualquier ejército puede botar, por nivel de muelle (1 muelle, 2 astillero, 3 atarazana)
   const BARCOS_BASE = ["galera", "brulote", "bombarda"];
   const NOMBRES_BARCO = ["La Golondrina", "El Tozudo", "La Viuda", "El Buen Viaje", "La Sorda", "El Cormorán", "La Paciencia", "El Tres Hermanos", "La Deuda", "El Malavenido", "La Estrella Baja", "El Rencor",
@@ -165,6 +187,9 @@
     catedral: { nombre: "Catedral", rama: "mag", nivel: 2, coste: { materiales: 5, oro: 5 }, rinde: { mana: 1 }, solo: "santos-de-asmodeo", previo: ["santuario"], texto: "+1 de maná. Consagra dos casillas alrededor de la ciudad en vez de una." },
     dojo: { nombre: "Dojo", rama: "mil", nivel: 2, coste: { materiales: 5, oro: 3 }, rinde: {}, solo: "seosan", previo: ["cuartel"], texto: "Los reclutas de esta ciudad salen con 2 victorias de experiencia." },
     circulo_huesos: { nombre: "Círculo de Huesos", rama: "mag", nivel: 1, coste: { materiales: 3, oro: 2 }, rinde: { anima: 1 }, solo: "okran", texto: "+1 de Ánima. Lugar de los chamanes." },
+    // Monturas: el Establo cría jinetes y el Aviario, voladores. Cada ejército les da su nombre (edificiosNombre).
+    establo: { nombre: "Establo", rama: "mil", nivel: 1, coste: { materiales: 3, oro: 3 }, rinde: {}, texto: "Permite entrenar {tropas}." },
+    aviario: { nombre: "Aviario", rama: "mil", nivel: 2, coste: { materiales: 4, oro: 4, mana: 1 }, rinde: {}, texto: "Permite criar {tropas}." },
     // El mar: cada nivel de muelle deja botar barcos mejores. Piden agua a dos casillas de la ciudad.
     muelle: { nombre: "Muelle", rama: "eco", nivel: 1, coste: { materiales: 4, oro: 2 }, rinde: { comida: 1, oro: 1 }, agua: true, texto: "+1 de alimento y +1 de oro. Tus tropas pueden embarcar y la ciudad bota galeras. Pide agua cerca." },
     astillero: { nombre: "Astillero", rama: "mil", nivel: 2, coste: { materiales: 5, oro: 4 }, rinde: {}, previo: ["muelle"], agua: true, texto: "Permite botar {tropas}." },
@@ -222,14 +247,17 @@
          curva: cuándo es fuerte. heroe: a quién puede invocar (dos o más = sorteo al empezar la guerra). --- */
   const FACCIONES = {
     "caballeros-del-reino": {
+      poblacion: { base: 4, porNivel: [3, 3, 3, 3, 4], niveles: ["Aldea", "Villa", "Ciudad amurallada", "Plaza fuerte", "Corte"], tope: 30 },
+      odia: ["trono-de-ceniza", "okran", "mravec"],
+      edificiosNombre: { establo: "Cuadras Reales", aviario: "Grifera" },
       naval: { nivel: "Corrientes", texto: "Una marina modesta, para vigilar su costa." },
       diplomacia: { pacta: 0.6, traiciona: 0 },
       nombre: "Los Caballeros del Reino", corto: "Brurland", color: "#c8a24a", bandera: "#7a1f2b", cultura: "comun", origen: "Brurland", curva: "Depende del mapa",
       resumen: "La élite militar de Brurland. Ejército profesional, fortificaciones y caballería pesada.",
-      ventaja: "Las fortalezas dan +1 de defensa extra, empiezan con Disciplina y pueden forjar caballeros. Su magia no pasa del segundo escalón.",
-      mods: { fortalezaDef: 1, arcanoMax: 2 }, escuelaInicial: ["militar", 1],
+      ventaja: "Las fortalezas dan +1 de defensa extra, empiezan con Disciplina y forjan caballeros. Su caballería es la mejor de la Fractura.",
+      mods: { fortalezaDef: 1 },
       lider: { titulo: "Mariscal del Reino", aura: { auraDef: 1 }, estado: { nombre: "El deber continúa", texto: "Sin su mariscal, todas las unidades ganan +1 de ataque.", atq: 1 } },
-      origenes: ["voluntario", "habitante"], clasesExtra: ["caballero"], heroe: ["adam"],
+      origenes: ["voluntario", "habitante"], clasesExtra: ["caballero", "jinete"], heroe: ["adam"],
       tropas: {
         guerrero: ["Miliciano", "Gambesón, capacete de hierro, lanza corta y el pendón del Reino pintado en el escudo."],
         cazador: ["Montaraz", "Capa parda, capucha y arco largo."],
@@ -237,16 +265,23 @@
         paladin: ["Escudero de Hierro", "Armadura completa y un pavés tan alto como él."],
         picaro: ["Batidor", "Explorador ligero con capa corta y daga."],
         caballero: ["Caballero", "Yelmo cerrado con penacho, lanza de carga y el escudo del Reino."],
-        lider: ["Mariscal del Reino", "Armadura de gala, capa roja y corona de mando."]
+        lider: ["Mariscal del Reino", "Armadura de gala, capa roja y corona de mando."],
+        piquero: ["Piquero del Reino", "Pica larga, capacete y peto con el escudo del Reino."],
+        jinete: ["Jinete ligero", "Caballo ligero, peto y lanza corta."],
+        jinete_alado: ["Caballero grifo", "Armadura completa sobre un grifo de plumas pardas."],
+        eco: ["Eco de armas", "Una armadura vacía que flota y pelea sola."]
       }
     },
     "academia-arcana-de-dolbred": {
+      poblacion: { base: 4, porNivel: [2, 2, 3, 3, 3], niveles: ["Torre", "Colegio menor", "Colegio", "Ciudad académica", "Gran Academia"], tope: 24 },
+      odia: ["nernib", "trono-de-ceniza"],
+      edificiosNombre: { establo: "Cuadras del Colegio", aviario: "Cátedra de bestias" },
       naval: { nivel: "Corrientes", texto: "Poca flota. Prefieren cambiar el terreno a cruzar el mar." },
       diplomacia: { pacta: 0.8, traiciona: 0.05 },
       nombre: "Academia Arcana de Dolbred", corto: "Dolbred", color: "#8f6fd8", bandera: "#2d2a6b", cultura: "comun", origen: "Dolbred", curva: "Late game",
       resumen: "La mayor concentración de archimagos conocida. Investiga más rápido y juega con el terreno.",
       ventaja: "Empieza dominando Resonancia, investigar cuesta un 25 % menos de maná, los magos tienen +2 de vida y pueden invocar archimagos.",
-      mods: { investigarMana: 0.75, hpClase: { arcanista: 2, archimago: 2 }, manaInicial: 5, atqClase: { arcanista: 1, archimago: 1 } }, escuelaInicial: ["arcano", 2],
+      mods: { investigarMana: 0.75, hpClase: { arcanista: 2, archimago: 2 }, manaInicial: 5, atqClase: { arcanista: 1, archimago: 1 } },
       lider: { titulo: "Rector de la Academia", aura: { mana: 2 }, estado: { nombre: "Cierre de la Academia", texto: "Sin su rector, investigar cuesta el doble.", investigarMana: 2 } },
       origenes: ["eco", "voluntario"], clasesExtra: ["archimago"], heroe: ["brasa", "humores", "umbral"],
       tropas: {
@@ -256,18 +291,25 @@
         paladin: ["Armadura animada", "Una armadura vacía movida por runas. Por la visera sale luz violeta."],
         picaro: ["Ilusionista", "Máscara lisa y una capa que cambia de color."],
         archimago: ["Archimago", "Sombrero de ala ancha, barba blanca y un cristal en el báculo."],
-        lider: ["Rector de la Academia", "Toga de gala y birrete con las siete torres."]
+        lider: ["Rector de la Academia", "Toga de gala y birrete con las siete torres."],
+        piquero: ["Lancero del Colegio", "Túnica violeta sobre la cota y una lanza con runas."],
+        volador: ["Familiar alado", "Gato negro con alas de murciélago y ojos de tinta."],
+        jinete_alado: ["Jinete de mantícora", "Mago con capa sobre una mantícora domada."],
+        eco: ["Eco", "Una figura de luz que repite lo que hizo un mago muerto."]
       }
     },
     "trono-de-ceniza": {
+      poblacion: { base: 5, porNivel: [3, 4, 4, 4, 5], niveles: ["Fosa", "Cripta", "Osario", "Necrópolis", "Ciudad de los muertos"], tope: 34 },
+      odia: "vivos",
+      edificiosNombre: { establo: "Cuadra de huesos", aviario: "Nido de carroña" },
       naval: { nivel: "A su manera", barcoMax: 1, barcos: ["nave_ahogados"], embarcaSinMuelle: true, fondo: true, movEmbarcada: 2, texto: "Sus tropas no respiran. Cruzan el agua andando por el fondo, despacio, sin muelle y sin perder su defensa. Solo botan galeras y la Nave de los ahogados." },
       diplomacia: { pacta: 0.2, traiciona: 0.3 },
       nombre: "El Trono de Ceniza", corto: "Osses", color: "#9a9486", bandera: "#3d3a38", cultura: "sombrio", origen: "Osses", curva: "Desgaste", monstruos: true, irrefugiable: true,
       resumen: "El gobierno de la Unión de Osses: monstruos y no muertos bajo un mismo estandarte.",
       ventaja: "Sin gasto de comida, tropas baratas de Ánima, +2 de Ánima por ciudad y cada baja deja más. Las ciudades dan 1 de oro menos.",
-      mods: { sinComida: true, oroCiudad: -1, anima_baja: 1, animaCiudad: 2 }, escuelaInicial: ["tanato", 2],
+      mods: { sinComida: true, oroCiudad: -1, anima_baja: 1, animaCiudad: 2 },
       lider: { titulo: "Ceniza Coronada", aura: { auraAtq: 1 }, estado: { nombre: "Los huesos no olvidan", texto: "Sin su soberano, todas las unidades ganan +2 de vida máxima.", hp: 2 } },
-      origenes: ["criatura", "eco"], clasesExtra: ["esqueleto"], heroe: ["ceniciento"],
+      origenes: ["criatura", "eco"], clasesExtra: ["esqueleto", "jinete"], heroe: ["ceniciento"],
       tropas: {
         guerrero: ["Caminante", "Un cadáver armado con lo que llevaba al morir."],
         cazador: ["Acechador", "Necrófago encorvado que lanza esquirlas de hueso."],
@@ -275,18 +317,26 @@
         paladin: ["Abominación", "Varios cuerpos cosidos en uno, con placas atornilladas."],
         picaro: ["Carroñero", "Necrófago flaco y rápido, de garras largas."],
         esqueleto: ["Legión de huesos", "Capucha rota, carne gris y una espada oxidada."],
-        lider: ["Ceniza Coronada", "Corona de hierro sobre un cráneo y manto de ceniza."]
+        lider: ["Ceniza Coronada", "Corona de hierro sobre un cráneo y manto de ceniza."],
+        piquero: ["Lancero sin carne", "Esqueleto alto con una pica oxidada."],
+        jinete: ["Jinete de huesos", "Caballero muerto sobre un caballo sin piel."],
+        volador: ["Cuervo de osario", "Cuervo enorme y desplumado, de ojos verdes."],
+        jinete_alado: ["Wyvern podrido", "Un wyvern muerto con un jinete encapuchado encima."],
+        eco: ["Eco de la Cátedra", "Un espectro de nigromante que todavía recita."]
       }
     },
     "compania-dorada": {
+      poblacion: { base: 4, porNivel: [3, 3, 3, 4, 4], niveles: ["Campamento", "Cuartel de paso", "Plaza de contratas", "Banca", "Sede de la Compañía"], tope: 30 },
+      odia: [],
+      edificiosNombre: { establo: "Caballerizas", aviario: "Palomar" },
       naval: { nivel: "Buenos", barcos: ["carraca"], muelleOro: 2, texto: "Compran sus flotas. Cada muelle les rinde 2 de oro más y tienen carracas mercantes." },
       diplomacia: { pacta: 0.7, traiciona: 0.4 },
       nombre: "Compañía Dorada", corto: "Compañía Dorada", color: "#e0b23a", bandera: "#5a4311", cultura: "comun", origen: "El continente", curva: "Early game",
       resumen: "El ejército mercenario más grande del continente. Todo se resuelve con oro.",
       ventaja: "+3 de oro por ciudad, 12 de oro extra al empezar y mercenarios que se contratan al instante sin edificio.",
-      mods: { oroCiudad: 3, oroInicial: 12 }, escuelaInicial: ["militar", 1],
+      mods: { oroCiudad: 3, oroInicial: 12 },
       lider: { titulo: "Capitán General", aura: { oro: 3 }, estado: { nombre: "Contrato roto", texto: "Sin su capitán, el oro que rinde cada ciudad se reduce a la mitad.", oroMitad: true } },
-      origenes: ["mercenario"], clasesExtra: ["mercenario"], heroe: ["mano_de_oro"],
+      origenes: ["mercenario"], clasesExtra: ["mercenario", "jinete"], heroe: ["mano_de_oro"],
       tropas: {
         guerrero: ["Alabardero a sueldo", "Jubón acuchillado amarillo y negro, sombrero con pluma y alabarda."],
         cazador: ["Ballestero contratado", "Ballesta de acero y un pavés pintado a la espalda."],
@@ -294,18 +344,26 @@
         paladin: ["Escudero de Oro", "Coraza dorada, morrión y rodela."],
         picaro: ["Cuchillo de alquiler", "Antifaz, capa corta y dos dagas."],
         mercenario: ["Mercenario", "Pañuelo rojo, parche en el ojo y espadón."],
-        lider: ["Capitán General", "Coraza dorada, banda de mando y sombrero de plumas."]
+        lider: ["Capitán General", "Coraza dorada, banda de mando y sombrero de plumas."],
+        piquero: ["Piquero de la Compañía", "Pica, morrión y calzas a rayas."],
+        jinete: ["Lanza a sueldo", "Caballo ligero y lanza de torneo."],
+        hostigador: ["Pistolero montado", "Dos pistolas y un caballo nervioso."],
+        catafracto: ["Coracero", "Coraza dorada y caballo bardado."],
+        eco: ["Espíritu contratado", "Un espíritu que firmó un contrato que no puede romper."]
       }
     },
     "hijos-del-acero": {
+      poblacion: { base: 4, porNivel: [3, 3, 3, 3, 3], niveles: ["Puesto de caza", "Fuerte de empalizada", "Fuerte", "Bastión", "Fortaleza del Acero"], tope: 28 },
+      odia: ["trono-de-ceniza", "okran", "mravec"],
+      edificiosNombre: { establo: "Perrera y cuadras", aviario: "Halconera" },
       naval: { nivel: "Flojos", barcoMax: 2, texto: "Cazadores de tierra firme. No pasan del astillero." },
       diplomacia: { pacta: 0.6, traiciona: 0 },
       nombre: "Hijos del Acero", corto: "Hijos del Acero", color: "#9fb0bd", bandera: "#2b3a45", cultura: "comun", origen: "Internacional", curva: "Mid game",
       resumen: "Mercenarios que solo cazan monstruos. Una ballesta bien puesta vale por un ejército.",
       ventaja: "+2 de ataque contra monstruos y criaturas salvajes, y ballesteros pesados de serie.",
-      mods: { atqMonstruo: 2 }, escuelaInicial: ["militar", 1],
+      mods: { atqMonstruo: 2 },
       lider: { titulo: "Maestro Cazador", aura: { atqMonstruo: 1 }, estado: { nombre: "La caza no se detiene", texto: "Sin su maestro, los cazadores y ballesteros ganan +1 de ataque.", atqClases: { cazador: 1, ballestero: 1 } } },
-      origenes: ["mercenario", "voluntario"], clasesExtra: ["ballestero"], heroe: ["rykerd"],
+      origenes: ["mercenario", "voluntario"], clasesExtra: ["ballestero", "jinete"], heroe: ["rykerd"],
       tropas: {
         guerrero: ["Alanceador de caza", "Abrigo de cuero con trofeos y una lanza de jabalí con travesaño."],
         cazador: ["Batidor de caza", "Sombrero de ala ancha, arco y capa de montero."],
@@ -313,16 +371,22 @@
         paladin: ["Escudero de cacería", "Escudo de torre con marcas de garras."],
         picaro: ["Rastreador", "Capa de pieles y cuchillos de desollar."],
         ballestero: ["Ballestero pesado", "Celada, ballesta de torno y virotes gruesos."],
-        lider: ["Maestro Cazador", "Sombrero de ala, abrigo largo y una cabeza de monstruo al cinto."]
+        lider: ["Maestro Cazador", "Sombrero de ala, abrigo largo y una cabeza de monstruo al cinto."],
+        piquero: ["Lancero de jabalíes", "Lanza de cruceta para frenar la carga de las bestias."],
+        jinete: ["Montero", "Jinete con una jauría de perros de presa."],
+        hostigador: ["Ballestero montado", "Ballesta ligera y caballo de monte."]
       }
     },
     "santos-de-asmodeo": {
+      poblacion: { base: 4, porNivel: [3, 3, 3, 4, 4], niveles: ["Ermita", "Parroquia", "Abadía", "Catedral", "Sede del Primado"], tope: 30 },
+      odia: ["mravec", "okran", "trono-de-ceniza", "nernib", "pelgiria"],
+      edificiosNombre: { establo: "Caballerizas de la Orden", aviario: "Nido sagrado" },
       naval: { nivel: "Corrientes", texto: "Flota de cruzada, sin nada propio." },
       diplomacia: { pacta: 0.6, traiciona: 0.3, soloHumanos: true },
       nombre: "Santos de Asmodeo", corto: "Santos de Asmodeo", color: "#efe2b8", bandera: "#8a1c1c", cultura: "comun", origen: "Ithranor", curva: "Depende del mapa",
       resumen: "El brazo armado de la Iglesia de Asmodeo. Una teocracia de clérigos y paladines en cruzada.",
       ventaja: "Consagran el terreno: en casillas consagradas sus tropas tienen +1 de defensa y se curan. Los paladines son más recios y baratos.",
-      mods: { consagra: true, curaExtra: 1, costeClase: { paladin: { oro: -1 }, sanador: { oro: -1 } }, hpClase: { paladin: 2 } }, escuelaInicial: ["militar", 1],
+      mods: { consagra: true, curaExtra: 1, costeClase: { paladin: { oro: -1 }, sanador: { oro: -1 } }, hpClase: { paladin: 2 } },
       lider: { titulo: "Primado de Ithranor", aura: { cura: 2 }, estado: { nombre: "La cruzada sigue", texto: "Sin su primado, todas las unidades ganan +1 de defensa.", def: 1 } },
       origenes: ["voluntario", "habitante"], clasesExtra: ["sanador"], heroe: ["vigilante"],
       tropas: {
@@ -332,18 +396,25 @@
         paladin: ["Paladín de la Pureza", "Armadura blanca completa, maza y un halo de metal en el yelmo."],
         picaro: ["Confesor", "Hábito oscuro, capucha y un punzón dentro del breviario."],
         sanador: ["Consagrador", "Sacerdote con estola roja y báculo solar."],
-        lider: ["Primado de Ithranor", "Mitra, capa pluvial y un báculo de oro."]
+        lider: ["Primado de Ithranor", "Mitra, capa pluvial y un báculo de oro."],
+        piquero: ["Hermano de la Pica", "Hábito blanco sobre la cota y una pica."],
+        catafracto: ["Caballero de la Vigilia", "Armadura blanca y caballo bardado con soles."],
+        jinete_alado: ["Jinete de hipogrifo", "Paladín sobre un hipogrifo blanco."],
+        eco: ["Eco del Alba", "Un santo de luz con los ojos cerrados."]
       }
     },
     nikaalia: {
+      poblacion: { base: 4, porNivel: [2, 3, 3, 3, 4], niveles: ["Callejón", "Barrio", "Distrito", "Ciudad de los Dones", "Umbrathil"], tope: 26 },
+      odia: ["santos-de-asmodeo"],
+      edificiosNombre: { establo: "Cuadras del puerto", aviario: "Campanario de murciélagos" },
       naval: { nivel: "Buenos", texto: "Contrabandistas. Sus barcos, como sus tropas, no se ven hasta tenerlos encima." },
       diplomacia: { pacta: 0.8, traiciona: 0.5 },
       nombre: "Natonocturnos de Nikaalia", corto: "Nikaalia", color: "#c05aa8", bandera: "#1c1026", cultura: "nocturno", origen: "Nikaalia", curva: "Early game",
       resumen: "Las familias de Umbrathil, criadas bajo la noche eterna del domo. Gánsteres antes que soldados.",
       ventaja: "Noche eterna: los rivales ven una casilla menos y sus tropas no se ven hasta tener un enemigo al lado. Sobornan criaturas con oro. Tienen pistoleros.",
-      mods: { noche: true, soborno: 4, oroInicial: 6, polvora: { cazador: true } }, escuelaInicial: ["tanato", 1],
+      mods: { noche: true, soborno: 4, oroInicial: 6, polvora: { cazador: true } },
       lider: { titulo: "El Don", aura: { oro: 2 }, estado: { nombre: "Guerra de familias", texto: "Sin su Don, todas las unidades ganan +1 de ataque.", atq: 1 } },
-      origenes: ["mercenario", "habitante"], clasesExtra: ["capo"], heroe: ["ottavio"],
+      origenes: ["mercenario", "habitante"], clasesExtra: ["capo", "jinete"], heroe: ["ottavio"],
       tropas: {
         guerrero: ["Matón", "Gabardina, sombrero de ala y un tubo de plomo."],
         cazador: ["Pistolero de callejón", "Traje oscuro, sombrero calado y pistola de rueda."],
@@ -351,18 +422,24 @@
         paladin: ["Guardaespaldas", "Enorme, con abrigo largo sobre placas y una puerta de carruaje por escudo."],
         picaro: ["Sicario", "Guantes, bufanda sobre la cara y un estilete."],
         capo: ["Capo", "Traje de raya, abrigo sobre los hombros y bastón de estoque."],
-        lider: ["El Don", "Abrigo de pieles, sombrero y un anillo en cada dedo."]
+        lider: ["El Don", "Abrigo de pieles, sombrero y un anillo en cada dedo."],
+        piquero: ["Matón de la vara", "Vara larga con clavos y una bufanda sobre la cara."],
+        jinete: ["Correo nocturno", "Caballo negro, capa y farol apagado."],
+        volador: ["Murciélago espía", "Murciélago grande con el collar de una familia."]
       }
     },
     seosan: {
+      poblacion: { base: 4, porNivel: [2, 2, 3, 3, 3], niveles: ["Aldea", "Dojo", "Escuela", "Ciudad templo", "Kaishoto"], tope: 24 },
+      odia: ["okran", "mravec"],
+      edificiosNombre: { establo: "Cuadras de Yumigaoka", aviario: "Templo del Trueno" },
       naval: { nivel: "Buenos", barcoMov: 1, texto: "Navegan en juncos ligeros. Sus barcos tienen +1 de movimiento." },
       diplomacia: { pacta: 0.5, traiciona: 0 },
       nombre: "Escuelas de Seosan", corto: "Seosan", color: "#5fc08f", bandera: "#173528", cultura: "seosan", origen: "Seosan", curva: "Depende del mapa",
       resumen: "Escuelas marciales que se respetan entre sí y resuelven sus asuntos en duelo.",
       ventaja: "Duelo: +2 de ataque contra una unidad que está sola, y en ese combate nadie recibe ayuda de los que tiene al lado. Sus maestros de escuela lo aprovechan todavía más.",
-      mods: { duelo: 2 }, escuelaInicial: ["militar", 1],
+      mods: { duelo: 2 },
       lider: { titulo: "Gran Maestro de Kaishoto", aura: { auraAtq: 1 }, estado: { nombre: "Los discípulos recuerdan", texto: "Sin su maestro, todas las unidades ganan +1 de defensa.", def: 1 } },
-      origenes: ["voluntario", "habitante"], clasesExtra: ["maestro"], heroe: ["kirin"],
+      origenes: ["voluntario", "habitante"], clasesExtra: ["maestro"], heroe: ["genichiro"],
       tropas: {
         guerrero: ["Discípulo de escuela", "Ropa ceñida, cinta en la frente y sable."],
         cazador: ["Arquero de Yumigaoka", "Sombrero de paja y un arco más alto que él."],
@@ -370,18 +447,24 @@
         paladin: ["Guardián de templo", "Armadura lacada de láminas, máscara de demonio y lanza de hoja curva."],
         picaro: ["Sombra de Tetsumura", "De negro, con la cara tapada y una hoja corta."],
         maestro: ["Maestro de escuela", "Kimono con el emblema de su escuela y dos sables."],
-        lider: ["Gran Maestro de Kaishoto", "Yelmo de cuernos, armadura lacada y abanico de mando."]
+        lider: ["Gran Maestro de Kaishoto", "Yelmo de cuernos, armadura lacada y abanico de mando."],
+        piquero: ["Lancero de templo", "Yari largo y armadura lacada."],
+        hostigador: ["Arquero yabusame", "Arquero a caballo con el arco largo de Yumigaoka."],
+        kirin: ["Kirin", "Ciervo dragón de escamas de jade, crin de rayos y un solo cuerno."]
       }
     },
     okran: {
+      poblacion: { base: 5, porNivel: [3, 4, 4, 4, 4], niveles: ["Campamento", "Poblado", "Clan", "Gran clan", "Vornhaal"], tope: 32 },
+      odia: ["caballeros-del-reino", "santos-de-asmodeo", "hijos-del-acero"],
+      edificiosNombre: { establo: "Cubil de lobos", aviario: "Peñasco de águilas" },
       naval: { nivel: "Torpes", barcoMax: 1, muelleCoste: 2, movEmbarcada: 2, texto: "Gente de las Tierras Altas. Los muelles les cuestan el doble, solo botan galeras y embarcados van despacio." },
       diplomacia: { pacta: 0.4, traiciona: 0.4 },
       nombre: "Clanes de Okran", corto: "Okran", color: "#b8672e", bandera: "#33200f", cultura: "okran", origen: "Okran", curva: "Early game",
       resumen: "Clanes bárbaros y hombres bestia de las Tierras Altas. Solo respetan la fuerza.",
       ventaja: "Furia: +1 de ataque por cada cuarto de vida perdido, hasta +3. Sus tropas no necesitan edificios para lo básico.",
-      mods: { furia: 3, monstruoClases: ["paladin", "picaro"] }, escuelaInicial: ["militar", 1],
+      mods: { furia: 3, monstruoClases: ["paladin", "picaro"] },
       lider: { titulo: "Jefe de Vornhaal", aura: { auraAtq: 1 }, estado: { nombre: "Sangre por el jefe", texto: "Sin su jefe, todas las unidades ganan +1 de ataque.", atq: 1 } },
-      origenes: ["habitante", "criatura"], clasesExtra: ["berserker"], heroe: ["ebonrabia"],
+      origenes: ["habitante", "criatura"], clasesExtra: ["berserker", "jinete"], heroe: ["ebonrabia"],
       tropas: {
         guerrero: ["Guerrero de clan", "Pieles, pintura de guerra y un hacha de dos manos."],
         cazador: ["Lanzador de huesos", "Collar de dientes y un haz de jabalinas de hueso."],
@@ -389,16 +472,23 @@
         paladin: ["Gran hombre bestia", "Mitad hombre y mitad bisonte, con cuernos y un tronco por maza."],
         picaro: ["Acechador de estepa", "Hombre lobo flaco con una capa de hierba seca."],
         berserker: ["Berserker", "Torso desnudo lleno de cicatrices y un hacha en cada mano."],
-        lider: ["Jefe de Vornhaal", "Capa de oso, casco de cuernos y un hacha enorme."]
+        lider: ["Jefe de Vornhaal", "Capa de oso, casco de cuernos y un hacha enorme."],
+        piquero: ["Portador de colmillos", "Lanza hecha con un colmillo de mamut."],
+        jinete: ["Jinete de lobo", "Guerrero sobre un lobo gris de las Tierras Altas."],
+        hostigador: ["Arquero de estepa", "Arco corto de asta y un lobo veloz."],
+        eco: ["Eco de los ancestros", "El espíritu de un jefe antiguo, hecho de humo y huesos."]
       }
     },
     pelgiria: {
+      poblacion: { base: 4, porNivel: [3, 3, 3, 3, 4], niveles: ["Cala", "Fondeadero", "Puerto", "Puerto franco", "Cala Ronca"], tope: 28 },
+      odia: ["balutia", "santos-de-asmodeo"],
+      edificiosNombre: { establo: "Cuadras del muelle", aviario: "Palomar" },
       naval: { nivel: "Maestros", barcos: ["bergantin"], barcoMov: 1, barcoAtq: 1, muelleCoste: 0.5, embarcaSinMuelle: true, marinos: true, movEmbarcada: 4, texto: "Viven del mar. Embarcan y desembarcan sin perder el turno ni la defensa, pelean embarcados, sus muelles cuestan la mitad y sus barcos son más rápidos y pegan más." },
       diplomacia: { pacta: 0.7, traiciona: 0.4 },
       nombre: "Hermandad de Cala Ronca", corto: "Pelgiria", color: "#36a9b0", bandera: "#0f3138", cultura: "pelgiria", origen: "Pelgiria", curva: "Depende del mapa",
       resumen: "Piratas del archipiélago de Pelgiria. Pólvora, abordajes y tortugas de mar gigantes.",
       ventaja: "Maestros del mar: embarcan sin muelle y sin perder el turno, pelean embarcados y sus barcos son los mejores. Tienen arcabuceros, cañoneros y barrileros que explotan.",
-      mods: { polvora: { cazador: true, arcanista: true } }, escuelaInicial: ["militar", 1],
+      mods: { polvora: { cazador: true, arcanista: true } },
       lider: { titulo: "Capitán de la Hermandad", aura: { oro: 2 }, estado: { nombre: "Cada cual a lo suyo", texto: "Sin su capitán, todas las unidades ganan +1 de ataque.", atq: 1 } },
       origenes: ["mercenario", "habitante"], clasesExtra: ["barrilero"], heroe: ["dientesal"],
       tropas: {
@@ -408,16 +498,20 @@
         paladin: ["Jinete de escudonte", "Montado en una tortuga gigante con castillete en el caparazón."],
         picaro: ["Contrabandista", "Capa encerada, farol ciego y puñal."],
         barrilero: ["Barrilero", "Carga a la espalda un barril de pólvora con la mecha encendida."],
-        lider: ["Capitán de la Hermandad", "Casaca larga, tricornio con pluma y sable."]
+        lider: ["Capitán de la Hermandad", "Casaca larga, tricornio con pluma y sable."],
+        piquero: ["Abordador de chuzo", "Chuzo de abordaje y pañuelo al cuello."]
       }
     },
     mravec: {
+      poblacion: { base: 5, porNivel: [4, 4, 4, 5, 5], niveles: ["Galería", "Hormiguero", "Colmena", "Gran colmena", "Zaphara"], tope: 36 },
+      odia: ["santos-de-asmodeo", "hijos-del-acero"],
+      edificiosNombre: { establo: "Criadero de escarabajos", aviario: "Celdas aladas" },
       naval: { nivel: "Negados", barcoMax: 0, sinMuelle: true, embarcaSinMuelle: true, movEmbarcada: 2, texto: "Vienen del desierto. No construyen muelles ni barcos. Cruzan el agua en balsas de quitina, despacio y sin defensa." },
       diplomacia: { pacta: 0, traiciona: 0 },
       nombre: "Satrapía de Mravec", corto: "Mravec", color: "#b4c23a", bandera: "#3d3a10", cultura: "mravec", origen: "Mravec", curva: "Late game", monstruos: true, irrefugiable: true,
       resumen: "Insectoides del desierto, descendientes de la Reina Hormiga. Lo que devoran, lo aprenden.",
       ventaja: "Devorar y adaptar: tres de sus tropas ganan un rasgo del enemigo que matan (hasta dos por unidad).",
-      mods: { devora: ["guerrero", "picaro", "quimera"] }, escuelaInicial: ["tanato", 1],
+      mods: { devora: ["guerrero", "picaro", "quimera"] },
       lider: { titulo: "Voz de la Satrapía", aura: { auraDef: 1 }, estado: { nombre: "El Panal se cierra", texto: "Sin su voz, todas las unidades ganan +2 de vida máxima.", hp: 2 } },
       origenes: ["criatura"], clasesExtra: ["quimera"], heroe: ["zaphar"],
       tropas: {
@@ -427,18 +521,25 @@
         paladin: ["Centinela de quitina", "Escarabajo acorazado con un cuerno."],
         picaro: ["Acechador de arena", "Hormiga león de pinzas largas, medio enterrada."],
         quimera: ["Quimera", "Mezcla de lo que ha devorado: alas, pinzas y aguijón."],
-        lider: ["Voz de la Satrapía", "Insecto alto y delgado con corona de ámbar y manto de alas."]
+        lider: ["Voz de la Satrapía", "Insecto alto y delgado con corona de ámbar y manto de alas."],
+        piquero: ["Lancera del Panal", "Hormiga soldado de mandíbulas largas como picas."],
+        volador: ["Avispa de guerra", "Avispa del tamaño de un perro."],
+        jinete_alado: ["Jinete de libélula", "Guerrera del Panal sobre una libélula gigante."],
+        catafracto: ["Escarabajo de guerra", "Escarabajo acorazado con una guerrera encima."]
       }
     },
     nernib: {
+      poblacion: { base: 4, porNivel: [2, 3, 3, 3, 3], niveles: ["Taller", "Barrio fabril", "Ciudad fabril", "Distrito de la Oligarquía", "La Ciudadela"], tope: 26 },
+      odia: ["academia-arcana-de-dolbred", "mravec"],
+      edificiosNombre: { establo: "Garaje de velocípedos", aviario: "Hangar" },
       naval: { nivel: "Buenos", barcos: ["acorazado"], barcoDef: 1, texto: "Tienen los mejores ingenieros navales. Sus barcos tienen +1 de defensa y construyen acorazados de vapor." },
       diplomacia: { pacta: 0.6, traiciona: 0.1 },
       nombre: "Oligarquía de Nernib", corto: "Nernib", color: "#6fb6e0", bandera: "#26323e", cultura: "nernib", origen: "Nernib", curva: "Late game",
       resumen: "Ciudad-estado de gnomos y forjados. Lo que no pueden vencer, lo fabrican.",
       ventaja: "Taller: construyen autómatas que no comen, y el taller entrega uno gratis cada 4 turnos (hasta 3). Tienen fusileros.",
-      mods: { taller: true, polvora: { cazador: true } }, escuelaInicial: ["arcano", 1],
+      mods: { taller: true, polvora: { cazador: true } },
       lider: { titulo: "Oligarca", aura: { mana: 2 }, estado: { nombre: "Protocolo de emergencia", texto: "Sin su oligarca, todas las unidades ganan +1 de defensa.", def: 1 } },
-      origenes: ["voluntario", "eco"], clasesExtra: ["automata"], heroe: ["engranaje"],
+      origenes: ["voluntario", "eco"], clasesExtra: ["automata", "jinete"], heroe: ["engranaje"],
       tropas: {
         guerrero: ["Operario acorazado", "Un gnomo dentro de un traje de placas remachadas, con martillo de vapor."],
         cazador: ["Artillero de Balistrix", "Un gnomo con gafas y un fusil más largo que él."],
@@ -446,18 +547,25 @@
         paladin: ["Forjado", "Constructo de metal y madera con un solo ojo de luz."],
         picaro: ["Explorador mecánico", "Autómata pequeño de patas largas con una lente por cabeza."],
         automata: ["Autómata", "Obrero de latón con brazos de pistón."],
-        lider: ["Oligarca", "Un gnomo anciano en un trono andante de latón."]
+        lider: ["Oligarca", "Un gnomo anciano en un trono andante de latón."],
+        piquero: ["Alabardero de Nernib", "Alabarda de vapor y casco con una lente."],
+        jinete: ["Velocípedo de vapor", "Biciclo de hierro con caldera y un piloto con gafas."],
+        volador: ["Ornitóptero", "Máquina de alas batientes y hélice de latón."],
+        eco: ["Espectro de éter", "Una figura azul de chispas que sale de un condensador."]
       }
     },
     balutia: {
+      poblacion: { base: 5, porNivel: [3, 4, 4, 4, 4], niveles: ["Castro", "Colonia", "Municipio", "Provincia", "El Foro"], tope: 34 },
+      odia: ["pelgiria", "okran"],
+      edificiosNombre: { establo: "Cuadras de la legión", aviario: "Aquilario" },
       naval: { nivel: "Buenos", barcos: ["trirreme"], texto: "La flota del Imperio pelea embistiendo. Tienen trirremes." },
       diplomacia: { pacta: 0.6, traiciona: 0.4 },
       nombre: "Imperio de Balutia", corto: "Balutia", color: "#c23a3a", bandera: "#3a0f14", cultura: "balutia", origen: "Balutia", curva: "Mid game",
       resumen: "El imperio de las legiones. Conquista una provincia y pone a su gente en primera fila.",
       ventaja: "Tributo: cada ciudad que conquista le entrega un Auxiliar de provincias (hasta 3). Tropas baratas de la Ergástula.",
-      mods: { tributo: 3, polvora: { arcanista: true } }, escuelaInicial: ["militar", 1],
+      mods: { tributo: 3, polvora: { arcanista: true } },
       lider: { titulo: "Legado del Emperador", aura: { auraDef: 1 }, estado: { nombre: "La legión no se rinde", texto: "Sin su legado, todas las unidades ganan +1 de ataque.", atq: 1 } },
-      origenes: ["voluntario", "habitante"], clasesExtra: ["condenado"], heroe: ["orsa"],
+      origenes: ["voluntario", "habitante"], clasesExtra: ["condenado", "jinete"], heroe: ["reinhardt"],
       tropas: {
         guerrero: ["Legionario", "Escudo rectangular, yelmo con carrilleras y espada corta."],
         cazador: ["Auxiliar de provincias", "Tropa de las provincias, con jabalinas y escudo ovalado."],
@@ -465,7 +573,11 @@
         paladin: ["Pretoriano", "Coraza musculada, capa púrpura y penacho."],
         picaro: ["Delator de la Corte", "Toga gris, tablilla de cera y un puñal en la manga."],
         condenado: ["Condenado de la Ergástula", "Un preso con los grilletes rotos y un arma prestada."],
-        lider: ["Legado del Emperador", "Coraza dorada, capa púrpura y corona de laurel."]
+        lider: ["Legado del Emperador", "Coraza dorada, capa púrpura y corona de laurel."],
+        piquero: ["Triario", "Lanza larga y escudo grande, el veterano de la última fila."],
+        jinete: ["Équite", "Jinete de túnica roja y lanza."],
+        catafracto: ["Catafracto", "Jinete y caballo cubiertos de escamas de bronce."],
+        eco: ["Eco del Imperio", "Un legionario de luz con el águila en el escudo."]
       }
     }
   };
@@ -481,6 +593,18 @@
     return { nombre: t ? t[0] : cl.nombre || clase, aspecto: t ? t[1] : "", rol: cl.rol || "", texto: (cl.texto || "") + (polvora ? " Usa pólvora: pega 2 más y atraviesa 1 de defensa, pero no puede moverse y disparar en el mismo turno." : ""), polvora };
   }
 
+  /* Cada ejército llama a sus edificios de monturas a su manera */
+  function nombreEdificio(id, faccion) {
+    const f = faccion ? FACCIONES[faccionReal(faccion)] : null;
+    return (f && f.edificiosNombre && f.edificiosNombre[id]) || (EDIFICIOS[id] ? EDIFICIOS[id].nombre : id);
+  }
+  /* El nombre de cada nivel de ciudad en ese ejército (Aldea, Villa... u Osario, Necrópolis...) */
+  function nivelCiudad(faccion, nivel) {
+    const f = faccion ? FACCIONES[faccionReal(faccion)] : null;
+    const l = (f && f.poblacion && f.poblacion.niveles) || ["Aldea", "Villa", "Ciudad", "Gran ciudad", "Capital"];
+    return l[Math.max(0, Math.min(l.length - 1, nivel - 1))];
+  }
+
   /* El texto de un edificio para un ejército: {tropas} se cambia por las tropas de ese ejército que lo piden.
      Sin ejército (la ayuda general) se nombran las tropas por su papel. Si no hay ninguna, esa frase se quita. */
   function textoEdificio(id, faccion) {
@@ -494,7 +618,7 @@
         if (!f) return !k.exclusiva;
         if (k.exclusiva) return k.exclusiva === faccionReal(faccion);
         if (k.naval) { const nv = f.naval || {}; return (nv.barcoMax === undefined || k.naval <= nv.barcoMax) && !nv.sinMuelle; }
-        return CLASES_BASE.includes(cl) || (f.clasesExtra || []).includes(cl) || cl === "eco";
+        return CLASES_BASE.includes(cl) || (f.clasesExtra || []).includes(cl) || (raiz.FracturaSaber ? raiz.FracturaSaber.posibles(faccion).includes(cl) : cl === "eco");
       });
     const nombres = clases.map(cl => (f ? tropa(faccion, cl).nombre : CLASES[cl].nombre).toLowerCase());
     if (!nombres.length) return ed.texto.replace(/[^.]*\{tropas\}[^.]*\.\s*/, "").trim() || "Sin tropas propias de tu ejército.";
@@ -517,38 +641,38 @@
       coste: { materiales: 10, mineral: 2 }, req: [{ t: "edificio", id: "taller" }],
       ef: { llegaCon: ["automata", "automata"], atqClaseAliada: { automata: 1 } },
       texto: "Llega con 2 autómatas. Tus autómatas tienen +1 de ataque.", aspecto: "Forjado antiguo de bronce verdoso con un gran engranaje en el pecho." },
-    ottavio: { faccion: "nikaalia", nombre: "Don Ottavio Umbral", titulo: "Dueño del Mercado de las Sombras", nivel: 1, hp: 18, atq: 5, def: 3, mov: 3, alc: 1,
+    ottavio: { faccion: "nikaalia", nombre: "Doña Ottavia Umbral", titulo: "Dueña del Mercado de las Sombras", sexo: "f", nivel: 1, hp: 18, atq: 5, def: 3, mov: 3, alc: 1,
       coste: { oro: 10 }, req: [{ t: "mercado" }],
       ef: { sobornoMitad: true, velo: true, activa: { id: "contratar", nombre: "Una oferta", texto: "Paga 2 de oro: una criatura salvaje a su lado lucha por ti 3 turnos.", cd: 2, coste: { oro: 2 } } },
-      texto: "Sus sobornos cuestan la mitad. Los aliados a su lado no pueden ser atacados desde lejos.", aspecto: "Traje blanco, abrigo negro, sombrero y un bastón con pomo de cuervo." },
+      texto: "Sus sobornos cuestan la mitad. Los aliados a su lado no pueden ser atacados desde lejos.", aspecto: "Traje blanco, abrigo negro, sombrero de ala ancha sobre una melena oscura y un bastón con pomo de cuervo." },
     brasa: { faccion: "academia-arcana-de-dolbred", nombre: "Ilvaren Brasalba", titulo: "Colegio de la Brasa Viva", nivel: 2, hp: 22, atq: 5, def: 3, mov: 3, alc: 3, magia: true,
-      coste: { mana: 10, oro: 4 }, req: [{ t: "edificio", id: "torre_magia" }, { t: "escuela", e: "arcano", n: 3 }], variantes: ["Ilvaren Brasalba", "Konnovan, el zorro de fuego"],
+      coste: { mana: 10, oro: 4 }, req: [{ t: "edificio", id: "torre_magia" }, { t: "saber", n: 5 }], variantes: ["Ilvaren Brasalba", "Konnovan, el zorro de fuego"],
       ef: { activa: { id: "area", nombre: "Pira", texto: "3 de daño a todo lo que haya en un cuadro de 3x3, hasta a 3 casillas.", cd: 4, dano: 3, alc: 3 } },
       texto: "Ataca a 3 casillas.", aspecto: "Elfo de fuego, con la melena y la túnica a medio arder." },
     humores: { faccion: "academia-arcana-de-dolbred", nombre: "Maese Croacio Verruguilla", titulo: "Colegio de los Humores", nivel: 2, hp: 22, atq: 4, def: 3, mov: 3, alc: 2, magia: true,
-      coste: { mana: 10, oro: 4 }, req: [{ t: "edificio", id: "torre_magia" }, { t: "escuela", e: "arcano", n: 3 }], variantes: ["Maese Croacio Verruguilla", "El Decano de los Fundamentos"],
+      coste: { mana: 10, oro: 4 }, req: [{ t: "edificio", id: "torre_magia" }, { t: "saber", n: 5 }], variantes: ["Maese Croacio Verruguilla", "El Decano de los Fundamentos"],
       ef: { manaTurno: 2, activa: { id: "curar", nombre: "Triaca", texto: "Cura 4 a todos los aliados a 2 casillas.", cd: 3, cura: 4, radio: 2 } },
       texto: "+2 de maná por turno.", aspecto: "Hombre sapo pequeño con máscara de médico de la peste y maletín de ampollas." },
     umbral: { faccion: "academia-arcana-de-dolbred", nombre: "Custodia Aldenvar", titulo: "Colegio del Umbral", nivel: 2, hp: 24, atq: 4, def: 4, mov: 3, alc: 1, magia: true,
-      coste: { mana: 10, oro: 4 }, req: [{ t: "edificio", id: "torre_magia" }, { t: "escuela", e: "arcano", n: 3 }], variantes: ["Custodia Aldenvar", "Ysolde Vaelward, guardiana de Vaelmoot"],
+      coste: { mana: 10, oro: 4 }, req: [{ t: "edificio", id: "torre_magia" }, { t: "saber", n: 5 }], variantes: ["Custodia Aldenvar", "Ysolde Vaelward, guardiana de Vaelmoot"],
       ef: { auraDef1: 2, activa: { id: "muro", nombre: "Muro de runas", texto: "Bloquea una casilla vacía durante 2 turnos.", cd: 4, alc: 3 } },
       texto: "Los aliados a su lado ganan +2 de defensa.", aspecto: "Anciana alta con armadura de pergaminos rúnicos y un grimorio por escudo." },
     ceniciento: { faccion: "trono-de-ceniza", nombre: "El Ceniciento", titulo: "Mano de Ceniza Coronada", nivel: 2, hp: 23, atq: 5, def: 3, mov: 3, alc: 1, muertoViviente: true,
-      coste: { anima: 10 }, req: [{ t: "escuela", e: "tanato", n: 3 }, { t: "cuenta", k: "perdidas", n: 1, texto: "Haber perdido una unidad en esta guerra" }],
+      coste: { anima: 10 }, req: [{ t: "saber", n: 5 }, { t: "cuenta", k: "perdidas", n: 1, texto: "Haber perdido una unidad en esta guerra" }],
       ef: { alzaCaidos: true, activa: { id: "alzar", nombre: "Volved", texto: "Una sola vez: levanta al aliado caído más fuerte, con 2 de vida.", cd: 99 } },
       texto: "Cuando muere un aliado a 2 casillas, aparece una Legión de huesos (una por turno).", aspecto: "Armadura quemada, un manto de ceniza que no deja de caer y brasas por ojos." },
     vigilante: { faccion: "santos-de-asmodeo", nombre: "El Vigilante", titulo: "Custodio de la Catedral de la Vigilia", nivel: 2, hp: 24, atq: 5, def: 3, mov: 3, alc: 1,
       coste: { oro: 8, mana: 4 }, req: [{ t: "edificio", id: "catedral" }, { t: "consagradas", n: 12 }],
       ef: { consagraAlPisar: true, escudoAliados: true },
       texto: "Consagra las casillas que pisa. Los aliados a su lado ignoran el primer golpe de cada turno.", aspecto: "Armadura blanca sin rostro, seis alas de metal plegadas y una espada de llama." },
-    kirin: { faccion: "seosan", nombre: "El Kirin", titulo: "La bestia del trueno de Senkai", nivel: 2, hp: 22, atq: 5, def: 3, mov: 4, alc: 2, magia: true, bestia: true,
+    genichiro: { faccion: "seosan", nombre: "Genichiro Nakamuro", titulo: "Samurái de la Escuela del Río Rojo", nivel: 2, hp: 22, atq: 6, def: 3, mov: 3, alc: 1, bestia: false,
       coste: { mana: 6, oro: 6 }, req: [{ t: "edificio", id: "dojo" }, { t: "cuenta", k: "duelos", n: 3, texto: "Ganar 3 duelos (matar a una unidad que está sola)" }],
-      ef: { linea: true, clava: true },
-      texto: "Su rayo alcanza también a quien esté detrás del objetivo. A quien golpea no puede moverse en su siguiente turno.", aspecto: "Ciervo dragón de escamas de jade, crin de rayos y un solo cuerno." },
+      ef: { atqSolo: 3, sinRespuesta: true, activa: { id: "formar", nombre: "Postura del río", texto: "Los aliados a su lado ganan +1 de defensa hasta tu próximo turno.", cd: 3 } },
+      texto: "+3 de ataque contra una unidad que está sola. Quien recibe su golpe no puede responder.", aspecto: "Draconiano rojo de escamas duras, cara alargada de cocodrilo, barba trenzada, cola gruesa y un sombrero de arroz que le tapa los ojos." },
     ebonrabia: { faccion: "okran", nombre: "Ebonrabia", titulo: "De la sangre del Behemoth", nivel: 2, hp: 24, atq: 5, def: 3, mov: 3, alc: 1, bestia: true,
       coste: { comida: 6, oro: 4 }, req: [{ t: "edificio", id: "circulo_huesos" }, { t: "cuenta", k: "racha", n: 3, texto: "Matar a 3 enemigos seguidos sin perder ninguna unidad" }],
       ef: { furia: 5, curaAlMatar: 4 },
-      texto: "Su furia llega a +5 de ataque y se cura 4 cada vez que mata.", aspecto: "Bestia negra de lomo erizado, colmillos de jabalí y ojos rojos." },
+      texto: "Su furia llega a +5 de ataque y se cura 4 cada vez que mata.", aspecto: "Simio enorme de pelo negro con las puntas doradas, dos cuernos hacia atrás y unos brazos que echan chispas cuando se enfurece." },
     dientesal: { faccion: "pelgiria", nombre: "Capitana Dientesal", titulo: "La voz de Cala Ronca", nivel: 2, hp: 22, atq: 5, def: 3, mov: 3, alc: 2,
       coste: { oro: 10, materiales: 4 }, req: [{ t: "edificio", id: "astillero" }, { t: "cuenta", k: "saqueos", n: 2, texto: "Tomar 2 ciudades" }],
       ef: { activa: { id: "area", nombre: "Andanada de barriles", texto: "3 de daño a todo lo que haya en un cuadro de 3x3, hasta a 3 casillas.", cd: 3, dano: 3, alc: 3 }, activa2: { id: "curar", nombre: "Limonada de a bordo", texto: "Cura 3 a los aliados a 2 casillas.", cd: 3, cura: 3, radio: 2 } },
@@ -557,14 +681,14 @@
       coste: { comida: 8, mineral: 4 }, req: [{ t: "cuenta", k: "devorados", n: 5, texto: "Devorar a 5 enemigos" }],
       ef: { devoraSinTope: true },
       texto: "Devora y adapta sin límite: cada enemigo que mata le deja un rasgo.", aspecto: "Hormiga reina guerrera, alta, con alas de ámbar y mandíbulas doradas." },
-    orsa: { faccion: "balutia", nombre: "Legada Orsa Valcarón", titulo: "Conquistadora de provincias", nivel: 2, hp: 23, atq: 5, def: 3, mov: 3, alc: 1,
+    reinhardt: { faccion: "balutia", nombre: "Reinhardt Shield", titulo: "General de la Legión Negra", nivel: 2, hp: 24, atq: 5, def: 4, mov: 3, alc: 1,
       coste: { oro: 10, mineral: 3 }, req: [{ t: "regiones", n: 3 }],
-      ef: { tributoMejor: true, defClaseAliada: { cazador: 1 } },
-      texto: "El Tributo entrega un Pretoriano en vez de un Auxiliar. Los Auxiliares ganan +1 de defensa.", aspecto: "Coraza de bronce, capa púrpura, yelmo con penacho transversal y un estandarte con águila." },
+      ef: { tributoMejor: true, auraDef1: 1, contraHeroe: { jinete: 2, jinete_pesado: 2 } },
+      texto: "El Tributo entrega un Pretoriano en vez de un Auxiliar. Los aliados a su lado ganan +1 de defensa. Su alabarda pega 2 más a la caballería.", aspecto: "Armadura negra, pelo rojo corto, barba corta, un parche en el ojo y una alabarda." },
     rykerd: { faccion: "hijos-del-acero", nombre: "Rykerd, el Imperdonable", titulo: "Lo que los Hijos del Acero no debieron cazar", nivel: 3, hp: 30, atq: 6, def: 3, mov: 3, alc: 1, muertoViviente: true,
-      coste: { oro: 12, mineral: 8, comida: 6, anima: 4 }, req: [{ t: "fortaleza" }, { t: "cuenta", k: "salvajes", n: 3, texto: "Cazar 3 criaturas salvajes" }, { t: "escuela", e: "militar", n: 3 }, { t: "edificio", id: "perrera" }, { t: "turno", n: 8 }],
+      coste: { oro: 12, mineral: 8, comida: 6, anima: 4 }, req: [{ t: "fortaleza" }, { t: "cuenta", k: "salvajes", n: 3, texto: "Cazar 3 criaturas salvajes" }, { t: "saber", n: 6 }, { t: "edificio", id: "perrera" }, { t: "turno", n: 8 }],
       ef: { temible: 1, rencor: 2, contencion: true },
-      texto: "Los enemigos a su lado pierden 1 de ataque. Gana +2 de ataque cada vez que muere un aliado. Si cae el Maestro Cazador, se desata 3 turnos.", aspecto: "Un caballero muerto y enorme, cargado de cadenas rotas, con un mandoble mellado." }
+      texto: "Los enemigos a su lado pierden 1 de ataque. Gana +2 de ataque cada vez que muere un aliado. Si cae el Maestro Cazador, se desata 3 turnos.", aspecto: "Alto y pálido, a medio camino entre un hombre y un dragón: cabeza larga y lisa, alas que acaban en dedos y unos ojos que no parpadean. Arrastra cadenas rotas." }
   };
 
   /* --- Mapas: cada tipo de Fractura cambia los terrenos, las cosas neutrales y las reglas del lugar --- */
@@ -674,18 +798,23 @@
   };
   // Apodos: se ganan por lo que le pasa al soldado. [masculino, femenino]
   const APODOS = {
-    cicatriz: [["el Astillado", "la Astillada"], ["el Remendado", "la Remendada"], ["el Zurcido", "la Zurcida"], ["el Quebrado", "la Quebrada"], ["Cara de Mapa", "Cara de Mapa"]],
-    matador: [["el Segador", "la Segadora"], ["Mano de Hierro", "Mano de Hierro"], ["el Verdugo", "la Verdugo"], ["el Cuervo", "la Cuervo"]],
-    firme: [["el Firme", "la Firme"], ["el Muro", "la Muralla"], ["Pie de Roble", "Pie de Roble"]],
-    veloz: [["el Galgo", "la Galga"], ["Pies de Viento", "Pies de Viento"], ["el Rayo", "la Chispa"]],
-    sabio: [["el Cuaderno", "la Cuaderna"], ["Ojo de Tinta", "Ojo de Tinta"]],
-    longevo: [["el Viejo", "la Vieja"], ["el Perenne", "la Perenne"]],
-    capitan: [["el Capitán", "la Capitana"]]
+    cicatriz: [["el Astillado", "la Astillada"], ["el Remendado", "la Remendada"], ["el Zurcido", "la Zurcida"], ["el Quebrado", "la Quebrada"], ["Cara de Mapa", "Cara de Mapa"],
+      ["Media Oreja", "Media Oreja"], ["Tres Dedos", "Tres Dedos"], ["el Tuerto", "la Tuerta"], ["Boca Torcida", "Boca Torcida"], ["el Cosido", "la Cosida"], ["Cuello de Cuerda", "Cuello de Cuerda"],
+      ["el Mordido", "la Mordida"], ["Sin Nariz", "Sin Nariz"], ["el Quemado", "la Quemada"], ["Diente Roto", "Diente Roto"], ["el Rajado", "la Rajada"], ["Piel de Lija", "Piel de Lija"]],
+    matador: [["el Segador", "la Segadora"], ["Mano de Hierro", "Mano de Hierro"], ["el Verdugo", "la Verdugo"], ["el Cuervo", "la Cuervo"], ["Rompehuesos", "Rompehuesos"], ["el Desollador", "la Desolladora"],
+      ["Comecuervos", "Comecuervos"], ["el Carnicero", "la Carnicera"], ["Machacacráneos", "Machacacráneos"], ["el Que Ríe", "la Que Ríe"], ["Bebesangre", "Bebesangre"], ["el Tajador", "la Tajadora"],
+      ["Mataperros", "Mataperros"], ["el Hacha", "el Hacha"], ["Cien Muescas", "Cien Muescas"], ["el Lento", "la Lenta"], ["Mordisco", "Mordisco"]],
+    firme: [["el Firme", "la Firme"], ["el Muro", "la Muralla"], ["Pie de Roble", "Pie de Roble"], ["el Yunque", "la Yunque"], ["Piedra", "Piedra"], ["el Terco", "la Terca"], ["Espalda de Buey", "Espalda de Buey"], ["el Poste", "la Poste"]],
+    veloz: [["el Galgo", "la Galga"], ["Pies de Viento", "Pies de Viento"], ["el Rayo", "la Chispa"], ["el Liebre", "la Liebre"], ["Sombra Corta", "Sombra Corta"], ["el Gamo", "la Gama"], ["Talones", "Talones"]],
+    sabio: [["el Cuaderno", "la Cuaderna"], ["Ojo de Tinta", "Ojo de Tinta"], ["el Contable", "la Contable"], ["Cuatro Ojos", "Cuatro Ojos"], ["el Zorro", "la Zorra"], ["el Mapa", "la Mapa"]],
+    longevo: [["el Viejo", "la Vieja"], ["el Perenne", "la Perenne"], ["Abuelo", "Abuela"], ["el Que Sigue", "la Que Sigue"], ["Barba Gris", "Trenza Gris"], ["el Último", "la Última"]],
+    capitan: [["el Capitán", "la Capitana"], ["el Que Manda", "la Que Manda"], ["Voz de Trueno", "Voz de Trueno"], ["el Sargento", "la Sargento"]]
   };
+
 
   raiz.FRACTURA_DATOS = {
     RECURSOS, RECURSO_NOMBRE, TERRENOS, ESTRUCTURAS, CLASES, CLASES_BASE, ESPECIALIZACIONES, RANGOS, EDIFICIOS, ESCUELAS, RELIQUIAS, SLOTS, FACCIONES,
-    TIPOS_FRACTURA, FRAGMENTOS, SUCESOS, DIFICULTADES, NOMBRES, ORIGENES, APODOS, HEROES, ALIAS_FACCION, faccionReal, tropa, textoEdificio, BARCOS_BASE, NOMBRES_BARCO, FORMAS_MAPA, REGLAS: 3
+    TIPOS_FRACTURA, FRAGMENTOS, SUCESOS, DIFICULTADES, NOMBRES, ORIGENES, APODOS, HEROES, ALIAS_FACCION, faccionReal, tropa, textoEdificio, nombreEdificio, nivelCiudad, BARCOS_BASE, NOMBRES_BARCO, FORMAS_MAPA, REGLAS: 4
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FRACTURA_DATOS;
 })(typeof window !== "undefined" ? window : globalThis);

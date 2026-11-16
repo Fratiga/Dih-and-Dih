@@ -46,7 +46,11 @@
     const rivales = Object.keys(D.FACCIONES);
     for (let i = rivales.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [rivales[i], rivales[j]] = [rivales[j], rivales[i]]; }
     const nivel = nivelDe(bandos, dificultad);
-    return { clave, titulo, nivel, tipo, forma, bandos, equipos, dificultad, rivales, semilla: (semillaDe(`mapa:${clave}`) % 2000000000) + 1, hasta: hasta.getTime(), semanal: que === "gran" };
+    // Tamaño del mapa: con su propio azar, para no cambiar los frentes ya abiertos
+    const r2 = azar(semillaDe(`tam:${clave}`));
+    const tamano = que === "gran" ? (r2() < 0.5 ? "grande" : "normal") : r2() < 0.25 ? "grande" : r2() < 0.2 ? "pequeno" : "normal";
+    const mapaPara = bandos <= 3 && r2() < 0.3 ? bandos + 2 : bandos;
+    return { clave, titulo, nivel, tipo, forma, bandos, equipos, dificultad, rivales, tamano, mapaPara, semilla: (semillaDe(`mapa:${clave}`) % 2000000000) + 1, hasta: hasta.getTime(), semanal: que === "gran" };
   }
 
   /* Los frentes abiertos ahora mismo */

@@ -423,10 +423,256 @@ function casa(g: Ctx, x: number, y: number, w: number, h: number, tejado: string
   poli(g, "rgba(0,0,0,.25)", [[x, y - h - w * 0.62], [x + w / 2 + 1, y - h], [x, y - h]]);
   g.fillStyle = "#f6d67a"; g.fillRect(x - 0.8, y - h * 0.62, 1.6, 2);
 }
+/* La arquitectura de cada ejército. Todas comparten el pie en (0,0) y la escala de pintarCiudad */
+export const ESTILO_CIUDAD: Record<string, string> = {
+  "caballeros-del-reino": "castillo", "academia-arcana-de-dolbred": "torres", "trono-de-ceniza": "osario", "compania-dorada": "mercader",
+  "hijos-del-acero": "empalizada", "santos-de-asmodeo": "templo", nikaalia: "noche", seosan: "pagoda", okran: "clan",
+  pelgiria: "puerto", mravec: "colmena", nernib: "taller", balutia: "legion"
+};
+const ventana = (g: Ctx, x: number, y: number, w = 1.6, h = 2, col = "#f6d67a"): void => { g.fillStyle = col; g.fillRect(x - w / 2, y - h, w, h); };
+const lado = (g: Ctx, pts: number[][]): void => poli(g, "rgba(0,0,0,.28)", pts);
+const caja = (g: Ctx, x: number, y: number, w: number, h: number, col: string): void => {
+  poli(g, col, [[x - w / 2, y], [x + w / 2, y], [x + w / 2, y - h], [x - w / 2, y - h]]); lado(g, [[x, y], [x + w / 2, y], [x + w / 2, y - h], [x, y - h]]);
+};
+function torreRedonda(g: Ctx, x: number, y: number, w: number, h: number, muro: string, tejado: string, punta: number): void {
+  poli(g, muro, [[x - w / 2, y], [x + w / 2, y], [x + w / 2 - 0.4, y - h], [x - w / 2 + 0.4, y - h]]); lado(g, [[x, y], [x + w / 2, y], [x + w / 2 - 0.4, y - h], [x, y - h]]);
+  poli(g, tejado, [[x - w / 2 - 1, y - h], [x + w / 2 + 1, y - h], [x, y - h - punta]]); lado(g, [[x, y - h - punta], [x + w / 2 + 1, y - h], [x, y - h]]);
+}
+function cupula(g: Ctx, x: number, y: number, r: number, col: string): void {
+  g.fillStyle = col; g.beginPath(); g.arc(x, y, r, Math.PI, 0); g.closePath(); g.fill();
+  g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(x, y, r, -Math.PI / 2, 0); g.lineTo(x, y); g.closePath(); g.fill();
+}
+function humo(g: Ctx, x: number, y: number): void { g.fillStyle = "rgba(200,200,200,.35)"; [[0, 0, 1.6], [1.4, -2.6, 2.2], [0.4, -5.6, 2.8]].forEach(([dx, dy, r]) => { g.beginPath(); g.arc(x + dx, y + dy, r, 0, 7); g.fill(); }); }
+const cuantas = <T>(l: T[], d: DatosCiudad, mas = 2): T[] => l.slice(0, Math.min(l.length, mas + d.nivel));
+const porFondo = (a: number[], b: number[]): number => a[1] - b[1];
+
+function ciudadTorres(g: Ctx, d: DatosCiudad, t: string, t2: string): void {
+  // Academia: agujas finas de piedra clara con tejados de su color y luces moradas
+  const muro = "#cfc6d8";
+  if (d.nivel >= 2 || d.capital) { poli(g, "#8d86a0", [[-17, 0], [17, 0], [17, -4], [-17, -4]]); lado(g, [[4, 0], [17, 0], [17, -4], [4, -4]]); }
+  cuantas([[-10, -2, 4.6, 12, 7], [10, -2, 4.6, 13, 7], [-4, -4, 4, 16, 8], [5, -5, 4, 18, 8], [-14, -3, 3.6, 9, 6], [14, -3, 3.6, 10, 6]], d).sort(porFondo)
+    .forEach((a, i) => { torreRedonda(g, a[0], a[1], a[2], a[3], muro, i % 2 ? t2 : t, a[4]); ventana(g, a[0], a[1] - a[3] * 0.55, 1.4, 2, "#c79bff"); });
+  if (d.capital || d.nivel >= 3) {
+    torreRedonda(g, 0, -6, 5.6, 26, muro, t, 10); ventana(g, 0, -24, 1.6, 2.6, "#e6ccff"); ventana(g, 0, -16, 1.6, 2.4, "#c79bff");
+    g.fillStyle = "rgba(185,140,255,.55)"; g.beginPath(); g.arc(0, -43, 2.2, 0, 7); g.fill();
+  }
+}
+function ciudadOsario(g: Ctx, d: DatosCiudad, t: string): void {
+  // Osses: criptas de piedra gris, una cerca de huesos, un obelisco y una calavera en la capital
+  const hueso = "#d9d2bd", gris = "#6f6a62";
+  if (d.nivel >= 2 || d.capital) for (let x = -17; x <= 17; x += 3.4) poli(g, hueso, [[x - 0.7, 0], [x + 0.7, 0], [x + 0.4, -5.4], [x - 0.4, -5.4]]);
+  cuantas([[-9, -5, 7, 5], [9, -5, 7, 5.4], [0, -8, 6.4, 6], [-14, -9, 5.4, 4], [14, -9, 5.4, 4.4], [-5, -12, 5, 4]], d).sort(porFondo).forEach(c => {
+    caja(g, c[0], c[1], c[2], c[3], gris);
+    poli(g, oscuro(t, 0.35), [[c[0] - c[2] / 2 - 0.8, c[1] - c[3]], [c[0] + c[2] / 2 + 0.8, c[1] - c[3]], [c[0], c[1] - c[3] - 2.4]]);
+    poli(g, "#1a1714", [[c[0] - 1, c[1]], [c[0] + 1, c[1]], [c[0] + 1, c[1] - 2.4], [c[0] - 1, c[1] - 2.4]]); ventana(g, c[0], c[1] - c[3] + 2.6, 1, 1.2, "#9af27a");
+  });
+  if (d.capital || d.nivel >= 3) {
+    poli(g, gris, [[-3, -7], [3, -7], [1.4, -28], [-1.4, -28]]); lado(g, [[0, -7], [3, -7], [1.4, -28], [0, -28]]);
+    poli(g, gris, [[-1.4, -28], [1.4, -28], [0, -31]]);
+    ventana(g, 0, -18, 1, 3, "#9af27a");
+    if (d.capital) { g.fillStyle = hueso; g.beginPath(); g.arc(0, -33.4, 3.2, 0, 7); g.fill(); g.fillRect(-1.8, -31, 3.6, 2); g.fillStyle = "#1a1714"; g.fillRect(-1.8, -34.4, 1.2, 1.3); g.fillRect(0.6, -34.4, 1.2, 1.3); }
+  }
+}
+function ciudadMercader(g: Ctx, d: DatosCiudad, t: string, t2: string): void {
+  // Compañía Dorada: casas blancas con cúpulas, toldos de rayas y un palacio con cúpula dorada
+  const muro = "#e8dcc0", oro = "#e3bb4e";
+  if (d.nivel >= 2 || d.capital) { poli(g, "#c9b48a", [[-18, 0], [18, 0], [18, -4.6], [-18, -4.6]]); lado(g, [[4, 0], [18, 0], [18, -4.6], [4, -4.6]]); }
+  cuantas([[-10, -4, 7, 5], [9, -4, 7.4, 5.4], [-15, -8, 6, 4.4], [15, -8, 6, 4.6], [-4, -9, 6, 5], [6, -11, 6, 4.6]], d).sort(porFondo).forEach((c, i) => {
+    caja(g, c[0], c[1], c[2], c[3], muro);
+    if (i % 2) cupula(g, c[0], c[1] - c[3], c[2] * 0.4, t);
+    else {
+      poli(g, i % 4 ? t2 : t, [[c[0] - c[2] / 2 - 1.2, c[1] - c[3] + 1], [c[0] + c[2] / 2 + 1.2, c[1] - c[3] + 1], [c[0] + c[2] / 2, c[1] - c[3] - 1.4], [c[0] - c[2] / 2, c[1] - c[3] - 1.4]]);
+      g.fillStyle = "rgba(255,255,255,.5)"; for (let k = -2; k <= 2; k += 2) g.fillRect(c[0] + k * c[2] / 6 - 0.5, c[1] - c[3] - 1.4, 1, 2.4);
+    }
+    ventana(g, c[0] - 1, c[1] - 1, 1.4, 2.4, "#3a2a18");
+  });
+  if (d.capital || d.nivel >= 3) {
+    caja(g, 0, -6, 12, 9, muro);
+    cupula(g, 0, -15, 5.6, oro); poli(g, oro, [[-0.5, -20.6], [0.5, -20.6], [0.3, -24], [-0.3, -24]]);
+    [-8.4, 8.4].forEach(x => torreRedonda(g, x, -6, 2.2, 15, muro, oro, 3));
+    ventana(g, -2.4, -9, 1.4, 3, "#3a2a18"); ventana(g, 2.4, -9, 1.4, 3, "#3a2a18");
+  }
+}
+function ciudadEmpalizada(g: Ctx, d: DatosCiudad, t: string, t2: string): void {
+  // Hijos del Acero: campamento de cazadores con empalizada, cabañas de madera y una torre de vigía con ballesta
+  const madera = "#8a6a44", madera2 = "#6a4e30";
+  for (let x = -18; x <= 18; x += 2.2) poli(g, x < 4 ? madera : madera2, [[x - 1, 0], [x + 1, 0], [x + 1, -6], [x, -7.4], [x - 1, -6]]);
+  cuantas([[-9, -7, 7, 5], [9, -7, 7.4, 5.4], [-2, -9, 6, 5], [-14, -11, 5.6, 4], [14, -11, 5.6, 4], [5, -13, 6, 4.6]], d, 1).sort(porFondo)
+    .forEach((c, i) => casa(g, c[0], c[1], c[2], c[3], i % 2 ? t2 : t, madera));
+  const h = d.capital ? 26 : d.nivel >= 3 ? 20 : 15;
+  g.strokeStyle = madera2; g.lineWidth = 1; g.beginPath();
+  g.moveTo(-3, -2); g.lineTo(-2, -h); g.moveTo(3, -2); g.lineTo(2, -h); g.moveTo(-3, -2); g.lineTo(2, -h * 0.6); g.moveTo(3, -2); g.lineTo(-2, -h * 0.6); g.stroke();
+  poli(g, madera, [[-4, -h], [4, -h], [4, -h - 3], [-4, -h - 3]]); poli(g, t, [[-5, -h - 3], [5, -h - 3], [0, -h - 8]]);
+  g.strokeStyle = "#3a3a3a"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(3, -h - 1.6); g.lineTo(8, -h - 2.4); g.moveTo(6.4, -h - 4); g.lineTo(6.4, -h); g.stroke();
+  if (d.capital) {
+    // un trofeo de caza sobre la puerta
+    g.fillStyle = "#d9d2bd"; g.beginPath(); g.arc(-9, -16, 2, 0, 7); g.fill();
+    g.strokeStyle = "#d9d2bd"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-10.4, -17); g.lineTo(-12.4, -20); g.moveTo(-7.6, -17); g.lineTo(-5.6, -20); g.stroke();
+  }
+}
+function ciudadTemplo(g: Ctx, d: DatosCiudad, t: string, t2: string): void {
+  // Santos de Asmodeo: piedra rojiza, arcos apuntados y una catedral con aguja
+  const muro = "#c9b3a2", piedra = "#8a6f62";
+  if (d.nivel >= 2 || d.capital) {
+    poli(g, piedra, [[-18, 0], [18, 0], [18, -6], [-18, -6]]); lado(g, [[4, 0], [18, 0], [18, -6], [4, -6]]);
+    for (let i = -18; i < 18; i += 4) poli(g, piedra, [[i, -6], [i + 2.4, -6], [i + 2.4, -8], [i, -8]]);
+  }
+  cuantas([[-11, -6, 6.4, 6], [11, -6, 6.4, 6.4], [-15, -10, 5.4, 5], [15, -11, 5.4, 5.4], [-6, -11, 6, 5], [7, -12, 6, 5]], d).sort(porFondo)
+    .forEach((c, i) => casa(g, c[0], c[1] + 1, c[2], c[3], i % 2 ? t2 : t, muro));
+  const k = d.capital ? 1 : d.nivel >= 3 ? 0.8 : 0.55;
+  caja(g, 0, -6, 12, 12 * k, muro);
+  poli(g, t2, [[-7, -6 - 12 * k], [7, -6 - 12 * k], [0, -6 - 18 * k]]);
+  poli(g, muro, [[-2.6, -6 - 12 * k], [2.6, -6 - 12 * k], [2.2, -6 - 24 * k], [-2.2, -6 - 24 * k]]);
+  poli(g, t, [[-3, -6 - 24 * k], [3, -6 - 24 * k], [0, -6 - 36 * k]]);
+  g.fillStyle = "#e3bb4e"; g.fillRect(-0.4, -6 - 40 * k, 0.8, 4); g.fillRect(-1.6, -6 - 38.6 * k, 3.2, 0.8);
+  g.fillStyle = "#f6d67a"; g.beginPath(); g.arc(0, -6 - 8 * k, 1.8, 0, 7); g.fill();
+  [-3.6, 3.6].forEach(x => { g.fillStyle = "#3a1f18"; g.beginPath(); g.moveTo(x - 1, -7); g.lineTo(x - 1, -10); g.lineTo(x, -11.4); g.lineTo(x + 1, -10); g.lineTo(x + 1, -7); g.fill(); });
+}
+function ciudadNoche(g: Ctx, d: DatosCiudad, t: string, t2: string): void {
+  // Nikaalia: mansiones oscuras de tejado empinado, verja de hierro, faroles morados y una luna en la capital
+  const muro = "#4a4458", muro2 = "#3a3446";
+  if (d.nivel >= 2 || d.capital) {
+    g.strokeStyle = "#2a2630"; g.lineWidth = 0.8;
+    for (let x = -18; x <= 18; x += 2) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, -5); g.stroke(); }
+    g.beginPath(); g.moveTo(-18, -3.6); g.lineTo(18, -3.6); g.stroke();
+  }
+  cuantas([[-9, -5, 7, 8], [9, -5, 7, 8.4], [-1, -8, 6, 9], [-14, -9, 5.4, 6], [14, -9, 5.4, 6.4], [5, -12, 5.4, 7]], d).sort(porFondo).forEach((c, i) => {
+    caja(g, c[0], c[1], c[2], c[3], i % 2 ? muro2 : muro);
+    poli(g, oscuro(i % 2 ? t2 : t, 0.3), [[c[0] - c[2] / 2 - 0.8, c[1] - c[3]], [c[0] + c[2] / 2 + 0.8, c[1] - c[3]], [c[0], c[1] - c[3] - c[2]]]);
+    ventana(g, c[0] - 1.4, c[1] - c[3] * 0.4, 1.2, 1.8, "#c79bff"); ventana(g, c[0] + 1.4, c[1] - c[3] * 0.7, 1.2, 1.8, "#c79bff");
+  });
+  if (d.capital || d.nivel >= 3) {
+    torreRedonda(g, 0, -8, 4.4, 20, muro, oscuro(t, 0.3), 9); ventana(g, 0, -20, 1.4, 2.4, "#c79bff");
+    if (d.capital) { g.fillStyle = "#e9e2ff"; g.beginPath(); g.arc(9, -32, 4, 0, 7); g.fill(); g.fillStyle = "#0b0910"; g.beginPath(); g.arc(10.8, -33, 3.6, 0, 7); g.fill(); }
+  }
+  g.fillStyle = "rgba(199,155,255,.45)"; [-12, 12].forEach(x => { g.beginPath(); g.arc(x, -2, 1.4, 0, 7); g.fill(); });
+}
+function ciudadPagoda(g: Ctx, d: DatosCiudad, t: string, t2: string): void {
+  // Seosan: casas bajas de madera con tejados curvos y una pagoda de varios pisos
+  const muro = "#e6dcc4", madera = "#7a3a28";
+  const curvo = (x: number, y: number, w: number, col: string): void => {
+    g.fillStyle = col; g.beginPath(); g.moveTo(x - w / 2 - 2, y + 0.6); g.quadraticCurveTo(x - w / 2, y - 0.4, x - w * 0.3, y - 2.4);
+    g.lineTo(x + w * 0.3, y - 2.4); g.quadraticCurveTo(x + w / 2, y - 0.4, x + w / 2 + 2, y + 0.6); g.closePath(); g.fill();
+  };
+  if (d.nivel >= 2 || d.capital) { poli(g, "#b8ae9c", [[-18, 0], [18, 0], [18, -3], [-18, -3]]); curvo(-11, -3, 12, t2); curvo(11, -3, 12, t2); }
+  cuantas([[-10, -5, 7, 4], [10, -5, 7, 4], [-15, -9, 5.6, 3.4], [15, -9, 5.6, 3.4], [-6, -10, 6, 3.6], [7, -11, 6, 3.6]], d).sort(porFondo).forEach((c, i) => {
+    poli(g, muro, [[c[0] - c[2] / 2, c[1]], [c[0] + c[2] / 2, c[1]], [c[0] + c[2] / 2, c[1] - c[3]], [c[0] - c[2] / 2, c[1] - c[3]]]);
+    g.fillStyle = madera; g.fillRect(c[0] - c[2] / 2, c[1] - c[3], 0.6, c[3]); g.fillRect(c[0] + c[2] / 2 - 0.6, c[1] - c[3], 0.6, c[3]); g.fillRect(c[0] - 0.3, c[1] - c[3], 0.6, c[3]);
+    curvo(c[0], c[1] - c[3], c[2], i % 2 ? t2 : t);
+  });
+  const pisos = d.capital ? 5 : d.nivel >= 3 ? 4 : 3;
+  for (let k = 0; k < pisos; k++) {
+    const w = 8 - k * 1.2, y = -4 - k * 5.4;
+    caja(g, 0, y, w, 4, muro);
+    g.fillStyle = madera; g.fillRect(-0.4, y - 4, 0.8, 4);
+    curvo(0, y - 4, w + 2, k % 2 ? t2 : t);
+  }
+  g.fillStyle = "#e3bb4e"; g.fillRect(-0.3, -4 - pisos * 5.4 - 4, 0.6, 4);
+}
+function ciudadClan(g: Ctx, d: DatosCiudad, t: string, t2: string): void {
+  // Okran: chozas redondas de paja, empalizada de troncos y un tótem con cuernos en la capital
+  const paja = "#b89a5a", paja2 = "#9a7e46", barro = "#8a6a4a";
+  if (d.nivel >= 2 || d.capital) for (let x = -18; x <= 18; x += 2.4) poli(g, "#6a4e30", [[x - 1.1, 0], [x + 1.1, 0], [x + 1.1, -5], [x, -6.6], [x - 1.1, -5]]);
+  cuantas([[-9, -4, 7], [9, -4, 7.4], [0, -8, 7], [-14, -9, 6], [14, -9, 6], [-5, -12, 5.6], [6, -13, 5.6]], d).sort(porFondo).forEach((c, i) => {
+    poli(g, barro, [[c[0] - c[2] / 2, c[1]], [c[0] + c[2] / 2, c[1]], [c[0] + c[2] / 2, c[1] - 2.6], [c[0] - c[2] / 2, c[1] - 2.6]]);
+    poli(g, i % 2 ? paja2 : paja, [[c[0] - c[2] / 2 - 1, c[1] - 2.4], [c[0] + c[2] / 2 + 1, c[1] - 2.4], [c[0], c[1] - 2.4 - c[2] * 0.8]]);
+    lado(g, [[c[0], c[1] - 2.4 - c[2] * 0.8], [c[0] + c[2] / 2 + 1, c[1] - 2.4], [c[0], c[1] - 2.4]]);
+    g.fillStyle = "#2a1c10"; g.fillRect(c[0] - 0.8, c[1] - 2.2, 1.6, 2.2);
+    g.fillStyle = i % 2 ? t2 : t; g.fillRect(c[0] - 0.4, c[1] - 2.4 - c[2] * 0.8 - 2, 0.8, 2);
+  });
+  if (d.capital || d.nivel >= 3) {
+    poli(g, "#6a4e30", [[-1.6, -6], [1.6, -6], [1.4, -26], [-1.4, -26]]);
+    [-10, -16, -22].forEach((y, k) => { poli(g, k % 2 ? t2 : t, [[-2.6, y], [2.6, y], [2.2, y - 4], [-2.2, y - 4]]); g.fillStyle = "#f0e6d0"; g.fillRect(-1.4, y - 3, 0.8, 0.8); g.fillRect(0.6, y - 3, 0.8, 0.8); });
+    if (d.capital) { g.strokeStyle = "#e8e0cc"; g.lineWidth = 1; g.beginPath(); g.moveTo(-1.6, -26); g.quadraticCurveTo(-5, -28, -5, -32); g.moveTo(1.6, -26); g.quadraticCurveTo(5, -28, 5, -32); g.stroke(); }
+  }
+}
+function ciudadPuerto(g: Ctx, d: DatosCiudad, t: string, t2: string): void {
+  // Pelgiria: casas de tablas sobre un muelle de pilotes, un mástil con vela y bandera negra, cañones
+  const tabla = "#9a7a52", tabla2 = "#7a5c3a";
+  poli(g, "#6a4e30", [[-18, 0], [18, 0], [18, -1.6], [-18, -1.6]]);
+  for (let x = -17; x <= 17; x += 3) { g.fillStyle = "#4a3420"; g.fillRect(x - 0.4, -1.6, 0.8, 2.4); }
+  cuantas([[-10, -3, 7, 5], [9, -3, 7.4, 5.4], [-1, -6, 6, 5.6], [-15, -7, 5.6, 4], [14, -7, 5.6, 4.4], [5, -10, 5.6, 4.6]], d).sort(porFondo).forEach((c, i) => {
+    caja(g, c[0], c[1], c[2], c[3], i % 2 ? tabla2 : tabla);
+    g.strokeStyle = "rgba(0,0,0,.3)"; g.lineWidth = 0.4;
+    for (let k = 1; k < 3; k++) { g.beginPath(); g.moveTo(c[0] - c[2] / 2, c[1] - k * c[3] / 3); g.lineTo(c[0] + c[2] / 2, c[1] - k * c[3] / 3); g.stroke(); }
+    poli(g, i % 2 ? t2 : t, [[c[0] - c[2] / 2 - 1, c[1] - c[3]], [c[0] + c[2] / 2 + 1, c[1] - c[3]], [c[0] + c[2] / 2 - 1, c[1] - c[3] - 3], [c[0] - c[2] / 2 + 1, c[1] - c[3] - 3]]);
+    ventana(g, c[0], c[1] - c[3] * 0.4);
+  });
+  const h = d.capital ? 32 : d.nivel >= 3 ? 26 : 20;
+  g.fillStyle = "#5a3e24"; g.fillRect(-0.7, -h, 1.4, h - 2); g.fillRect(-5, -h * 0.7, 10, 0.9);
+  poli(g, "#e8dcc0", [[-4.6, -h * 0.7 + 0.9], [4.6, -h * 0.7 + 0.9], [3.6, -h * 0.4], [-3.6, -h * 0.4]]);
+  poli(g, "#16121a", [[0.7, -h], [8, -h + 1], [7, -h + 3.4], [0.7, -h + 4.2]]);
+  g.fillStyle = "#e8e0cc"; g.beginPath(); g.arc(3.8, -h + 2, 1, 0, 7); g.fill();
+  if (d.nivel >= 2 || d.capital) [-14, 14].forEach(x => { g.fillStyle = "#2a2a2e"; g.fillRect(x - 2, -2.8, 4, 1.4); g.beginPath(); g.arc(x - 2, -2.1, 0.9, 0, 7); g.fill(); });
+}
+function ciudadColmena(g: Ctx, d: DatosCiudad, t: string, t2: string): void {
+  // Mravec: montículos de arena endurecida llenos de agujeros y una gran colmena con antenas en la capital
+  const arena = "#c8a567", arena2 = "#a8864a";
+  const monte = (x: number, y: number, w: number, h: number, col: string): void => {
+    g.fillStyle = col; g.beginPath(); g.moveTo(x - w / 2, y); g.quadraticCurveTo(x - w / 2, y - h * 0.8, x - w * 0.12, y - h); g.lineTo(x + w * 0.12, y - h); g.quadraticCurveTo(x + w / 2, y - h * 0.8, x + w / 2, y); g.closePath(); g.fill();
+    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.moveTo(x, y); g.lineTo(x + w / 2, y); g.quadraticCurveTo(x + w / 2, y - h * 0.8, x + w * 0.12, y - h); g.lineTo(x, y - h); g.closePath(); g.fill();
+    g.fillStyle = "#2a1c10"; [[0, 0.18], [-0.22, 0.5], [0.18, 0.66]].forEach(([dx, dy]) => { g.beginPath(); g.ellipse(x + dx * w, y - dy * h, 0.8, 1, 0, 0, 7); g.fill(); });
+  };
+  cuantas([[-10, -1, 7, 8], [10, -1, 7, 9], [-15, -6, 5.4, 7], [15, -6, 5.4, 7.4], [-5, -8, 5.4, 9], [6, -9, 5.4, 10]], d).sort(porFondo).forEach((m, i) => monte(m[0], m[1], m[2], m[3], i % 2 ? arena2 : arena));
+  const hh = d.capital ? 30 : d.nivel >= 3 ? 24 : 16;
+  monte(0, -2, 10, hh, arena);
+  g.fillStyle = t; g.beginPath(); g.ellipse(0, -2 - hh * 0.42, 1.6, 2.2, 0, 0, 7); g.fill();
+  if (d.capital) { g.strokeStyle = t2; g.lineWidth = 0.7; g.beginPath(); g.moveTo(-1, -2 - hh); g.quadraticCurveTo(-3, -hh - 6, -5, -hh - 6); g.moveTo(1, -2 - hh); g.quadraticCurveTo(3, -hh - 6, 5, -hh - 6); g.stroke(); }
+}
+function ciudadTaller(g: Ctx, d: DatosCiudad, t: string, t2: string): void {
+  // Nernib: talleres de ladrillo con chimeneas que humean, ruedas dentadas y una torre del reloj
+  const ladrillo = "#a0624a", metal = "#8a8e94";
+  const rueda = (x: number, y: number, r: number): void => {
+    g.fillStyle = metal; g.beginPath();
+    for (let k = 0; k < 16; k++) { const a = (k / 16) * Math.PI * 2, rr = k % 2 ? r : r * 1.25; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+    g.closePath(); g.fill(); g.fillStyle = "#3a3c40"; g.beginPath(); g.arc(x, y, r * 0.4, 0, 7); g.fill();
+  };
+  if (d.nivel >= 2 || d.capital) { poli(g, "#6a6e74", [[-18, 0], [18, 0], [18, -4], [-18, -4]]); lado(g, [[4, 0], [18, 0], [18, -4], [4, -4]]); }
+  cuantas([[-10, -4, 7.4, 6], [10, -4, 7.4, 6], [-15, -8, 5.6, 5], [15, -8, 5.6, 5], [-4, -9, 6, 5.4], [6, -11, 6, 5]], d).sort(porFondo).forEach((c, i) => {
+    caja(g, c[0], c[1], c[2], c[3], ladrillo);
+    poli(g, i % 2 ? t2 : t, [[c[0] - c[2] / 2 - 0.6, c[1] - c[3]], [c[0] + c[2] / 2 + 0.6, c[1] - c[3]], [c[0] + c[2] / 2 + 0.6, c[1] - c[3] - 1.6], [c[0] - c[2] / 2 - 0.6, c[1] - c[3] - 1.6]]);
+    g.fillStyle = "#4a4c50"; g.fillRect(c[0] + c[2] * 0.2, c[1] - c[3] - 5, 1.4, 4); humo(g, c[0] + c[2] * 0.2 + 0.7, c[1] - c[3] - 6.4);
+    ventana(g, c[0] - 1.6, c[1] - 1.4, 1.6, 2, "#ffd48a");
+  });
+  if (d.capital || d.nivel >= 3) {
+    poli(g, ladrillo, [[-3.4, -6], [3.4, -6], [3, -26], [-3, -26]]); lado(g, [[0, -6], [3.4, -6], [3, -26], [0, -26]]);
+    poli(g, metal, [[-4, -26], [4, -26], [0, -31]]);
+    g.fillStyle = "#f0e6d0"; g.beginPath(); g.arc(0, -21, 2.2, 0, 7); g.fill();
+    g.strokeStyle = "#2a2a2e"; g.lineWidth = 0.5; g.beginPath(); g.moveTo(0, -21); g.lineTo(0, -22.6); g.moveTo(0, -21); g.lineTo(1.2, -21); g.stroke();
+    rueda(-9, -14, 2.4); if (d.capital) rueda(9, -15, 2.8);
+  }
+}
+function ciudadLegion(g: Ctx, d: DatosCiudad, t: string): void {
+  // Balutia: muralla de piedra volcánica, tejas rojas planas y un templo de columnas con frontón
+  const basalto = "#4a4440", muro = "#b8a890", teja = "#a04a32";
+  if (d.nivel >= 2 || d.capital) {
+    poli(g, basalto, [[-18, 0], [18, 0], [18, -6], [-18, -6]]); lado(g, [[4, 0], [18, 0], [18, -6], [4, -6]]);
+    for (let i = -18; i < 18; i += 3) poli(g, basalto, [[i, -6], [i + 1.8, -6], [i + 1.8, -7.6], [i, -7.6]]);
+    poli(g, "#1c1611", [[-2.4, 0], [2.4, 0], [2.4, -3.6], [0, -5], [-2.4, -3.6]]);
+  }
+  cuantas([[-10, -6, 7.4, 5], [10, -6, 7.4, 5], [-15, -10, 6, 4], [15, -10, 6, 4], [-4, -11, 6, 4.6], [6, -12, 6, 4.4]], d).sort(porFondo).forEach((c, i) => {
+    caja(g, c[0], c[1], c[2], c[3], muro);
+    poli(g, i % 2 ? oscuro(teja, 0.2) : teja, [[c[0] - c[2] / 2 - 1, c[1] - c[3]], [c[0] + c[2] / 2 + 1, c[1] - c[3]], [c[0], c[1] - c[3] - c[2] * 0.3]]);
+    ventana(g, c[0] - 1.2, c[1] - c[3] * 0.4, 1.2, 1.8, "#3a2418");
+  });
+  if (d.capital || d.nivel >= 3) {
+    poli(g, muro, [[-8, -7], [8, -7], [8, -8.4], [-8, -8.4]]);
+    for (let x = -7; x <= 7; x += 2.8) poli(g, "#e0d4bc", [[x - 0.7, -8.4], [x + 0.7, -8.4], [x + 0.7, -17], [x - 0.7, -17]]);
+    poli(g, muro, [[-8.6, -17], [8.6, -17], [8.6, -18.4], [-8.6, -18.4]]);
+    poli(g, t, [[-8.6, -18.4], [8.6, -18.4], [0, -23]]);
+    if (d.capital) { g.strokeStyle = "#e3bb4e"; g.lineWidth = 0.8; g.beginPath(); g.arc(0, -26, 2, 0, 7); g.stroke(); }
+  }
+}
+
 export function pintarCiudad(g: Ctx, S: number, d: DatosCiudad): void {
   g.save(); g.translate(S / 2, S * 0.8); g.scale(S / 41, S / 41);
   const tejado = d.neutral ? "#7c7068" : d.col, tejado2 = d.neutral ? "#6a5f58" : oscuro(d.col, 0.28), muro = "#d8cdb6", piedra = "#8c8478";
   g.fillStyle = "rgba(0,0,0,.34)"; g.beginPath(); g.ellipse(0, 1, 19, 6, 0, 0, 7); g.fill();
+  const otro: Record<string, (g: Ctx, d: DatosCiudad, t: string, t2: string) => void> = {
+    torres: ciudadTorres, osario: ciudadOsario, mercader: ciudadMercader, empalizada: ciudadEmpalizada, templo: ciudadTemplo, noche: ciudadNoche,
+    pagoda: ciudadPagoda, clan: ciudadClan, puerto: ciudadPuerto, colmena: ciudadColmena, taller: ciudadTaller, legion: ciudadLegion
+  };
+  if (d.estilo && otro[d.estilo]) { otro[d.estilo](g, d, tejado, tejado2); g.restore(); return; }
   // muralla
   const n = d.nivel;
   if (n >= 2 || d.capital) {

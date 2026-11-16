@@ -10,6 +10,9 @@
 --       guerra       3 o 4 bandos, o cualquiera en difícil       -> valor «dificil» (3: tramo excelente)
 --       gran guerra  5 bandos o más, o 4 en difícil              -> valor «especial» (4: tramo extraordinario)
 --   * Cada frente se cobra una sola vez por jugador. Siguen valiendo el tope diario, los límites y los sellos del sistema oficial.
+--   * Como mucho 2 cartas al día de los frentes: el jugador elige qué frentes quiere cobrar.
+--   * Cada frente da 2 intentos. El intento se gasta al EMPEZAR (fractura_frente_empezar): abandonar la guerra también lo gasta.
+--     Sin intentos, con el frente ya cobrado o con las 2 cartas del día, el frente se puede jugar igual, pero no da nada.
 --   * Como en los demás juegos contra la casa, el resultado lo informa el navegador: lo que limita el daño son los topes.
 --
 -- MESAS (entre jugadores, de 2 a 8)
@@ -37,6 +40,82 @@ alter table fractura_guerras add column if not exists nivel text;
 alter table fractura_guerras drop constraint if exists fractura_guerras_nivel_check;
 alter table fractura_guerras add constraint fractura_guerras_nivel_check check (nivel is null or nivel in ('escaramuza', 'guerra', 'gran_guerra'));
 create index if not exists fractura_guerras_frente_idx on fractura_guerras (user_id, frente) where frente is not null;
+alter table fractura_guerras add column if not exists recompensada_en timestamptz;
+
+-- Intentos de cada jugador en cada frente: los que empezó y los que llegó a registrar
+create table if not exists fractura_frente_intentos (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  frente text not null,
+  empezados int not null default 0,
+  registrados int not null default 0,
+  creado timestamptz not null default now(),
+  primary key (user_id, frente)
+);
+alter table fractura_frente_intentos enable row level security;
+drop policy if exists fractura_frente_intentos_ver on fractura_frente_intentos;
+create policy fractura_frente_intentos_ver on fractura_frente_intentos for select using (user_id = auth.uid());
+
+-- Cartas de frentes que el jugador ya se llevó hoy (día UTC)
+create or replace function fractura_i_frentes_hoy(p_user uuid)
+returns int
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select count(*)::int from fractura_guerras where user_id = p_user and recompensada and frente is not null and recompensada_en >= date_trunc('day', now() at time zone 'utc') at time zone 'utc';
+$$;
+revoke execute on function fractura_i_frentes_hoy(uuid) from public, anon, authenticated;
+
+-- Al empezar un frente: dice si esta vez puede dar carta y, si puede, gasta un intento
+create or replace function fractura_frente_empezar(p_clave text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  v_dia date;
+  v_hoy int;
+  v_n int;
+begin
+  if uid is null then raise exception 'Inicia sesión'; end if;
+  if coalesce(p_clave, '') !~ '^[dw][0-9]{8}-[0-9]$' then raise exception 'Frente inválido'; end if;
+  v_dia := to_date(substr(p_clave, 2, 8), 'YYYYMMDD');
+  if v_dia not between current_date - 8 and current_date + 1 then
+    return jsonb_build_object('premio', false, 'motivo', 'cerrado');
+  end if;
+  if exists (select 1 from fractura_guerras where user_id = uid and frente = p_clave and recompensada) then
+    return jsonb_build_object('premio', false, 'motivo', 'cobrado');
+  end if;
+  v_hoy := fractura_i_frentes_hoy(uid);
+  if v_hoy >= 2 then return jsonb_build_object('premio', false, 'motivo', 'tope', 'hoy', v_hoy); end if;
+  insert into fractura_frente_intentos (user_id, frente) values (uid, p_clave) on conflict do nothing;
+  select empezados into v_n from fractura_frente_intentos where user_id = uid and frente = p_clave for update;
+  if v_n >= 2 then return jsonb_build_object('premio', false, 'motivo', 'intentos', 'intentos', v_n); end if;
+  update fractura_frente_intentos set empezados = empezados + 1 where user_id = uid and frente = p_clave;
+  return jsonb_build_object('premio', true, 'intento', v_n + 1, 'quedan', 1 - v_n, 'hoy', v_hoy);
+end;
+$$;
+revoke execute on function fractura_frente_empezar(text) from public, anon;
+grant execute on function fractura_frente_empezar(text) to authenticated;
+
+-- Lo que la pantalla necesita para pintar los frentes: cobrados, intentos gastados y cartas de hoy
+create or replace function fractura_frentes_estado()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'cobrados', coalesce((select jsonb_agg(distinct frente) from fractura_guerras where user_id = auth.uid() and recompensada and frente is not null and creada > now() - interval '20 days'), '[]'::jsonb),
+    'intentos', coalesce((select jsonb_object_agg(frente, empezados) from fractura_frente_intentos where user_id = auth.uid() and creado > now() - interval '20 days'), '{}'::jsonb),
+    'hoy', fractura_i_frentes_hoy(auth.uid()));
+$$;
+revoke execute on function fractura_frentes_estado() from public, anon;
+grant execute on function fractura_frentes_estado() to authenticated;
 
 create or replace function fractura_nivel_frente(p_bandos int, p_dificultad text)
 returns text
@@ -82,6 +161,11 @@ begin
     exception when others then
       v_clave := null; v_nivel := null;
     end;
+    -- Solo cuenta como frente si empezó un intento con premio que aún no se ha registrado
+    if v_clave is not null then
+      update fractura_frente_intentos set registrados = registrados + 1 where user_id = uid and frente = v_clave and registrados < empezados;
+      if not found then v_clave := null; v_nivel := null; end if;
+    end if;
   end if;
   select username into nombre from perfiles where user_id = uid;
   insert into fractura_guerras (user_id, jugador, ejercito, faccion, rival, tipo, resultado, turnos, razon, bajas, logros, titulo, cronica, anio, pvp, frente, nivel)
@@ -121,6 +205,7 @@ begin
   if exists (select 1 from fractura_guerras o where o.user_id = uid and o.frente = g.frente and o.recompensada and o.id <> g.id) then
     raise exception 'Ya cobraste ese frente';
   end if;
+  if fractura_i_frentes_hoy(uid) >= 2 then raise exception 'Ya te llevaste las 2 cartas de los frentes de hoy'; end if;
 
   select * into cfg from cartas_juegos where juego = 'fractura';
   if not found or not cfg.activo then
@@ -137,7 +222,7 @@ begin
   returning token into v_token;
   r := cartas_i_juego_terminar_nucleo(v_token, 'gana', valor);
 
-  update fractura_guerras set recompensada = true where id = p_guerra;
+  update fractura_guerras set recompensada = true, recompensada_en = now() where id = p_guerra;
   if r ->> 'resultado' = 'carta' then
     r := r || jsonb_build_object('cantidad', (select count(*) from cartas_ejemplares where propietario = uid and carta_id = r ->> 'carta' and estado in ('poseida', 'bloqueada')));
   end if;

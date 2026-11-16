@@ -39,7 +39,8 @@ function invariantes(est, ctx) {
 function guerra(semilla, bandos, equipos) {
   const jugadores = [];
   for (let i = 0; i < bandos; i++) jugadores.push({ nombre: `Bando ${i + 1}`, faccion: facciones[(semilla * 7 + i * 5) % facciones.length], humano: false, nivelIA: ["facil", "normal", "dificil"][(semilla + i) % 3], equipo: equipos ? i % 2 : undefined });
-  const cfg = { semilla, tipo: tipos[semilla % tipos.length], forma: formas[(semilla >> 1) % formas.length], dificultad: "normal", anio: 1, jugadores };
+  const cfg = { semilla, tipo: tipos[semilla % tipos.length], forma: formas[(semilla >> 1) % formas.length], dificultad: "normal", anio: 1, jugadores,
+    tamano: ["normal", "pequeno", "grande", "normal"][semilla % 4], mapaPara: semilla % 3 === 0 ? Math.min(8, bandos + 3) : bandos };
   const est = FM.crearGuerra(cfg);
   let guard = 0;
   const heroes = new Set();

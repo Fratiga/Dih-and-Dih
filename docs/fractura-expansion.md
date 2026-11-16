@@ -497,3 +497,41 @@ Va en una sesión aparte, en paralelo, y no cambia reglas. El encargo completo e
 - **Fin de turno:** resumen breve de lo que ha pasado.
 - **Preparado para varios bandos:** el diseño debe funcionar igual con 2 que con 8: paleta de 8 bandos, orden de turnos, fronteras con varios dueños y un tamaño de mapa que se lea de la guerra.
 - **Criterio de éxito:** una captura de la guerra se ve claramente mejor y menos «herramienta de administración» que hoy, con las reglas intactas.
+
+## 15. Reglas 4 (noviembre de 2026)
+
+Las partidas guardadas con reglas anteriores no se cargan (`D.REGLAS = 4`).
+
+### Saber por ejército
+- Cada ejército tiene su árbol en `js/fractura-saber.js`: 4 ramas de 6 escalones y 3 saberes «entre dos ramas» que piden un nivel en dos ramas.
+- Los textos se escriben solos a partir de los efectos (`describir`), con los nombres de las tropas de ese ejército.
+- `jug.tech` guarda el nivel de cada rama y los cruces aprendidos; `jug.sabEf` junta todos los efectos y el motor solo mira ahí.
+- Solo el Trono de Ceniza levanta a los muertos.
+
+### Tropas
+- Todas las tropas tienen `tipo` y `contra` (ventajas por tipo, como en AoE: piqueros contra caballería, tiradores contra voladores...).
+- Nuevas: piquero (todos), jinete, hostigador, catafracto, volador, jinete alado, y el Kirin (tropa única de Seosan, ya no es héroe).
+- Carga: la caballería que avanza 2 casillas antes de atacar suma su `carga`.
+- Voladores: 1 de movimiento en cualquier casilla salvo el vacío, no pueden quedarse en el agua y no se traban.
+- Límite de tropas por ejército (`poblacion` en cada facción): base + lo que da cada nivel de cada ciudad + el saber, con un tope. Los reanimados no cuentan.
+
+### Mapa
+- Tamaños pequeño (el de antes), normal, grande y enorme (`TAMANO_MAPA` en `fractura-mapa.js`): la distancia entre capitales vecinas manda.
+- «Mapa para N bandos»: se genera para N y las capitales que sobran quedan como ciudades libres.
+- Portales: la mitad que antes. Un enemigo en cualquiera de los dos extremos cierra el portal.
+- Cada ejército tiene su arquitectura de ciudad en el tablero (`ESTILO_CIUDAD` en `app/src/fractura/pinturas.ts`).
+
+### Ciudades, pactos y caídos
+- Una ciudad con dueño se asedia: cae al empezar el siguiente turno del sitiador si su tropa sigue dentro.
+- Pactar con un ejército que el tuyo odia (`odia` en cada facción) hace que algunos soldados se vuelvan contra todos.
+- Cuando cae un ejército, sus tropas quedan «sin bandera»: no atacan y se pueden acoger pagando oro.
+
+### Frentes
+- Como mucho 2 cartas al día entre todos los frentes. Cada frente da 2 intentos y el intento se gasta al empezar (`fractura_frente_empezar`).
+- Sin intentos, con el frente cobrado o con las 2 cartas del día, el frente se juega igual pero sin premio.
+
+### Pruebas
+- `node tools/probar-fractura.js 2` (guerras enteras con la IA, todos los tamaños y mapas para más bandos).
+- `node tools/probar-fractura-v4.js` (saber, límite, asedio, portales, acoger, renegados, voladores, tipos, mapas).
+- `node tools/probar-fractura-mesa.js 4` (mesas en varios navegadores).
+- `BD=fractura_mesas sh docs/pruebas/t_fractura_mesas.sh` (SQL de frentes y mesas).

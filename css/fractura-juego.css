@@ -490,3 +490,47 @@ body.fr-pantalla-completa:not(.fr-en-guerra):not(.fr-en-portada) .fr-contenido {
 .fr-log-dest.c-oro { border-left-color: var(--accent, #d4af37); background: rgba(212, 175, 55, .07); }
 .fr-log-dest.c-cian { border-left-color: #8fe3e6; background: rgba(143, 227, 230, .06); }
 .fr-ver-caido { display: block; margin: -2px 0 6px 8px; font-size: .74rem; }
+
+/* Tamaño del mapa: «Para N bandos» */
+.fr-mapa-para { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+.fr-mapa-para > span { font-size: 0.8rem; opacity: 0.75; }
+.fr-mapa-para .fr-opcion { flex: 1 1 34px; min-width: 34px; }
+.fr-mapa-para > .fr-segmentos { flex: 1; display: flex; }
+
+/* Saber v4: pestañas por rama y saberes que piden dos ramas */
+.fr-saber-tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 8px; }
+.fr-saber-tab { font: inherit; display: flex; flex-direction: column; gap: 3px; padding: 6px 8px; text-align: left; color: var(--fr-marfil); background: var(--fr-tinta); border: 1px solid var(--fr-filete); border-left: 4px solid var(--k); cursor: pointer; position: relative; }
+.fr-saber-tab.sel { background: var(--fr-hierro-2); border-color: var(--k); }
+.fr-saber-tab strong { font-size: .8rem; color: var(--k); }
+.fr-saber-tab small { font-size: .68rem; color: #b8a99c; }
+.fr-saber-tab.aviso::after { content: ""; position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--fr-ok); }
+.fr-saber-barra { display: block; height: 3px; background: rgba(255,255,255,.08); }
+.fr-saber-barra i { display: block; height: 100%; background: var(--k); }
+.fr-cruces { display: flex; flex-direction: column; gap: 6px; }
+.fr-cruce { --k: var(--fr-marfil); }
+.fr-cruce-pide { display: flex; flex-wrap: wrap; gap: 4px; }
+.fr-cruce-pide i { font-style: normal; font-size: .64rem; padding: 1px 5px; border: 1px solid var(--k); color: var(--k); opacity: .55; }
+.fr-cruce-pide i.ok { opacity: 1; }
+.fr-rec-tropas .fr-ico-tropas { font-size: .9rem; line-height: 1; }
+.fr-rec-lleno b { color: #e0a060; }
+.fr-asedio { color: #e0a060; }
+
+/* Cómo se juega: índice a la izquierda, texto a la derecha */
+#frAyudaCuerpo.fr-ayuda { display: grid; grid-template-columns: 190px 1fr; gap: 18px; align-items: start; }
+.fr-ay-nav { display: flex; flex-direction: column; gap: 3px; position: sticky; top: 0; }
+.fr-ay-nav .fr-entrada { margin-bottom: 6px; }
+.fr-ay-sec { font: inherit; text-align: left; padding: 6px 10px; color: var(--fr-marfil); background: var(--fr-tinta); border: 1px solid transparent; border-left: 3px solid transparent; cursor: pointer; font-size: .86rem; }
+.fr-ay-sec:hover { border-color: var(--fr-filete); }
+.fr-ay-sec.sel { border-left-color: var(--accent); background: var(--fr-hierro-2); }
+.fr-ay-sec.hay { border-left-color: var(--fr-ok); }
+.fr-ay-texto section h3 { margin-top: 0; }
+.fr-ay-tabla { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: .84rem; }
+.fr-ay-tabla th, .fr-ay-tabla td { padding: 4px 8px; border-bottom: 1px solid var(--fr-filete); text-align: left; vertical-align: top; color: #e4d9c6; }
+.fr-ay-tabla tr:first-child th { color: var(--accent); font-weight: 600; font-size: .76rem; letter-spacing: .06em; text-transform: uppercase; }
+.fr-ay-color { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
+.fr-ayuda mark { background: rgba(240,207,106,.35); color: inherit; }
+@media (max-width: 640px) { #frAyudaCuerpo.fr-ayuda { grid-template-columns: 1fr; } .fr-ay-nav { position: static; flex-direction: row; flex-wrap: wrap; } .fr-ay-nav .fr-entrada { flex-basis: 100%; } }
+.fr-esperando { cursor: progress; }
+.fr-esperando span::before { content: ""; display: inline-block; width: .8em; height: .8em; margin-right: .5em; vertical-align: -.1em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: frGira .8s linear infinite; }
+@keyframes frGira { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .fr-esperando span::before { animation: none; opacity: .6; } }

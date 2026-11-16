@@ -2,7 +2,7 @@
 import Phaser from "phaser";
 import {
   hash, lienzo, colorNum, estiloMar, hornearSuelo, pintarMar, pintarArbol, pintarPico, pintarRoca, pintarCalavera, pintarCristal, pintarJuncos,
-  pintarCiudad, pintarFortaleza, pintarRuinas, pintarNucleo, pintarCostura, pintarMuro, pintarGlifo, pintarBandera, pintarGema,
+  pintarCiudad, ESTILO_CIUDAD, pintarFortaleza, pintarRuinas, pintarNucleo, pintarCostura, pintarMuro, pintarGlifo, pintarBandera, pintarGema,
   pintarNiebla, pintarTerritorios, pintarBrillo, pintarAnillo, pintarAroSel, pintarTajo, pintarEspadas, pintarHumo, pintarFicha, pintarChispa, pintarGota, iconoDe, type Ctx
 } from "./pinturas";
 
@@ -25,7 +25,8 @@ const W: any = window;
 const T = 96;                 // píxeles de mundo por casilla
 const FIG = 104;              // tamaño de las texturas de las figuras (una casilla)
 const RN = 8;                 // píxeles de niebla por casilla
-const RT = 32;                // píxeles del lienzo de provincias por casilla
+// Píxeles del lienzo de provincias por casilla: 32, o menos en los mapas grandes (que el lienzo no pase de ~1100 px)
+const rtDe = (est: any) => Math.max(16, Math.min(32, Math.floor(1100 / Math.max(est.ancho, est.alto))));
 const FPS_VIVO = 60, FPS_QUIETO = 20;   // con algo moviéndose y con el mapa en reposo
 const CASILLA_VISTA = 86;     // tamaño de casilla (px CSS) con el que se abre la guerra
 const CASILLA_MAX = 200;
@@ -223,6 +224,7 @@ export class EscenaGuerra extends Phaser.Scene {
     // Provincias, en un lienzo que solo se repinta cuando cambia algo
     if (this.terr) this.terr.destroy();
     if (this.textures.exists("provincias")) this.textures.remove("provincias");
+    const RT = rtDe(est);
     const [ct] = lienzo(est.ancho * RT, est.alto * RT);
     this.lienzoTerr = ct;
     this.textures.addCanvas("provincias", ct);
@@ -388,7 +390,7 @@ export class EscenaGuerra extends Phaser.Scene {
       const hold = c.est === "nucleo" ? est.nucleoHold.map((n: number, k: number) => (n > 0 ? `${k}:${n}` : "")).join("") : "";
       const cons = est.consagradas && est.consagradas[`${x},${y}`] !== undefined ? `g${est.consagradas[`${x},${y}`]}` : "";
       const muro = est.muros && est.muros.some((m: any) => m.x === x && m.y === y) ? "M" : "";
-      const fe = v === 0 ? "" : [c.est || "", ci ? `${ci.dueno}:${ci.nivel}:${ci.capital ? 1 : 0}:${ci.nombre}` : "", fi >= 0 ? `f${fort}` : "", c.saqueada ? "s" : "", c.objetos && c.objetos.length ? "o" : "", hold, cons, muro, v].join("|");
+      const fe = v === 0 ? "" : [c.est || "", ci ? `${ci.dueno}:${ci.nivel}:${ci.capital ? 1 : 0}:${ci.nombre}:${ci.asedio ? 1 : 0}` : "", fi >= 0 ? `f${fort}` : "", c.saqueada ? "s" : "", c.objetos && c.objetos.length ? "o" : "", hold, cons, muro, v].join("|");
       if (this.firmaEstr[i] !== fe || forzar) { this.firmaEstr[i] = fe; this.rehacerEstructura(i, x, y, c, v, ci, fort); }
     }
     est.regiones.forEach((r: any) => { ft += r.dueno === null ? "n" : r.dueno; });
@@ -400,7 +402,7 @@ export class EscenaGuerra extends Phaser.Scene {
     }
     if (ft + fv !== this.firmaTerr || forzar) {
       this.firmaTerr = ft + fv;
-      if (this.lienzoTerr) { pintarTerritorios(this.lienzoTerr, est, vis, this.bandos.map(b => b.col), RT); (this.textures.get("provincias") as Phaser.Textures.CanvasTexture).refresh(); }
+      if (this.lienzoTerr) { pintarTerritorios(this.lienzoTerr, est, vis, this.bandos.map(b => b.col), rtDe(est)); (this.textures.get("provincias") as Phaser.Textures.CanvasTexture).refresh(); }
     }
     this.colocarPlacas();
     // Lo que no cambia de un fotograma a otro (vida máxima, rango...) se calcula aquí y no en cada fotograma
@@ -483,10 +485,12 @@ export class EscenaGuerra extends Phaser.Scene {
     if (c.est === "ciudad" && ci) {
       const neutral = ci.dueno === null, col = neutral ? "#8a8a8a" : this.bandos[ci.dueno].col;
       const nivel = Math.min(4, ci.nivel);
-      pon(this.tex(`ciudad:${col}:${nivel}:${ci.capital ? 1 : 0}`, 192, 192, g => pintarCiudad(g, 192, { col, nivel, capital: !!ci.capital, neutral })), T * (ci.capital ? 1.28 : 1.12));
+      // Cada ejército construye a su manera; las ciudades sin dueño, a la antigua
+      const estilo = neutral ? "" : ESTILO_CIUDAD[est.jugadores[ci.dueno].faccion] || "";
+      pon(this.tex(`ciudad:${col}:${nivel}:${ci.capital ? 1 : 0}:${estilo}`, 192, 192, g => pintarCiudad(g, 192, { col, nivel, capital: !!ci.capital, neutral, estilo })), T * (ci.capital ? 1.28 : 1.12));
       if (!neutral) bandera(ci.dueno, ci.capital ? 0.5 : 0.8, ci.capital ? 0.12 : 0.34, T * 0.5);
       // rótulo con el nombre, el color del dueño y el nivel
-      const tx = this.add.text(0, 0, `${ci.capital ? "★ " : ""}${ci.nombre}`, { fontFamily: "Cinzel, Georgia, serif", fontSize: `${Math.round(T * 0.13)}px`, color: v === 2 ? "#f6eeda" : "#a59f92", stroke: "#08060c", strokeThickness: 3 })
+      const tx = this.add.text(0, 0, `${ci.asedio ? "⚔ " : ""}${ci.capital ? "★ " : ""}${ci.nombre}`, { fontFamily: "Cinzel, Georgia, serif", fontSize: `${Math.round(T * 0.13)}px`, color: v === 2 ? "#f6eeda" : "#a59f92", stroke: "#08060c", strokeThickness: 3 })
         .setOrigin(0.5, 0).setResolution(2);
       const gr = this.add.graphics();
       const bw = tx.width + T * 0.2, bh = tx.height + 3;
@@ -767,7 +771,7 @@ export class EscenaGuerra extends Phaser.Scene {
       } else if (e.k === "muerte" || e.k === "deserta") add("muerte", 480, { uid: e.uid, x: e.x, y: e.y, deserta: e.k === "deserta" });
       else if (e.k === "nuevo") add("nuevo", 300, { uid: e.uid, x: e.x, y: e.y });
       else if (e.k === "heroe") add("heroe", 900, { uid: e.uid, x: e.x, y: e.y, dueno: e.dueno });
-      else if (e.k === "captura") add("captura", 420, { x: e.x, y: e.y, dueno: e.dueno });
+      else if (e.k === "captura" || e.k === "asedio") add("captura", 420, { x: e.x, y: e.y, dueno: e.dueno });
       else if (e.k === "explosion") { ultimoGolpe = cursor; add("explosion", 360, { x: e.x, y: e.y }); }
       else if (e.k === "cura") add("cura", 300, { uid: e.uid, x: e.x, y: e.y, n: e.n }, true);
       else if (e.k === "consagra" || e.k === "aura" || e.k === "muro") add("onda", 380, { x: e.x, y: e.y, que: e.k, dueno: e.dueno });

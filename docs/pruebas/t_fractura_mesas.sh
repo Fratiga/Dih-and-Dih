@@ -6,7 +6,7 @@
 FALLOS=0
 HOY=$(date -u +%Y%m%d)
 # (la probabilidad de carta por tramo se pone a 1 para que las pruebas no dependan del azar)
-reset() { limpiar 2>/dev/null; sql "delete from fractura_guerras; delete from fractura_mesas; delete from cartas_incidencias; update cartas_catalogo set en_circulacion = true where id <> 'bufon'; update cartas_catalogo set limite_jugador = null; update cartas_juegos set activo = true, prob = '{\"bueno\": 1, \"excelente\": 1, \"extraordinario\": 1}' where juego = 'fractura'" >/dev/null; }
+reset() { limpiar 2>/dev/null; sql "delete from fractura_guerras; delete from fractura_frente_intentos; delete from fractura_mesas; delete from cartas_incidencias; update cartas_catalogo set en_circulacion = true where id <> 'bufon'; update cartas_catalogo set limite_jugador = null; update cartas_juegos set activo = true, prob = '{\"bueno\": 1, \"excelente\": 1, \"extraordinario\": 1}' where juego = 'fractura'" >/dev/null; }
 guerra() { # <usuario> <frente o NULL> <nivel o NULL> [resultado]
   sql "insert into fractura_guerras (user_id, faccion, rival, tipo, titulo, resultado, frente, nivel) values ('$1', 'okran', 'nernib', 'reinos', 'Guerra de prueba', '${4:-victoria}', $2, $3) returning id"
 }
@@ -36,11 +36,17 @@ comprobar "3 bandos es una guerra" "guerra" "$(sql "select fractura_nivel_frente
 comprobar "2 bandos en difícil es una guerra" "guerra" "$(sql "select fractura_nivel_frente(2, 'dificil')")"
 comprobar "4 en difícil es una gran guerra" "gran_guerra" "$(sql "select fractura_nivel_frente(4, 'dificil')")"
 comprobar "6 bandos es una gran guerra" "gran_guerra" "$(sql "select fractura_nivel_frente(6, 'normal')")"
+empezar_frente() { como "$1" "select fractura_frente_empezar('$2');" | tr -d '\n'; }
+SIN=$(como $U1 "select fractura_registrar_guerra('{\"resultado\":\"victoria\",\"faccion\":\"okran\",\"rival\":\"nernib\",\"tipo\":\"reinos\",\"frente\":{\"clave\":\"d$HOY-1\",\"bandos\":4,\"dificultad\":\"normal\"}}'::jsonb);" | tr -d ' \n')
+comprobar "sin empezar el intento no cuenta como frente" "" "$(sql "select coalesce(frente, '') from fractura_guerras where id='$SIN'")"
+sql "delete from fractura_guerras where id='$SIN'" >/dev/null
+contiene "empezar un frente gasta el primer intento" "$(empezar_frente $U1 d$HOY-1)" '"intento": 1'
 G=$(como $U1 "select fractura_registrar_guerra('{\"resultado\":\"victoria\",\"faccion\":\"okran\",\"rival\":\"nernib\",\"tipo\":\"reinos\",\"frente\":{\"clave\":\"d$HOY-1\",\"bandos\":4,\"dificultad\":\"normal\",\"nivel\":\"gran_guerra\"}}'::jsonb);" | tr -d ' \n')
 comprobar "registrar guarda el frente" "d$HOY-1" "$(sql "select frente from fractura_guerras where id='$G'")"
 comprobar "y el nivel sale de bandos y dificultad, no de lo que diga el navegador" "guerra" "$(sql "select nivel from fractura_guerras where id='$G'")"
 G2=$(como $U2 "select fractura_registrar_guerra('{\"resultado\":\"victoria\",\"faccion\":\"okran\",\"rival\":\"nernib\",\"tipo\":\"reinos\",\"frente\":{\"clave\":\"d20200101-0\",\"bandos\":4,\"dificultad\":\"normal\"}}'::jsonb);" | tr -d ' \n')
 comprobar "un frente de hace años no cuenta" "" "$(sql "select coalesce(frente, '') from fractura_guerras where id='$G2'")"
+empezar_frente $U3 d$HOY-0 >/dev/null
 G3=$(como $U3 "select fractura_registrar_guerra('{\"resultado\":\"victoria\",\"faccion\":\"okran\",\"rival\":\"nernib\",\"tipo\":\"reinos\",\"pvp\":true,\"frente\":{\"clave\":\"d$HOY-0\",\"bandos\":2,\"dificultad\":\"normal\"}}'::jsonb);" | tr -d ' \n')
 comprobar "una guerra entre jugadores no es un frente" "" "$(sql "select coalesce(frente, '') from fractura_guerras where id='$G3'")"
 
@@ -68,6 +74,31 @@ sql "update cartas_juegos set activo = false where juego = 'fractura'" >/dev/nul
 GA=$(guerra $U4 "'d$HOY-2'" "'guerra'")
 contiene "con el juego apagado no da nada y no se gasta" "$(reclamar $U4 $GA)" 'juego-inactivo'
 comprobar "la guerra sigue sin cobrar" "f" "$(sql "select recompensada from fractura_guerras where id='$GA'")"
+sql "update cartas_juegos set activo = true where juego = 'fractura'" >/dev/null
+
+echo "== Frentes: dos intentos por frente y dos cartas al día"
+sql "delete from fractura_frente_intentos where user_id = '$U4'" >/dev/null
+contiene "primer intento" "$(empezar_frente $U4 d$HOY-0)" '"quedan": 1'
+contiene "segundo intento" "$(empezar_frente $U4 d$HOY-0)" '"quedan": 0'
+contiene "el tercero ya no da premio" "$(empezar_frente $U4 d$HOY-0)" '"motivo": "intentos"'
+comprobar "y no gasta nada" "2" "$(sql "select empezados from fractura_frente_intentos where user_id = '$U4' and frente = 'd$HOY-0'")"
+reg4() { como $U4 "select fractura_registrar_guerra('{\"resultado\":\"victoria\",\"faccion\":\"okran\",\"rival\":\"nernib\",\"tipo\":\"reinos\",\"frente\":{\"clave\":\"$1\",\"bandos\":$2,\"dificultad\":\"normal\"}}'::jsonb);" | tr -d ' \n'; }
+sleep 16
+W1=$(reg4 d$HOY-0 2); sleep 16
+W2=$(reg4 d$HOY-0 2); sleep 16
+W3=$(reg4 d$HOY-0 2)
+comprobar "dos intentos registran el frente" "d$HOY-0 d$HOY-0" "$(sql "select frente from fractura_guerras where id='$W1'") $(sql "select frente from fractura_guerras where id='$W2'")"
+comprobar "una tercera guerra sin intento queda como guerra libre" "" "$(sql "select coalesce(frente, '') from fractura_guerras where id='$W3'")"
+contiene "la primera victoria cobra" "$(reclamar $U4 $W1)" '"resultado": "carta"'
+contiene "la segunda del mismo frente, no" "$(reclamar $U4 $W2)" "Ya cobraste ese frente"
+contiene "con un frente cobrado ya no se empieza con premio" "$(empezar_frente $U4 d$HOY-0)" '"motivo": "cobrado"'
+empezar_frente $U4 d$HOY-1 >/dev/null; sleep 16
+W4=$(reg4 d$HOY-1 4)
+contiene "la segunda carta del día" "$(reclamar $U4 $W4)" '"resultado": "carta"'
+contiene "con 2 cartas hoy, el siguiente frente no da premio" "$(empezar_frente $U4 d$HOY-2)" '"motivo": "tope"'
+GX=$(guerra $U4 "'d$HOY-2'" "'guerra'")
+contiene "ni aunque la guerra diga que es un frente" "$(reclamar $U4 $GX)" "las 2 cartas de los frentes de hoy"
+contiene "el estado lo resume" "$(como $U4 "select fractura_frentes_estado();" | tr -d '\n')" '"hoy": 2'
 comprobar "la auditoría está limpia" "0" "$(auditar)"
 
 reset
