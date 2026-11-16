@@ -1784,9 +1784,13 @@ pintarHero();
   /* Cartel en medio de la pantalla. Con ms se va solo; sin ms se queda, pero pasado un segundo se encoge a una esquina */
   function cartel(t, ms, sub, color) {
     const el = $("frCartel");
+    // Si ya había un aviso fijo a la vista (el turno de otro bando), el nuevo sigue donde estaba: no vuelve al centro
+    const seguia = !!t && !ms && cartel.fijo && !el.classList.contains("hidden");
     el.innerHTML = t ? `<strong>${esc(t)}</strong>${sub ? `<span>${esc(sub)}</span>` : ""}` : "";
     el.style.setProperty("--c", color || "#f0cf6a");
     el.classList.toggle("hidden", !t);
+    cartel.fijo = !!t && !ms;
+    if (seguia) return;
     el.classList.remove("esquina");
     clearTimeout(cartel.t);
     if (t && ms) cartel.t = setTimeout(() => el.classList.add("hidden"), ms);
