@@ -10,6 +10,8 @@
   const esc = t => String(t === undefined || t === null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const ROM = ["", "I", "II", "III"];
   const FR = window.FracturaRetratos;
+  /* Retrato de un líder (o de un héroe) como imagen: se dibuja una vez y se reutiliza */
+  const retLider = (faccion, w, clase, heroe) => (FR && FR.retratoURL ? `<img class="${clase || "fr-ret-mini"}" src="${FR.retratoURL({ faccion: D.faccionReal ? D.faccionReal(faccion) : faccion, heroe: heroe || null }, w)}" alt="" width="${w}" height="${Math.round(w * 380 / 300)}" loading="lazy">` : "");
   const SLOT_NOMBRE = { arma: "Arma", armadura: "Armadura", accesorio: "Accesorio", estandarte: "Estandarte" };
   const STAT_NOMBRE = { FUE: "Fuerza", CON: "Constitución", VEL: "Velocidad", INT: "Inteligencia", VOL: "Voluntad", MAG: "Aptitud mágica" };
 
@@ -172,7 +174,7 @@
       const barcosCod = D.BARCOS_BASE.concat(fac.naval.barcos || []).filter(cl => CLASES[cl].naval <= topeB);
       c.innerHTML = `<nav class="fr-codice-lista">${Object.keys(FACCIONES).map(k => `<button type="button" class="${k === f ? "sel" : ""}" data-cod="${k}" style="--c:${FACCIONES[k].color}">${figHtml({ faccion: k, clase: "lider", sinAro: true }, 34, 42)}<span>${esc(FACCIONES[k].corto)}</span></button>`).join("")}</nav>
         <article class="fr-codice-ficha" style="--c:${fac.color};--b:${fac.bandera}">
-          <header><h3>${esc(fac.nombre)}</h3><span class="fr-curva" title="${esc(CURVA_TEXTO[fac.curva] || "")}">${esc(fac.curva)}</span></header>
+          <header>${retLider(f, 64, "fr-codice-lider")}<h3>${esc(fac.nombre)}</h3><span class="fr-curva" title="${esc(CURVA_TEXTO[fac.curva] || "")}">${esc(fac.curva)}</span></header>
           <p>${esc(fac.resumen)}</p><p><strong>Ventaja.</strong> ${esc(fac.ventaja)}</p>
           <p><strong>En el mar: ${esc((fac.naval.nivel || "").toLowerCase())}.</strong> ${esc(fac.naval.texto)}</p>
           <p><strong>Su palabra.</strong> ${esc(!fac.diplomacia.pacta ? "No pacta con nadie." : `${fac.diplomacia.pacta >= 0.7 ? "Pacta con facilidad" : fac.diplomacia.pacta >= 0.5 ? "Pacta si le conviene" : "Le cuesta pactar"}${fac.diplomacia.soloHumanos ? ", nunca con ejércitos de monstruos" : ""}. ${!fac.diplomacia.traiciona ? "Cumple lo que firma." : fac.diplomacia.traiciona >= 0.4 ? "Traiciona cuando le conviene." : "Rara vez rompe un pacto."}`)}</p>
@@ -183,7 +185,7 @@
           ${barcosCod.length ? `<h4>Barcos</h4><div class="fr-codice-tropas">${barcosCod.map(cl => { const k = CLASES[cl]; return `<div class="fr-codice-tropa${k.exclusiva ? " propia" : ""}">${figHtml({ faccion: f, clase: cl }, 64, 78)}<div><strong>${esc(k.nombre)}</strong><small>${esc(k.rol)} · pide ${esc(EDIFICIOS[k.requiere.edificio].nombre)}${k.exclusiva ? " · solo este ejército" : ""}</small>
             <span class="fr-recluta-cifras">${ico("vida")}${k.hp} ${ico("ataque")}${k.atq + (fac.naval.barcoAtq || 0)} ${ico("defensa")}${k.def + (fac.naval.barcoDef || 0)} ${ico("mov")}${k.mov + (fac.naval.barcoMov || 0)}${k.alc > 1 ? ` ${ico("alcance")}${k.alc}` : ""}</span><p class="fr-sub">${esc(k.texto)}</p></div></div>`; }).join("")}</div>` : ""}
           <h4>${fac.heroe.length > 1 ? "Héroes (se invoca uno)" : "Héroe"}</h4>
-          <div class="fr-codice-tropas">${fac.heroe.map(hid => { const h = HEROES[hid]; return `<div class="fr-codice-tropa heroe">${figHtml({ faccion: f, clase: "heroe", heroe: hid }, 76, 92)}<div><strong>${esc(h.variantes ? h.variantes.join(" o ") : h.nombre)}</strong><small>${esc(h.titulo)}</small>
+          <div class="fr-codice-tropas">${fac.heroe.map(hid => { const h = HEROES[hid]; return `<div class="fr-codice-tropa heroe">${retLider(f, 84, "fr-codice-ret", hid)}<div><strong>${esc(h.variantes ? h.variantes.join(" o ") : h.nombre)}</strong><small>${esc(h.titulo)}</small>
             <span class="fr-recluta-cifras">${ico("vida")}${h.hp} ${ico("ataque")}${h.atq} ${ico("defensa")}${h.def} ${ico("mov")}${h.mov}${h.alc > 1 ? ` ${ico("alcance")}${h.alc}` : ""}</span><p>${esc(h.aspecto)}</p><p class="fr-sub">${esc(h.texto)}${h.ef.activa ? ` ${esc(h.ef.activa.nombre)}: ${esc(h.ef.activa.texto)}` : ""}</p>
             <p class="fr-sub"><strong>Para invocarlo:</strong> ${h.req.map(r => r.texto || (r.t === "edificio" ? `tener ${EDIFICIOS[r.id].nombre}` : r.t === "fortaleza" ? "tener una fortaleza" : r.t === "escuela" ? `${ESCUELAS[r.e].nombre} ${r.n}` : r.t === "ciudades" ? `${r.n} ciudades` : r.t === "regiones" ? `${r.n} provincias` : r.t === "turno" ? `turno ${r.n}` : r.t === "consagradas" ? `${r.n} casillas consagradas` : r.t === "mercado" ? "controlar el Mercado de las Sombras" : "")).filter(Boolean).concat([`pagar ${costeTexto(h.coste)}`]).join("; ").toLowerCase()}.</p></div></div>`; }).join("")}</div>
         </article>`;
@@ -392,11 +394,11 @@ pintarHero();
     const tarjetaFrente = (f, i) => {
       const riv = window.FracturaFrentes.rivalesPara(f, ej.faccion), cobrado = cobrados.has(f.clave);
       return `<button type="button" class="fr-opcion fr-frente${ajustesGuerra.frente === f.clave ? " sel" : ""}${cobrado ? " cobrado" : ""}" data-aj="frente" data-v="${f.clave}" style="--i:${i}">
-        <canvas class="fr-forma-mini fr-frente-mini" data-frente="${f.clave}" width="132" height="108"></canvas>
+        <span class="fr-frente-mapa"><canvas class="fr-frente-mini" data-frente="${f.clave}" width="320" height="150"></canvas><em class="fr-frente-premio n-${f.nivel}">${esc(NIV[f.nivel].premio)}</em></span>
+        <span class="fr-frente-rivales">${riv.map(x => `<span style="--c:${FACCIONES[x].color}" title="${esc(FACCIONES[x].nombre)}">${retLider(x, 30)}</span>`).join("")}</span>
         <span class="fr-frente-texto"><strong>${esc(f.titulo)}</strong>
           <small>${esc(TIPOS_FRACTURA[f.tipo].nombre)} · ${esc(D.FORMAS_MAPA[f.forma].nombre)}</small>
           <small>${f.bandos} bandos${f.equipos ? " en dos equipos" : ""} · ${esc(DIFICULTADES[f.dificultad].nombre)} · contra ${esc(riv.slice(0, 3).map(x => FACCIONES[x].corto).join(", "))}${riv.length > 3 ? ` y ${riv.length - 3} más` : ""}</small>
-          <em class="fr-frente-premio n-${f.nivel}">${esc(NIV[f.nivel].premio)}</em>
           <small>${cobrado ? "Ya lo cobraste. Puedes jugarlo otra vez, pero no da más cartas." : esc(NIV[f.nivel].texto)}</small>
           <small class="fr-frente-queda">${f.semanal ? "Toda la semana" : "Solo hoy"} · cambia en ${esc(window.FracturaFrentes.quedan(f))}</small></span></button>`;
     };
@@ -878,9 +880,9 @@ pintarHero();
     $("frBandos").innerHTML = est.jugadores.map((j, i) => {
       const b = bandos[i], ciudades = FM.ciudadesDe(est, i).length;
       const aliado = i !== H && FM.mismoEquipo(est, i, H), pacto = aliado && FM.hayPacto(est, i, H);
-      return `<button type="button" class="fr-bando${est.activo === i && est.ganador === null ? " activo" : ""}${j.eliminado ? " fuera" : ""}${i === H ? " yo" : ""}" data-bando="${i}" style="--c:${b.col}"
+      return `<button type="button" class="fr-bando${aliado ? (pacto ? " pacto" : " aliado") : ""}${j.traidor ? " traidor" : ""}${est.activo === i && est.ganador === null ? " activo" : ""}${j.eliminado ? " fuera" : ""}${i === H ? " yo" : ""}" data-bando="${i}" style="--c:${b.col}"
         title="${esc(j.nombre)} (${esc(FACCIONES[j.faccion].corto)})${i === H ? " · eres tú" : pacto ? " · tienes un pacto con él" : aliado ? " · aliado" : ""}${j.traidor ? " · traidor" : ""}${j.eliminado ? " · eliminado" : ` · ${ciudades} ciudad${ciudades === 1 ? "" : "es"} · ${FM.puntuacion(est, i)} puntos`}">
-        <i>${b.forma}</i><span>${esc(FACCIONES[j.faccion].corto)}</span><b>${j.eliminado ? "✕" : `⌂${ciudades}`}</b>${aliado ? `<em>${pacto ? "pacto" : "aliado"}</em>` : ""}</button>`;
+        ${retLider(j.faccion, 30, "fr-bando-ret")}<i>${b.forma}</i><span>${esc(FACCIONES[j.faccion].corto)}</span><b>${j.eliminado ? "✕" : `⌂${ciudades}`}</b>${est.activo === i && est.ganador === null ? `<em class="fr-bando-juega">juega</em>` : aliado ? `<em>${pacto ? "pacto" : "aliado"}</em>` : ""}</button>`;
     }).join("");
   }
   $("frBandos").addEventListener("click", ev => {
@@ -1260,7 +1262,8 @@ pintarHero();
       const e = FM.ef(est, u), tr = tropaDe(u), jug = u.dueno >= 0 ? est.jugadores[u.dueno] : null, mia = u.dueno === H;
       const b = u.dueno >= 0 ? bandos[u.dueno] : { col: "#8c8c8c", forma: "·" };
       const q = { faccion: jug ? jug.faccion : null, clase: u.clase, heroe: u.heroe || null, dueno: u.dueno };
-      const retrato = u.s && FR ? `<canvas class="fr-sel-ret" data-ret="1"></canvas>` : figHtml(q, 84, 104, "fr-sel-fig");
+      const conRetrato = FR && (u.s || u.heroe || u.lider);
+      const retrato = conRetrato ? `<canvas class="fr-sel-ret" data-ret="1"></canvas>` : figHtml(q, 84, 104, "fr-sel-fig");
       const rangoTxt = u.s ? `${S.rangoDe(u.s.victorias + (u.vicG || 0)).nombre}${u.s.spec ? ` · ${ESPECIALIZACIONES[u.s.spec].nombre}` : ""}${u.s.capitan ? " · Capitán" : ""}` : u.lider ? "Líder" : u.heroe ? `Héroe · nivel ${HEROES[u.heroe].nivel}` : "";
       const estados = estadosDeUnidad(u);
       if (mia && soyYo()) accionesActuales = accionesDeUnidad(u);
@@ -1283,7 +1286,8 @@ pintarHero();
         <button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button>
       </div>`;
       const ret = c.querySelector("[data-ret]");
-      if (ret) FR.animar(ret, u.s, { faccion: jug ? jug.faccion : ej.faccion, anio: ej ? ej.anio : 1, herido: u.hp <= e.hpMax * 0.45, w: 84 });
+      if (ret && u.s) FR.animar(ret, u.s, { faccion: jug ? jug.faccion : ej.faccion, anio: ej ? ej.anio : 1, herido: u.hp <= e.hpMax * 0.45, w: 84 });
+      else if (ret) FR.retrato(ret, { faccion: jug ? jug.faccion : ej.faccion, heroe: u.heroe || null }, { anim: true, w: 84, herido: u.hp <= e.hpMax * 0.45 });
       pintarFiguras(c);
       return;
     }
@@ -1353,7 +1357,7 @@ pintarHero();
     if (jug.heroeInvocado) { const hv = FM.heroeVivo(est, H); heroe = `<p class="fr-sel-texto">${hv ? `${esc(hv.nombre)} está en el campo.` : "Tu héroe ya cayó en esta guerra."}</p>`; }
     else heroe = jug.heroes.map(hf => {
       const h = HEROES[hf.id], rq = FM.requisitosHeroe(est, H, hf.id, ci.id);
-      return `<div class="fr-heroe${rq.ok ? " listo" : ""}">${figHtml({ faccion: jug.faccion, clase: "heroe", heroe: hf.id, dueno: H, sinAro: true }, 60, 72)}
+      return `<div class="fr-heroe${rq.ok ? " listo" : ""}">${retLider(jug.faccion, 64, "fr-heroe-ret", hf.id)}
         <div><strong>${esc(hf.nombre)}</strong><small>${esc(h.titulo)}</small>
           <span class="fr-recluta-cifras">${ico("vida")}${h.hp} ${ico("ataque")}${h.atq} ${ico("defensa")}${h.def} ${ico("mov")}${h.mov}${h.alc > 1 ? ` ${ico("alcance")}${h.alc}` : ""}</span>
           <p>${esc(h.texto)}${h.ef.activa ? ` <em>${esc(h.ef.activa.nombre)}:</em> ${esc(h.ef.activa.texto)}` : ""}</p>
@@ -1920,10 +1924,11 @@ pintarHero();
       const libres = cfg.plazas - m.asientos.length;
       const faltan = m.asientos.filter(a => a.user !== m.anfitrion && !a.listo).length;
       const puedeEmpezar = soyAnfitrion && m.asientos.length >= 2 && !faltan;
-      const asientos = m.asientos.map(a => `<li class="${a.listo || a.user === m.anfitrion ? "listo" : ""}" style="--c:${FACCIONES[a.faccion] ? FACCIONES[a.faccion].color : "#8f8498"}">
+      const asientos = m.asientos.map(a => `<li class="fr-silla ${a.listo || a.user === m.anfitrion ? "listo" : ""}" style="--c:${FACCIONES[a.faccion] ? FACCIONES[a.faccion].color : "#8f8498"};--b:${FACCIONES[a.faccion] ? FACCIONES[a.faccion].bandera : "#3a2f25"}">
+          <span class="fr-silla-estandarte"></span>${retLider(a.faccion, 46, "fr-silla-ret")}
           <span class="fr-mesa-quien"><b>${esc(a.nombre)}</b><small>${esc(nombreFaccion(a.faccion))}${a.user === m.anfitrion ? " · abrió la mesa" : a.listo ? " · visto bueno" : " · falta su visto bueno"}</small></span>
           <span class="fr-mesa-apuesta">${chipsApuesta(a.apuesta)}</span></li>`).join("")
-        + Array.from({ length: Math.max(0, libres) }, () => `<li class="vacio"><span class="fr-mesa-quien"><b>Plaza libre</b><small>${cfg.ia ? "si nadie la ocupa, la juega la máquina" : "esperando a alguien"}</small></span></li>`).join("");
+        + Array.from({ length: Math.max(0, libres) }, () => `<li class="fr-silla vacio"><span class="fr-silla-hueco">+</span><span class="fr-mesa-quien"><b>Plaza libre</b><small>${cfg.ia ? "si nadie la ocupa, la juega la máquina" : "esperando a alguien"}</small></span></li>`).join("");
       let acciones = "";
       if (!miAsiento) acciones = libres > 0 ? `<button type="button" class="fr-btn fr-btn-chico fr-btn-principal" data-mesa-acc="sentar" data-id="${m.id}">Sentarme con ${esc(ej.nombre)}</button>` : `<span class="fr-pill">Llena</span>`;
       else {
@@ -1935,14 +1940,15 @@ pintarHero();
       }
       return `<article class="fr-mesa abierta${miAsiento ? " mia" : ""}">
         <header><h4>${esc(m.nombre)}</h4><p>${esc(lugar)} · ${cfg.plazas} plazas${cfg.equipos ? " · dos equipos" : ""}${cfg.ia ? " · la máquina ocupa las libres" : ""} · ${cfg.horas || 48} h por turno${m.privada ? " · por invitación" : ""}</p></header>
-        <ul class="fr-mesa-asientos">${asientos}</ul>
+        <div class="fr-tapete"><ul class="fr-mesa-asientos">${asientos}</ul>
+          <div class="fr-pozo"><b>En juego</b>${m.asientos.some(a => a.apuesta && a.apuesta.length) ? m.asientos.filter(a => a.apuesta && a.apuesta.length).map(a => `<span class="fr-pozo-fila"><small>${esc(a.nombre)}</small>${chipsApuesta(a.apuesta)}</span>`).join("") : `<em class="fr-ap-nada">Nadie apuesta todavía.</em>`}</div></div>
         ${miAsiento && !soyAnfitrion && !miAsiento.listo ? `<p class="fr-sub">Mira lo que apuesta cada uno antes de dar tu visto bueno. Si alguien cambia su apuesta, habrá que darlo otra vez.</p>` : ""}
         ${miAsiento && miAsiento.faccion !== ej.faccion ? `<p class="fr-sub">Estás sentado con ${esc(nombreFaccion(miAsiento.faccion))}. La guerra la jugarás desde ese ejército.</p>` : ""}
         <div class="fr-fila">${acciones}</div></article>`;
     }
     const humanos = cfg.humanos || [], miIdx = humanos.indexOf(yo);
     const nombreDe = i => { const a = m.asientos.find(x => x.user === humanos[i]); return a ? a.nombre : m.bandos && m.bandos[i] ? `la máquina (${nombreFaccion(m.bandos[i].faccion)})` : "?"; };
-    const bandos = (m.bandos || []).map((b, i) => `<i style="--c:${FACCIONES[b.faccion] ? FACCIONES[b.faccion].color : "#8f8498"}" class="${humanos[i] ? "" : "ia"}${m.estado === "activa" && m.activo === i ? " activo" : ""}" title="${esc(humanos[i] ? nombreDe(i) : "La máquina")}">${esc(nombreFaccion(b.faccion))}</i>`).join("");
+    const bandos = (m.bandos || []).map((b, i) => `<i data-ret-lider="${esc(b.faccion)}" style="--c:${FACCIONES[b.faccion] ? FACCIONES[b.faccion].color : "#8f8498"}" class="${humanos[i] ? "" : "ia"}${m.estado === "activa" && m.activo === i ? " activo" : ""}" title="${esc(humanos[i] ? nombreDe(i) : "La máquina")}">${retLider(b.faccion, 26)}${esc(nombreFaccion(b.faccion))}</i>`).join("");
     const pozo = conApuesta ? `<div class="fr-mesa-pozo">${m.asientos.filter(a => a.apuesta && a.apuesta.length).map(a => `<span><b>${esc(a.nombre)}</b> ${chipsApuesta(a.apuesta)}</span>`).join("")}</div>` : "";
     if (m.estado === "activa") {
       const mio = miIdx >= 0 && m.activo === miIdx, cerrada = (ej.mesasCerradas || []).includes(m.id), reportada = m.reportes && Object.keys(m.reportes).length;

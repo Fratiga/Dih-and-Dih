@@ -354,6 +354,37 @@ function cuerpoPielCuello(c, S) { c.fillStyle = "#e8e2d0"; for (let i = 0; i < 9
 const sombraCara = (c, S, o, y0) => { relleno(c, `M112 ${y0 || 122} C112 108 188 108 188 ${y0 || 122} L186 196 C172 222 128 222 114 196 Z`, "#050407"); };
 const dosOjos = (S, y, col, rx, ry) => { ojo(S, 135, y, rx || 6.5, ry || 2.3, col); ojo(S, 165, y, rx || 6.5, ry || 2.3, col); };
 const CABEZA2 = {
+  /* Adam: yelmo cerrado plateado con ribetes verdes, una hoja de acebo en la frente y un penacho largo de pelo verde */
+  adam(c, S, o) {
+    const m = o.metal || "#dbe1e6", v = o.verde || "#1f9a66";
+    relleno(c, "M150 62 C178 18 240 24 254 80 C266 132 244 196 258 262 C228 222 222 156 214 116 C206 86 184 78 160 82 Z", cuero(c, 150, 20, 266, 262, v), "#062a1a", 1.6);
+    for (let i = 0; i < 5; i++) filo(c, `M${168 + i * 6} ${74 + i * 4} C${206 + i * 4} ${60 + i * 6} ${226 + i * 3} ${120 + i * 8} ${228 + i * 4} ${190 + i * 10}`, "rgba(200,255,220,.22)", 1.2);
+    relleno(c, "M104 120 C104 72 128 56 150 56 C172 56 196 72 196 120 L198 208 Q150 238 102 208 Z", metal(c, 100, 56, 200, 238, m), "#09090b", 2.5);
+    relleno(c, "M145 60 L155 60 L157 212 L143 212 Z", metal(c, 143, 60, 157, 212, cla(m, 0.2)), "rgba(0,0,0,.45)", 1);
+    relleno(c, "M110 136 L190 136 L188 147 L112 147 Z", NEGRO);
+    ojo(S, 130, 141, 8, 2.4, o.ojo || "#dff6ea"); ojo(S, 170, 141, 8, 2.4, o.ojo || "#dff6ea");
+    [[124, 172], [132, 184], [124, 196], [176, 172], [168, 184], [176, 196]].forEach(q => disco(c, NEGRO, q[0], q[1], 2.2));
+    c.strokeStyle = v; c.lineWidth = 3.4; c.lineCap = "round";
+    c.beginPath(); c.moveTo(106, 124); c.quadraticCurveTo(150, 106, 194, 124); c.stroke();
+    c.beginPath(); c.moveTo(104, 202); c.quadraticCurveTo(150, 226, 196, 202); c.stroke();
+    relleno(c, "M150 84 L156 92 L164 94 L158 100 L160 110 L150 104 L140 110 L142 100 L136 94 L144 92 Z", v, "#062a1a", 1);
+    filo(c, "M110 112 C110 78 132 64 146 62", "rgba(255,255,255,.5)", 1.8);
+  },
+  /* El dragón pálido (Rykerd): cabeza larga y lisa, cresta de cuernos, placas de roca en la frente y dos ojos fijos */
+  dragon(c, S, o) {
+    const p = o.piel || "#cfc0ca", sb = osc(p, 0.38), roca = "#4f474e";
+    relleno(c, "M118 96 C102 58 88 32 64 14 C94 26 118 48 132 84 Z", metal(c, 64, 14, 132, 96, sb), "#140c12", 1.6);
+    relleno(c, "M182 96 C198 58 212 32 236 14 C206 26 182 48 168 84 Z", metal(c, 168, 14, 236, 96, sb), "#140c12", 1.6);
+    relleno(c, "M136 82 C138 52 146 30 150 16 C154 30 162 52 164 82 Z", metal(c, 136, 16, 164, 82, sb), "#140c12", 1.4);
+    relleno(c, "M96 122 C96 84 124 68 150 68 C176 68 204 84 204 122 C204 162 188 196 172 226 Q150 252 128 226 C112 196 96 162 96 122 Z", metal(c, 96, 68, 204, 252, p), "#160e14", 2.5);
+    for (let i = 0; i < 6; i++) { const y = 176 + i * 9; c.strokeStyle = "rgba(60,40,52,.35)"; c.lineWidth = 1.2; c.beginPath(); c.arc(150, y, 24 - i * 2.6, 0.3, Math.PI - 0.3); c.stroke(); }
+    relleno(c, "M112 104 L134 96 L142 114 L120 120 Z M188 104 L166 96 L158 114 L180 120 Z", metal(c, 112, 96, 188, 120, roca), "#0e0a0c", 1.2);
+    relleno(c, "M112 146 Q128 136 144 148 Q128 160 112 152 Z M188 146 Q172 136 156 148 Q172 160 188 152 Z", "#1a1216");
+    ojo(S, 129, 149, 9, 3.4, o.ojo || "#ff9a3a"); ojo(S, 171, 149, 9, 3.4, o.ojo || "#ff9a3a");
+    linea(c, "#3a2a30", 1.8, 140, 214, 146, 220); linea(c, "#3a2a30", 1.8, 160, 214, 154, 220);
+    relleno(c, "M126 228 Q150 242 174 228 L170 236 Q150 250 130 236 Z", "#2a1a22");
+    filo(c, "M104 140 C102 100 126 76 150 72", "rgba(255,240,250,.45)", 1.6);
+  },
   capacete(c, S, o) {
     relleno(c, "M100 150 L200 150 L212 236 Q150 262 88 236 Z", cuero(c, 88, 150, 212, 258, "#3b3f46"), "#08080a", 2);
     c.strokeStyle = "rgba(0,0,0,.45)"; c.lineWidth = 1; for (let i = 0; i < 7; i++) { c.beginPath(); c.moveTo(96 + i * 3, 166 + i * 11); c.lineTo(204 - i * 3, 166 + i * 11); c.stroke(); }
@@ -702,6 +733,33 @@ const VIS = {
   }
 };
 const CUERPO2 = {
+  lider(c, S) { CUERPO.lider(c, S); },
+  /* Adam: armadura plateada pesada, tabardo verde con la hoja de acebo y correas cruzadas con remaches dorados */
+  adam(c, S, o) {
+    const v = o.verde || "#1f9a66";
+    hombrerasPlaca(c, S, o.acero || "#cdd4da", true);
+    relleno(c, "M110 262 L190 262 L198 380 L102 380 Z", cuero(c, 102, 262, 198, 380, osc(v, 0.45)), "#03140c", 1.6);
+    relleno(c, "M150 286 L160 300 L174 302 L164 314 L168 330 L150 322 L132 330 L136 314 L126 302 L140 300 Z", v, "#062a1a", 1.2);
+    linea(c, "#3a2614", 9, 52, 262, 236, 352); linea(c, "rgba(255,230,180,.15)", 1.5, 52, 257, 236, 347);
+    [[84, 278], [120, 296], [156, 314], [192, 331]].forEach(q => { disco(c, "#c79a44", q[0], q[1], 3.4); disco(c, "#7a5a1a", q[0], q[1], 1.6); });
+    c.strokeStyle = v; c.lineWidth = 3; c.beginPath(); c.arc(70, 262, 34, 3.6, 5.6); c.stroke(); c.beginPath(); c.arc(230, 262, 34, 3.8, 5.8); c.stroke();
+  },
+  /* El dragón pálido: alas acabadas en dedos detrás, pecho de escamas y una coraza de roca en el hombro */
+  dragon(c, S, o) {
+    const p = o.piel || "#cfc0ca", sb = osc(p, 0.35);
+    [-1, 1].forEach(l => {
+      const hx = 150 + l * 70, mx = 150 + l * 116, my = 150;
+      c.save(); c.globalAlpha = 0.55;
+      relleno(c, `M${hx} 280 L${mx} ${my} L${150 + l * 150} 40 L${150 + l * 168} 92 L${150 + l * 176} 150 L${150 + l * 168} 210 Z`, "#d8a8b8");
+      c.restore();
+      linea(c, sb, 7, hx, 280, mx, my);
+      [[150 + l * 150, 40], [150 + l * 168, 92], [150 + l * 176, 150], [150 + l * 168, 210]].forEach(q => { linea(c, sb, 3.4, mx, my, q[0], q[1]); disco(c, "#efe6ea", q[0], q[1], 3); });
+    });
+    relleno(c, "M58 380 C66 300 100 262 150 252 C200 262 234 300 242 380 Z", metal(c, 58, 252, 242, 380, p), "#160e14", 2.2);
+    for (let r = 0; r < 5; r++) for (let k = -3; k <= 3; k++) { const x = 150 + k * 22 + (r % 2) * 11, y = 288 + r * 20; if (Math.abs(x - 150) > 70 - r * 2) continue; c.strokeStyle = "rgba(80,56,70,.35)"; c.lineWidth = 1.3; c.beginPath(); c.arc(x, y, 10, 0.2, Math.PI - 0.2); c.stroke(); }
+    relleno(c, "M206 270 L250 286 L262 330 L224 320 Z", metal(c, 206, 270, 262, 330, "#4f474e"), "#0e0a0c", 1.4);
+    c.strokeStyle = "#6d7178"; c.lineWidth = 2.4; c.setLineDash([4, 3]); c.beginPath(); c.moveTo(76, 330); c.quadraticCurveTo(110, 360, 92, 380); c.stroke(); c.setLineDash([]);
+  },
   placas(c, S, o) { hombrerasPlaca(c, S, o.acero || S.acero, !!o.pesado); tabardo(c, S, o.pesado ? 22 : 14); },
   cuero(c, S, o) { cuerpoCuero(c, S, o.cuero || "#4a3722"); },
   tunica(c, S, o) { cuerpoTunica(c, S, o.tela || mix(S.ban, "#0c0a16", 0.25), 7); },
@@ -713,6 +771,41 @@ const CUERPO2 = {
   quitina(c, S, o) { cuerpoQuitina(c, S, o.quitina || "#6b4a2a"); },
   maquina(c, S, o) { cuerpoMaquina(c, S, o.metal || "#c79a44"); },
   legion(c, S, o) { cuerpoLegion(c, S, o.metal || "#b07a3c"); }
+};
+
+/* Los líderes de cada ejército: su propia cabeza y su cuerpo, con el aspecto de su figura del mapa */
+const LIDER_VIS = {
+  "caballeros-del-reino": T("lider", "lider"),
+  "academia-arcana-de-dolbred": T("mitra", "tunica", { tela: "#3a3560", ojo: "#b98cff", grupo: "arcano" }),
+  "trono-de-ceniza": T("lider", "lider", { acero: "#3a3432", ojo: "#ff8a3a", grupo: "cripta" }),
+  "compania-dorada": T("plumas", "placas", { acero: "#c9a23a", pesado: true }),
+  "hijos-del-acero": T("sombreroAla", "cuero", { cuero: "#4a3e30", pluma: true, grupo: "bosque" }),
+  "santos-de-asmodeo": T("mitra", "sobreveste", { ojo: "#fff0b0", grupo: "arcano" }),
+  nikaalia: T("fedora", "abrigo", { tela: "#15141a", abrigo: "#2a2630", ojo: "#ffd27a", cigarro: true }),
+  seosan: T("kabuto", "placas", { metal: "#2b2a30", acero: "#2b2a30", mascara: "#c9a23a", pesado: true }),
+  okran: T("barbaro", "piel", { piel: "#4a3626", pelo: "#3a2a1a", cuernos: true, ancho: 1.22, cuerpoAncho: 1.32 }),
+  pelgiria: T("tricornio", "abrigo", { abrigo: "#2a3238", galon: "#e3bb4e", pluma: true, panuelo: true }),
+  mravec: T("mantis", "quitina", { quitina: "#b08a2a", ojo: "#fff0a0", grupo: "cripta" }),
+  nernib: T("gafas", "abrigo", { abrigo: "#2e3a33", cuero: "#3a4450", ojo: "#ffe36a" }),
+  balutia: T("galea", "legion", { metal: "#c9a23a", cresta: true, ancho: 1.2 })
+};
+/* Los héroes. Adam y Rykerd siguen las referencias del autor (docs/fractura-expansion.md). */
+const HEROE_VIS = {
+  adam: T("adam", "adam", { acero: "#cdd4da", verde: "#1f9a66", ojo: "#dff6ea" }),
+  mano_de_oro: T("capacete", "placas", { acero: "#2a2a30", pesado: true, ojo: "#ffd24a" }),
+  engranaje: T("lente", "maquina", { metal: "#7a9a72", antena: true, ojo: "#ffd27a" }),
+  ottavio: T("fedora", "abrigo", { tela: "#e9e4da", abrigo: "#15141a", ojo: "#ffd27a", cigarro: true }),
+  brasa: T("cogulla", "tunica", { tela: "#8a2a1a", ojo: "#ff8a3a", grupo: "arcano" }),
+  humores: T("cogulla", "tunica", { tela: "#3a4a32", ojo: "#9af27a", grupo: "arcano" }),
+  umbral: T("cogulla", "tunica", { tela: "#d9d2c0", ojo: "#b98cff", sol: true, grupo: "arcano" }),
+  ceniciento: T("vacia", "placas", { acero: "#4a4442", pesado: true, ojo: "#ff8a3a", grupo: "cripta" }),
+  vigilante: T("granYelmo", "placas", { halo: true, metal: "#f4f5f6", acero: "#e2e5e8", pesado: true, ojo: "#fff6c8", grupo: "arcano" }),
+  kirin: T("bestia", "piel", { pelo: "#3f8f72", piel: "#2e6a54", ojo: "#fff6a0", grupo: "arcano" }),
+  ebonrabia: T("bestia", "piel", { pelo: "#17141a", piel: "#1d1a20", ojo: "#ff3a2a", grupo: "bosque" }),
+  dientesal: T("tricornio", "abrigo", { abrigo: "#8a1f1f", galon: "#ffffff", pluma: true }),
+  zaphar: T("hormiga", "quitina", { quitina: "#8a5a22", ojo: "#fff0a0", grupo: "cripta" }),
+  orsa: T("galea", "legion", { metal: "#b07a3c", cresta: true, ancho: 1.2 }),
+  rykerd: T("dragon", "dragon", { piel: "#cfc0ca", ojo: "#ff9a3a", grupo: "cripta", ancho: 1.18, cuerpoAncho: 1 })
 };
 
 const GRUPO = { guerrero: "ruinas", caballero: "ruinas", paladin: "ruinas", lider: "ruinas", mercenario: "ruinas", ballestero: "ruinas", cazador: "bosque", picaro: "bosque", salvaje: "bosque", arcanista: "arcano", archimago: "arcano", sanador: "arcano", eco: "arcano", esqueleto: "cripta" };
@@ -738,7 +831,7 @@ const OJOS = { guerrero: "#e6b04a", paladin: "#ffd27a", caballero: "#ffb84a" };
     const r = rng(hashStr(String(s.id)));
     // La receta de esta tropa en su ejército; si no tiene, la cabeza y el cuerpo de su clase
     const facId = D.faccionReal ? D.faccionReal(o.faccion) : o.faccion;
-    const vis = (VIS[facId] && VIS[facId][s.clase]) || null;
+    const vis = (o.heroe && HEROE_VIS[o.heroe]) || (s.clase === "lider" && LIDER_VIS[facId]) || (VIS[facId] && VIS[facId][s.clase]) || null;
     const BASE = { capo: "picaro", maestro: "guerrero", berserker: "guerrero", barrilero: "mercenario", quimera: "salvaje", automata: "paladin", condenado: "esqueleto", heroe: "lider" };
     const cl = CABEZA[s.clase] ? s.clase : BASE[s.clase] || "guerrero";
     const victorias = s.victorias || 0;
@@ -788,6 +881,16 @@ const OJOS = { guerrero: "#e6b04a", paladin: "#ffd27a", caballero: "#ffb84a" };
     co.strokeStyle = colMarco; co.globalAlpha = rango >= 3 ? 0.85 : 0.42; co.lineWidth = rango >= 3 ? 2.6 : 1.5; co.strokeRect(5, 5, W - 10, H - 10);
     co.globalAlpha = rango >= 4 ? 0.7 : 0.18; co.lineWidth = 1; co.strokeRect(11, 11, W - 22, H - 22); co.globalAlpha = 1;
     if (rango >= 4) [[11, 11], [W - 11, 11], [11, H - 11], [W - 11, H - 11]].forEach(p => { co.fillStyle = RANGO_COL[4]; co.beginPath(); co.arc(p[0], p[1], 5, 0, 7); co.fill(); });
+    if (o.heroe || s.clase === "lider") {
+      // Héroes y líderes: marco dorado doble y su insignia arriba (una estrella o una corona)
+      co.strokeStyle = "#e3bb4e"; co.globalAlpha = 0.9; co.lineWidth = 3; co.strokeRect(5, 5, W - 10, H - 10);
+      co.globalAlpha = 0.5; co.lineWidth = 1; co.strokeRect(12, 12, W - 24, H - 24); co.globalAlpha = 1;
+      co.fillStyle = "#0b0910"; co.beginPath(); co.arc(W / 2, 14, 15, 0, 7); co.fill();
+      co.fillStyle = "#f0cf6a"; co.beginPath();
+      if (o.heroe) for (let i = 0; i < 10; i++) { const rr = i % 2 ? 4.6 : 11, a = -Math.PI / 2 + (i * Math.PI) / 5; co.lineTo(W / 2 + Math.cos(a) * rr, 15 + Math.sin(a) * rr); }
+      else { co.moveTo(W / 2 - 10, 21); co.lineTo(W / 2 - 10, 9); co.lineTo(W / 2 - 5, 15); co.lineTo(W / 2, 6); co.lineTo(W / 2 + 5, 15); co.lineTo(W / 2 + 10, 9); co.lineTo(W / 2 + 10, 21); }
+      co.closePath(); co.fill();
+    }
     co.strokeStyle = RANGO_COL[Math.max(2, rango)]; co.lineWidth = 5; co.lineCap = "round"; co.lineJoin = "round";
     for (let i = 0; i < rango; i++) { const y = H - 26 - i * 15; co.beginPath(); co.moveTo(22, y + 8); co.lineTo(40, y); co.lineTo(58, y + 8); co.stroke(); }
     if (s.capitan) {
@@ -854,5 +957,16 @@ const OJOS = { guerrero: "#e6b04a", paladin: "#ffd27a", caballero: "#ffb84a" };
   /* Soldado de relleno para mostrar una clase y una facción sin tener a nadie (portadas) */
   function generico(clase, id, sexo) { return { id: String(id), clase, sexo: sexo || "m", origen: "voluntario", nacimiento: -22, victorias: 0, cicatrices: 0, estado: "activo" }; }
 
-  return { dibujar, animar, generico };
+  /* Retrato de un líder o de un héroe sin tener su ficha de soldado. q: { faccion, heroe } (sin héroe, el líder). */
+  function soldadoDe(q) { return generico(q.heroe ? "heroe" : "lider", `${q.faccion}:${q.heroe || "lider"}`, "m"); }
+  function retrato(canvas, q, o) { const op = Object.assign({ faccion: q.faccion, heroe: q.heroe || null }, o || {}); if (op.anim) animar(canvas, soldadoDe(q), op); else dibujar(canvas, soldadoDe(q), op); }
+  /* La misma imagen como dirección de datos, guardada: sirve para pintarla muchas veces sin redibujar (barras, listas) */
+  const urls = new Map();
+  function retratoURL(q, w) {
+    const k = `${q.faccion}:${q.heroe || "lider"}:${w}`;
+    if (!urls.has(k)) { const cv = document.createElement("canvas"); dibujar(cv, soldadoDe(q), { faccion: q.faccion, heroe: q.heroe || null, w }); urls.set(k, cv.toDataURL("image/png")); }
+    return urls.get(k);
+  }
+
+  return { dibujar, animar, generico, retrato, retratoURL };
 })();
