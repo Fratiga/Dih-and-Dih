@@ -261,7 +261,7 @@ export class EscenaGuerra extends Phaser.Scene {
   }
 
   estado(e: any): void {
-    this.ui = Object.assign({ sel: null, mover: new Map(), atacar: new Set(), ciudad: null, casilla: null, objetivosHab: new Set(), ruta: null, hover: this.ui.hover, previaAtq: null, amenaza: null }, e);
+    this.ui = Object.assign({ sel: null, mover: new Map(), atacar: new Set(), ciudad: null, casilla: null, objetivosHab: new Set(), ruta: null, hover: this.ui.hover, previaAtq: null, amenaza: null, enlace: null, marca: null }, e);
     this.actividad = performance.now();
     this.sincronizar(false);
   }
@@ -737,6 +737,14 @@ export class EscenaGuerra extends Phaser.Scene {
       if (!REDUCIDO) this.aroSel.setAlpha(0.75 + 0.25 * Math.sin(t / 200));
     } else this.aroSel.setVisible(false);
     if (ui.casilla) this.esquinas(ui.casilla.x, ui.casilla.y, 0xf2cf6a, 1, Math.max(2.5, T / 26), 0.28, 4);
+    // El otro extremo de un portal, unido con una línea de puntos
+    if (ui.casilla && ui.enlace) {
+      this.esquinas(ui.enlace.x, ui.enlace.y, 0x8fe3e6, 1, Math.max(3, T / 20), 0.34, 2);
+      const a = this.centro(ui.casilla.x, ui.casilla.y), b = this.centro(ui.enlace.x, ui.enlace.y), L = Math.hypot(b.x - a.x, b.y - a.y), paso = T * 0.28, off = REDUCIDO ? 0 : (t / 25) % paso;
+      for (let p = off; p < L; p += paso) g.fillStyle(0x8fe3e6, 0.85).fillCircle(a.x + ((b.x - a.x) * p) / L, a.y + ((b.y - a.y) * p) / L, T * 0.045);
+    }
+    // Casilla señalada desde la interfaz (dónde saldrá un reanimado)
+    if (ui.marca) { g.fillStyle(0x9af2c0, 0.22).fillRect(ui.marca.x * T, ui.marca.y * T, T, T); this.esquinas(ui.marca.x, ui.marca.y, 0x9af2c0, 1, Math.max(3, T / 20), 0.34, 2); }
     if (ui.ciudad && est.ciudades[ui.ciudad]) { const c = est.ciudades[ui.ciudad]; this.esquinas(c.x, c.y, 0xf2cf6a, 1, Math.max(3, T / 20), 0.34, 2); }
     if (ui.hover && !this.anim) this.esquinas(ui.hover.x, ui.hover.y, 0xfff4d6, 0.7, Math.max(2, T / 30), 0.22, 2);
   }

@@ -468,3 +468,25 @@ body.fr-pantalla-completa:not(.fr-en-guerra):not(.fr-en-portada) .fr-contenido {
 .fr-mesa-bandos i img { width: 22px; height: 27px; }
 .fr-duelos-lista article.fr-mesa { display: block; }
 .fr-duelos-lista article.fr-mesa > header { display: block; width: auto; }
+
+
+/* --- El aviso de turno, encogido en una esquina --- */
+#frGuerra .fr-cartel.esquina { left: auto; right: 12px; top: 58px; padding: 6px 14px; text-align: right; background: rgba(10, 8, 14, .9); border: 1px solid var(--c, var(--accent-soft)); animation: none; }
+#frGuerra .fr-cartel.esquina strong { font-size: .86rem; letter-spacing: .12em; }
+#frGuerra .fr-cartel.esquina span { font-size: .72rem; }
+.fr-espera { left: auto; right: 12px; bottom: auto; top: 112px; transform: none; }
+/* --- Mesas: botón Listo --- */
+.fr-btn-listo.si { color: #b6f0a8; border-color: #3f8a34; background: #142a12; }
+/* --- Saber: el coste no se pinta en rojo salvo que falte --- */
+.fr-nodo .fr-coste b:not(.falta) { color: var(--fr-marfil, #e9dec6); }
+/* --- Barra de bandos compacta con muchos bandos --- */
+.fr-bandos.compacta .fr-bando span { display: none; }
+.fr-bandos.compacta .fr-bando em:not(.fr-bando-juega) { display: none; }
+.fr-bandos.compacta .fr-bando { padding-right: 6px; gap: 4px; }
+/* --- Crónica: lo destacado con su color --- */
+.fr-log-dest { border-left: 3px solid var(--accent-soft); background: rgba(255, 255, 255, .035); }
+.fr-log-dest.c-conq { border-left-color: #5fb8bc; }
+.fr-log-dest.c-baja { border-left-color: var(--fr-mal, #dc5a4c); background: rgba(220, 90, 76, .07); }
+.fr-log-dest.c-oro { border-left-color: var(--accent, #d4af37); background: rgba(212, 175, 55, .07); }
+.fr-log-dest.c-cian { border-left-color: #8fe3e6; background: rgba(143, 227, 230, .06); }
+.fr-ver-caido { display: block; margin: -2px 0 6px 8px; font-size: .74rem; }

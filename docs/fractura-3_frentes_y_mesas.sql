@@ -15,8 +15,8 @@
 -- MESAS (entre jugadores, de 2 a 8)
 --   * Alguien abre una mesa, los demás se sientan con su ejército y, si se quiere, la máquina ocupa las plazas que sobren.
 --   * Cada jugador puede apostar las cartas que quiera, o ninguna. Las apuestas NO tienen que ser iguales.
---     Todos ven lo que apuesta cada uno y tienen que dar su visto bueno antes de empezar; si alguien cambia su apuesta
---     o entra alguien nuevo, hay que volver a darlo.
+--     Todos ven lo que apuesta cada uno y tienen que marcar Listo antes de empezar; si alguien cambia su apuesta
+--     o entra alguien nuevo, hay que volver a marcarlo.
 --   * Las cartas apostadas quedan bloqueadas hasta que la guerra termina.
 --   * Quien gana se lleva las cartas de los que pierden. Si ganan varios (un equipo), se las reparten por turnos, de la más rara
 --     a la más común. Si hay empate o gana la máquina, cada uno recupera las suyas. Si una carta no cabe en la colección de
@@ -368,7 +368,7 @@ begin
 end;
 $$;
 
--- El anfitrión empieza la guerra cuando hay al menos dos jugadores y todos dieron su visto bueno.
+-- El anfitrión empieza la guerra cuando hay al menos dos jugadores y todos están listos.
 create or replace function fractura_mesa_empezar(p_id uuid)
 returns void
 language plpgsql
@@ -393,7 +393,7 @@ begin
   n := jsonb_array_length(m.asientos);
   if n < 2 then raise exception 'Hacen falta al menos dos jugadores'; end if;
   if exists (select 1 from jsonb_array_elements(m.asientos) s where s ->> 'user' <> uid::text and not coalesce((s ->> 'listo')::boolean, false)) then
-    raise exception 'Falta el visto bueno de algún jugador';
+    raise exception 'Falta que algún jugador esté listo';
   end if;
   plazas := (m.config ->> 'plazas')::int;
   select jsonb_agg(s -> 'bando' order by k), jsonb_agg(s -> 'user' order by k), array_agg(s ->> 'faccion')

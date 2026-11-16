@@ -47,7 +47,7 @@
       texto: "Muy frágil. Su golpe alcanza también a los enemigos pegados al objetivo y puede cambiar el terreno." },
     paladin: { nombre: "Paladín", rol: "Tanque y apoyo", hp: 16, atq: 3, def: 4, mov: 3, alc: 1, atqEstat: "FUE",
       perfil: { FUE: 6, CON: 8, VEL: 3, INT: 5, VOL: 8, MAG: 3 }, coste: { comida: 3, oro: 4, mineral: 2 }, requiere: { edificio: "cuartel" },
-      texto: "Defensa altísima y un aura que da 1 de defensa a quienes lo rodean. Es caro." },
+      texto: "Defensa altísima y un aura que da 1 de defensa a quienes lo rodean." },
     picaro: { nombre: "Pícaro", rol: "Infiltración", hp: 8, atq: 4, def: 1, mov: 4, alc: 1, atqEstat: "FUE",
       perfil: { FUE: 5, CON: 4, VEL: 8, INT: 6, VOL: 5, MAG: 2 }, coste: { comida: 2, oro: 3 }, requiere: { edificio: "cuartel" },
       texto: "Pega la mitad más si el objetivo está solo, se desengancha sin problema y puede sabotear edificios enemigos." },
@@ -65,7 +65,7 @@
       texto: "Pega 2 más a monstruos y a unidades muy blindadas." },
     mercenario: { nombre: "Mercenario", rol: "Contrato", hp: 12, atq: 4, def: 2, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "compania-dorada",
       perfil: { FUE: 6, CON: 6, VEL: 5, INT: 4, VOL: 5, MAG: 1 }, coste: { oro: 5 }, requiere: {},
-      texto: "Se contrata con oro y no pide comida ni edificio. Caro, pero llega al instante." },
+      texto: "No pide comida ni edificio. Se entrena en cualquier ciudad." },
     sanador: { nombre: "Peregrino sanador", rol: "Curación", hp: 9, atq: 1, def: 1, mov: 3, alc: 1, atqEstat: "VOL", exclusiva: "santos-de-asmodeo", sanador: true,
       perfil: { FUE: 3, CON: 5, VEL: 4, INT: 6, VOL: 9, MAG: 5 }, coste: { comida: 2, oro: 3 }, requiere: { edificio: "santuario" },
       texto: "Cura 4 de vida a los aliados que tiene al lado al empezar tu turno. Puede consagrar el terreno." },
@@ -89,7 +89,7 @@
       texto: "No come. El Taller entrega uno gratis cada 4 turnos." },
     condenado: { nombre: "Condenado de la Ergástula", rol: "Tropa barata", hp: 8, atq: 3, def: 1, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "balutia",
       perfil: { FUE: 5, CON: 5, VEL: 4, INT: 3, VOL: 4, MAG: 1 }, coste: { comida: 1, oro: 1 }, requiere: {},
-      texto: "Barato y prescindible." },
+      texto: "Preso de la Ergástula armado a la fuerza. Pega poco y aguanta poco, pero sale en cualquier ciudad." },
     /* --- Barcos. Solo navegan. Se botan en una ciudad con muelle y aparecen en el agua de al lado. No son soldados:
            no ganan experiencia ni pasan al ejército. canon: disparan pólvora. pesado: no pueden moverse y disparar. --- */
     galera: { nombre: "Galera", rol: "Barco de guerra", naval: 1, hp: 11, atq: 3, def: 1, mov: 4, alc: 2, atqEstat: "FUE", noSoldado: true,
@@ -150,25 +150,25 @@
     mina: { nombre: "Mina", rama: "eco", nivel: 1, coste: { materiales: 3, oro: 2 }, rinde: { mineral: 2 }, terreno: ["montana"], texto: "+2 de mineral. Pide una montaña cerca." },
     mercado: { nombre: "Mercado", rama: "eco", nivel: 2, coste: { materiales: 4, oro: 4 }, rinde: { oro: 3 }, previo: ["granja", "aserradero", "mina"], texto: "+3 de oro. Pide otro edificio de economía." },
     banco: { nombre: "Banco", rama: "eco", nivel: 3, coste: { oro: 8, mineral: 3 }, rinde: { oro: 4 }, previo: ["mercado"], texto: "+4 de oro." },
-    cuartel: { nombre: "Cuartel", rama: "mil", nivel: 2, coste: { materiales: 4, oro: 3 }, rinde: {}, texto: "Permite entrenar pícaros y paladines. Los reclutas cuestan 1 de oro menos." },
-    herreria: { nombre: "Herrería", rama: "mil", nivel: 2, coste: { materiales: 3, mineral: 2, oro: 2 }, rinde: {}, previo: ["cuartel"], texto: "+1 de defensa a quien guarnece la ciudad. Permite forjar caballeros." },
+    cuartel: { nombre: "Cuartel", rama: "mil", nivel: 2, coste: { materiales: 4, oro: 3 }, rinde: {}, texto: "Permite entrenar {tropas}. Los reclutas cuestan 1 de oro menos." },
+    herreria: { nombre: "Herrería", rama: "mil", nivel: 2, coste: { materiales: 3, mineral: 2, oro: 2 }, rinde: {}, previo: ["cuartel"], texto: "+1 de defensa a quien guarnece la ciudad. Permite forjar {tropas}." },
     arsenal: { nombre: "Arsenal", rama: "mil", nivel: 3, coste: { materiales: 4, mineral: 4, oro: 4 }, rinde: {}, previo: ["herreria"], texto: "Los reclutas salen con +1 de ataque." },
     academia_militar: { nombre: "Academia militar", rama: "mil", nivel: 3, coste: { materiales: 4, oro: 6 }, rinde: {}, previo: ["cuartel"], texto: "Los reclutas salen con 3 victorias de experiencia." },
     fortaleza: { nombre: "Fortaleza", rama: "mil", nivel: 4, coste: { mineral: 6, materiales: 4, oro: 4 }, rinde: {}, previo: ["herreria"], texto: "+2 de defensa en la ciudad y cura 2 más a quien la guarnece." },
-    santuario: { nombre: "Santuario", rama: "mag", nivel: 1, coste: { materiales: 3, oro: 3 }, rinde: { mana: 2 }, texto: "+2 de maná. Permite entrenar arcanistas y sanadores." },
+    santuario: { nombre: "Santuario", rama: "mag", nivel: 1, coste: { materiales: 3, oro: 3 }, rinde: { mana: 2 }, texto: "+2 de maná. Permite entrenar {tropas}." },
     biblioteca: { nombre: "Biblioteca arcana", rama: "mag", nivel: 2, coste: { materiales: 3, oro: 5 }, rinde: { mana: 2 }, previo: ["santuario"], texto: "+2 de maná. Investigar cuesta 1 de maná menos por escalón." },
-    torre_magia: { nombre: "Torre de magia", rama: "mag", nivel: 3, coste: { mineral: 3, oro: 6, mana: 4 }, rinde: { mana: 3 }, previo: ["biblioteca"], texto: "+3 de maná. Permite invocar archimagos." },
+    torre_magia: { nombre: "Torre de magia", rama: "mag", nivel: 3, coste: { mineral: 3, oro: 6, mana: 4 }, rinde: { mana: 3 }, previo: ["biblioteca"], texto: "+3 de maná. Permite invocar {tropas}." },
     refugio: { nombre: "Refugio", rama: "mil", nivel: 2, coste: { materiales: 6, oro: 6, mineral: 2 }, rinde: {}, noCapital: true, texto: "Si cae tu capital, esta ciudad pasa a serlo y sigues en la guerra." },
     // Edificios propios de un ejército
-    taller: { nombre: "Taller", rama: "mil", nivel: 2, coste: { materiales: 5, mineral: 2 }, rinde: {}, solo: "nernib", texto: "Permite montar autómatas. Entrega uno gratis cada 4 turnos (hasta 3 vivos)." },
+    taller: { nombre: "Taller", rama: "mil", nivel: 2, coste: { materiales: 5, mineral: 2 }, rinde: {}, solo: "nernib", texto: "Permite montar {tropas}. Entrega uno gratis cada 4 turnos (hasta 3 vivos)." },
     perrera: { nombre: "Perrera de Cadenas", rama: "mil", nivel: 2, coste: { mineral: 6, materiales: 4 }, rinde: {}, solo: "hijos-del-acero", previo: ["cuartel"], texto: "Las jaulas donde se retiene lo que no se puede matar. Hace falta para invocar a Rykerd." },
     catedral: { nombre: "Catedral", rama: "mag", nivel: 2, coste: { materiales: 5, oro: 5 }, rinde: { mana: 1 }, solo: "santos-de-asmodeo", previo: ["santuario"], texto: "+1 de maná. Consagra dos casillas alrededor de la ciudad en vez de una." },
     dojo: { nombre: "Dojo", rama: "mil", nivel: 2, coste: { materiales: 5, oro: 3 }, rinde: {}, solo: "seosan", previo: ["cuartel"], texto: "Los reclutas de esta ciudad salen con 2 victorias de experiencia." },
     circulo_huesos: { nombre: "Círculo de Huesos", rama: "mag", nivel: 1, coste: { materiales: 3, oro: 2 }, rinde: { anima: 1 }, solo: "okran", texto: "+1 de Ánima. Lugar de los chamanes." },
     // El mar: cada nivel de muelle deja botar barcos mejores. Piden agua a dos casillas de la ciudad.
     muelle: { nombre: "Muelle", rama: "eco", nivel: 1, coste: { materiales: 4, oro: 2 }, rinde: { comida: 1, oro: 1 }, agua: true, texto: "+1 de alimento y +1 de oro. Tus tropas pueden embarcar y la ciudad bota galeras. Pide agua cerca." },
-    astillero: { nombre: "Astillero", rama: "mil", nivel: 2, coste: { materiales: 5, oro: 4 }, rinde: {}, previo: ["muelle"], agua: true, texto: "Permite botar brulotes y los barcos propios de algunos ejércitos." },
-    atarazana: { nombre: "Atarazana", rama: "mil", nivel: 3, coste: { materiales: 6, mineral: 4, oro: 5 }, rinde: {}, previo: ["astillero"], agua: true, texto: "Permite botar galeones de bombardas." }
+    astillero: { nombre: "Astillero", rama: "mil", nivel: 2, coste: { materiales: 5, oro: 4 }, rinde: {}, previo: ["muelle"], agua: true, texto: "Permite botar {tropas}." },
+    atarazana: { nombre: "Atarazana", rama: "mil", nivel: 3, coste: { materiales: 6, mineral: 4, oro: 5 }, rinde: {}, previo: ["astillero"], agua: true, texto: "Permite botar {tropas}." }
   };
 
   /* --- Escuelas de desarrollo (cada escalón pide el anterior). coste de maná por escalón (más oro). --- */
@@ -243,7 +243,7 @@
     "academia-arcana-de-dolbred": {
       naval: { nivel: "Corrientes", texto: "Poca flota. Prefieren cambiar el terreno a cruzar el mar." },
       diplomacia: { pacta: 0.8, traiciona: 0.05 },
-      nombre: "Academia Arcana de Dolbred", corto: "Dolbred", color: "#8f6fd8", bandera: "#2d2a6b", cultura: "comun", origen: "Dolbred", curva: "Tardío",
+      nombre: "Academia Arcana de Dolbred", corto: "Dolbred", color: "#8f6fd8", bandera: "#2d2a6b", cultura: "comun", origen: "Dolbred", curva: "Late game",
       resumen: "La mayor concentración de archimagos conocida. Investiga más rápido y juega con el terreno.",
       ventaja: "Empieza dominando Resonancia, investigar cuesta un 25 % menos de maná, los magos tienen +2 de vida y pueden invocar archimagos.",
       mods: { investigarMana: 0.75, hpClase: { arcanista: 2, archimago: 2 }, manaInicial: 5, atqClase: { arcanista: 1, archimago: 1 } }, escuelaInicial: ["arcano", 2],
@@ -281,7 +281,7 @@
     "compania-dorada": {
       naval: { nivel: "Buenos", barcos: ["carraca"], muelleOro: 2, texto: "Compran sus flotas. Cada muelle les rinde 2 de oro más y tienen carracas mercantes." },
       diplomacia: { pacta: 0.7, traiciona: 0.4 },
-      nombre: "Compañía Dorada", corto: "Compañía Dorada", color: "#e0b23a", bandera: "#5a4311", cultura: "comun", origen: "El continente", curva: "Empieza fuerte",
+      nombre: "Compañía Dorada", corto: "Compañía Dorada", color: "#e0b23a", bandera: "#5a4311", cultura: "comun", origen: "El continente", curva: "Early game",
       resumen: "El ejército mercenario más grande del continente. Todo se resuelve con oro.",
       ventaja: "+3 de oro por ciudad, 12 de oro extra al empezar y mercenarios que se contratan al instante sin edificio.",
       mods: { oroCiudad: 3, oroInicial: 12 }, escuelaInicial: ["militar", 1],
@@ -300,7 +300,7 @@
     "hijos-del-acero": {
       naval: { nivel: "Flojos", barcoMax: 2, texto: "Cazadores de tierra firme. No pasan del astillero." },
       diplomacia: { pacta: 0.6, traiciona: 0 },
-      nombre: "Hijos del Acero", corto: "Hijos del Acero", color: "#9fb0bd", bandera: "#2b3a45", cultura: "comun", origen: "Internacional", curva: "Pico",
+      nombre: "Hijos del Acero", corto: "Hijos del Acero", color: "#9fb0bd", bandera: "#2b3a45", cultura: "comun", origen: "Internacional", curva: "Mid game",
       resumen: "Mercenarios que solo cazan monstruos. Una ballesta bien puesta vale por un ejército.",
       ventaja: "+2 de ataque contra monstruos y criaturas salvajes, y ballesteros pesados de serie.",
       mods: { atqMonstruo: 2 }, escuelaInicial: ["militar", 1],
@@ -338,7 +338,7 @@
     nikaalia: {
       naval: { nivel: "Buenos", texto: "Contrabandistas. Sus barcos, como sus tropas, no se ven hasta tenerlos encima." },
       diplomacia: { pacta: 0.8, traiciona: 0.5 },
-      nombre: "Natonocturnos de Nikaalia", corto: "Nikaalia", color: "#c05aa8", bandera: "#1c1026", cultura: "nocturno", origen: "Nikaalia", curva: "Empieza fuerte",
+      nombre: "Natonocturnos de Nikaalia", corto: "Nikaalia", color: "#c05aa8", bandera: "#1c1026", cultura: "nocturno", origen: "Nikaalia", curva: "Early game",
       resumen: "Las familias de Umbrathil, criadas bajo la noche eterna del domo. Gánsteres antes que soldados.",
       ventaja: "Noche eterna: los rivales ven una casilla menos y sus tropas no se ven hasta tener un enemigo al lado. Sobornan criaturas con oro. Tienen pistoleros.",
       mods: { noche: true, soborno: 4, oroInicial: 6, polvora: { cazador: true } }, escuelaInicial: ["tanato", 1],
@@ -376,7 +376,7 @@
     okran: {
       naval: { nivel: "Torpes", barcoMax: 1, muelleCoste: 2, movEmbarcada: 2, texto: "Gente de las Tierras Altas. Los muelles les cuestan el doble, solo botan galeras y embarcados van despacio." },
       diplomacia: { pacta: 0.4, traiciona: 0.4 },
-      nombre: "Clanes de Okran", corto: "Okran", color: "#b8672e", bandera: "#33200f", cultura: "okran", origen: "Okran", curva: "Empieza fuerte",
+      nombre: "Clanes de Okran", corto: "Okran", color: "#b8672e", bandera: "#33200f", cultura: "okran", origen: "Okran", curva: "Early game",
       resumen: "Clanes bárbaros y hombres bestia de las Tierras Altas. Solo respetan la fuerza.",
       ventaja: "Furia: +1 de ataque por cada cuarto de vida perdido, hasta +3. Sus tropas no necesitan edificios para lo básico.",
       mods: { furia: 3, monstruoClases: ["paladin", "picaro"] }, escuelaInicial: ["militar", 1],
@@ -414,7 +414,7 @@
     mravec: {
       naval: { nivel: "Negados", barcoMax: 0, sinMuelle: true, embarcaSinMuelle: true, movEmbarcada: 2, texto: "Vienen del desierto. No construyen muelles ni barcos. Cruzan el agua en balsas de quitina, despacio y sin defensa." },
       diplomacia: { pacta: 0, traiciona: 0 },
-      nombre: "Satrapía de Mravec", corto: "Mravec", color: "#b4c23a", bandera: "#3d3a10", cultura: "mravec", origen: "Mravec", curva: "Tardío", monstruos: true, irrefugiable: true,
+      nombre: "Satrapía de Mravec", corto: "Mravec", color: "#b4c23a", bandera: "#3d3a10", cultura: "mravec", origen: "Mravec", curva: "Late game", monstruos: true, irrefugiable: true,
       resumen: "Insectoides del desierto, descendientes de la Reina Hormiga. Lo que devoran, lo aprenden.",
       ventaja: "Devorar y adaptar: tres de sus tropas ganan un rasgo del enemigo que matan (hasta dos por unidad).",
       mods: { devora: ["guerrero", "picaro", "quimera"] }, escuelaInicial: ["tanato", 1],
@@ -433,7 +433,7 @@
     nernib: {
       naval: { nivel: "Buenos", barcos: ["acorazado"], barcoDef: 1, texto: "Tienen los mejores ingenieros navales. Sus barcos tienen +1 de defensa y construyen acorazados de vapor." },
       diplomacia: { pacta: 0.6, traiciona: 0.1 },
-      nombre: "Oligarquía de Nernib", corto: "Nernib", color: "#6fb6e0", bandera: "#26323e", cultura: "nernib", origen: "Nernib", curva: "Tardío",
+      nombre: "Oligarquía de Nernib", corto: "Nernib", color: "#6fb6e0", bandera: "#26323e", cultura: "nernib", origen: "Nernib", curva: "Late game",
       resumen: "Ciudad-estado de gnomos y forjados. Lo que no pueden vencer, lo fabrican.",
       ventaja: "Taller: construyen autómatas que no comen, y el taller entrega uno gratis cada 4 turnos (hasta 3). Tienen fusileros.",
       mods: { taller: true, polvora: { cazador: true } }, escuelaInicial: ["arcano", 1],
@@ -452,7 +452,7 @@
     balutia: {
       naval: { nivel: "Buenos", barcos: ["trirreme"], texto: "La flota del Imperio pelea embistiendo. Tienen trirremes." },
       diplomacia: { pacta: 0.6, traiciona: 0.4 },
-      nombre: "Imperio de Balutia", corto: "Balutia", color: "#c23a3a", bandera: "#3a0f14", cultura: "balutia", origen: "Balutia", curva: "Pico",
+      nombre: "Imperio de Balutia", corto: "Balutia", color: "#c23a3a", bandera: "#3a0f14", cultura: "balutia", origen: "Balutia", curva: "Mid game",
       resumen: "El imperio de las legiones. Conquista una provincia y pone a su gente en primera fila.",
       ventaja: "Tributo: cada ciudad que conquista le entrega un Auxiliar de provincias (hasta 3). Tropas baratas de la Ergástula.",
       mods: { tributo: 3, polvora: { arcanista: true } }, escuelaInicial: ["militar", 1],
@@ -479,6 +479,27 @@
     const t = f && f.tropas && f.tropas[clase];
     const polvora = !!(f && f.mods.polvora && f.mods.polvora[clase]);
     return { nombre: t ? t[0] : cl.nombre || clase, aspecto: t ? t[1] : "", rol: cl.rol || "", texto: (cl.texto || "") + (polvora ? " Usa pólvora: pega 2 más y atraviesa 1 de defensa, pero no puede moverse y disparar en el mismo turno." : ""), polvora };
+  }
+
+  /* El texto de un edificio para un ejército: {tropas} se cambia por las tropas de ese ejército que lo piden.
+     Sin ejército (la ayuda general) se nombran las tropas por su papel. Si no hay ninguna, esa frase se quita. */
+  function textoEdificio(id, faccion) {
+    const ed = EDIFICIOS[id];
+    if (!ed) return "";
+    if (!ed.texto.includes("{tropas}")) return ed.texto;
+    const f = faccion ? FACCIONES[faccionReal(faccion)] : null;
+    const clases = Object.keys(CLASES).filter(cl => CLASES[cl].requiere && CLASES[cl].requiere.edificio === id && !CLASES[cl].noReclutable)
+      .filter(cl => {
+        const k = CLASES[cl];
+        if (!f) return !k.exclusiva;
+        if (k.exclusiva) return k.exclusiva === faccionReal(faccion);
+        if (k.naval) { const nv = f.naval || {}; return (nv.barcoMax === undefined || k.naval <= nv.barcoMax) && !nv.sinMuelle; }
+        return CLASES_BASE.includes(cl) || (f.clasesExtra || []).includes(cl) || cl === "eco";
+      });
+    const nombres = clases.map(cl => (f ? tropa(faccion, cl).nombre : CLASES[cl].nombre).toLowerCase());
+    if (!nombres.length) return ed.texto.replace(/[^.]*\{tropas\}[^.]*\.\s*/, "").trim() || "Sin tropas propias de tu ejército.";
+    const lista = nombres.length > 1 ? `${nombres.slice(0, -1).join(", ")} y ${nombres[nombres.length - 1]}` : nombres[0];
+    return ed.texto.replace("{tropas}", lista);
   }
 
   /* --- Héroes. Uno por ejército (Dolbred sortea uno por Colegio). Son ecos: no ganan experiencia ni llevan equipo.
@@ -664,7 +685,7 @@
 
   raiz.FRACTURA_DATOS = {
     RECURSOS, RECURSO_NOMBRE, TERRENOS, ESTRUCTURAS, CLASES, CLASES_BASE, ESPECIALIZACIONES, RANGOS, EDIFICIOS, ESCUELAS, RELIQUIAS, SLOTS, FACCIONES,
-    TIPOS_FRACTURA, FRAGMENTOS, SUCESOS, DIFICULTADES, NOMBRES, ORIGENES, APODOS, HEROES, ALIAS_FACCION, faccionReal, tropa, BARCOS_BASE, NOMBRES_BARCO, FORMAS_MAPA, REGLAS: 3
+    TIPOS_FRACTURA, FRAGMENTOS, SUCESOS, DIFICULTADES, NOMBRES, ORIGENES, APODOS, HEROES, ALIAS_FACCION, faccionReal, tropa, textoEdificio, BARCOS_BASE, NOMBRES_BARCO, FORMAS_MAPA, REGLAS: 3
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FRACTURA_DATOS;
 })(typeof window !== "undefined" ? window : globalThis);

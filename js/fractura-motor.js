@@ -685,7 +685,7 @@
     if (tipo.reviven) {
       est.pendientes = est.pendientes.filter(p => {
         if (!unidadEn(est, p.x, p.y) && TERRENOS[est.casillas[p.y][p.x].t].mov > 0) {
-          nuevaUnidad(est, -1, "salvaje", p.x, p.y, null, { nombre: "Caído que no descansa", fuerza: 0, errante: true });
+          nuevaUnidad(est, -1, "salvaje", p.x, p.y, null, { nombre: "Aparecido", fuerza: 0, errante: true });
           reg(est, "Un caído se levanta en el Sueño de los Muertos.", "suceso");
         }
         return false;
@@ -818,7 +818,7 @@
     const murio = dmg > 0 ? aplicarDano(est, d, dmg, a) : false;
     const jug = a.dueno >= 0 ? est.jugadores[a.dueno] : null;
     // Daño en área de los arcanistas
-    if (a.clase === "arcanista" || a.clase === "archimago") {
+    if (a.clase === "arcanista" || a.clase === "archimago" || a.clase === "eco") {
       const frac = jug && jug.tech.arcano >= 2 ? 0.75 : 0.5;
       const vec = [];
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
