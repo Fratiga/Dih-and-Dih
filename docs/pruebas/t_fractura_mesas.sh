@@ -94,7 +94,7 @@ contiene "la segunda del mismo frente, no" "$(reclamar $U4 $W2)" "Ya cobraste es
 contiene "con un frente cobrado ya no se empieza con premio" "$(empezar_frente $U4 d$HOY-0)" '"motivo": "cobrado"'
 empezar_frente $U4 d$HOY-1 >/dev/null; sleep 16
 W4=$(reg4 d$HOY-1 4)
-contiene "la segunda carta del día" "$(reclamar $U4 $W4)" '"resultado": "carta"'
+contiene "la segunda carta del día (o su sello)" "$(reclamar $U4 $W4)" '"nivel": "guerra"'
 contiene "con 2 cartas hoy, el siguiente frente no da premio" "$(empezar_frente $U4 d$HOY-2)" '"motivo": "tope"'
 GX=$(guerra $U4 "'d$HOY-2'" "'guerra'")
 contiene "ni aunque la guerra diga que es un frente" "$(reclamar $U4 $GX)" "las 2 cartas de los frentes de hoy"
@@ -119,11 +119,11 @@ apostar $U2 $M "$B1,$B2,$B3,$B4" >/dev/null
 comprobar "una común contra cuatro cartas con una legendaria: vale" "4" "$(mesa $M "jsonb_array_length(apuestas -> '$U2')")"
 comprobar "las cartas apostadas quedan bloqueadas" "bloqueada" "$(estado_ej $B4)"
 comprobar "quien no apuesta, no apuesta" "f" "$(mesa $M "apuestas ? '$U3'")"
-contiene "sin el visto bueno de todos no se empieza" "$(empezar $U1 $M)" "visto bueno"
+contiene "si no están todos listos no se empieza" "$(empezar $U1 $M)" "esté listo"
 listo $U2 $M >/dev/null; listo $U3 $M >/dev/null
 apostar $U2 $M "$B1,$B2,$B3" >/dev/null
 comprobar "cambiar la apuesta suelta la carta retirada" "poseida" "$(estado_ej $B4)"
-contiene "y obliga a dar otra vez el visto bueno" "$(empezar $U1 $M)" "visto bueno"
+contiene "y obliga a marcar Listo otra vez" "$(empezar $U1 $M)" "esté listo"
 contiene "solo empieza quien abrió la mesa" "$(empezar $U2 $M)" "Solo quien abrió"
 listo $U2 $M >/dev/null; listo $U3 $M >/dev/null
 L=$(como $U3 "select fractura_mesas_lista();")
