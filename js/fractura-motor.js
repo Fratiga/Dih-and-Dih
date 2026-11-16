@@ -74,6 +74,8 @@
   const sab = (est, j) => (j >= 0 && est.jugadores[j] && est.jugadores[j].sabEf) || VACIO;
   const rehacerSaber = (est, j) => { const jug = est.jugadores[j]; jug.sabEf = SB.efectos(jug.faccion, jug.tech); };
   const tiposDe = u => CLASES[u.clase].tipo || [];
+  /* Lo que hace cada soldado en la guerra: de aquí salen sus manías y algunos apodos (se suma a su ficha al acabar) */
+  const usar = (u, k, n) => { if (!u || !u.s) return; const g = u.s.usoG || (u.s.usoG = {}); g[k] = (g[k] || 0) + (n === undefined ? 1 : n); };
   /* Cuántas tropas puede tener un bando: lo que da su ejército más lo que da cada ciudad por su nivel, más el saber */
   function limiteTropas(est, j) {
     const fac = facDe(est, j), pb = fac.poblacion || { base: 4, porNivel: [3, 3, 3, 3, 3], tope: 30 };
@@ -295,14 +297,33 @@
     for (let y = ciudad.y - 2; y <= ciudad.y + 2; y++) for (let x = ciudad.x - 2; x <= ciudad.x + 2; x++) if (dentro(est, x, y) && est.casillas[y][x].t === "agua") return true;
     return false;
   }
-  function aguaLibreCerca(est, ciudad) {
-    let m = null;
+  /* Casillas de agua libres a dos casillas de la ciudad, con lo grande que es el agua a la que dan (un lago o el mar) */
+  function aguasLibres(est, ciudad) {
+    const tam = new Map(), out = [];
+    const medir = (x0, y0) => {
+      const k0 = y0 * 64 + x0;
+      if (tam.has(k0)) return tam.get(k0);
+      const vis = new Set([k0]), cola = [{ x: x0, y: y0 }];
+      while (cola.length && vis.size < 400) {
+        const p = cola.pop();
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const x = p.x + dx, y = p.y + dy, k = y * 64 + x;
+          if ((!dx && !dy) || vis.has(k) || !dentro(est, x, y) || est.casillas[y][x].t !== "agua") continue;
+          vis.add(k); cola.push({ x, y });
+        }
+      }
+      vis.forEach(k => tam.set(k, vis.size));
+      return vis.size;
+    };
     for (let y = ciudad.y - 2; y <= ciudad.y + 2; y++) for (let x = ciudad.x - 2; x <= ciudad.x + 2; x++) {
       if (!dentro(est, x, y) || est.casillas[y][x].t !== "agua" || unidadEn(est, x, y)) continue;
-      const d = Math.abs(x - ciudad.x) + Math.abs(y - ciudad.y);
-      if (!m || d < m.d) m = { x, y, d };
+      out.push({ x, y, d: Math.abs(x - ciudad.x) + Math.abs(y - ciudad.y), tam: medir(x, y) });
     }
-    return m;
+    return out;
+  }
+  function aguaLibreCerca(est, ciudad) {
+    // La máquina (y quien no elige) bota el barco en el agua más grande, no en un lago cerrado
+    return aguasLibres(est, ciudad).sort((a, b) => (b.tam - a.tam) || (a.d - b.d) || (a.y - b.y) || (a.x - b.x))[0] || null;
   }
 
   /* El escalón del saber que desbloquea una tropa (para decir qué falta) */
@@ -852,13 +873,17 @@
     if (objetivo.hp - dmg <= 0 && objetivo.s && !objetivo.voluntadUsada && rn(est) < S.probVoluntad(objetivo.s)) {
       objetivo.hp = 1;
       objetivo.voluntadUsada = true;
+      usar(objetivo, "borde");
       objetivo.s.cicatrices = (objetivo.s.cicatrices || 0) + 1;
       reg(est, `${nombreUnidad(objetivo)} debería haber caído y sigue en pie con lo último que le queda.`, "heroico");
       crono(est, "heroico", { soldado: objetivo.s.id, nombre: nombreUnidad(objetivo), region: regionDeCasilla(est, objetivo.x, objetivo.y).nombre, por: por ? nombreUnidad(por) : null });
       return false;
     }
+    const hpAntes = objetivo.hp;
     objetivo.hp -= dmg;
     if (objetivo.hp <= 0) { matar(est, objetivo, por); return true; }
+    // Se cuenta cuando un golpe lo deja al borde (no cada golpe que recibe estando ya así)
+    if (objetivo.s) { const mx = ef(est, objetivo).hpMax; if (objetivo.hp * 4 <= mx && hpAntes * 4 > mx) usar(objetivo, "borde"); }
     return false;
   }
 
@@ -875,6 +900,7 @@
     } else reg(est, `${nombreUnidad(a)} golpea a ${nombreUnidad(d)} por ${dmg}.`, "combate");
     est.ev.push({ k: "golpe", de: a.uid, a: d.uid, x: d.x, y: d.y, dmg, dist: distancia, arma: usaPolvora(est, a) ? "polvora" : (CLASES[a.clase].atqEstat === "MAG" || (a.heroe && HEROES[a.heroe].magia)) ? "magia" : distancia > 1.5 ? "flecha" : "filo" });
     d.descanso = false;
+    usar(a, "golpes"); usar(a, distancia > 1 ? "lejos" : "cerca"); usar(a, `t:${est.casillas[a.y][a.x].t}`);
     const murio = dmg > 0 ? aplicarDano(est, d, dmg, a) : false;
     const jug = a.dueno >= 0 ? est.jugadores[a.dueno] : null;
     // Daño en área de los arcanistas
@@ -928,6 +954,12 @@
     const dueno = u.dueno;
     const reg0 = regionDeCasilla(est, u.x, u.y) || { nombre: "la Fractura" };
     const estabaSolo = vecinosAliados(est, u).length === 0;
+    if (por) {
+      if (dueno >= 0) usar(por, `f:${est.jugadores[dueno].faccion}`);
+      if (esMonstruo(est, u)) usar(por, "monstruos");
+      if (u.lider || u.heroe) usar(por, "jefes");
+      if (estabaSolo) usar(por, "solos");
+    }
     delete est.unidades[u.uid];
     est.ev.push({ k: "muerte", uid: u.uid, x: u.x, y: u.y });
     if (u.s) {
@@ -1163,6 +1195,7 @@
     const jug = est.jugadores[u.dueno], fac = FACCIONES[jug.faccion], x = ciudad.x, y = ciudad.y;
     const antes = ciudad.dueno;
     delete ciudad.asedio;
+    usar(u, "ciudades");
       ciudad.dueno = u.dueno;
       Object.keys(ciudad.desh).forEach(k => delete ciudad.desh[k]);
       ciudad.edificios = ciudad.edificios.filter(id => !EDIFICIOS[id].solo || EDIFICIOS[id].solo === jug.faccion);
@@ -1207,6 +1240,7 @@
   }
 
   function saquear(est, u, x, y) {
+    usar(u, "ruinas");
     const c = est.casillas[y][x];
     c.saqueada = true;
     const jug = est.jugadores[u.dueno];
@@ -1363,7 +1397,7 @@
   function renegados(est, a, b) {
     if (!odiaA(est, a, b)) return;
     const p = facDe(est, a).odia === "vivos" ? 0.25 : 0.2;
-    const se = unidadesDe(est, a).filter(u => u.s && !u.lider && !u.heroe && !u.reanimado && rn(est) < p);
+    const se = unidadesDe(est, a).filter(u => u.s && !u.lider && !u.heroe && !u.reanimado && est.casillas[u.y][u.x].t !== "agua" && rn(est) < p);   // los embarcados no se van: no tienen adónde
     se.forEach(u => {
       u.dueno = -1; u.errante = true; u.nombre = nombreUnidad(u); u.fuerza = 0; u.renegado = est.jugadores[a].faccion;
       u.hp = Math.min(u.hp, ef(est, u).hpMax);
@@ -1478,6 +1512,7 @@
         Object.values(est.ciudades).forEach(c => { if (c.asedio && c.asedio.uid === u.uid) delete c.asedio; });
         u.pm -= destino.c;
         u.recorrido = (u.recorrido || 0) + ruta.length - 1;
+        usar(u, "pasos", ruta.length - 1); if (enAgua(est, u)) usar(u, "mar");
         u.x = acc.x; u.y = acc.y; u.quieto = false; u.descanso = false;
         if (destino.fin || (!esBarco(u) && antesAgua !== enAgua(est, u) && !(navalDe(est, j).marinos || navalDe(est, j).fondo))) u.pm = 0;
         est.ev.push({ k: "mov", uid: u.uid, de, a: { x: u.x, y: u.y }, ruta });
@@ -1513,7 +1548,8 @@
         pagar(jug, coste);
         if (CLASES[acc.clase].naval) {
           // Un barco: sale al agua de al lado, con su nombre pintado en la proa
-          const pa = aguaLibreCerca(est, ciudad);
+          let pa = aguaLibreCerca(est, ciudad);
+          if (acc.x !== undefined) { pa = aguasLibres(est, ciudad).find(q => q.x === acc.x && q.y === acc.y); if (!pa) return error("El barco no puede salir ahí."); }
           const usados = new Set(Object.values(est.unidades).map(w => w.nombre));
           const libres = D.NOMBRES_BARCO.filter(n => !usados.has(n));
           const nombre = libres.length ? libres[ri(est, libres.length)] : CLASES[acc.clase].nombre;
@@ -1664,6 +1700,17 @@
       c.t = acc.a;
       u.atacado = true; u.pm = 0; u.enfriar = 2;
       reg(est, `${nombreUnidad(u)} cambia el terreno a ${TERRENOS[acc.a].nombre.toLowerCase()}.`, "magia");
+      return { ok: true, ev: est.ev };
+    }
+    if (acc.id === "talar") {
+      if (!CLASES[u.clase].rompe) return error("Esa tropa no puede abrirse paso.");
+      if (u.atacado) return error("Ya actuó este turno.");
+      const c = casilla(est, acc.x, acc.y);
+      if (!c || c.t !== "bosque" || c.est || unidadEn(est, acc.x, acc.y) || dist(u, acc) > 1) return error("Tiene que ser un bosque libre a su lado.");
+      c.t = "llanura";
+      u.atacado = true; u.pm = 0;
+      est.ev.push({ k: "explosion", x: acc.x, y: acc.y });
+      reg(est, `${nombreUnidad(u)} derriba el bosque y abre camino.`, "suceso");
       return { ok: true, ev: est.ev };
     }
     if (acc.id === "sabotear") {
@@ -1986,7 +2033,7 @@
     mismoEquipo, hostil, vivos, rivalesDe, equipoDe, heroeDe, heroeVivo, usaPolvora, enTregua, ganoJugador, requisitosHeroe, razonNoAtacar, consagradaPara, consagradasDe, comeUnidad, eliminar, RASGO_NOMBRE,
     equipoFijo, hayPacto, pactoDe, razonNoPacto, razonNoTraicion, desertoresDe, navalDe, esBarco, enAgua, embarcada, puedeEmbarcar, oculta, veUnidad, razonAgua, esDuelo,
     costeEdificio, aguaCerca, aguaLibreCerca, polvoraFac, firma, rendir,
-    limiteTropas, cuentaTropas, hayHueco, sab, tiposDe, quienDesbloquea, costeAcoger, odiaA, capturarCiudad, rehacerSaber, sellarPacto
+    aguasLibres, limiteTropas, cuentaTropas, hayHueco, sab, tiposDe, quienDesbloquea, costeAcoger, odiaA, capturarCiudad, rehacerSaber, sellarPacto
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FracturaMotor;
 })(typeof window !== "undefined" ? window : globalThis);

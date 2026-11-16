@@ -113,6 +113,31 @@
     return elegir(r, libres)[s.sexo === "f" ? 1 : 0];
   }
 
+  /* Manías: lo que se le nota a un soldado por cómo se le ha usado en las guerras (sale de s.uso). nombreFac(id) da el nombre de un ejército */
+  const TERRENO_MANIA = { bosque: "Pelea casi siempre desde el bosque.", montana: "Busca la altura de las montañas para pelear.", desierto: "Se mueve por el desierto como por su casa.",
+    agua: "Ha peleado mucho desde el agua.", magica: "Le atraen las zonas mágicas.", huesos: "Pelea a menudo entre los campos de huesos." };
+  function manias(s, nombreFac) {
+    const u = s.uso || {}, out = [], g = u.golpes || 0, guerras = Math.max(1, s.guerras || 0);
+    if (g >= 6 && (u.lejos || 0) >= g * 0.7) out.push("Prefiere pelear de lejos.");
+    else if (g >= 6 && (u.cerca || 0) >= g * 0.85) out.push("Siempre busca el cuerpo a cuerpo.");
+    const ters = Object.keys(u).filter(k => k.startsWith("t:")), totT = ters.reduce((a, k) => a + u[k], 0);
+    const topT = ters.sort((a, b) => u[b] - u[a])[0];
+    if (topT && totT >= 5 && u[topT] >= totT * 0.5 && TERRENO_MANIA[topT.slice(2)]) out.push(TERRENO_MANIA[topT.slice(2)]);
+    if ((u.borde || 0) >= 2) out.push(`Ha estado al borde de la muerte ${u.borde} veces y sigue en pie.`);
+    const facs = Object.keys(u).filter(k => k.startsWith("f:")).sort((a, b) => u[b] - u[a]);
+    if (facs.length && u[facs[0]] >= 3 && nombreFac) out.push(`Le tiene ganas a ${nombreFac(facs[0].slice(2))}: lleva ${u[facs[0]]} bajas suyas.`);
+    if ((u.monstruos || 0) >= 3) out.push(`Ha cazado ${u.monstruos} monstruos.`);
+    if ((u.jefes || 0) >= 2) out.push("Va a por los jefes del enemigo.");
+    if ((u.solos || 0) >= 6) out.push("Remata a los que se quedan solos.");
+    if ((u.ciudades || 0) >= 2) out.push("Le gusta entrar el primero en las ciudades.");
+    if ((u.ruinas || 0) >= 2) out.push("Registra todas las ruinas que encuentra.");
+    if ((u.pasos || 0) / guerras >= 20) out.push("No se está quieto: recorre más terreno que nadie.");
+    if ((u.mar || 0) >= 4) out.push("Ha pasado mucho tiempo embarcado.");
+    if ((s.guerras || 0) >= 3 && g / guerras < 1.5) out.push("Sale poco a pelear y se queda atrás.");
+    if ((s.cicatrices || 0) >= 3) out.push(`Lleva ${s.cicatrices} cicatrices.`);
+    return out.slice(0, 5);
+  }
+
   const parentescoEntre = (a, b) => {
     if (!a || !b) return null;
     if (a.padre && a.padre === b.id) return a.sexo === "f" ? "hija" : "hijo";
@@ -124,7 +149,7 @@
 
   raiz.FracturaSoldados = {
     STATS, rnd, ent, elegir, limitar, idNuevo, perfilDe, caracteristicas, caracteristicasHijo, nombreNuevo, casaNueva, crearSoldado,
-    rangoDe, rangoIndice, edadDe, aniosDeServicio, nombreCompleto, nombreConApodo, modHp, modAtq, modMov, probVoluntad, apodoPara, parentescoEntre
+    manias, rangoDe, rangoIndice, edadDe, aniosDeServicio, nombreCompleto, nombreConApodo, modHp, modAtq, modMov, probVoluntad, apodoPara, parentescoEntre
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FracturaSoldados;
 })(typeof window !== "undefined" ? window : globalThis);

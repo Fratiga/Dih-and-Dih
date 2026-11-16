@@ -267,8 +267,21 @@
     // Nadie del ejército (vivo o muerto) repite el apodo de otro
     const usados = new Set(todos(ej).map(o => o.apodo).filter(Boolean));
     const ap = tipo => S.apodoPara(r, s, tipo, usados);
-    if ((s.cicatrices || 0) >= 1 && rn(ej) < 0.7) s.apodo = ap("cicatriz");
+    const u = s.uso || {}, g = u.golpes || 0;
+    const odio = Object.keys(u).filter(k => k.startsWith("f:")).sort((a, b) => u[b] - u[a])[0];
+    // Primero lo que más se recuerda: matar jefes y no morir
+    if ((u.jefes || 0) >= 1 && rn(ej) < 0.8) s.apodo = ap("jefes");
+    else if ((u.borde || 0) >= 3) s.apodo = ap("inmortal");
+    else if (odio && u[odio] >= 5 && FACCIONES[odio.slice(2)] && rn(ej) < 0.6 && !usados.has(`Azote de ${FACCIONES[odio.slice(2)].corto}`)) s.apodo = `Azote de ${FACCIONES[odio.slice(2)].corto}`;
+    else if ((u.monstruos || 0) >= 3 && rn(ej) < 0.7) s.apodo = ap("monstruos");
+    else if ((s.cicatrices || 0) >= 1 && rn(ej) < 0.7) s.apodo = ap("cicatriz");
     else if (ctx && ctx.bajasG >= 4) s.apodo = ap("matador");
+    else if (g >= 10 && (u.lejos || 0) >= g * 0.7) s.apodo = ap("lejos");
+    else if (g >= 10 && (u.cerca || 0) >= g * 0.85 && rn(ej) < 0.6) s.apodo = ap("cerca");
+    else if ((u.solos || 0) >= 8) s.apodo = ap("solos");
+    else if ((u.ciudades || 0) + (u.ruinas || 0) >= 4) s.apodo = ap("saqueo");
+    else if ((u.mar || 0) >= 6) s.apodo = ap("mar");
+    else if ((u.pasos || 0) >= 60 && rn(ej) < 0.5) s.apodo = ap("andarin");
     else if (S.rangoIndice(s.victorias) >= 2 && s.stats.VEL >= 8) s.apodo = ap("veloz");
     else if (S.rangoIndice(s.victorias) >= 2 && s.stats.INT >= 8) s.apodo = ap("sabio");
     else if (S.rangoIndice(s.victorias) >= 2 && s.stats.CON >= 8) s.apodo = ap("firme");
@@ -323,6 +336,9 @@
         s.oficiales = sNuevo.oficiales || 0;
         s.reanimado = sNuevo.reanimado || false;
       }
+      // Lo que hizo en esta guerra se suma a lo de siempre (manías y apodos)
+      if (sNuevo.usoG) { s.uso = s.uso || {}; Object.keys(sNuevo.usoG).forEach(k => { s.uso[k] = (s.uso[k] || 0) + sNuevo.usoG[k]; }); }
+      delete s.usoG;
       rangoAntes[s.id] = nuevoEnCampana ? 0 : S.rangoIndice(s.victorias);
       s.victorias += vicG;
       s.bajas += bajasG;

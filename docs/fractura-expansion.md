@@ -503,7 +503,7 @@ Va en una sesión aparte, en paralelo, y no cambia reglas. El encargo completo e
 Las partidas guardadas con reglas anteriores no se cargan (`D.REGLAS = 4`).
 
 ### Saber por ejército
-- Cada ejército tiene su árbol en `js/fractura-saber.js`: 4 ramas de 6 escalones y 3 saberes «entre dos ramas» que piden un nivel en dos ramas.
+- Cada ejército tiene su árbol en `js/fractura-saber.js`: 4 ramas de 6 escalones y 3 saberes «Especiales» que piden un nivel en dos ramas.
 - Los textos se escriben solos a partir de los efectos (`describir`), con los nombres de las tropas de ese ejército.
 - `jug.tech` guarda el nivel de cada rama y los cruces aprendidos; `jug.sabEf` junta todos los efectos y el motor solo mira ahí.
 - Solo el Trono de Ceniza levanta a los muertos.

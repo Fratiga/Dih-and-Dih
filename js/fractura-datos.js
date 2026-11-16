@@ -97,10 +97,10 @@
       texto: "Los aliados a su lado ganan +1 de ataque." },
     golem: { nombre: "Gólem de runas", tipo: ["infanteria", "monstruo"], contra: { tirador: 1 }, rol: "Constructo", hp: 16, atq: 4, def: 3, mov: 2, alc: 1, atqEstat: "FUE", exclusiva: "academia-arcana-de-dolbred", sinComida: true,
       perfil: { FUE: 9, CON: 9, VEL: 2, INT: 1, VOL: 5, MAG: 4 }, coste: { mana: 4, mineral: 3, materiales: 2 }, requiere: { edificio: "torre_magia" },
-      texto: "Mucha vida y defensa, pero lento. No come." },
+      rompe: true, texto: "Mucha vida y defensa, pero lento. No come." },
     coloso: { nombre: "Coloso de huesos", tipo: ["monstruo"], contra: { infanteria: 1, piquero: 1 }, rol: "Ariete", hp: 18, atq: 5, def: 2, mov: 2, alc: 1, atqEstat: "FUE", exclusiva: "trono-de-ceniza", muertoViviente: true, regenera: 2,
       perfil: { FUE: 9, CON: 8, VEL: 2, INT: 1, VOL: 6, MAG: 2 }, coste: { anima: 4, mineral: 2 }, requiere: { edificio: "santuario" },
-      texto: "Se recompone: se cura 2 más cada turno." },
+      rompe: true, texto: "Se recompone: se cura 2 más cada turno." },
     cobrador: { nombre: "Cobrador", tipo: ["infanteria"], contra: { apoyo: 2 }, rol: "Saqueo", hp: 10, atq: 4, def: 1, mov: 4, alc: 1, atqEstat: "VEL", exclusiva: "compania-dorada", roba: 2,
       perfil: { FUE: 6, CON: 5, VEL: 7, INT: 6, VOL: 5, MAG: 1 }, coste: { comida: 2, oro: 3 }, requiere: { edificio: "mercado" },
       texto: "Cada golpe que da le quita 2 de oro al dueño del herido y te lo da a ti." },
@@ -118,13 +118,13 @@
       texto: "Vuela por encima de todo y ve una casilla más lejos." },
     tortuga: { nombre: "Tortuga de guerra", tipo: ["monstruo"], contra: { jinete: 1 }, rol: "Muralla viva", hp: 18, atq: 3, def: 4, mov: 2, alc: 1, atqEstat: "FUE", exclusiva: "pelgiria", regenera: 1,
       perfil: { FUE: 7, CON: 10, VEL: 2, INT: 2, VOL: 6, MAG: 1 }, coste: { comida: 3, oro: 3, materiales: 2 }, requiere: { edificio: "muelle" },
-      texto: "Caparazón enorme: mucha defensa y se cura 1 más cada turno." },
+      rompe: true, texto: "Caparazón enorme: mucha defensa y se cura 1 más cada turno." },
     zapadora: { nombre: "Obrera zapadora", tipo: ["asedio"], contra: {}, rol: "Zapadora", hp: 10, atq: 3, def: 2, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "mravec", atqCiudad: 3,
       perfil: { FUE: 7, CON: 6, VEL: 4, INT: 3, VOL: 5, MAG: 1 }, coste: { comida: 2, oro: 2, materiales: 1 }, requiere: { edificio: "cuartel" },
       texto: "Socava los muros: +3 de ataque contra lo que está en una ciudad o una fortaleza." },
     carro: { nombre: "Carro de vapor", tipo: ["asedio", "jinete_pesado"], contra: { infanteria: 1 }, rol: "Artillería", hp: 15, atq: 4, def: 3, mov: 3, alc: 2, atqEstat: "INT", exclusiva: "nernib", sinComida: true, area: true,
       perfil: { FUE: 6, CON: 8, VEL: 4, INT: 7, VOL: 5, MAG: 1 }, coste: { mineral: 4, materiales: 3, oro: 2 }, requiere: { edificio: "taller" },
-      texto: "Su cañón llega a dos casillas y salpica a los que rodean al objetivo. No come." },
+      rompe: true, texto: "Su cañón llega a dos casillas y salpica a los que rodean al objetivo. No come." },
     escorpion: { nombre: "Escorpión", tipo: ["asedio", "tirador"], contra: { jinete_pesado: 1, monstruo: 1 }, rol: "Artillería", hp: 9, atq: 4, def: 1, mov: 2, alc: 3, atqEstat: "INT", exclusiva: "balutia", atqCiudad: 2,
       perfil: { FUE: 5, CON: 5, VEL: 3, INT: 7, VOL: 5, MAG: 1 }, coste: { materiales: 3, mineral: 2, oro: 2 }, requiere: { edificio: "arsenal" },
       texto: "Dispara a tres casillas y castiga los muros: +2 contra lo que está en una ciudad o una fortaleza." },
@@ -857,7 +857,17 @@
     veloz: [["el Galgo", "la Galga"], ["Pies de Viento", "Pies de Viento"], ["el Rayo", "la Chispa"], ["el Liebre", "la Liebre"], ["Sombra Corta", "Sombra Corta"], ["el Gamo", "la Gama"], ["Talones", "Talones"]],
     sabio: [["el Cuaderno", "la Cuaderna"], ["Ojo de Tinta", "Ojo de Tinta"], ["el Contable", "la Contable"], ["Cuatro Ojos", "Cuatro Ojos"], ["el Zorro", "la Zorra"], ["el Mapa", "la Mapa"]],
     longevo: [["el Viejo", "la Vieja"], ["el Perenne", "la Perenne"], ["Abuelo", "Abuela"], ["el Que Sigue", "la Que Sigue"], ["Barba Gris", "Trenza Gris"], ["el Último", "la Última"]],
-    capitan: [["el Capitán", "la Capitana"], ["el Que Manda", "la Que Manda"], ["Voz de Trueno", "Voz de Trueno"], ["el Sargento", "la Sargento"]]
+    capitan: [["el Capitán", "la Capitana"], ["el Que Manda", "la Que Manda"], ["Voz de Trueno", "Voz de Trueno"], ["el Sargento", "la Sargento"]],
+    // Títulos que se ganan por lo que hace cada uno en la guerra (al estilo de los capitanes de Shadow of War)
+    jefes: [["Matarreyes", "Matarreyes"], ["Rompecoronas", "Rompecoronas"], ["Cazacapitanes", "Cazacapitanes"], ["el Regicida", "la Regicida"], ["Degüellajefes", "Degüellajefes"], ["Quiebraestandartes", "Quiebraestandartes"]],
+    inmortal: [["el Inmortal", "la Inmortal"], ["Duro de Matar", "Dura de Matar"], ["Siete Vidas", "Siete Vidas"], ["el Terco", "la Terca"], ["Medio Muerto", "Medio Muerta"], ["Tumba Vacía", "Tumba Vacía"]],
+    monstruos: [["Cazabestias", "Cazabestias"], ["el Desollador", "la Desolladora"], ["Mataogros", "Mataogros"], ["Colmillo Roto", "Colmillo Roto"], ["el Matador de Bestias", "la Matadora de Bestias"]],
+    lejos: [["Ojo Fino", "Ojo Fino"], ["Pulso Firme", "Pulso Firme"], ["el Certero", "la Certera"], ["Mil Flechas", "Mil Flechas"], ["el Paciente", "la Paciente"]],
+    cerca: [["Rompehuesos", "Rompehuesos"], ["el Carnicero", "la Carnicera"], ["Puño de Hierro", "Puño de Hierro"], ["Muerdecuellos", "Muerdecuellos"], ["el Sin Miedo", "la Sin Miedo"]],
+    solos: [["el Carroñero", "la Carroñera"], ["el Rematador", "la Rematadora"], ["Cuchillo de Rezagados", "Cuchillo de Rezagados"], ["el Acechador", "la Acechadora"]],
+    saqueo: [["el Saqueador", "la Saqueadora"], ["Mano Larga", "Mano Larga"], ["Rompepuertas", "Rompepuertas"], ["el Primero en Entrar", "la Primera en Entrar"]],
+    mar: [["Lobo de Mar", "Loba de Mar"], ["el Salobre", "la Salobre"], ["Pie de Barco", "Pie de Barco"]],
+    andarin: [["Botas Rotas", "Botas Rotas"], ["el Andarín", "la Andarina"], ["Pies de Viento", "Pies de Viento"]]
   };
 
 

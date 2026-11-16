@@ -184,5 +184,46 @@ Object.keys(D.FACCIONES).forEach(f => {
   });
 }
 
+// --- Las moles derriban el bosque para no quedarse atrapadas ---
+{
+  const est = guerra(["trono-de-ceniza", "caballeros-del-reino"], { tregua: 0 });
+  limpiar(est); est.activo = 0;
+  const cap = FM.ciudadesDe(est, 0).find(c => c.capital), a = libre(est, cap, 3);
+  const u = poner(est, 0, "coloso", a.x, a.y);
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (dx || dy) { const c = est.casillas[a.y + dy] && est.casillas[a.y + dy][a.x + dx]; if (c && !c.est) c.t = "bosque"; }
+  u.pm = 1;
+  ok(FM.alcanzables(est, u).destinos.size === 0, "el coloso rodeado de bosque aún se mueve");
+  const r = FM.aplicar(est, { t: "habilidad", id: "talar", uid: u.uid, x: a.x + 1, y: a.y });
+  ok(r.ok && est.casillas[a.y][a.x + 1].t === "llanura", `no derriba el bosque: ${r.error}`);
+  ok(!FM.aplicar(est, { t: "habilidad", id: "talar", uid: u.uid, x: a.x - 1, y: a.y }).ok, "derriba dos veces en un turno");
+  const g = poner(est, 0, "guerrero", libre(est, a, 2).x, libre(est, a, 2).y);
+  ok(!FM.aplicar(est, { t: "habilidad", id: "talar", uid: g.uid, x: a.x - 1, y: a.y }).ok, "un guerrero derriba bosques");
+}
+
+// --- Los barcos: se elige el agua, y sin elegir salen al agua más grande ---
+{
+  const est = guerra(["pelgiria", "seosan"], { forma: "archipielago" });
+  const ci = FM.ciudadesDe(est, 0).find(c => c.capital);
+  const ops = FM.aguasLibres(est, ci);
+  ok(ops.length > 0, "la capital de un archipiélago no tiene agua cerca");
+  const mejor = ops.slice().sort((p, q) => q.tam - p.tam)[0];
+  ok(FM.aguasLibres(est, ci).length && (() => { const p = FM.aguasLibres(est, ci).find(q => q.x === mejor.x && q.y === mejor.y); return p.tam === mejor.tam; })(), "el tamaño del agua no cuadra");
+  const jug = est.jugadores[0]; Object.keys(jug.recursos).forEach(k => { jug.recursos[k] = 99; });
+  if (!ci.edificios.includes("muelle")) ci.edificios.push("muelle");
+  ok(!FM.aplicar(est, { t: "reclutar", ciudad: ci.id, clase: "galera", x: ci.x, y: ci.y }).ok, "un barco sale en tierra");
+  const q = ops[ops.length - 1];
+  const r = FM.aplicar(est, { t: "reclutar", ciudad: ci.id, clase: "galera", x: q.x, y: q.y });
+  ok(r.ok && est.unidades[r.uid].x === q.x && est.unidades[r.uid].y === q.y, `el barco no sale donde se pidió: ${r.error}`);
+}
+
+// --- Manías y títulos por lo que hace cada soldado ---
+{
+  const S = require("../js/fractura-soldados.js");
+  const s = { guerras: 4, cicatrices: 0, uso: { golpes: 20, lejos: 18, cerca: 2, "t:bosque": 12, "t:llanura": 8, borde: 3, "f:okran": 6, monstruos: 4 } };
+  const m = S.manias(s, f => f);
+  ok(m.some(t => t.includes("lejos")) && m.some(t => t.includes("bosque")) && m.some(t => t.includes("okran")), `manías raras: ${m.join(" | ")}`);
+  ok(S.manias({ guerras: 0, uso: {} }).length === 0, "un recluta ya tiene manías");
+}
+
 console.log(`${hechas} comprobaciones, ${fallos} fallos`);
 process.exit(fallos ? 1 : 0);

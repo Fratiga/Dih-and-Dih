@@ -305,6 +305,18 @@
         const sb = Object.values(est.unidades).find(w => w.dueno === -1 && w.sinBandera && cheb(u, w) <= 1);
         if (sb && jug.recursos.oro >= FM.costeAcoger(sb) + 6 && aplicar({ t: "habilidad", id: "acoger", uid: u.uid, x: sb.x, y: sb.y }).ok) return;
       }
+      // Una mole atascada en el bosque lo derriba hacia el enemigo más cercano
+      if (CLASES[u.clase].rompe && !u.atacado && FM.alcanzables(est, u).destinos.size === 0) {
+        const rivalCerca = Object.values(est.ciudades).filter(c => esRival(c.dueno)).sort((p, q) => cheb(u, p) - cheb(u, q))[0];
+        let mejor = null;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const x = u.x + dx, y = u.y + dy, c = FM.casilla(est, x, y);
+          if (!c || c.t !== "bosque" || c.est || FM.unidadEn(est, x, y)) continue;
+          const d = rivalCerca ? cheb({ x, y }, rivalCerca) : 0;
+          if (!mejor || d < mejor.d) mejor = { x, y, d };
+        }
+        if (mejor && aplicar({ t: "habilidad", id: "talar", uid: u.uid, x: mejor.x, y: mejor.y }).ok) return;
+      }
       // Las carracas mercantes no salen de casa: están para dar oro
       if (CLASES[u.clase].oroTurno) return;
       const e = FM.ef(est, u);
