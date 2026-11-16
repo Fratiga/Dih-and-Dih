@@ -72,37 +72,49 @@
     const comportamientos = {
       aliento(c, a, b, s, op) {
         const ang = Math.atan2(b.y - a.y, b.x - a.x), L = Math.hypot(b.x - a.x, b.y - a.y), m = op.grados ? op.grados * Math.PI / 360 : 0.46;
-        return { dur: 0.9, paso() { for (let i = 0; i < 14; i++) { const d = ang + azar(-m, m), v = azar(0.7, 1.1) * L / 0.75; nueva(c, a.x, a.y, Math.cos(d) * v, Math.sin(d) * v, azar(0.6, 0.85), azar(5, 11) * s, { roce: 0.95, crece: 1.5 }); } } };
+        const finalR = Math.max(10, L * Math.sin(m) * 0.45);
+        return { dur: 0.9, paso() { for (let i = 0; i < 16; i++) {
+          const d = ang + azar(-m, m) * 0.95, vida = azar(0.55, 0.8), v = azar(0.7, 1.0) * L / vida, tam = azar(5, 11) * s;
+          nueva(c, a.x, a.y, Math.cos(d) * v, Math.sin(d) * v, vida, tam, { roce: 1, crece: Math.max(1.5, finalR / tam - 1) });
+        } } };
       },
-      // Haz: un rayo cuya punta viaja de A a B dejando el trazo encendido, que luego se apaga; al llegar, un impacto
+      // Haz: un chorro de energía grueso, como un Kamehameha: se carga en el origen, sale disparado hasta el destino,
+      // se mantiene un momento con el núcleo blanco y un borde que tiembla, suelta chispas, y al llegar estalla
       haz(c, a, b, s, op) {
-        const L = Math.hypot(b.x - a.x, b.y - a.y) || 1, px = -(b.y - a.y) / L, py = (b.x - a.x) / L;
-        const w = Math.min((op.anchoPx || 40) / 2, 26 * s), viaje = Math.min(0.5, Math.max(0.16, L / 1500));
-        let t = 0, antes = 0, impacto = false;
-        const punto = (f, o) => ({ x: a.x + (b.x - a.x) * f + px * o, y: a.y + (b.y - a.y) * f + py * o });
-        return { dur: viaje + 0.45, paso(dt) {
+        const L = Math.hypot(b.x - a.x, b.y - a.y) || 1, ux = (b.x - a.x) / L, uy = (b.y - a.y) / L, px = -uy, py = ux;
+        const w = Math.max(8 * s, (op.anchoPx || 40) / 2), viaje = Math.min(0.35, Math.max(0.12, L / 2400)), sostener = 0.85;
+        let t = 0, impacto = false;
+        return { dur: viaje + sostener + 0.3, paso(dt) {
           t += dt;
-          const f = Math.min(1, t / viaje);
-          // estela en el tramo que la punta acaba de recorrer
-          const n = Math.max(6, Math.round((f - antes) * L / 4));
-          for (let i = 0; i < n; i++) {
-            const q = punto(antes + (f - antes) * Math.random(), azar(-w, w) * 0.35);
-            nueva(c, q.x, q.y, px * azar(-25, 25), py * azar(-25, 25), azar(0.3, 0.55), azar(2.5, 5) * s);
+          const f = Math.min(1, t / viaje), apaga = Math.max(0, (t - viaje - sostener) / 0.3);
+          const ancho = w * (1 - apaga) * (0.92 + 0.08 * Math.sin(t * 45));
+          if (ancho < 0.5) return;
+          const largo = f * L, paso = Math.max(4, ancho * 0.55);
+          for (let d = 0; d <= largo; d += paso) {
+            const x = a.x + ux * d, y = a.y + uy * d, o = azar(-0.12, 0.12) * ancho;
+            nueva(c, x + px * o, y + py * o, 0, 0, 0.07, ancho * azar(0.85, 1.05), { crece: 0.001, alfa: 0.5 });
+            if (Math.random() < 0.75) nueva(c, x, y, 0, 0, 0.06, ancho * azar(0.35, 0.45), { crece: 0.001, alfa: 0.9, color: "#ffffff", oscuro: false });
           }
-          if (f < 1) { const h = punto(f, 0); nueva(c, h.x, h.y, 0, 0, 0.16, 10 * s, { crece: 0.8 }); }
-          else {
-            // el rayo entero sigue chispeando un momento
-            for (let i = 0; i < 8; i++) { const q = punto(Math.random(), azar(-w, w) * 0.2); nueva(c, q.x, q.y, 0, 0, azar(0.15, 0.3), azar(2, 4) * s); }
-            if (!impacto) { impacto = true; lanzarEmisor(estallido(c, b, s, 26, 170)); }
+          // la carga en las manos y la punta del chorro mientras viaja
+          nueva(c, a.x, a.y, 0, 0, 0.08, ancho * (1.5 + 0.2 * Math.sin(t * 30)), { crece: 0.001, alfa: 0.55 });
+          nueva(c, a.x, a.y, 0, 0, 0.07, ancho * 0.8, { crece: 0.001, alfa: 0.9, color: "#ffffff", oscuro: false });
+          if (f < 1) nueva(c, a.x + ux * largo, a.y + uy * largo, 0, 0, 0.08, ancho * 1.35, { crece: 0.001, alfa: 0.7 });
+          else if (!impacto) { impacto = true; lanzarEmisor(estallido(c, b, s * Math.max(1, ancho / (20 * s)), 40, 230)); }
+          // chispas que se escapan del chorro
+          for (let i = 0; i < 3; i++) {
+            const d = Math.random() * largo, lado = Math.random() < 0.5 ? -1 : 1, v = azar(80, 220) * s;
+            nueva(c, a.x + ux * d + px * lado * ancho * 0.8, a.y + uy * d + py * lado * ancho * 0.8, px * lado * v + ux * v * 0.4, py * lado * v + uy * v * 0.4, azar(0.2, 0.4), azar(2, 4) * s, { roce: 0.9 });
           }
-          antes = f;
         } };
       },
       cohete(c, a, b, s) { return proyectil(c, a, b, s, 1, 0.7, 5); },
       misil(c, a, b, s) { return proyectil(c, a, b, s, 3, 0.55, 3); },
       salpicar(c, a, b, s, op) {
         const ang = Math.atan2(b.y - a.y, b.x - a.x), L = Math.hypot(b.x - a.x, b.y - a.y), m = op.grados ? op.grados * Math.PI / 360 : 0.3;
-        return { dur: 0.15, paso() { for (let i = 0; i < 30; i++) { const d = ang + azar(-m, m), v = azar(0.6, 1.2) * L / 0.6; nueva(c, a.x, a.y, Math.cos(d) * v, Math.sin(d) * v, azar(0.6, 0.9), azar(3, 7) * s, { grav: 160 * s, roce: 0.96 }); } } };
+        return { dur: 0.15, paso() { for (let i = 0; i < 30; i++) {
+          const d = ang + azar(-m, m), vida = azar(0.6, 0.9), v = azar(0.55, 1.0) * L / vida;
+          nueva(c, a.x, a.y, Math.cos(d) * v, Math.sin(d) * v, vida, azar(3, 7) * s, { grav: 60 * s, roce: 1 });
+        } } };
       },
       quemar(c, a, b, s) {
         return { dur: 2.6, paso() { for (let i = 0; i < 5; i++) nueva(c, a.x + azar(-22, 22) * s, a.y + azar(-8, 10) * s, azar(-10, 10), azar(-90, -40) * s, azar(0.5, 1.0), azar(5, 10) * s); } };
@@ -177,7 +189,7 @@
             p.edad += dt;
             if (p.edad >= p.max) { particulas.splice(i, 1); continue; }
             p.vy += p.grav * dt;
-            p.vx *= p.roce; p.vy *= p.roce;
+            if (p.roce !== 1) { const k = Math.pow(p.roce, dt * 60); p.vx *= k; p.vy *= k; }
             p.x += p.vx * dt; p.y += p.vy * dt;
           }
           if (!emisores.length && !particulas.length) { anim.stop(); anim = null; capa.batchDraw(); }

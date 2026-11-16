@@ -2366,6 +2366,11 @@ ${calc}` : "";
 
   fichasInitAuthUI(session => {
     miEmail = session?.user?.email || null;
-    if (session) cargarLista();
+    if (session) {
+      cargarLista();
+      // fichas.html?ficha=<id> abre esa hoja (el tablero enlaza así la hoja de cada personaje)
+      const pedida = new URLSearchParams(location.search).get("ficha");
+      if (pedida && /^[0-9a-f-]{36}$/i.test(pedida)) abrirFicha(pedida);
+    }
   });
 })();

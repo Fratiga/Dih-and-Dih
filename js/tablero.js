@@ -292,11 +292,13 @@
     r.on("quitar", d => { if (d && !TB.yo.esGM) (d.ids || []).forEach(id => TB.L.quitar(id)); });
     r.on("ping", d => {
       if (!d || d.escena !== TB.escenaId) return;
+      if (document.hidden) return;
       TB.L.ping(d.x, d.y, d.color);
       if (d.centrar) TB.L.centrarEn(d.x, d.y);
     });
     r.on("regla", d => { if (d && (!d.escena || d.escena === TB.escenaId)) TB.L.reglaRemota(d); });
-    r.on("fx", d => { if (d && d.escena === TB.escenaId && !TB.prefs.sinFx) TB.fx.reproducir(d); });
+    // Con la pestaña en segundo plano no se acumulan efectos: al volver no se disparan todos seguidos
+    r.on("fx", d => { if (d && d.escena === TB.escenaId && !TB.prefs.sinFx && !document.hidden) TB.fx.reproducir(d); });
     r.on("fxFin", d => { if (d && d.id) TB.fx.parar(d.id); });
     r.on("fxMov", d => { if (d && d.id) TB.fx.mover(d.id, d.x, d.y); });
     // Un jugador cambió su hoja (PV o salvaciones): el DJ la vuelve a leer para copiarla a las fichas del tablero

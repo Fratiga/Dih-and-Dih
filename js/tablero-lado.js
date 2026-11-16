@@ -59,9 +59,11 @@
     let colaChat = Promise.resolve();
     TB.on("mensaje", m => {
       const P = TB.prefs.dados || {}, mio = m.autor === TB.yo.uid;
+      const llegoOculta = document.hidden;
       const con3D = !!window.TBDados3D && m.tirada && !m.tirada.enlinea && !m.tirada.secreta && P.tresD !== false && (mio || P.auto3D !== false);
       colaChat = colaChat.then(async () => {
-        if (con3D) await Promise.race([TBDados3D.lanzar(m.tirada), new Promise(r => setTimeout(r, 6000))]);
+        // con la pestaña en segundo plano no se animan: al volver no salen todas las tiradas en fila
+        if (con3D && !document.hidden && !llegoOculta) await Promise.race([TBDados3D.lanzar(m.tirada), new Promise(r => setTimeout(r, 6000))]);
         agregarMensaje(m, true);
         if (pestana !== "chat") marcarNovedad("chat");
         if (TB.prefs.pitido && !mio) pitido();
@@ -261,9 +263,13 @@
     if (m.modo === "secreta") etq = "Secreta";
     if (m.modo === "susurro") etq = m.autor === TB.yo.uid ? "Susurro a " + (m.para || []).map(u => TB.nombreJugador(u)).join(", ") : "Te susurra";
     const ini = (m.nombre || "?").trim()[0] || "?";
-    const av = m.avatar ? `style="background-image:url('${esc(m.avatar)}')"` : `style="background-color:${TB.colorJugador(m.autor)}"`;
+    // Sin avatar propio: la foto con la que sale en la barra de presentes, o el retrato de su personaje
+    const pres = (TB.presencia || []).find(p => p.uid === m.autor) || {};
+    const pj = [...TB.diario.values()].find(e => e.tipo === "personaje" && e.imagen && (e.controladores || []).includes(m.autor));
+    const foto = m.avatar || pres.avatar || (pj && pj.imagen) || "";
+    const av = foto ? `style="background-image:url('${esc(foto)}')"` : `style="background-color:${TB.colorJugador(m.autor)}"`;
     const nodo = el(`<div class="tb-msg ${esc(m.modo)}${seguido ? " seguido" : ""}${emote ? " emote" : ""}${desc ? " desc" : ""}">
-      <span class="tb-msg-av" ${av}>${m.avatar ? "" : esc(ini.toUpperCase())}</span>
+      <span class="tb-msg-av" ${av}>${foto ? "" : esc(ini.toUpperCase())}</span>
       <div class="tb-msg-cuerpo">${TB.prefs.horas && m.creado ? `<span class="tb-msg-hora">${new Date(m.creado).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}</span>` : ""}${etq ? `<span class="tb-msg-etq">${esc(etq)}</span>` : ""}${seguido ? "" : `<span class="tb-msg-nombre">${esc(m.nombre)}${emote ? "" : ":"}</span>`}${cuerpoTxt}${tirada ? (tirada.tabla ? tablaHtml(tirada) : TBDados.tiradaHtml(tirada)) : ""}</div></div>`);
     lista.appendChild(nodo);
     if (abajo || (animado && m.autor === TB.yo.uid)) lista.scrollTop = lista.scrollHeight;
@@ -826,7 +832,8 @@
       <div class="tb-fila" style="align-items:flex-start;gap:calc(16px * var(--tb-k))">
         ${e.imagen ? `<img src="${esc(e.imagen)}" alt="" style="width:${e.tipo === "nota" ? "100%" : "150px"};${e.tipo === "nota" ? "" : "height:150px;border-radius:50%;"}object-fit:cover;flex:none">` : ""}
         ${e.tipo === "personaje" ? `<div><h2 style="margin:calc(4px * var(--tb-k)) 0 calc(6px * var(--tb-k));font-size:calc(22px * var(--tb-k))">${esc(e.nombre)}</h2>${(e.etiquetas || []).length ? `<p class="tb-nota">${e.etiquetas.map(esc).join(" · ")}</p>` : ""}
-          ${(e.controladores || []).length ? `<p class="tb-nota">Lo controla: ${e.controladores.map(u => esc(TB.nombreJugador(u))).join(", ")}</p>` : ""}</div>` : ""}
+          ${(e.controladores || []).length ? `<p class="tb-nota">Lo controla: ${e.controladores.map(u => esc(TB.nombreJugador(u))).join(", ")}</p>` : ""}
+          ${e.ficha && (gm || (e.controladores || []).includes(TB.yo.uid)) ? `<a class="tb-btn" href="fichas.html?ficha=${encodeURIComponent(e.ficha)}" target="_blank" rel="noopener">Abrir la hoja de personaje ↗</a>` : ""}</div>` : ""}
       </div>
       <h4 style="margin:calc(16px * var(--tb-k)) 0 calc(6px * var(--tb-k))">${e.tipo === "nota" ? "Contenido" : "Biografía e información"}</h4>
       <div class="tb-contenido-rico">${limpiarHtml(e.texto) || `<p class="tb-nota">Sin texto.</p>`}</div>

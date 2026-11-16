@@ -34,16 +34,25 @@
     m("granada", "Granada", "grenade"), m("torreta", "Torreta", "sentry-gun"),
     m("todos_a_una", "Todos a una", "all-for-one"), m("bendecido", "Bendecido", "angel-outfit"), m("diana", "Diana", "archery-target"),
     m("casteo_notas", "Casteo: aura musical", "musical-notes", { anim: true, solo: "ryn" }), m("casteo_cartas", "Casteo: cartas", "poker-hand", { anim: true, solo: "eledar" }),
-    m("fumando", "Fumando", "smoking-pipe", { anim: true, solo: "torvrena|cassius" }), m("raudo", "Raudo", "sprint", { anim: true, solo: "cassius" }),
+    m("fumando", "Fumando", "smoking-pipe", { anim: true, solo: "torvrena|cassius" }), m("raudo", "Raudo", "sprint", { anim: true, da: "cassius" }),
+    m("marca_cazador", "Marca del cazador", "target-arrows", { anim: true, da: "cassius" }),
+    m("inspiracion_bardica", "Inspiración bárdica", "love-song", { anim: true, da: "ryn", numero: true }),
+    m("heroismo", "Heroísmo", "sun-radiations", { anim: true, da: "ryn" }),
+    m("manto_inspiracion", "Manto de inspiración", "star-swirl", { anim: true, da: "ryn" }),
+    m("magia_reforzante", "Magia reforzante", "rainbow-star", { anim: true, da: "hooey" }),
     m("furia_salvaje", "Furia de la magia salvaje", "magic-swirl", { anim: true, solo: "hooey" })
   ];
   // Los estados de un personaje solo los pone su jugador en su ficha (el servidor lo comprueba igual). Se mira el nombre
   // original de la ficha, no el de una apariencia copiada.
+  // «da»: estados que ese personaje pone y quita a cualquiera (Raudo de Cassius, Inspiración bárdica de Ryn…)
+  const nombreDe = o => { const d = (o && o.datos) || {}; return String((d.original && d.original.nombre) || d.nombre || "").toLowerCase(); };
+  const casa = (patron, nombre) => new RegExp("(^|[^a-z])(" + patron + ")([^a-z]|$)").test(nombre);
   window.TBEstadoPermitido = (c, o, esGM) => {
-    if (esGM || !c || !c.solo) return true;
-    const d = (o && o.datos) || {}, nombre = String((d.original && d.original.nombre) || d.nombre || "").toLowerCase();
-    return new RegExp("(^|[^a-z])(" + c.solo + ")([^a-z]|$)").test(nombre);
+    if (esGM || !c || (!c.solo && !c.da)) return true;
+    return casa(c.solo || c.da, nombreDe(o));
   };
+  // Los estados que pueden dar las fichas de un jugador (las suyas, por su nombre original)
+  window.TBEstadosQueDa = fichas => window.TBEstados.filter(c => c.da && fichas.some(o => casa(c.da, nombreDe(o))));
   // Lo que dice el reglamento (data/reglas.js, sección Estados) de un marcador; vacío si no es una condición
   window.TBReglaEstado = (c, nombre) => {
     const sec = (window.REGLAS || []).find(s => s.titulo === "Estados");

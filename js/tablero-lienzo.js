@@ -190,7 +190,13 @@
     const opcLuz = () => (st.escena && st.escena.opciones && st.escena.opciones.luz) || {};
     function bloqueaMovimiento() { const L = opcLuz(), b = L.bloquear || "luz"; return !!window.TBLuz && (b === "siempre" || (b === "luz" && !!L.activa)); }
     let luzPendiente = false;
-    const ANIMADOS = { casteo_notas: 1, casteo_cartas: 1, fumando: 1, raudo: 1, furia_salvaje: 1 };
+    const ANIMADOS = { casteo_notas: 1, casteo_cartas: 1, fumando: 1, raudo: 1, furia_salvaje: 1, marca_cazador: 1, inspiracion_bardica: 1, heroismo: 1, manto_inspiracion: 1, magia_reforzante: 1 };
+    // Estrella de cuatro puntas (destellos)
+    function destello(c, x, y, r) {
+      c.beginPath();
+      c.moveTo(x, y - r); c.quadraticCurveTo(x, y, x + r, y); c.quadraticCurveTo(x, y, x, y + r);
+      c.quadraticCurveTo(x, y, x - r, y); c.quadraticCurveTo(x, y, x, y - r); c.fill();
+    }
     const animForma = new Konva.Shape({
       listening: false,
       sceneFunc(ctx) {
@@ -269,6 +275,73 @@
           figura(c, notas[i % 4], 0, 0, R * (0.36 + 0.05 * Math.sin(t * 2 + i)), tonos[i % 4], "rgba(110,40,0,.75)");
           c.restore();
         }
+      } else if (id === "marca_cazador") {
+        // Marca del cazador: una mira roja que gira despacio y late, con cuatro puntas que apuntan a la presa
+        const lat = 1 + 0.05 * Math.sin(t * 4), r = R * 1.12 * lat, giro = t * 0.6;
+        c.strokeStyle = "#e0303a"; c.lineCap = "round";
+        c.globalAlpha = 0.85; c.lineWidth = R * 0.045;
+        for (let k = 0; k < 4; k++) { const a0 = giro + k * Math.PI / 2 + 0.22; c.beginPath(); c.arc(x, y, r, a0, a0 + Math.PI / 2 - 0.44); c.stroke(); }
+        c.fillStyle = "#e0303a";
+        for (let k = 0; k < 4; k++) {
+          const a = giro + k * Math.PI / 2, ux = Math.cos(a), uy = Math.sin(a), px = -uy, py = ux;
+          const r1 = r + R * 0.22, r2 = r - R * 0.02, w = R * 0.08;
+          c.beginPath(); c.moveTo(x + ux * r2, y + uy * r2); c.lineTo(x + ux * r1 + px * w, y + uy * r1 + py * w); c.lineTo(x + ux * r1 - px * w, y + uy * r1 - py * w); c.closePath(); c.fill();
+        }
+        c.globalAlpha = 0.25 + 0.15 * Math.sin(t * 4); c.lineWidth = R * 0.02;
+        c.beginPath(); c.arc(x, y, r * 1.12, 0, Math.PI * 2); c.stroke();
+      } else if (id === "inspiracion_bardica") {
+        // Inspiración bárdica: un halo dorado que respira y destellos que suben alrededor, como notas de luz
+        const halo = c.createRadialGradient(x, y, R * 0.95, x, y, R * 1.4);
+        halo.addColorStop(0, "rgba(255,205,90,0)"); halo.addColorStop(0.5, `rgba(255,205,90,${0.16 + 0.06 * Math.sin(t * 2.2)})`); halo.addColorStop(1, "rgba(255,205,90,0)");
+        c.fillStyle = halo; c.beginPath(); c.arc(x, y, R * 1.4, 0, Math.PI * 2); c.fill();
+        for (let i = 0; i < 9; i++) {
+          const f = (t * 0.35 + i / 9) % 1, ang = i * 2.4 + 0.5;
+          const px = x + Math.cos(ang) * R * (1.05 + 0.1 * Math.sin(t + i)) + Math.sin(t * 2 + i) * R * 0.05, py = y + Math.sin(ang) * R * 0.9 - f * R * 0.9;
+          c.globalAlpha = Math.sin(f * Math.PI) * 0.95; c.fillStyle = i % 2 ? "#ffe9a6" : "#ffc24a";
+          destello(c, px, py, R * (0.11 + 0.05 * Math.sin(t * 5 + i)));
+        }
+      } else if (id === "heroismo") {
+        // Heroísmo: rayos dorados que salen de detrás de la ficha y giran muy despacio, con un brillo cálido
+        const halo = c.createRadialGradient(x, y, R * 0.98, x, y, R * 1.55);
+        halo.addColorStop(0, "rgba(255,190,60,0)"); halo.addColorStop(0.15, "rgba(255,190,60,.3)"); halo.addColorStop(1, "rgba(255,190,60,0)");
+        c.fillStyle = halo; c.beginPath(); c.arc(x, y, R * 1.55, 0, Math.PI * 2); c.fill();
+        c.fillStyle = "#ffd36b";
+        for (let k = 0; k < 14; k++) {
+          const a = t * 0.25 + k * Math.PI * 2 / 14, largo = R * (1.32 + 0.1 * Math.sin(t * 3 + k * 1.7)), ancho = 0.07;
+          c.globalAlpha = 0.35 + 0.25 * Math.sin(t * 2 + k);
+          c.beginPath(); c.moveTo(x + Math.cos(a - ancho) * R * 1.02, y + Math.sin(a - ancho) * R * 1.02);
+          c.lineTo(x + Math.cos(a) * largo, y + Math.sin(a) * largo);
+          c.lineTo(x + Math.cos(a + ancho) * R * 1.02, y + Math.sin(a + ancho) * R * 1.02); c.closePath(); c.fill();
+        }
+      } else if (id === "manto_inspiracion") {
+        // Manto de inspiración (Glamour): un velo rosado y lila que ondea alrededor con pétalos de luz
+        c.lineCap = "round";
+        [["#ff8ad8", 0, 0.05], ["#c79bff", Math.PI, 0.035]].forEach(([col, fase, grosor]) => {
+          c.beginPath();
+          for (let j = 0; j <= 90; j++) {
+            const th = j / 90 * Math.PI * 2, r = R * (1.16 + 0.07 * Math.sin(th * 3 + t * 1.8 + fase));
+            const px = x + Math.cos(th) * r, py = y + Math.sin(th) * r;
+            if (j) c.lineTo(px, py); else c.moveTo(px, py);
+          }
+          c.globalAlpha = 0.45; c.strokeStyle = col; c.lineWidth = R * grosor; c.stroke();
+        });
+        for (let i = 0; i < 6; i++) {
+          const a = -t * 0.7 + i * Math.PI / 3, r = R * (1.2 + 0.08 * Math.sin(t * 2.5 + i));
+          c.save(); c.translate(x + Math.cos(a) * r, y + Math.sin(a) * r); c.rotate(a + t);
+          c.globalAlpha = 0.85; c.fillStyle = i % 2 ? "#ffd0f0" : "#e6c9ff";
+          c.beginPath(); c.ellipse(0, 0, R * 0.09, R * 0.04, 0, 0, Math.PI * 2); c.fill();
+          c.restore();
+        }
+      } else if (id === "magia_reforzante") {
+        // Magia reforzante: chispas de todos los colores que giran en espiral hacia la ficha y se encienden al llegar
+        const h0 = (t * 60) % 360;
+        for (let i = 0; i < 10; i++) {
+          const f = (t * 0.45 + i / 10) % 1, a = i * 0.63 + f * 4, r = R * (1.5 - f * 0.5);
+          c.globalAlpha = Math.sin(f * Math.PI); c.fillStyle = `hsl(${(h0 + i * 36) % 360},100%,70%)`;
+          destello(c, x + Math.cos(a) * r, y + Math.sin(a) * r, R * (0.09 + 0.07 * f));
+        }
+        c.globalAlpha = 0.3 + 0.15 * Math.sin(t * 3); c.strokeStyle = `hsl(${h0},100%,70%)`; c.lineWidth = R * 0.03;
+        c.beginPath(); c.arc(x, y, R * 1.04, 0, Math.PI * 2); c.stroke();
       } else if (id === "furia_salvaje") {
         // Furia de la magia salvaje: aura de colores arcanos que cambian sin parar, relámpagos que bailan sobre la ficha,
         // motas de magia descontrolada, fuegos fatuos que suben y brotes que nacen y se marchitan a sus pies

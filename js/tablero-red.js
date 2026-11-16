@@ -204,6 +204,8 @@
       async gastarMunicion(ficha, ataque) { return ok(await sb.rpc("fichas_gastar_municion", { p_ficha: ficha, p_ataque: ataque })); },
       async fichaPV(ficha, cambios) { ok(await sb.rpc("tablero_ficha_pv", { p_ficha: ficha, p_actual: cambios.actual, p_max: cambios.max, p_temp: cambios.temp })); },
       async fichaMuerte(ficha, exitos, fallos) { ok(await sb.rpc("tablero_ficha_muerte", { p_ficha: ficha, p_exitos: exitos, p_fallos: fallos })); },
+      async ajustarPropio(objeto, datos) { ok(await sb.rpc("tablero_ajustar_propio", { p_objeto: objeto, p_datos: datos })); },
+      async darEstado(objeto, estado, poner, n) { ok(await sb.rpc("tablero_dar_estado", { p_objeto: objeto, p_estado: estado, p_poner: !!poner, p_n: n == null ? null : n })); },
       async canciones() {
         // Las canciones que se subieron a la rocola (tabla rocola_canciones); las del sitio vienen en data/musica.js
         const { data, error } = await sb.from("rocola_canciones").select("ruta, titulo, artista").order("creada", { ascending: false });
@@ -454,6 +456,20 @@
       },
       async gastarMunicion() { return 0; },
       async fichaPV(ficha, c) { leer(); const f = d.fichas.find(x => x.id === ficha); if (!f) return; ["actual", "max", "temp"].forEach(k => { if (c[k] != null) f.combate["pv" + k[0].toUpperCase() + k.slice(1)] = c[k]; }); guardar(); },
+      async ajustarPropio(objeto, datos) {
+        const o = d.objetos.find(q => q.id === objeto);
+        if (!o || !(yo.esGM || controla(o))) throw new Error("Esa ficha no es tuya.");
+        const limpio = { nombre: String(datos.nombre || "").slice(0, 60), verNombre: !!datos.verNombre, barraPos: datos.barraPos === "debajo" ? "debajo" : "encima",
+          barraEstilo: datos.barraEstilo === "compacto" ? "compacto" : "estandar", auras: (datos.auras || []).slice(0, 2) };
+        o.datos = Object.assign({}, o.datos, limpio); guardar(); publicar("objeto", o);
+      },
+      async darEstado(objeto, estado, poner, n) {
+        const o = d.objetos.find(q => q.id === objeto);
+        if (!o) throw new Error("Esa ficha ya no existe.");
+        const l = ((o.datos || {}).estados || []).filter(e => e.id !== estado);
+        if (poner) l.push(n == null ? { id: estado } : { id: estado, n });
+        o.datos = Object.assign({}, o.datos, { estados: l }); guardar(); publicar("objeto", o);
+      },
       async fichaMuerte(ficha, exitos, fallos) { leer(); const f = d.fichas.find(x => x.id === ficha); if (!f) return; f.combate.salvMuerte = { exitos: Math.max(0, Math.min(3, exitos | 0)), fallos: Math.max(0, Math.min(3, fallos | 0)) }; guardar(); },
       async canciones() { return []; }
     };

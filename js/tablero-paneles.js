@@ -773,7 +773,7 @@
     const general = el(`<div>
       <div class="tb-fila" style="justify-content:space-between"><h3 style="margin:calc(4px * var(--tb-k)) 0 calc(14px * var(--tb-k));font-size:calc(19px * var(--tb-k))">General</h3></div>
       ${gm ? `<label class="tb-campo"><span>Representa a un personaje</span><select data-rep><option value="">Ninguno / Ficha genérica</option>${personajes.map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join("")}</select></label>` : ""}
-      <label class="tb-campo"><span>Nombre</span><span class="tb-fila"><input type="text" data-nombre ${gm ? "" : "disabled"}><label class="tb-casilla tb-btn" style="white-space:nowrap"><input type="checkbox" data-vernombre ${gm ? "" : "disabled"}> Nombre</label></span></label>
+      <label class="tb-campo"><span>Nombre</span><span class="tb-fila"><input type="text" data-nombre maxlength="60"><label class="tb-casilla tb-btn" style="white-space:nowrap"><input type="checkbox" data-vernombre> Nombre</label></span></label>
       ${gm ? `<div class="tb-campo"><span>Tamaño</span><span class="tb-fila" style="align-items:center;flex-wrap:wrap">
           <select data-tampre style="width:auto;flex:1;min-width:calc(150px * var(--tb-k))"><option value="">Personalizado</option><option value="0.5">Diminuto (½ casilla)</option><option value="1">Pequeño o mediano (1 casilla)</option><option value="2">Grande (2 × 2)</option><option value="3">Enorme (3 × 3)</option><option value="4">Gargantuesco (4 × 4)</option></select>
           <span class="tb-ud"><input type="number" step="0.25" min="0.25" max="40" data-tw style="width:calc(64px * var(--tb-k))"><i>ancho</i></span>
@@ -817,7 +817,7 @@
     }
     det.appendChild(el(`<div class="tb-dos-col"></div>`));
     det.firstChild.append(general, derecha);
-    if (gm) {
+    {
       det.appendChild(el(`<hr class="tb-sep">`));
       det.appendChild(el(`<div class="tb-dos-col"><div><h3 style="font-size:calc(19px * var(--tb-k));margin:calc(6px * var(--tb-k)) 0 calc(12px * var(--tb-k))">Opciones De Barra De Ficha</h3>
         <label class="tb-campo"><span>Posición</span><select data-bpos><option value="encima">Encima</option><option value="debajo">Debajo</option></select></label></div>
@@ -836,6 +836,8 @@
         aurasEl.querySelector(".tb-aura-cfg").appendChild(caja);
       });
       det.appendChild(aurasEl);
+    }
+    if (gm) {
       det.appendChild(el(`<hr class="tb-sep">`));
       const vis = Object.assign({ ve: !!(o.controlan_todos || (o.controladores || []).length), oscuridad: 0 }, d.vision);
       const luz = Object.assign({ brillante: 0, tenue: 0 }, d.luz);
@@ -860,6 +862,8 @@
     const q = s => cuerpo.querySelector(s);
     q("[data-nombre]").value = d.nombre || "";
     q("[data-vernombre]").checked = !!d.verNombre;
+    q("[data-bpos]").value = d.barraPos || "encima";
+    cuerpo.querySelector(`input[name=bestilo][value=${d.barraEstilo === "compacto" ? "compacto" : "estandar"}]`).checked = true;
     let notaGM = null;
     if (gm) {
       q("[data-control]").appendChild(controlSel.el);
@@ -879,8 +883,7 @@
       const opac = q("[data-opac]"), opTxt = q("[data-opac-txt]");
       opac.value = Math.round((o.opacidad == null ? 1 : o.opacidad) * 100); opTxt.textContent = opac.value + "%";
       opac.addEventListener("input", () => { opTxt.textContent = opac.value + "%"; });
-      q("[data-bpos]").value = d.barraPos || "encima";
-      cuerpo.querySelector(`input[name=bestilo][value=${d.barraEstilo === "compacto" ? "compacto" : "estandar"}]`).checked = true;
+
       const hoja = q("[data-hoja]");
       hoja.addEventListener("click", () => { const r = rep.value; if (r) TBLado.abrirEntrada(r); else aviso("Esta ficha no representa a ningún personaje del diario."); });
       const predet = q("[data-predet]");
@@ -909,17 +912,18 @@
       if (gm) {
         nd.representa = q("[data-rep]").value || null;
         nd.tinte = q("[data-sintinte]").checked ? null : q("[data-tinte]").value;
-        nd.barraPos = q("[data-bpos]").value;
-        nd.barraEstilo = cuerpo.querySelector("input[name=bestilo]:checked").value;
+
         nd.vision = { ve: q("[data-ve]").checked, oscuridad: Math.max(0, Number(q("[data-osc]").value) || 0) };
         nd.cambiaformas = q("[data-cambia]").checked;
         const lb = Math.max(0, Number(q("[data-lb]").value) || 0), lt = Math.max(0, Number(q("[data-lt]").value) || 0);
         nd.luz = lb || lt ? { brillante: lb, tenue: lt } : null;
-        nd.auras = [...cuerpo.querySelectorAll("[data-aura]")].map(c => ({
-          radio: Number(c.querySelector("[data-radio]").value) || 0, forma: c.querySelector("[data-forma]").value, color: c.querySelector("[data-color]").value,
-          opacidad: Number(c.querySelector("[data-op]").value) / 100, ver: c.querySelector("[data-ver]").checked
-        }));
       }
+      nd.barraPos = q("[data-bpos]").value;
+      nd.barraEstilo = cuerpo.querySelector("input[name=bestilo]:checked").value;
+      nd.auras = [...cuerpo.querySelectorAll("[data-aura]")].map(c => ({
+        radio: Number(c.querySelector("[data-radio]").value) || 0, forma: c.querySelector("[data-forma]").value, color: c.querySelector("[data-color]").value,
+        opacidad: Number(c.querySelector("[data-op]").value) / 100, ver: c.querySelector("[data-ver]").checked
+      }));
       return nd;
     }
 
@@ -948,6 +952,9 @@
             const b = nd.barras[i], antes = barras[i];
             if (b.editar && (b.valor !== antes.valor || b.max !== antes.max)) await TB.red.barra(o.id, i + 1, Number(b.valor) || 0, Number(b.max) || 0);
           }
+          // y su nombre, las barras y las auras (el servidor solo deja cambiar eso)
+          try { await TB.red.ajustarPropio(o.id, { nombre: nd.nombre, verNombre: nd.verNombre, barraPos: nd.barraPos, barraEstilo: nd.barraEstilo, auras: nd.auras }); }
+          catch (e) { aviso(/tablero_ajustar_propio/.test(String(e && e.message)) ? "Falta volver a correr tablero.sql para que los jugadores ajusten sus fichas." : mensajeError(e), true); return false; }
           return;
         }
         const cambios = { datos: nd, opacidad: Number(q("[data-opac]").value) / 100 };
@@ -1011,6 +1018,17 @@
         items.push("-", iguales.length ? { icono: "copiar", texto: "Copiar apariencia", accion: () => copiarApariencia(iguales[0], objetivo) }
           : { icono: "copiar", texto: "Copiar apariencia (no es de tu tamaño)", apagado: true });
       }
+    }
+    // Efectos que da uno de tus personajes (Raudo de Cassius, Inspiración bárdica de Ryn…) a la ficha que tienes debajo
+    if (!gm && objetivo && objetivo.tipo === "imagen" && objetivo.capa === "fichas") {
+      const dones = window.TBEstadosQueDa(TB.L.objetos().filter(q => q.tipo === "imagen" && q.capa === "fichas" && TB.controla(q)));
+      if (dones.length) items.push("-", ...dones.map(c => {
+        const tiene = ((objetivo.datos || {}).estados || []).some(e => e.id === c.id);
+        return { texto: `<i class="tb-estado-sil">${window.TBMarcaSVG(c)}</i>${tiene ? "Quitar" : "Dar"} ${esc(c.nombre)}`, accion: async () => {
+          try { await TB.red.darEstado(objetivo.id, c.id, !tiene); }
+          catch (e) { aviso(/tablero_dar_estado/.test(String(e && e.message)) ? "Falta volver a correr tablero.sql para dar efectos." : mensajeError(e), true); }
+        } };
+      }));
     }
     if (gm) items.push(
       { icono: "grupoPon", texto: "Colocar grupo", accion: () => colocarGrupo(p) },
@@ -1084,6 +1102,9 @@
       if (o.tipo === "imagen" && TB.controla(o)) items.push({ icono: "grupoDef", texto: "Estados", sub: itemsEstados([o]) });
       if (o.tipo === "imagen" && TB.controla(o) && (o.datos || {}).cambiaformas) items.push({ icono: "copiar", texto: "Apariencias", sub: itemsApariencias(o) });
       if (o.tipo === "imagen" && TB.controla(o)) items.push({ icono: "turno", texto: "Añadir turno", accion: iniciativa }, { icono: "ajustes", texto: "Ajustes de ficha…", accion: () => ajustesFicha(id) });
+      // su hoja de «Mis personajes», si la ficha está enlazada (por una barra o por el personaje del diario)
+      const hoja = o.tipo === "imagen" && TB.controla(o) && (((o.datos || {}).barras || []).map(x => x && x.enlace).find(Boolean) || ((TB.diario.get((o.datos || {}).representa) || {}).ficha));
+      if (hoja) items.push({ icono: "diario", texto: "Abrir mi hoja de personaje ↗", accion: () => window.open("fichas.html?ficha=" + encodeURIComponent(hoja), "_blank", "noopener") });
       if ((o.tipo === "dibujo" || o.tipo === "texto") && o.autor === TB.yo.uid) items.push("-", { icono: "papeleraR", texto: "Borrar", peligro: true, accion: () => TB.borrarObjetos(sel) });
       menu(x, y, items);
       return;

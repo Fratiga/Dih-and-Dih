@@ -52,6 +52,12 @@ contiene "sin side no escribe ni tira" "$(como "$U4" "select tablero_tirar('1d20
 sql "update perfiles set side = 'B' where user_id = '$U4'" >/dev/null
 comprobar "con side, sí" "1" "$(uno "$U4" "select count(*) from tablero_escenas;")"
 
+echo "== El jugador ajusta su ficha"
+como "$U1" "select tablero_ajustar_propio('$F1', '{\"nombre\": \"Laia la Rápida\", \"verNombre\": true, \"barraPos\": \"debajo\", \"auras\": [{\"radio\": 999, \"color\": \"red\", \"forma\": \"cuadrado\"}], \"cambiaformas\": true, \"vision\": {\"oscuridad\": 999}, \"src\": \"https://malo.com/x.png\"}');" >/dev/null
+comprobar "cambia nombre, barras y auras (con límites) y nada más" "Laia la Rápida|true|debajo|120|#ffff99|cuadrado|||" "$(sql "select (datos ->> 'nombre') || '|' || (datos ->> 'verNombre') || '|' || (datos ->> 'barraPos') || '|' || (datos -> 'auras' -> 0 ->> 'radio') || '|' || (datos -> 'auras' -> 0 ->> 'color') || '|' || (datos -> 'auras' -> 0 ->> 'forma') || '|' || coalesce(datos ->> 'cambiaformas', '') || '|' || coalesce(datos -> 'vision' ->> 'oscuridad', '') || '|' || case when datos ->> 'src' = 'https://malo.com/x.png' then 'malo' else '' end from tablero_objetos where id = '$F1'")"
+contiene "no ajusta la ficha de otro" "$(como "$U2" "select tablero_ajustar_propio('$F1', '{\"nombre\": \"X\"}');")" "no es tuya"
+sql "update tablero_objetos set datos = (datos || '{\"nombre\": \"Laia\"}') - 'auras' - 'verNombre' - 'barraPos' where id = '$F1'" >/dev/null
+
 echo "== Imágenes propias en el tablero"
 IMG=$(como "$U1" "select tablero_crear_propio('$S1', 'imagen', 100, 100, 70, 70, '{\"src\": \"https://x.com/lobo.png\", \"nombre\": \"Lobo\", \"cambiaformas\": true, \"barras\": [{\"valor\": 99}]}');" | tail -1)
 comprobar "el jugador pone una imagen suya y solo se guardan la imagen y el nombre" "imagen|fichas|https://x.com/lobo.png|Lobo||" "$(sql "select tipo || '|' || capa || '|' || (datos ->> 'src') || '|' || (datos ->> 'nombre') || '|' || coalesce(datos ->> 'cambiaformas', '') || '|' || coalesce(datos ->> 'barras', '') from tablero_objetos where id = '$IMG'")"
@@ -223,6 +229,14 @@ sql "update tablero_objetos set datos = datos || '{\"nombre\": \"Ryn Feycrown\"}
 como "$U1" "select tablero_estados('$F1', '[{\"id\": \"casteo_notas\"}]');" >/dev/null
 comprobar "el de su personaje sí" "casteo_notas" "$(sql "select datos -> 'estados' -> 0 ->> 'id' from tablero_objetos where id = '$F1'")"
 contiene "y el de otro no aunque tenga el suyo" "$(como "$U1" "select tablero_estados('$F1', '[{\"id\": \"casteo_notas\"}, {\"id\": \"furia_salvaje\"}]');")" "de otro personaje"
+contiene "el estado de dar de Cassius no se lo pone Ryn a sí misma" "$(como "$U1" "select tablero_estados('$F1', '[{\"id\": \"casteo_notas\"}, {\"id\": \"raudo\"}]');")" "de otro personaje"
+como "$U1" "select tablero_dar_estado('$F2', 'inspiracion_bardica', true, 6);" >/dev/null
+comprobar "Ryn da Inspiración bárdica a la ficha de otro jugador" "inspiracion_bardica|6" "$(sql "select (datos -> 'estados' -> 0 ->> 'id') || '|' || (datos -> 'estados' -> 0 ->> 'n') from tablero_objetos where id = '$F2'")"
+contiene "pero no da los de otro personaje" "$(como "$U1" "select tablero_dar_estado('$F2', 'raudo', true);")" "de otro personaje"
+contiene "ni cualquier estado" "$(como "$U1" "select tablero_dar_estado('$F2', 'derribado', true);")" "no se puede dar"
+como "$U1" "select tablero_dar_estado('$F2', 'inspiracion_bardica', false);" >/dev/null
+comprobar "y la quita" "0" "$(sql "select jsonb_array_length(coalesce(datos -> 'estados', '[]')) from tablero_objetos where id = '$F2'")"
+contiene "otro jugador sin ese personaje no la da" "$(como "$U3" "select tablero_dar_estado('$F1', 'heroismo', true);")" "de otro personaje"
 sql "update tablero_objetos set datos = (datos || '{\"nombre\": \"Laia\"}') - 'estados' where id = '$F1'" >/dev/null
 
 echo "== Copiar apariencias"

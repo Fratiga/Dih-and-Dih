@@ -281,7 +281,8 @@ begin
   if not tablero_i_jugador() then raise exception 'Para jugar en el tablero necesitas tener un side. Pídeselo al DJ.'; end if;
   if p_como is null then
     nombre := tablero_i_nombre();
-    avatar := coalesce((select p.avatar from tablero_perfil p where p.uid = auth.uid()), '');
+    avatar := coalesce(nullif((select p.avatar from tablero_perfil p where p.uid = auth.uid()), ''),
+      (select d.imagen from tablero_diario d where d.tipo = 'personaje' and not d.archivado and auth.uid() = any(d.controladores) and d.imagen <> '' order by d.creado limit 1), '');
     return;
   end if;
   select d.nombre, d.imagen into nombre, avatar from tablero_diario d
@@ -698,8 +699,9 @@ begin
       if (nuevo = 'casteo_notas' and nombre !~ '\mryn\M')
         or (nuevo = 'casteo_cartas' and nombre !~ '\meledar\M')
         or (nuevo = 'fumando' and nombre !~ '\m(torvrena|cassius)\M')
-        or (nuevo = 'raudo' and nombre !~ '\mcassius\M')
-        or (nuevo = 'furia_salvaje' and nombre !~ '\mhooey\M') then
+        or (nuevo in ('raudo', 'marca_cazador') and nombre !~ '\mcassius\M')
+        or (nuevo in ('inspiracion_bardica', 'heroismo', 'manto_inspiracion') and nombre !~ '\mryn\M')
+        or (nuevo in ('furia_salvaje', 'magia_reforzante') and nombre !~ '\mhooey\M') then
         raise exception 'Ese estado es de otro personaje.';
       end if;
     end loop;
@@ -707,6 +709,88 @@ begin
   update tablero_objetos set datos = jsonb_set(coalesce(datos, '{}'::jsonb), '{estados}', p_estados), actualizado = now() where id = p_objeto;
 end;
 $$;
+
+-- El jugador ajusta su propia ficha: nombre (y si se ve), posición y estilo de las barras y hasta dos auras.
+-- Nada más (ni tamaño, ni visión, ni luz, ni permisos, ni enlaces): el resto de datos queda como estaba.
+create or replace function tablero_ajustar_propio(p_objeto uuid, p_datos jsonb)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  o tablero_objetos;
+  d jsonb;
+  a jsonb;
+  auras jsonb := '[]'::jsonb;
+begin
+  if not tablero_i_jugador() then raise exception 'Para jugar en el tablero necesitas tener un side. Pídeselo al DJ.'; end if;
+  if jsonb_typeof(p_datos) <> 'object' then raise exception 'Datos no válidos.'; end if;
+  select * into o from tablero_objetos where id = p_objeto;
+  if not found then raise exception 'Esa ficha ya no existe.'; end if;
+  if not fichas_es_admin() and not ((o.controlan_todos or auth.uid() = any(o.controladores)) and o.capa = 'fichas' and tablero_escena_visible(o.escena)) then
+    raise exception 'Esa ficha no es tuya.';
+  end if;
+  d := coalesce(o.datos, '{}'::jsonb);
+  if p_datos ? 'nombre' then d := jsonb_set(d, '{nombre}', to_jsonb(left(btrim(coalesce(p_datos ->> 'nombre', '')), 60))); end if;
+  if p_datos ? 'verNombre' then d := jsonb_set(d, '{verNombre}', to_jsonb(p_datos -> 'verNombre' = 'true'::jsonb)); end if;
+  if p_datos ->> 'barraPos' in ('encima', 'debajo') then d := jsonb_set(d, '{barraPos}', p_datos -> 'barraPos'); end if;
+  if p_datos ->> 'barraEstilo' in ('estandar', 'compacto') then d := jsonb_set(d, '{barraEstilo}', p_datos -> 'barraEstilo'); end if;
+  if jsonb_typeof(p_datos -> 'auras') = 'array' then
+    for a in select x from jsonb_array_elements(p_datos -> 'auras') x limit 2 loop
+      auras := auras || jsonb_build_array(jsonb_build_object(
+        'radio', greatest(0, least(120, coalesce(case when jsonb_typeof(a -> 'radio') = 'number' then (a ->> 'radio')::numeric end, 0))),
+        'forma', case when a ->> 'forma' = 'cuadrado' then 'cuadrado' else 'circulo' end,
+        'color', case when coalesce(a ->> 'color', '') ~ '^#[0-9a-fA-F]{6}$' then a ->> 'color' else '#ffff99' end,
+        'opacidad', greatest(0, least(1, coalesce(case when jsonb_typeof(a -> 'opacidad') = 'number' then (a ->> 'opacidad')::numeric end, 0.35))),
+        'ver', a -> 'ver' <> 'false'::jsonb));
+    end loop;
+    d := jsonb_set(d, '{auras}', auras);
+  end if;
+  update tablero_objetos set datos = d, actualizado = now() where id = p_objeto;
+end;
+$$;
+revoke all on function tablero_ajustar_propio(uuid, jsonb) from public, anon;
+grant execute on function tablero_ajustar_propio(uuid, jsonb) to authenticated;
+
+-- Estados que un personaje da a otros (Raudo y Marca del cazador de Cassius, Inspiración bárdica, Heroísmo y Manto
+-- de inspiración de Ryn, Magia reforzante de Hooey): el jugador que controla esa ficha en la escena los pone o quita
+-- en cualquier ficha de la capa de fichas. Solo cambia ese estado.
+create or replace function tablero_dar_estado(p_objeto uuid, p_estado text, p_poner boolean, p_n int default null)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  o tablero_objetos;
+  dador text;
+  est jsonb;
+begin
+  if not tablero_i_jugador() then raise exception 'Para jugar en el tablero necesitas tener un side. Pídeselo al DJ.'; end if;
+  dador := case p_estado when 'raudo' then 'cassius' when 'marca_cazador' then 'cassius'
+    when 'inspiracion_bardica' then 'ryn' when 'heroismo' then 'ryn' when 'manto_inspiracion' then 'ryn'
+    when 'magia_reforzante' then 'hooey' end;
+  if dador is null then raise exception 'Ese estado no se puede dar.'; end if;
+  select * into o from tablero_objetos where id = p_objeto;
+  if not found then raise exception 'Esa ficha ya no existe.'; end if;
+  if not fichas_es_admin() then
+    if o.capa <> 'fichas' or not tablero_escena_visible(o.escena) then raise exception 'No puedes dar estados a esa ficha.'; end if;
+    if not exists (select 1 from tablero_objetos t where t.escena = o.escena and t.capa = 'fichas' and auth.uid() = any(t.controladores)
+        and lower(coalesce(t.datos -> 'original' ->> 'nombre', t.datos ->> 'nombre', '')) ~ ('\m' || dador || '\M')) then
+      raise exception 'Ese estado es de otro personaje.';
+    end if;
+  end if;
+  select coalesce(jsonb_agg(e), '[]'::jsonb) into est from jsonb_array_elements(coalesce(o.datos -> 'estados', '[]'::jsonb)) e where e ->> 'id' <> p_estado;
+  if p_poner then
+    if jsonb_array_length(est) >= 30 then raise exception 'Esa ficha ya tiene demasiados estados.'; end if;
+    est := est || jsonb_build_array(case when p_n is null then jsonb_build_object('id', p_estado) else jsonb_build_object('id', p_estado, 'n', greatest(0, least(99, p_n))) end);
+  end if;
+  update tablero_objetos set datos = jsonb_set(coalesce(datos, '{}'::jsonb), '{estados}', est), actualizado = now() where id = p_objeto;
+end;
+$$;
+revoke all on function tablero_dar_estado(uuid, text, boolean, int) from public, anon;
+grant execute on function tablero_dar_estado(uuid, text, boolean, int) to authenticated;
 
 -- Copiar apariencias (cambiaformas): el jugador cambia la imagen, el nombre y el tinte de su ficha si el DJ le dio
 -- datos.cambiaformas. Se guarda su aspecto original para volver a él. p_ap = null vuelve al original.
