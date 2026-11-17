@@ -1200,6 +1200,7 @@
       Object.keys(ciudad.desh).forEach(k => delete ciudad.desh[k]);
       ciudad.edificios = ciudad.edificios.filter(id => !EDIFICIOS[id].solo || EDIFICIOS[id].solo === jug.faccion);
       ciudad.edificios.forEach(id => { ciudad.desh[id] = est.turno + 2; });
+      ciudad.tomada = est.turno + 2;   // para explicar en la ciudad por qué no funcionan sus edificios
       ciudad.reclutado = true;
       u.pm = 0;
       est.stats.ciudades[u.dueno]++;
@@ -1721,6 +1722,7 @@
       if (enTregua(est)) return error(`Hay tregua hasta el turno ${est.tregua}.`);
       if (!ciudad.edificios.includes(acc.edificio)) return error("Esa ciudad no tiene eso.");
       ciudad.desh[acc.edificio] = est.turno + 3;
+      ciudad.saboteo = est.turno + 3;
       u.atacado = true; u.pm = 0;
       reg(est, `${nombreUnidad(u)} sabotea ${EDIFICIOS[acc.edificio].nombre} en ${ciudad.nombre}.`, "sabotaje");
       crono(est, "sabotaje", { por: nombreUnidad(u), ciudad: ciudad.nombre, edificio: EDIFICIOS[acc.edificio].nombre, dueno: j });

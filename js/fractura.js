@@ -1510,7 +1510,7 @@ pintarHero();
         <div class="fr-ciudad-cols">
           <section><h4>Entrenar ${ci.reclutado ? "<small>ya entrenó este turno</small>" : ""}</h4><div class="fr-reclutas">${reclutas}</div>
             <h4 class="fr-h4-flota">Flota <small>${esc(nvC.nivel ? `marina: ${nvC.nivel.toLowerCase()}` : "")}</small></h4><p class="fr-sel-texto fr-sel-nota">${esc(notaMar)}</p>${barcos ? `<div class="fr-reclutas">${barcos}</div>` : ""}</section>
-          <section><h4>Edificios <small>${enHuecos} de ${ci.nivel + 2}</small>${ci.nivel < 5 ? `<button type="button" class="fr-btn fr-btn-chico fr-crecer" data-mejora="${ci.id}"${FM.puedePagar(jug, costeCrecer) ? "" : " disabled"} title="${esc(`Pasa a ${D.nivelCiudad(jug.faccion, ci.nivel + 1)}: un hueco más, más oro y ${(FACCIONES[jug.faccion].poblacion.porNivel[ci.nivel] || 0)} tropas más de límite`)}">Crecer ${costeHtml(costeCrecer, jug)}</button>` : ""}</h4>
+          <section><h4>Edificios <small>${enHuecos} de ${ci.nivel + 2}</small>${ci.nivel < 5 ? `<button type="button" class="fr-btn fr-btn-chico fr-crecer" data-mejora="${ci.id}"${FM.puedePagar(jug, costeCrecer) ? "" : " disabled"} title="${esc(`Pasa a ${D.nivelCiudad(jug.faccion, ci.nivel + 1)}: un hueco más, más oro y ${(FACCIONES[jug.faccion].poblacion.porNivel[ci.nivel] || 0)} tropas más de límite`)}">Crecer ${costeHtml(costeCrecer, jug)}</button>` : ""}</h4>${notaDesh(ci)}
             <div class="fr-huecos">${edificios}${vacios}</div><div class="fr-obras">${obras}</div></section>
           <section><h4>Héroe</h4>${heroe}</section>
         </div>
@@ -1529,6 +1529,14 @@ pintarHero();
   $("frSeleccion").addEventListener("mouseleave", () => { if (marcaHover) { marcaHover = null; if (est) pintarResaltes(); } });
 
   /* Ficha de un caído que no es de tu ejército (o que ya no está en él): retrato, rango y características */
+  /* Por qué hay edificios tachados en una ciudad y hasta cuándo */
+  function notaDesh(ci) {
+    const rotos = ci.edificios.filter(e => ci.desh[e] >= est.turno);
+    if (!rotos.length) return "";
+    const hasta = Math.max(...rotos.map(e => ci.desh[e])) + 1, quedan = hasta - est.turno;
+    const por = ci.tomada >= est.turno ? "La ciudad se acaba de tomar y sus edificios están destrozados" : ci.saboteo >= est.turno ? "Un pícaro enemigo saboteó la ciudad" : "Hay edificios inutilizados";
+    return `<p class="fr-sel-texto fr-sel-nota fr-desh-nota">${por}. Los tachados no funcionan hasta el turno ${hasta} (${quedan === 1 ? "el siguiente" : `dentro de ${quedan}`}).</p>`;
+  }
   function abrirFichaCaido(c) {
     const s = c.s, fac = c.faccion ? FACCIONES[c.faccion] : null, tr = c.faccion ? D.tropa(c.faccion, c.clase || s.clase) : { nombre: CLASES[s.clase] ? CLASES[s.clase].nombre : s.clase };
     $("frFichaCuerpo").innerHTML = `<div class="fr-ficha-cab"><div class="fr-ficha-ret"><canvas class="fr-ret" data-caido="1" data-w="170"></canvas></div>
