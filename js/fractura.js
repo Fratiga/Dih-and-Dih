@@ -332,7 +332,7 @@ pintarHero();
     if (s.estado === "nino") marcas.push(`Niño de ${edad(s)}`);
     if (herido) marcas.push("Herido");
     if (s.ascensoPendiente) marcas.push("Ascenso");
-    if (s.luto) marcas.push("De luto");
+    if (s.luto) marcas.push(["De luto", `Llora a ${s.luto.nombre}: +1 de ataque durante ${s.luto.restantes} guerra(s)`]);
     if (s.estado === "establecido") marcas.push("Con familia");
     const barras = STATS_ORDEN.map(k => `<i title="${STAT_NOMBRE[k]} ${s.stats[k]}"><b style="height:${s.stats[k] * 10}%"></b><small>${k}</small></i>`).join("");
     const clases = ["fr-carta", o.pon === "quita" ? "sel" : "", o.caido || s.estado === "caido" ? "fr-caido" : "", o.bloq ? "bloq" : ""].filter(Boolean).join(" ");
@@ -340,7 +340,7 @@ pintarHero();
     const accion = o.pon === "quita" ? `<span class="fr-carta-accion fr-quita">Quitar</span>` : o.pon === "lleva" ? `<span class="fr-carta-accion">A la guerra</span>` : "";
     return `<div class="${clases}" ${attr} style="--i:${Math.min(o.i || 0, 14)}">
       <div class="fr-carta-marco">${retr(s, 170, true)}
-        ${marcas.length ? `<span class="fr-carta-marcas">${marcas.slice(0, 2).map(t => `<i>${esc(t)}</i>`).join("")}</span>` : ""}
+        ${marcas.length ? `<span class="fr-carta-marcas">${marcas.slice(0, 2).map(t => Array.isArray(t) ? `<i title="${esc(t[1])}">${esc(t[0])}</i>` : `<i>${esc(t)}</i>`).join("")}</span>` : ""}
         ${accion}
         ${o.pon ? `<button type="button" class="fr-carta-ficha" data-ficha="${s.id}" aria-label="Ver la ficha de ${esc(nombre(s))}" title="Ver ficha">i</button>` : ""}
       </div>
@@ -710,7 +710,7 @@ pintarHero();
       ${s.spec ? `<p><strong>${ESPECIALIZACIONES[s.spec].nombre}.</strong> ${esc(ESPECIALIZACIONES[s.spec].texto)}</p>` : ""}
       <div class="fr-dos fr-dos-chico"><div><h3 class="fr-h3">Características</h3>${["FUE", "CON", "VEL", "INT", "VOL", "MAG"].map(barra).join("")}</div>
         <div><h3 class="fr-h3">Equipo</h3>${equipo}</div></div>
-      ${vivo && s.estado !== "nino" ? `<h3 class="fr-h3">Mando</h3><div class="fr-fila">
+      ${vivo && s.estado !== "nino" ? `<h3 class="fr-h3">Mando</h3><p class="fr-sub fr-mando-ayuda">Un capitán tiene +2 de vida y da +1 de defensa a los de su compañía que estén a 2 casillas o menos. Solo un capitán lleva estandarte. Si cae, su compañía pierde 1 de ataque durante 3 turnos.</p><div class="fr-fila">
         ${s.capitan ? `<span>Capitán de la ${ROM[s.compania]} compañía.</span> <button type="button" class="fr-btn fr-btn-chico" data-quitar-capitan>Quitarle el mando</button>`
           : `${puedeCap ? [1, 2, 3].map(n => `<button type="button" class="fr-btn fr-btn-chico" data-capitan="${n}"${caps.some(c => c.compania === n) ? " disabled" : ""}>Capitán de la ${ROM[n]}</button>`).join("") : "<small>Hay que ser al menos soldado para mandar.</small>"}
           <select data-compania><option value="0">Sin compañía</option>${caps.map(c => `<option value="${c.compania}"${s.compania === c.compania ? " selected" : ""}>${ROM[c.compania]} compañía (${esc(c.nombre)})</option>`).join("")}</select>`}</div>` : ""}
@@ -723,7 +723,7 @@ pintarHero();
       const cuerpo = $("frFichaCuerpo");
       cuerpo.querySelectorAll("[data-quita],[data-pon-equipo],[data-capitan],[data-quitar-capitan],[data-compania],[data-spec]").forEach(e => e.remove());
       cuerpo.querySelectorAll(".fr-banner").forEach(e => e.remove());
-      cuerpo.querySelectorAll("h3").forEach(h => { if (h.textContent === "Mando" && h.nextElementSibling) { h.nextElementSibling.remove(); h.remove(); } });
+      cuerpo.querySelectorAll("h3").forEach(h => { if (h.textContent === "Mando") { while (h.nextElementSibling && h.nextElementSibling.tagName !== "H3") h.nextElementSibling.remove(); h.remove(); } });
     }
     if (!$("frFicha").open) $("frFicha").showModal();
   }
@@ -2048,6 +2048,21 @@ pintarHero();
         <li>Cuando cae un ejército, sus tropas se quedan <strong>sin bandera</strong>: no atacan a nadie. Una tropa tuya a su lado puede <strong>acogerlas</strong> pagando oro.</li></ul>`],
       ["frentes", "Frentes y mesas", `<ul><li>Los <strong>frentes</strong> son guerras ya montadas contra la máquina: tres al día y una gran guerra a la semana. Ganarlos da cartas. Puedes jugarlos aunque ya hayas cobrado.</li>
         <li>En <strong>Mesas</strong> se juega contra otros jugadores, de 2 a 8, por turnos y cada quien cuando puede. Cada jugador apuesta las cartas que quiera, o ninguna. Quien gana se lleva las de los que pierden.</li></ul>`],
+      ["soldados", "Tus soldados", `<p>Tus soldados viven de una guerra a otra. Lo que les pasa se queda en su ficha.</p>
+        <ul><li><strong>Rangos.</strong> Suben con las victorias: ${D.RANGOS.map(r => `${esc(r.nombre)} (${r.desde})`).join(", ")}. Desde veterano eligen una especialización: ${Object.values(ESPECIALIZACIONES).map(e => esc(e.nombre)).join(", ")}.</li>
+        <li><strong>Contingente.</strong> Llevas 6 soldados a cada guerra, y uno más por cada 3 guerras ganadas (hasta 12).</li>
+        <li><strong>Capitanes.</strong> Puedes nombrar hasta 3, uno por compañía, desde la ficha de un soldado (hace falta ser al menos soldado). Cada compañía es su capitán y hasta 4 soldados. Lo que da:
+          <ul><li>El capitán tiene +2 de vida.</li>
+          <li>Los soldados de su compañía a 2 casillas o menos de él tienen +1 de defensa.</li>
+          <li>Solo un capitán puede llevar estandarte, y el estandarte ayuda a los que tiene cerca.</li>
+          <li>Al elegir el contingente automático, los capitanes van primero.</li>
+          <li>Cuidado: si el capitán cae, su compañía pelea con −1 de ataque durante 3 turnos. Y el enemigo lo trata como oficial: va a por él.</li></ul></li>
+        <li><strong>Heridas.</strong> Quien cae a veces sobrevive con una herida grave y pasa 2 guerras convaleciente. Ayudan la Voluntad y la Constitución. Cada vez que se salva por poco suma una cicatriz.</li>
+        <li><strong>Luto.</strong> Si muere alguien con quien combatió al menos 3 guerras, queda de luto: +1 de ataque durante 3 guerras. Por cada caído, solo los dos que más guerras compartieron con él.</li>
+        <li><strong>Manías.</strong> Se le notan según cómo lo uses: si pelea de lejos o cuerpo a cuerpo, el terreno que prefiere, el ejército al que más bajas hace, si se salva por poco a menudo... Salen en su ficha.</li>
+        <li><strong>Apodos.</strong> Se ganan por lo que hace: matar un líder o un héroe, salvarse una y otra vez, hacer muchas bajas a un mismo ejército, cazar monstruos, las cicatrices... Nadie del mismo ejército repite apodo.</li>
+        <li><strong>Familias.</strong> Los veteranos pueden formar familia y sus hijos se alistan con el apellido de la casa.</li>
+        <li><strong>Némesis.</strong> Quien mata a uno de tus veteranos y sobrevive vuelve en otra guerra como capitán enemigo.</li></ul>`],
       ["teclas", "Teclas", `<p><kbd>N</kbd> siguiente tropa · <kbd>E</kbd> terminar turno · <kbd>C</kbd> ir a tus tropas · <kbd>A</kbd> alcance de los enemigos · <kbd>I</kbd> saber · <kbd>+</kbd> <kbd>−</kbd> zoom · <kbd>Esc</kbd> soltar o abrir el menú. Arrastra el mapa para moverlo.</p>`]
     ];
   }
