@@ -603,3 +603,5 @@ article.fr-mesa header h4 { margin: 0; font-size: 1rem; color: var(--fr-marfil);
 .fr-manias ul { margin: 0; padding-left: 16px; }
 .fr-manias li, .fr-manias p { margin: 2px 0; font-size: .86rem; line-height: 1.4; color: #e4d9c6; }
 .fr-ficha-ret canvas { max-width: 100%; height: auto; }
+/* La franja de la carta (A la guerra / Quitar) en una sola línea, sin que se monten las letras en cartas estrechas */
+.fr-carta-accion { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; letter-spacing: .08em; padding: 5px 4px; }

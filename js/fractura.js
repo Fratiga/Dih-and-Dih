@@ -337,7 +337,7 @@ pintarHero();
     const barras = STATS_ORDEN.map(k => `<i title="${STAT_NOMBRE[k]} ${s.stats[k]}"><b style="height:${s.stats[k] * 10}%"></b><small>${k}</small></i>`).join("");
     const clases = ["fr-carta", o.pon === "quita" ? "sel" : "", o.caido || s.estado === "caido" ? "fr-caido" : "", o.bloq ? "bloq" : ""].filter(Boolean).join(" ");
     const attr = o.pon ? `data-pon="${s.id}" tabindex="0" role="button"` : o.ver ? `${o.attr || "data-ficha"}="${s.id}" tabindex="0" role="button"` : "";
-    const accion = o.pon === "quita" ? `<span class="fr-carta-accion fr-quita">Quitar</span>` : o.pon === "lleva" ? `<span class="fr-carta-accion">Llevar a la guerra</span>` : "";
+    const accion = o.pon === "quita" ? `<span class="fr-carta-accion fr-quita">Quitar</span>` : o.pon === "lleva" ? `<span class="fr-carta-accion">A la guerra</span>` : "";
     return `<div class="${clases}" ${attr} style="--i:${Math.min(o.i || 0, 14)}">
       <div class="fr-carta-marco">${retr(s, 170, true)}
         ${marcas.length ? `<span class="fr-carta-marcas">${marcas.slice(0, 2).map(t => `<i>${esc(t)}</i>`).join("")}</span>` : ""}
