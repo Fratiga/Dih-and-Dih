@@ -189,7 +189,7 @@ window.FracturaFiguras = (function () {
     cerrado(c, K, o) { poli(c, K, K.col, [[-1.6, -40], [1.6, -40], [4.5, -47], [-3, -45]]); poli(c, K, metal(K, o.metal || K.metal, -6.4, -41, 6.4, -28), [[-6.2, -28], [6.2, -28], [6, -37], [0, -41], [-6, -37]]); visor(c, K, o.ojo || "#ffb84a", -34.1); [[3, -31], [4.4, -30], [3, -29]].forEach(p => disco(c, K, NEGRO, p[0], p[1], 0.45)); },
     granYelmo(c, K, o) { poli(c, K, metal(K, o.metal || "#c9ccd0", -6, -40, 6, -27), [[-5.6, -27.5], [5.8, -27.5], [5.8, -38.5], [-5.6, -38.5]]); poli(c, K, metal(K, "#dfe2e6", -6, -41, 6, -38), [[-5.2, -38.5], [5.4, -38.5], [4, -40.6], [-3.8, -40.6]]); poli(c, K, NEGRO, [[0.4, -34.6], [5.8, -34.6], [5.8, -33.2], [0.4, -33.2]]); poli(c, K, NEGRO, [[2.6, -37], [3.8, -37], [3.8, -29.5], [2.6, -29.5]]); ojoL(c, K, 4.6, -33.9, o.ojo || "#ffe08a"); if (o.halo) { c.strokeStyle = F(K, ORO); c.lineWidth = 1.2; c.beginPath(); c.ellipse(0, -42.5, 6, 1.9, 0, 0, 7); c.stroke(); } },
     capucha(c, K, o) { const t = o.tela || oscuro(K.ban, 0.1); poli(c, K, t, [[-6, -26], [-1.5, -40], [6, -29], [5, -25], [-4, -25]]); sombraCara(c, K, o.ojo || "#ffbe4a", o.dos); if (o.pico) poli(c, K, HUESO, [[2.5, -33], [10, -29.5], [2.5, -28]]); },
-    capuchaPunta(c, K, o) { const t = o.tela || mezcla(K.ban, "#0c0a16", 0.4); poli(c, K, t, [[-6.5, -26], [0.5, -45 - (o.alto || 0)], [6.5, -26], [3, -24], [-3, -24]]); poli(c, K, NEGRO, [[-1, -33], [5, -33], [5, -27], [-1, -27]]); ojoL(c, K, 1.5, -30.5, o.ojo || "#8fe8ff"); ojoL(c, K, 4.4, -30.5, o.ojo || "#8fe8ff"); if (o.calavera) { poli(c, K, HUESO, [[0.2, -32.6], [5, -32.6], [4.6, -27.6], [0.6, -27.6]]); disco(c, K, NEGRO, 1.8, -30.6, 0.9); disco(c, K, NEGRO, 4, -30.6, 0.9); ojoL(c, K, 1.8, -30.6, o.ojo || "#b6f26a"); } },
+    capuchaPunta(c, K, o) { const t = o.tela || mezcla(K.ban, "#0c0a16", 0.4); poli(c, K, t, [[-6.5, -26], [0.5, -45 - (o.alto || 0)], [6.5, -26], [3, -24], [-3, -24]]); poli(c, K, NEGRO, [[-1, -33], [5, -33], [5, -27], [-1, -27]]); ojoL(c, K, 1.5, -30.5, o.ojo || "#8fe8ff"); ojoL(c, K, 4.4, -30.5, o.ojo || "#8fe8ff"); if (o.calavera) { poli(c, K, HUESO, [[-0.2, -33], [5.4, -33], [5, -28.4], [3.8, -26.6], [0.8, -26.6], [0, -28.4]]); disco(c, K, NEGRO, 1.6, -30.8, 1.15); disco(c, K, NEGRO, 4, -30.8, 1.15); disco(c, K, o.ojo || "#b6f26a", 1.6, -30.8, 0.5); disco(c, K, o.ojo || "#b6f26a", 4, -30.8, 0.5); poli(c, K, NEGRO, [[2.5, -29.6], [3.1, -29.6], [2.8, -28.6]]); for (let i = 0; i < 3; i++) trazo(c, K, "#5a5246", 0.4, 1.4 + i * 1.2, -27.8, 1.4 + i * 1.2, -26.8); } },
     sombreroAla(c, K, o) { const t = o.tela || "#3a2e22"; sombraCara(c, K, o.ojo || "#ffcf6a", false); poli(c, K, oscuro(t, 0.3), [[-1, -29], [5.6, -29], [5.2, -25.5], [-1.4, -25.5]]); poli(c, K, t, [[-9.5, -33], [10, -33], [7, -34.6], [-7, -34.6]]); poli(c, K, claro(t, 0.08), [[-4.6, -34.4], [4.8, -34.4], [3.6, -39.5], [-3.2, -39.8]]); trazo(c, K, K.col, 1.2, -4.4, -35, 4.6, -35); if (o.pluma) poli(c, K, K.col, [[-3, -38], [-9, -44], [-5.5, -37]]); },
     sombreroPico(c, K, o) { const t = o.tela || mezcla(K.ban, "#0c0a16", 0.35); poli(c, K, "#e6e2da", [[2.5, -28], [6.5, -26], [4, -14], [1, -22]]); poli(c, K, NEGRO, [[-1.5, -33], [5.5, -33], [5.5, -27.5], [-1.5, -27.5]]); ojoL(c, K, 1.5, -30.4, o.ojo || "#d6e8ff"); ojoL(c, K, 4.5, -30.4, o.ojo || "#d6e8ff"); poli(c, K, t, [[-9, -32], [9, -32], [6, -34], [3, -49], [-1, -47], [-5, -34]]); trazo(c, K, K.col, 1.2, -8, -32.6, 8, -32.6); },
     plumas(c, K, o) { sombraCara(c, K, o.ojo || "#ffd24a", false); poli(c, K, "#2e2622", [[-1.5, -29], [5.4, -29], [4.8, -25.6], [-1.6, -25.6]]); poli(c, K, K.ban, [[-8.5, -33.4], [8.5, -34.8], [6.5, -37], [-6, -36.4]]); poli(c, K, K.col, [[-5, -36], [5.5, -36.6], [4, -39.6], [-3.6, -39.4]]); poli(c, K, "#f2ead6", [[-4, -38], [-12, -43], [-10.5, -38.5], [-13, -37], [-5, -35.6]]); poli(c, K, K.col, [[-4, -39], [-9, -47], [-6, -39.5]]); },
@@ -241,8 +241,17 @@ window.FracturaFiguras = (function () {
     lente(c, K, o) { const m = o.metal || LATON; poli(c, K, metal(K, m, -5, -38, 6, -27), [[-4.8, -27.4], [5.4, -27.4], [5.8, -36.6], [0.4, -38.8], [-5, -36.6]]); disco(c, K, NEGRO, 2.4, -32.4, 3.3); halo(c, K, o.ojo || "#7fe3ff", 2.4, -32.4, 1.9); c.strokeStyle = F(K, oscuro(m, 0.45)); c.lineWidth = 1; c.beginPath(); c.arc(2.4, -32.4, 3.5, 0, 7); c.stroke(); [[-3.4, -29], [-3.4, -35.4]].forEach(p => disco(c, K, oscuro(m, 0.5), p[0], p[1], 0.8)); if (o.antena) { trazo(c, K, oscuro(m, 0.4), 0.9, -2, -38, -3.4, -44.4); halo(c, K, "#ff6a4a", -3.4, -44.8, 0.8); } },
     galea(c, K, o) { const m = o.metal || BRONCE; sombraCara(c, K, o.ojo || "#ffd27a", false); poli(c, K, metal(K, m, -6, -40, 6, -31), [[-5.2, -32.4], [5.6, -32.4], [5, -37.6], [0, -40], [-5, -37.6]]); poli(c, K, metal(K, m, -6, -33, -2, -26), [[-5.4, -32.6], [-2, -32.6], [-2.6, -26.4], [-5.6, -27.6]]); poli(c, K, metal(K, m, 3, -33, 6, -27), [[3.6, -32.6], [5.8, -32.6], [5.4, -27.6]]); poli(c, K, m, [[4.4, -33.4], [7.6, -32.6], [4.6, -31.8]]); if (o.cresta === "t") poli(c, K, K.col, [[-7.4, -40.6], [7.8, -40.6], [6, -45], [-5.6, -45]]); else if (o.cresta) poli(c, K, K.col, [[-5.4, -38], [-2, -44.6], [3, -45], [5.6, -40.4], [0, -40.4]]); },
     laurel(c, K, o) { disco(c, K, o.piel || PIEL, 0.5, -31, 4.6); poli(c, K, "#2a2018", [[-5, -33.4], [-4, -37.6], [3.6, -37.6], [4.6, -34.4], [0, -35]]); disco(c, K, NEGRO, 2.6, -31.4, 0.8); ojoL(c, K, 2.6, -31.4, o.ojo || "#ffe0a0"); c.strokeStyle = F(K, ORO); c.lineWidth = 1.5; c.beginPath(); c.arc(0.2, -33.6, 5.2, Math.PI * 1.05, Math.PI * 1.95); c.stroke(); [[-4.6, -35.6], [-2.4, -38], [3, -38.2], [5, -35.8]].forEach(p => disco(c, K, ORO, p[0], p[1], 1)); },
-    calavera(c, K, o) { const tela = oscuro(K.ban, 0.3), carne = "#7a8670"; poli(c, K, tela, [[-6.5, -26], [-3, -38], [0.5, -43], [6, -31], [5, -25], [3, -23.5], [1, -25], [-1.5, -23.5], [-4, -25]]); poli(c, K, "#040306", [[-1.5, -35], [5, -33], [5, -27], [-1, -27]]); poli(c, K, carne, [[-0.8, -33.5], [4.6, -32.2], [4.4, -28], [-0.6, -28]]); poli(c, K, "#d6cdb4", [[1, -28.2], [4.4, -28.6], [3.8, -25.6], [1.4, -25.2]]); ojoL(c, K, 1.6, -31.2, o.ojo || "#c9f25a"); ojoL(c, K, 4, -30.6, o.ojo || "#c9f25a"); },
-    zombi(c, K, o) { const carne = o.carne || "#7d8a72"; disco(c, K, carne, 0.6, -31.2, 4.8); poli(c, K, "#d6cdb4", [[1.4, -35.6], [5.2, -34], [5.2, -30.6], [2, -30.6]]); disco(c, K, NEGRO, 3.4, -32.4, 1.2); ojoL(c, K, 3.4, -32.4, o.ojo || "#c9f25a"); disco(c, K, NEGRO, -0.6, -32, 0.9); poli(c, K, "#2a2622", [[-4.6, -33.4], [-3.4, -37.4], [1, -37], [-1.4, -34.6]]); trazo(c, K, "#2a2018", 0.9, 0.6, -28, 4.4, -27.6); if (o.colmillos) { poli(c, K, HUESO, [[1.4, -28], [2, -25.6], [2.8, -28]]); poli(c, K, HUESO, [[3.4, -28], [4, -25.8], [4.6, -27.8]]); poli(c, K, carne, [[-3.6, -35], [-6.6, -39.6], [-2.4, -36.4]]); } },
+    calavera(c, K, o) { const tela = oscuro(K.ban, 0.3); poli(c, K, tela, [[-6.5, -26], [-3, -38], [0.5, -43], [6, -31], [5, -25], [3, -23.5], [1, -25], [-1.5, -23.5], [-4, -25]]); poli(c, K, "#040306", [[-1.5, -35], [5, -33], [5, -27], [-1, -27]]); poli(c, K, HUESO, [[-0.8, -33.5], [4.6, -32.2], [4.4, -28], [-0.6, -28]]); poli(c, K, "#c9c0a6", [[1, -28.2], [4.4, -28.6], [3.8, -25.6], [1.4, -25.2]]); disco(c, K, NEGRO, 1.4, -31.2, 1.1); disco(c, K, NEGRO, 3.8, -30.6, 1.1); disco(c, K, o.ojo || "#c9f25a", 1.4, -31.2, 0.5); disco(c, K, o.ojo || "#c9f25a", 3.8, -30.6, 0.5); for (let i = 0; i < 3; i++) trazo(c, K, "#5a5246", 0.4, 1.8 + i * 0.9, -27.6, 1.8 + i * 0.9, -26); },
+    zombi(c, K, o) { const carne = o.carne || "#7d8a72"; disco(c, K, carne, 0.6, -31.2, 4.8); poli(c, K, "#d6cdb4", [[1.4, -35.6], [5.2, -34], [5.2, -30.6], [2, -30.6]]); disco(c, K, NEGRO, 3.4, -32.4, 1.2); ojoL(c, K, 3.4, -32.4, o.ojo || "#c9f25a"); disco(c, K, NEGRO, -0.6, -32, 0.9); poli(c, K, "#2a2622", [[-4.6, -33.4], [-3.4, -37.4], [1, -37], [-1.4, -34.6]]); trazo(c, K, "#2a2018", 0.9, 0.6, -28, 4.4, -27.6); if (o.gorro) { poli(c, K, metal(K, "#7a5236", -5, -38, 6, -33), [[-4.8, -33.6], [-3.6, -37], [0.6, -38.2], [4.6, -37], [5.8, -33.6]]); poli(c, K, "#5a3a24", [[-5.6, -33.2], [6.6, -33.2], [6.2, -32], [-5.2, -32]]); trazo(c, K, "#3a2416", 0.6, -2, -35.4, 3.6, -35.6); } if (o.colmillos) { poli(c, K, HUESO, [[1.4, -28], [2, -25.6], [2.8, -28]]); poli(c, K, HUESO, [[3.4, -28], [4, -25.8], [4.6, -27.8]]); poli(c, K, carne, [[-3.6, -35], [-6.6, -39.6], [-2.4, -36.4]]); } },
+    necrofago(c, K, o) {
+      const carne = o.carne || "#9aa49a";
+      if (o.capucha) poli(c, K, o.capucha, [[-6.6, -25], [-6, -36], [-1, -40.6], [5, -38.6], [7, -31], [6, -25]]);
+      poli(c, K, carne, [[-4.6, -36], [-9.4, -39.6], [-4, -33]]); poli(c, K, carne, [[4.4, -35.6], [9.6, -38.6], [5.2, -32.6]]);
+      poli(c, K, metal(K, carne, -4, -38, 6, -25), [[-3.6, -27.4], [-4.4, -33.4], [-2, -37.8], [2.6, -38.2], [5.4, -34.4], [5.6, -28.6], [3.4, -25.4], [-0.8, -25.4]]);
+      disco(c, K, NEGRO, 1, -32.2, 1.2); disco(c, K, NEGRO, 3.8, -32, 1.2); ojoL(c, K, 1, -32.2, o.ojo || "#c9f25a"); ojoL(c, K, 3.8, -32, o.ojo || "#c9f25a");
+      poli(c, K, "#140c0c", [[-0.6, -29], [5, -29], [4.2, -27], [0, -27]]);
+      for (let i = 0; i < 5; i++) { poli(c, K, HUESO, [[-0.2 + i * 1.05, -29], [0.6 + i * 1.05, -29], [0.2 + i * 1.05, -27.9]]); }
+    },
     cosido(c, K, o) { const carne = o.carne || "#6d7a62"; disco(c, K, carne, 2.4, -34.6, 4.2); poli(c, K, metal(K, "#5d5f66", -1, -39, 4, -35), [[-1.6, -36], [3.6, -37.4], [3, -39.6], [-1, -38.6]]); disco(c, K, NEGRO, 4.2, -34.4, 1); ojoL(c, K, 4.2, -34.4, o.ojo || "#ff5a3a"); trazo(c, K, "#2a1c1c", 0.8, 0.4, -32, 5.6, -31.4); for (let i = 0; i < 4; i++) trazo(c, K, "#2a1c1c", 0.7, 1 + i * 1.3, -33, 1 + i * 1.3, -30.6); },
     vacia(c, K, o) { const m = o.metal || "#6b6f8a"; poli(c, K, metal(K, m, -6, -41, 6, -28), [[-5.6, -28], [5.8, -28], [5.4, -37.6], [0, -41], [-5.2, -37.6]]); poli(c, K, NEGRO, [[0.2, -35], [5.8, -35], [5.8, -31], [0.2, -31]]); halo(c, K, o.ojo || "#b98cff", 3.2, -33, 1.6); const a = c.globalAlpha; c.globalAlpha = a * 0.45; poli(c, K, o.ojo || "#b98cff", [[1, -35], [5, -35], [7, -42 - Math.sin(K.t * 4) * 2], [3, -39]]); c.globalAlpha = a; },
     mitra(c, K, o) { sombraCara(c, K, o.ojo || "#fff0b0", false); poli(c, K, "#e9e2cf", [[-1.4, -29.4], [5.2, -29.4], [3.8, -23.6], [0, -23.8]]); poli(c, K, metal(K, "#efe6cf", -5, -46, 5, -33), [[-5, -33.4], [5.2, -33.4], [4.4, -40], [0.2, -46.6], [-4.2, -40]]); trazo(c, K, K.col, 1.4, 0.1, -45, 0.1, -34); trazo(c, K, K.col, 1.4, -4.6, -36, 4.8, -36); },
@@ -423,38 +432,71 @@ window.FracturaFiguras = (function () {
       gallardete(c, K, -1, -43.4);
       olas(c, K, 14);
     },
-    /* Rykerd: un dragón anciano, pálido, con las alas acabadas en dedos como manos y los ojos fijos. Va encadenado. */
+    /* Rykerd: un dragón anciano, pálido, con las alas acabadas en dedos como manos, una sonrisa llena de dientes y una cola de ramas con espinas. Va encadenado. */
     rykerd(c, K) {
-      const piel = "#cfc0ca", sombra = "#8f8090", roca = "#4f474e", p = K.mov ? Math.sin(K.fase) * 2.6 : 0, zarpa = Math.max(0, K.sw) * 6, ala = Math.sin(K.t * 2) * 1.2;
-      // cola con placas de roca
-      c.strokeStyle = F(K, sombra); c.lineWidth = 4.2; c.lineCap = "round"; c.beginPath(); c.moveTo(-5, -8); c.quadraticCurveTo(-15, -3, -20, -10); c.stroke();
-      [[-11, -6.4], [-15.6, -6], [-19, -9]].forEach(q => poli(c, K, roca, [[q[0] - 1.6, q[1] + 1], [q[0], q[1] - 3], [q[0] + 1.6, q[1] + 1]]));
+      const piel = "#cfc0ca", sombra = "#8f8090", rama = "#7d6f80", roca = "#4f474e", p = K.mov ? Math.sin(K.fase) * 2.6 : 0, zarpa = Math.max(0, K.sw) * 6, ala = Math.sin(K.t * 2) * 1.2, mece = Math.sin(K.t * 1.6) * 0.8;
+      // la cola: una maraña de ramas con espinas que sale de la cadera
+      const espinas = (x0, y0, cx, cy, x1, y1, ancho) => {
+        c.strokeStyle = F(K, rama); c.lineWidth = ancho; c.lineCap = "round"; c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo(cx, cy, x1, y1); c.stroke();
+        for (let i = 1; i <= 4; i++) {
+          const t = i / 5, u = 1 - t, x = u * u * x0 + 2 * u * t * cx + t * t * x1, y = u * u * y0 + 2 * u * t * cy + t * t * y1;
+          const dx = 2 * u * (cx - x0) + 2 * t * (x1 - cx), dy = 2 * u * (cy - y0) + 2 * t * (y1 - cy), l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l, sg = i % 2 ? 1 : -1, ln = ancho * 0.9 + 0.6;
+          poli(c, K, rama, [[x - dx / l * 0.5, y - dy / l * 0.5], [x + dx / l * 0.5, y + dy / l * 0.5], [x + nx * sg * ln + dx / l * 0.6, y + ny * sg * ln + dy / l * 0.6]]);
+        }
+      };
+      espinas(-3, -13, -10, -6, -17, -10 + mece, 3.4);
+      espinas(-14, -8.6, -19, -6, -21, -13 + mece, 1.8);
+      espinas(-3, -14, -12, -12, -16, -24 + mece, 3);
+      espinas(-12, -16, -18, -18, -19, -27 + mece, 1.6);
+      espinas(-3, -15, -8, -22, -12, -31 + mece, 2.5);
+      espinas(-9, -24, -6, -29, -8, -34 + mece, 1.4);
+      espinas(-4, -12, -14, -2, -21, -3 + mece, 2.8);
+      espinas(-17, -4.6, -22, -6, -23, -1 + mece, 1.4);
       // el ala de atrás: un brazo que sube y cuatro dedos largos
       const manoAla = (hx, hy, mx, my, abre, col, tela) => {
         trazo(c, K, col, 2.8, hx, hy, mx, my);
         const puntas = [];
-        for (let i = 0; i < 4; i++) { const a = abre[0] + (abre[1] - abre[0]) * (i / 3), l = 15 - Math.abs(i - 1.5) * 1.6; puntas.push([mx + Math.cos(a) * l, my + Math.sin(a) * l]); }
+        for (let i = 0; i < 4; i++) { const a = abre[0] + (abre[1] - abre[0]) * (i / 3), l = 13 - Math.abs(i - 1.5) * 1.4; puntas.push([mx + Math.cos(a) * l, my + Math.sin(a) * l]); }
         const al = c.globalAlpha; c.globalAlpha = al * 0.5; poli(c, K, tela, [[mx, my]].concat(puntas)); c.globalAlpha = al;
         puntas.forEach(q => { trazo(c, K, col, 1.7, mx, my, q[0], q[1]); disco(c, K, "#efe6ea", q[0], q[1], 0.9); });
       };
-      manoAla(-3, -27, -9, -41 + ala, [-2.7, -1.0], sombra, "#b08a9a");
-      // patas y cadera de roca
-      trazo(c, K, sombra, 4.2, -3, -13, -4 - p * 0.5, -2); trazo(c, K, sombra, 4.2, 3, -13, 4 + p * 0.5, -2);
-      poli(c, K, metal(K, roca, -7, -16, 7, -6), [[-7.4, -7], [7.4, -7], [6, -15.6], [-6, -15.6]]);
-      [[-4, -11], [0.6, -9.6], [4, -12]].forEach(q => trazo(c, K, "#2f2a30", 0.8, q[0], q[1], q[0] + 1.6, q[1] + 2.4));
-      // torso pálido y cuello
-      c.fillStyle = F(K, metal(K, piel, -6, -31, 6, -14)); c.beginPath(); c.ellipse(0, -21.6, 6.6, 9, 0.06, 0, 7); c.fill();
-      for (let i = 0; i < 3; i++) arco(c, K, sombra, 0.8, 0.6, -24 + i * 3.6, 4.4, 0.5, 2.6);
-      trazo(c, K, piel, 4, 1.6, -29, 5, -35);
+      manoAla(-3, -32, -9, -40.5 + ala, [-2.8, -0.9], sombra, "#b08a9a");
+      // patas de dragón: muslo grueso, rodilla y garra de tres dedos
+      const pata = (s, d) => {
+        const hx = s * 3, hy = -14, kx = s * 6 + d * 0.4, ky = -6.4, ax = s * 4.4 + d, ay = -1.6;
+        const ang = Math.atan2(ky - hy, kx - hx), lm = Math.hypot(kx - hx, ky - hy);
+        c.fillStyle = F(K, metal(K, piel, hx - 3, hy, hx + 3, ky)); c.beginPath(); c.ellipse((hx + kx) / 2, (hy + ky) / 2, lm / 2 + 0.8, 2.9, ang, 0, 7); c.fill();
+        trazo(c, K, piel, 3.2, kx, ky, ax, ay);
+        arco(c, K, sombra, 1.1, kx, ky + 0.4, 2, 0.25, 2.9);
+        [-2.4, 0, 2.4].forEach(dx => {
+          trazo(c, K, piel, 1.7, ax, ay, ax + dx, -0.4);
+          c.strokeStyle = F(K, "#2f2a30"); c.lineWidth = 0.8; c.lineCap = "round"; c.beginPath(); c.moveTo(ax + dx - 0.2, -0.6); c.quadraticCurveTo(ax + dx * 1.25 + 0.6, -0.4, ax + dx * 1.2 + 0.4, 0.8); c.stroke();
+        });
+      };
+      pata(-1, -p * 0.5); pata(1, p * 0.5);
+      // torso pálido y grande, con las costillas marcadas
+      c.fillStyle = F(K, metal(K, piel, -7, -36, 7, -15)); c.beginPath(); c.ellipse(0, -25, 7.4, 10.2, 0.04, 0, 7); c.fill();
+      for (let i = 0; i < 3; i++) arco(c, K, sombra, 0.9, 0.4, -28.4 + i * 3.6, 4.8, 0.45, 2.7);
+      // placa de roca sobre la cadera, más ancha arriba
+      poli(c, K, metal(K, roca, -7, -19, 7, -12), [[-6.6, -18.4], [6.6, -18.4], [4.8, -12.4], [-4.8, -12.4]]);
+      [[-3.4, -17], [0, -16.4], [3, -17]].forEach(q => trazo(c, K, "#2f2a30", 0.8, q[0], q[1], q[0] + 0.8, q[1] + 2.6));
+      // cadenas rotas que le rodean las piernas
+      c.strokeStyle = F(K, "#6d7178"); c.lineWidth = 1.2; c.setLineDash([1.6, 1.4]); c.beginPath();
+      c.moveTo(-6.4, -18); c.quadraticCurveTo(-10.6, -9, -7.4, -1); c.moveTo(6.6, -18); c.quadraticCurveTo(10.8, -9, 7.6, -1.2); c.stroke(); c.setLineDash([]);
+      // cuello
+      trazo(c, K, piel, 4.2, 1.4, -33, 5, -39);
       // el ala de delante cae hacia el enemigo como una mano abierta
-      manoAla(3.6, -27, 11 + zarpa, -36 + zarpa * 0.8 - ala, [-0.9 + K.sw * 0.5, 0.75 + K.sw * 0.5], piel, "#d8a8b8");
-      // cabeza lisa, con cresta, y los dos ojos que no parpadean
-      c.fillStyle = F(K, metal(K, piel, 2, -41, 11, -33)); c.beginPath(); c.ellipse(6.6, -37, 4.6, 3.5, 0.25, 0, 7); c.fill();
-      poli(c, K, sombra, [[3.4, -39.4], [0.4, -45], [5.6, -40.4]]); poli(c, K, sombra, [[5.6, -40.2], [4.6, -46.4], [8.4, -40.4]]);
-      [[6.2, -37.6], [9, -36.8]].forEach(q => { disco(c, K, "#1a1216", q[0], q[1], 1.25); halo(c, K, "#ff9a3a", q[0], q[1], 0.7); });
-      trazo(c, K, "#3a2a30", 0.7, 8, -34.6, 10.6, -34.8);
-      // cadenas rotas
-      c.strokeStyle = F(K, "#6d7178"); c.lineWidth = 1.2; c.setLineDash([1.6, 1.4]); c.beginPath(); c.moveTo(-6, -15); c.quadraticCurveTo(-12, -9, -9, -2); c.moveTo(6.4, -15); c.quadraticCurveTo(11, -9, 8.4, -2.4); c.stroke(); c.setLineDash([]);
+      manoAla(3.6, -31, 11 + zarpa, -38.5 + zarpa * 0.8 - ala, [-0.9 + K.sw * 0.5, 0.75 + K.sw * 0.5], piel, "#d8a8b8");
+      // cabeza lisa con cresta, los dos ojos que no parpadean y una sonrisa de dientes finos
+      c.fillStyle = F(K, metal(K, piel, 2, -45, 11, -37)); c.beginPath(); c.ellipse(6.6, -41, 4.8, 3.7, 0.25, 0, 7); c.fill();
+      poli(c, K, sombra, [[3.4, -43.4], [0.4, -49], [5.6, -44.4]]); poli(c, K, sombra, [[5.6, -44.2], [4.6, -50.4], [8.4, -44.4]]);
+      [[5.8, -42.4], [8.6, -41.8]].forEach(q => { disco(c, K, "#1a1216", q[0], q[1], 1.25); halo(c, K, "#ff9a3a", q[0], q[1], 0.7); });
+      c.fillStyle = F(K, "#2a1a20"); c.beginPath(); c.moveTo(3.8, -40.2); c.quadraticCurveTo(7.4, -38.6, 11.2, -40.2); c.quadraticCurveTo(8, -36.2, 4.4, -39); c.closePath(); c.fill();
+      for (let i = 0; i < 6; i++) {
+        const x = 4.6 + i * 1.1, ya = -40 + Math.sin((i + 0.5) / 6 * Math.PI) * 0.9;
+        poli(c, K, "#f2ece4", [[x - 0.45, ya], [x + 0.45, ya], [x, ya + 1]]);
+        if (i > 0 && i < 5) { const yb = -38.6 + Math.sin(i / 5 * Math.PI) * 0.4; poli(c, K, "#f2ece4", [[x - 0.4, yb], [x + 0.4, yb], [x, yb - 0.85]]); }
+      }
     },
     eco(c, K) {
       const bob = Math.sin(K.t * 3) * 1.5;
@@ -531,11 +573,48 @@ window.FracturaFiguras = (function () {
       trazo(c, K, oscuro(m, 0.3), 0.9, -1, -26, -2.4, -31); halo(c, K, "#ff6a4a", -2.4, -31.4, 0.8);
       const h = { x: 6 + Math.max(0, K.sw) * 4, y: -15 }; trazo(c, K, "#8a8f98", 1.4, 4, -15, h.x + 3, h.y); trazo(c, K, "#cfd6de", 1.6, h.x + 3, h.y, h.x + 7, h.y - 1);
     },
+    /* Zaphar: el señor de la colmena. Abdomen hinchado que late, seis patas, brazos de guadaña, mandíbulas y un racimo de ojos. */
     zaphar(c, K) {
-      const q = "#8a5a22", ala = Math.sin(K.t * 8) * 1.6;
-      const a = c.globalAlpha; c.globalAlpha = a * 0.55; poli(c, K, "#f0b84a", [[-3, -26], [-17, -37 + ala], [-18, -22], [-6, -17]]); poli(c, K, "#ffd98a", [[-3, -24], [-15, -29 - ala], [-14, -16], [-5, -15]]); c.globalAlpha = a;
-      CUERPO.insecto(c, K, { quitina: q }); CABEZA.hormiga(c, K, { quitina: q, ojo: "#fff0a0", corona: true });
-      ARMA.lanza(c, K, { largo: 20, punta: "#f0cf6a" }); ESCUDO.quitina(c, K, { color: "#6a4418" });
+      const q = "#8a5a22", os = "#4a2e12", oro = "#e0b23a", ala = Math.sin(K.t * 8) * 1.8, p = K.mov ? Math.sin(K.fase) * 2.4 : 0, sw = Math.max(0, K.sw), late = 0.5 + 0.5 * Math.sin(K.t * 3);
+      // alas de detrás, transparentes
+      const a = c.globalAlpha; c.globalAlpha = a * 0.45;
+      poli(c, K, "#f0b84a", [[-2, -30], [-20, -46 + ala], [-23, -30], [-6, -24]]); poli(c, K, "#ffd98a", [[-2, -28], [-19, -36 - ala], [-18, -22], [-5, -21]]);
+      c.globalAlpha = a;
+      // abdomen enorme con bandas, una bolsa que brilla y el aguijón
+      elipse(c, K, metal(K, q, -21, -24, 0, -8), -10, -15, 10.5, 7.4, -0.35);
+      for (let i = 0; i < 4; i++) arco(c, K, os, 1, -10 + i * 3.4 - 5, -15 + i * 1.2 - 2, 6.6 - i * 0.6, 1.2, 2.6);
+      const a2 = c.globalAlpha; c.globalAlpha = a2 * (0.35 + 0.35 * late); disco(c, K, "#ffd98a", -12.6, -16.6, 3.2); c.globalAlpha = a2;
+      poli(c, K, os, [[-18.6, -12.4], [-25, -6.6], [-17.4, -9.4]]);
+      [[-17, -18.6], [-13.4, -21.4], [-9.4, -22.6], [-5.6, -22]].forEach(([x, y], i) => poli(c, K, os, [[x - 1.2, y + 0.8], [x - 0.6 - i * 0.2, y - 3.4 + i * 0.3], [x + 1.2, y + 0.4]]));
+      // seis patas finas y articuladas
+      [[-3, -1, -p], [0, -1, p], [3, -1, -p], [-2, 1, p], [1, 1, -p], [4, 1, p]].forEach(([x, s, d]) => {
+        const kx = x + s * 4.6 + d * 0.4, ky = -21 + Math.abs(x) * 0.3, fx = x + s * 7.4 + d, col = s < 0 ? os : oscuro(q, 0.25);
+        trazo(c, K, col, 2, x, -15, kx, ky); trazo(c, K, col, 1.5, kx, ky, fx, -0.4); poli(c, K, os, [[fx - 0.6, -0.4], [fx + 0.6, -0.4], [fx + s * 1.2, 0.6]]);
+        poli(c, K, os, [[kx - 0.6, ky + 0.4], [kx + s * 0.6, ky - 2.6], [kx + 0.6, ky + 0.2]]);
+      });
+      // brazo de guadaña de atrás
+      trazo(c, K, os, 2, -3, -29, -8.6, -33); poli(c, K, oscuro(q, 0.3), [[-8.6, -33.6], [-6, -34], [-5.4, -22], [-7.4, -25]]);
+      // tórax acorazado con púas en los hombros
+      poli(c, K, metal(K, q, -6, -33, 6, -14), [[-4.6, -14], [4.6, -14], [6.2, -24], [4.8, -32.4], [-3.8, -32.4], [-5.8, -24]]);
+      [-26, -21, -17].forEach(y => trazo(c, K, os, 0.8, -4.6, y, 5, y + 0.4));
+      poli(c, K, os, [[-3.6, -31.6], [-7, -37.4], [-1.4, -32]]); poli(c, K, os, [[4, -32], [8, -37.6], [2.2, -31.6]]);
+      // brazo de guadaña de delante: se alza y cae al golpear
+      const ex = 10 + sw * 2, ey = -32 - sw * 3, tx = 14 + sw * 5, ty = -19 + sw * 2;
+      trazo(c, K, oscuro(q, 0.2), 2.2, 4, -29, ex, ey);
+      poli(c, K, metal(K, claro(q, 0.15), ex, ey, tx, ty), [[ex - 0.4, ey - 0.8], [ex + 2.6, ey - 1.6], [tx, ty], [ex + 0.6, ey + 2]]);
+      trazo(c, K, "#f2e2b8", 0.6, ex + 2.4, ey - 1.4, tx - 0.2, ty - 0.4);
+      // cabeza: corona de púas doradas, antenas, racimo de ojos y mandíbulas que se abren al morder
+      c.strokeStyle = F(K, os); c.lineWidth = 1.1; c.lineCap = "round"; c.beginPath(); c.moveTo(2, -40); c.quadraticCurveTo(-1, -48, 4, -51); c.moveTo(5, -40.6); c.quadraticCurveTo(6, -48, 11.4, -48.4); c.stroke();
+      const ab = 1.4 + sw * 2.6 + Math.sin(K.t * 5) * 0.5;
+      elipse(c, K, metal(K, q, 1, -42, 13, -30), 6.6, -36, 6.8, 5.4, 0.25);
+      [[1.6, -40.4], [3.8, -42], [6.4, -42.4], [9, -41.2]].forEach(([x, y], i) => poli(c, K, oro, [[x - 1, y + 0.8], [x - 0.3, y - 3.2 - (i === 1 || i === 2 ? 1 : 0)], [x + 1, y + 0.8]]));
+      [[5, -38.4], [7.6, -38.8], [6.2, -36.4], [9, -36.8], [3.8, -36.2], [10.6, -38.4]].forEach(([x, y]) => { disco(c, K, NEGRO, x, y, 1); halo(c, K, "#fff0a0", x, y, 0.5); });
+      // la boca: oscura, con dientes finos, entre las mandíbulas
+      poli(c, K, "#1a0e06", [[9.6, -34.6], [13.6, -34 - ab * 0.3], [13.4, -31 + ab * 0.4], [9.6, -32.4]]);
+      for (let i = 0; i < 3; i++) { const x = 10.4 + i * 1.1; poli(c, K, HUESO, [[x - 0.35, -34.2 - ab * 0.1 * i], [x + 0.35, -34.2 - ab * 0.1 * i], [x, -33.2]]); poli(c, K, HUESO, [[x - 0.35, -32.4 + ab * 0.12 * i], [x + 0.35, -32.4 + ab * 0.12 * i], [x, -33.4]]); }
+      c.fillStyle = F(K, os);
+      c.beginPath(); c.moveTo(9.4, -35.8); c.quadraticCurveTo(15.6, -37.6 - ab, 18, -33.6 - ab * 0.6); c.quadraticCurveTo(15, -34.6 - ab * 0.4, 10.4, -33.8); c.closePath(); c.fill();
+      c.beginPath(); c.moveTo(9.4, -31.4); c.quadraticCurveTo(15.6, -29 + ab, 17.6, -32.4 + ab * 0.6); c.quadraticCurveTo(14.6, -31.6 + ab * 0.4, 10.2, -32.6); c.closePath(); c.fill();
     },
     quimera(c, K) {
       const q = "#5a4a3a", ala = Math.sin(K.t * 7) * 1.4;
@@ -551,12 +630,54 @@ window.FracturaFiguras = (function () {
       trazo(c, K, "#d8c9a6", 0.9, -8, -29, -6, -33); halo(c, K, Math.sin(K.t * 14) > 0 ? "#ffd27a" : "#ff8a3a", -5.6, -33.6, 1.3);
       CABEZA.panuelo(c, K, {}); ARMA.maza(c, K, { tubo: true });
     },
+    /* El Primer Engranaje: un coloso armado con sus cuatro autómatas. Cada brazo y cada pierna es un autómata de otro color, con su propio ojo. */
     engranaje(c, K) {
-      const m = "#7a9a72";
-      CUERPO.maquina(c, K, { metal: m, nucleo: "#ffd27a" });
-      c.save(); c.translate(0, -19.5); c.rotate(K.t * 1.2); c.strokeStyle = F(K, "#c79a44"); c.lineWidth = 1.6; c.beginPath(); c.arc(0, 0, 4.6, 0, 7); c.stroke(); for (let i = 0; i < 8; i++) trazo(c, K, "#c79a44", 1.8, Math.cos(i * 0.785) * 4.6, Math.sin(i * 0.785) * 4.6, Math.cos(i * 0.785) * 6.4, Math.sin(i * 0.785) * 6.4); c.restore();
-      CABEZA.lente(c, K, { metal: m, ojo: "#ffd27a", antena: true }); ARMA.martillo(c, K, { color: "#c79a44" });
-    }
+      const acero = "#3e4a44", laton = "#c79a44", p = K.mov ? Math.sin(K.fase) * 3 : 0, sw = Math.max(0, K.sw);
+      const AZUL = "#4f6f9e", ROJO = "#a04a3a", AMAR = "#c9a23a", VERDE = "#6fa36a";
+      const ojo = (x, y, r) => { disco(c, K, NEGRO, x, y, r * 1.5); halo(c, K, "#ffd27a", x, y, r); };
+      const bloque = (col, pts) => poli(c, K, metal(K, col, Math.min(...pts.map(q => q[0])), Math.min(...pts.map(q => q[1])), Math.max(...pts.map(q => q[0])), Math.max(...pts.map(q => q[1]))), pts);
+      // brazo de atrás: el autómata amarillo, con el puño saliendo de su boca
+      bloque(acero, [[-12, -34.6], [-6, -34.6], [-6.4, -29], [-11.6, -29]]);
+      bloque(AMAR, [[-11.2, -29], [-7.6, -29], [-7.8, -23], [-11, -23]]);
+      bloque(AMAR, [[-12.4, -23.4], [-6.6, -23.4], [-6.8, -17.4], [-12.2, -17.4]]); ojo(-8.4, -21.2, 0.8);
+      disco(c, K, oscuro(AMAR, 0.35), -9.4, -16.2, 2.1);
+      // piernas: el autómata azul y el rojo; los pies son sus cabezas
+      const pierna = (col, x0, x1, d) => {
+        bloque(col, [[x0, -16], [x1, -16], [x1 - 0.4 + d * 0.3, -8.6], [x0 + 0.4 + d * 0.3, -8.6]]);
+        bloque(oscuro(col, 0.2), [[x0 + 0.2 + d * 0.3, -8.6], [x1 - 0.2 + d * 0.3, -8.6], [x1 - 0.4 + d * 0.6, -2.6], [x0 + 0.4 + d * 0.6, -2.6]]);
+        disco(c, K, laton, (x0 + x1) / 2 + d * 0.3, -8.6, 1.1);
+        bloque(col, [[x0 - 0.4 + d, -2.8], [x1 + 1.6 + d, -2.8], [x1 + 2.4 + d, 0], [x0 - 0.6 + d, 0]]); ojo(x1 + 0.8 + d, -1.4, 0.55);
+      };
+      pierna(AZUL, -7.2, -1.8, -p); pierna(ROJO, 1.6, 7, p);
+      // cadera y torso de acero con filetes de latón
+      bloque(acero, [[-7.8, -18.4], [7.8, -18.4], [6.6, -14.8], [-6.6, -14.8]]);
+      bloque(acero, [[-8.8, -33.6], [8.8, -33.6], [7.4, -18.2], [-7.4, -18.2]]);
+      trazo(c, K, laton, 1, -8.4, -33, 8.4, -33); trazo(c, K, laton, 1, -7.4, -18.6, 7.4, -18.6);
+      poli(c, K, metal(K, laton, -7, -32, 7, -23), [[-7.2, -32], [7.2, -32], [0, -23.6]]);
+      // el emblema del pecho: un engranaje que gira con el núcleo encendido en medio
+      c.save(); c.translate(0, -26.4); c.rotate(K.t * 1.2);
+      c.strokeStyle = F(K, laton); c.lineWidth = 1.4; c.beginPath(); c.arc(0, 0, 3.4, 0, 7); c.stroke();
+      for (let i = 0; i < 8; i++) trazo(c, K, laton, 1.6, Math.cos(i * 0.785) * 3.4, Math.sin(i * 0.785) * 3.4, Math.cos(i * 0.785) * 4.8, Math.sin(i * 0.785) * 4.8);
+      c.restore(); halo(c, K, "#ffd27a", 0, -26.4, 1.4);
+      // hombreras en bloque
+      bloque(acero, [[5.6, -35], [12, -35], [11.6, -29], [6, -29]]); trazo(c, K, laton, 0.9, 6, -34.6, 11.6, -34.6);
+      // cabeza: yelmo con cresta, visera y antenas
+      bloque(acero, [[-4.6, -34], [5.6, -34], [6, -40], [3.4, -44], [-2.6, -44], [-5, -40]]);
+      poli(c, K, laton, [[-0.6, -44], [1.4, -44], [2.6, -50.4], [-0.2, -47.4]]);
+      trazo(c, K, laton, 0.9, -4.8, -41, -7, -45.6); trazo(c, K, laton, 0.9, 5.6, -41, 8, -45.6);
+      poli(c, K, NEGRO, [[-0.8, -40.6], [5.8, -40.6], [5.2, -37.8], [-0.4, -37.8]]);
+      halo(c, K, "#ffd27a", 3.6, -39.2, 1.1); trazo(c, K, "#ffd27a", 0.5, 0, -39.2, 5.2, -39.2);
+      poli(c, K, laton, [[0.4, -36.8], [5, -36.8], [4.4, -34.6], [1, -34.6]]);
+      // brazo de delante: el autómata verde, que empuña la espada y la baja al golpear
+      const hx = 13 + sw * 2, hy = -22 - sw * 6 + p * 0.2;
+      bloque(VERDE, [[8, -29.4], [11.6, -29.4], [hx + 1.6, hy + 2], [hx - 2.2, hy + 2]]);
+      bloque(VERDE, [[hx - 3, hy - 2.6], [hx + 2.8, hy - 2.6], [hx + 2.6, hy + 3], [hx - 2.8, hy + 3]]); ojo(hx + 1, hy, 0.75);
+      const bx = hx + 12 - sw * 6, by = hy - 16 + sw * 14;
+      trazo(c, K, "#3a2a1a", 2.2, hx, hy + 1, hx + (bx - hx) * 0.12, hy + 1 + (by - hy) * 0.12);
+      trazo(c, K, laton, 1.4, hx - 1.8, hy + 2.2, hx + 2, hy - 0.4);
+      trazo(c, K, "#dfe6ea", 2.4, hx + (bx - hx) * 0.12, hy + (by - hy) * 0.12, bx, by);
+      trazo(c, K, laton, 0.6, hx + (bx - hx) * 0.14, hy + (by - hy) * 0.14 - 0.6, bx - 0.2, by - 0.6);
+    },
   };
 
   /* =========================================================================
@@ -567,7 +688,7 @@ window.FracturaFiguras = (function () {
   const RECETAS = {
     "caballeros-del-reino": {
       guerrero: R("cuero", "capacete", "lanza", { c: { cuero: "#6a5a46" }, e: "redondo" }),
-      cazador: R("cuero", "capucha", "arco", { capa: 0.25, k: { pico: false } }),
+      cazador: R("cuero", "capucha", "arco", { capa: 0.25, k: { pico: true } }),
       arcanista: R("tunica", "capuchaPunta", "baston", { k: { ojo: "#8fe8ff" }, a: { madera: "#6d7178", orbe: "#8fd8ff" } }),
       paladin: R("placas", "cerrado", "maza", { c: { ancho: 14, banda: true }, e: "paves", tam: 1.06 }),
       picaro: R("cuero", "capucha", "daga", { c: { cuero: "#262e28" }, k: { tela: "#141a16", ojo: "#a8f0d6" }, agachado: true }),
@@ -584,11 +705,11 @@ window.FracturaFiguras = (function () {
       lider: R("tunica", "sombreroPico", "baston", { c: { tela: "#3a2d6b", estola: true }, a: { tipo: "rombo", orbe: "#ffe9a6" }, capa: 0.05, tam: 1.16 })
     },
     "trono-de-ceniza": {
-      guerrero: R("harapos", "zombi", "espada", { a: { color: "#8a6a52", largo: 12 } }),
-      cazador: R("harapos", "zombi", "jabalinas", { c: { carne: "#8a927a" }, k: { colmillos: true }, agachado: true }),
+      guerrero: R("harapos", "zombi", "espada", { k: { gorro: true }, a: { color: "#8a6a52", largo: 12 } }),
+      cazador: R("harapos", "necrofago", "jabalinas", { c: { carne: "#9aa49a" }, k: { carne: "#9aa49a" }, agachado: true }),
       arcanista: R("tunica", "capuchaPunta", "baston", { c: { tela: "#14121a" }, k: { tela: "#14121a", calavera: true, alto: 3, ojo: "#b6f26a" }, a: { tipo: "calavera", orbe: "#b6f26a" } }),
       paladin: R("mole", "cosido", "maza", { c: { cosido: true }, a: { color: "#5d5f66" }, tam: 1.12 }),
-      picaro: R("harapos", "zombi", "garras", { c: { carne: "#8a927a" }, k: { colmillos: true, ojo: "#ff8a5a" }, agachado: true }),
+      picaro: R("harapos", "necrofago", "garras", { c: { carne: "#7a8278" }, k: { carne: "#7a8278", ojo: "#ff8a5a", capucha: "#2a2622" }, agachado: true }),
       esqueleto: R("huesos", "calavera", "espada", { a: { color: "#8a6a52", largo: 12 } }),
       lider: R("huesos", "corona", "espadon", { c: { sinHombrera: true }, k: { metal: HUESO, oro: "#4a4a52", ojo: "#b6f26a" }, a: { color: "#9aa0a8" }, capa: 0.3, tam: 1.18 })
     },
@@ -606,7 +727,7 @@ window.FracturaFiguras = (function () {
       cazador: R("cuero", "sombreroAla", "arco", { capa: 0.3, k: { pluma: true } }),
       arcanista: R("cuero", "gafas", "frasco", { c: { cuero: "#3a3d33" }, k: { ojo: "#9af27a", piel: "#3a3028" } }),
       paladin: R("placas", "capacete", "hacha", { c: { ancho: 14 }, e: "torre", tam: 1.06 }),
-      picaro: R("pieles", "capucha", "daga", { c: { piel: "#6a5a46" }, k: { tela: "#4a3a2a" } }),
+      picaro: R("pieles", "capucha", "daga", { c: { piel: "#6a5a46" }, k: { tela: "#4a3a2a", pico: true } }),
       ballestero: R("cuero", "yelmo", "ballesta", { c: { cuero: "#3a3d33" }, capa: 0.3 }),
       lider: R("abrigo", "sombreroAla", "ballesta", { c: { tela: "#3a2e26" }, k: { pluma: true, tela: "#2a2018" }, tam: 1.16 })
     },
@@ -687,7 +808,7 @@ window.FracturaFiguras = (function () {
     // Adam: armadura plateada con ribetes verdes, penacho largo de pelo verde, hoja de acebo en el pecho y un arma de asta
     adam: R("placas", "cerrado", "alabarda", { c: { ancho: 15, metal: "#cdd4da" }, k: { metal: "#dbe1e6", ojo: "#14161a" }, a: { curva: true }, capaCol: "#14503a", capa: 0, tam: 1.24, penacho: "#1f9a66", acebo: "#1f9a66", hombreras: "#1f7a52", faldon: "#14503a" }),
     mano_de_oro: R("placas", "parche", "espadon", { c: { ancho: 14, metal: "#2a2a30", banda: true }, capaCol: "#e0b23a", capa: 0, tam: 1.2, manoOro: true }),
-    engranaje: E("engranaje", { tam: 1.24 }),
+    engranaje: E("engranaje", { tam: 1.3 }),
     ottavio: R("abrigo", "fedora", "estoque", { c: { tela: "#e9e4da" }, k: { tela: "#15141a", ojo: "#ffd27a" }, capaCol: "#15141a", capa: 0, tam: 1.18, melena: "#2a1e1a" }),
     genichiro: R("placas", "cocodrilo", "sable", { c: { ancho: 14, metal: "#6a1e18" }, k: { piel: "#a8322a", barba: "#2a2420" }, a: { largo: 16 }, capaCol: "#2a1a14", capa: 0, tam: 1.22, cola: "#a8322a" }),
     reinhardt: R("placas", "general", "alabarda", { c: { ancho: 15, metal: "#26262c", banda: true }, k: { pelo: "#a8401e" }, capaCol: "#3a0e0e", capa: 0, tam: 1.22 }),
@@ -699,7 +820,7 @@ window.FracturaFiguras = (function () {
     kirin: E("kirin", { tam: 1.25 }),
     ebonrabia: E("simio", { tam: 1.32 }),
     dientesal: R("abrigo", "tricornio", "pistola", { c: { tela: "#8a1f1f" }, k: { pluma: true, galon: "#ffffff" }, a: { dos: true }, tam: 1.2 }),
-    zaphar: E("zaphar", { tam: 1.26 }),
+    zaphar: E("zaphar", { tam: 1.34 }),
     rykerd: E("rykerd", { tam: 1.42 })
   };
   const BARCO = {
@@ -888,10 +1009,10 @@ window.FracturaFiguras = (function () {
     familiar(c, K, o) {
       const ab = aleteo(K);
       alaMembrana(c, K, "#3a2d6b", -1, -20, 12, 7, 1 - ab);
-      c.strokeStyle = F(K, "#141018"); c.lineWidth = 1.4; c.beginPath(); c.moveTo(-6, -17); c.quadraticCurveTo(-12, -16, -11, -24); c.stroke();
-      elipse(c, K, "#141018", -1, -17, 6, 3.6);
-      disco(c, K, "#141018", 5, -21, 3.4);
-      poli(c, K, "#141018", [[3, -23.6], [3.6, -27], [5, -24]]); poli(c, K, "#141018", [[5.6, -24], [7, -27], [7.6, -23.4]]);
+      c.strokeStyle = F(K, "#2e2640"); c.lineWidth = 1.4; c.beginPath(); c.moveTo(-6, -17); c.quadraticCurveTo(-12, -16, -11, -24); c.stroke();
+      elipse(c, K, "#2e2640", -1, -17, 6, 3.6);
+      disco(c, K, "#2e2640", 5, -21, 3.4);
+      poli(c, K, "#2e2640", [[3, -23.6], [3.6, -27], [5, -24]]); poli(c, K, "#2e2640", [[5.6, -24], [7, -27], [7.6, -23.4]]);
       ojoL(c, K, 6.4, -21.6, "#8fe8ff");
       alaMembrana(c, K, "#5a48a0", 0, -20, 12, 7, ab);
     }
@@ -944,9 +1065,9 @@ window.FracturaFiguras = (function () {
   });
   /* Las tropas propias nuevas (una más por ejército) */
   const UNICAS = {
-    heraldo: R("tunica", "capacete", "maza", { estandarte: true, tam: 1.02 }),
+    heraldo: R("tunica", "capacete", "maza", { c: { tela: "#e2dccb" }, estandarte: true, tam: 1.02 }),
     golem: R("mole", "vacia", "maza", { c: { metal: "#7a7088" }, k: { metal: "#8a8098", ojo: "#c79bff" }, a: { tronco: true, color: "#6a6080" }, tam: 1.32 }),
-    coloso: R("huesos", "calavera", "maza", { a: { tronco: true, color: HUESO }, k: { ojo: "#9af27a" }, tam: 1.42 }),
+    coloso: R("harapos", "craneoCiervo", "maza", { c: { carne: "#d9d1bb" }, a: { tronco: true, color: HUESO }, k: { ojo: "#9af27a" }, tam: 1.42 }),
     cobrador: R("jubon", "plumas", "maza", { k: { pluma: true } }),
     halconero: R("cuero", "sombreroAla", "nada", { c: { cuero: "#4a3e30" }, halcon: true }),
     inquisidor: R("abrigo", "sombreroAla", "maza", { c: { tela: "#8a1f1f" }, k: { tela: "#1a1418", ojo: "#fff0b0" } }),
@@ -955,7 +1076,20 @@ window.FracturaFiguras = (function () {
     tortuga: { solo: "tortuga", tam: 1.45 },
     zapadora: R("insecto", "hormiga", "pinzas", { c: { quitina: "#8a6a3a" }, k: { quitina: "#8a6a3a" }, tam: 1.08 }),
     carro: { solo: "carro", tam: 1.35 },
-    escorpion: { solo: "escorpion", tam: 1.3 }
+    escorpion: { solo: "escorpion", tam: 1.3 },
+    // Sanadores
+    capellan: R("tunica", "capucha", "frasco", { c: { tela: "#e9e4da" }, k: { tela: "#d9d2c0", ojo: "#fff0b0" }, a: { color: "#8fd8ff" } }),
+    alquimista: R("tunica", "sombreroPico", "frasco", { c: { tela: "#3a4a32" }, k: { tela: "#2a3424", ojo: "#9af27a" }, a: { color: "#9af27a" } }),
+    embalsamador: R("harapos", "capuchaPunta", "frasco", { c: { carne: "#c9b48a" }, k: { tela: "#1a1814", calavera: true, alto: 2, ojo: "#9af27a" }, a: { color: "#c9a964" } }),
+    barbero: R("jubon", "plumas", "frasco", { a: { color: "#ff6a5a" } }),
+    curandero: R("cuero", "sombreroAla", "frasco", { c: { cuero: "#5a4a36" }, a: { color: "#9af27a" } }),
+    matasanos: R("abrigo", "fedora", "frasco", { c: { tela: "#e9e4da" }, k: { tela: "#1d1b24" }, a: { color: "#ff6a5a" } }),
+    monje: R("kimono", "kasa", "frasco", { c: { tela: "#c9862e" }, a: { color: "#9af27a" } }),
+    chaman: R("pieles", "craneoCiervo", "baston", { a: { orbe: "#9af27a" } }),
+    cirujano: R("cuero", "panuelo", "frasco", { c: { cuero: "#3a3340" }, a: { color: "#ff6a5a" } }),
+    nodriza: R("insecto", "hormiga", "frasco", { c: { quitina: "#c9a964" }, k: { quitina: "#c9a964" }, a: { color: "#ffe36a" } }),
+    mecanico: R("cuero", "gafas", "martillo", { c: { cuero: "#4a4038" } }),
+    medicus: R("legion", "galea", "frasco", { c: { metal: "#9aa0a8" }, a: { color: "#8fd8ff" } })
   };
   /* Qué montura lleva cada tropa de cada ejército */
   const MONTA = {
@@ -965,7 +1099,7 @@ window.FracturaFiguras = (function () {
     "compania-dorada": { jinete: ["caballo", { col: "#8a5a32" }], hostigador: ["caballo", { col: "#4a3424" }], catafracto: ["caballo", { col: "#6b4a2e", barda: "#c9a24a" }] },
     "hijos-del-acero": { jinete: ["caballo", { col: "#6e6a62" }], hostigador: ["caballo", { col: "#5a4636" }] },
     "santos-de-asmodeo": { catafracto: ["caballo", { col: "#e8e2d6", barda: "#f2ede2" }], jinete_alado: ["hipogrifo", {}] },
-    nikaalia: { jinete: ["caballo", { col: "#1e1a22", crin: "#0b0910" }], volador: ["murcielago", { collar: "@col" }] },
+    nikaalia: { jinete: ["caballo", { col: "#1e1a22", crin: "#0b0910" }], volador: ["murcielago", { col: "#5a4a60", collar: "@col" }] },
     seosan: { hostigador: ["caballo", { col: "#7a4a2e", silla: "#8a2a22" }] },
     okran: { jinete: ["lobo", {}], hostigador: ["lobo", { col: "#9a8a72" }] },
     mravec: { catafracto: ["escarabajo", {}], volador: ["avispa", {}], jinete_alado: ["libelula", {}] },

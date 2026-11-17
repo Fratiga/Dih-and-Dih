@@ -22,6 +22,11 @@
   let sel = { uid: null, ciudad: null };
   let modo = null;         // habilidad que espera una casilla: { id, ... }
   let botar = null;        // barco que espera a que se elija su casilla de agua: { ciudad, clase, casillas }
+  let marcarReunion = null; // ciudad cuyo punto de reunión se está marcando en el mapa
+  let grupo = null;        // varias tropas elegidas con Mayús + arrastrar: [uid, ...]
+  let cumpliendo = false;
+  let grupoConquista = false;   // el grupo espera a que se toque la ciudad que conquistar  // mientras las tropas cumplen sus órdenes (sus acciones no las borran)
+  const ORD = window.FracturaIA.ORDENES;
   let guardarEstadoTimer = null;
   let ajustesGuerra = { tipo: "azar", forma: "azar", dificultad: "normal", rival: "azar", ids: null, bandos: 2, equipos: false, frente: undefined, tamano: "normal", mapaPara: 2 };
   let cobrados = null;     // frentes que el jugador ya cobró (se piden al servidor al abrir la pestaña)
@@ -197,8 +202,8 @@
             <span class="fr-recluta-cifras">${ico("vida")}${k.hp} ${ico("ataque")}${k.atq + (fac.naval.barcoAtq || 0)} ${ico("defensa")}${k.def + (fac.naval.barcoDef || 0)} ${ico("mov")}${k.mov + (fac.naval.barcoMov || 0)}${k.alc > 1 ? ` ${ico("alcance")}${k.alc}` : ""}</span><p class="fr-sub">${esc(k.texto)}</p></div></div>`; }).join("")}</div>` : ""}
           <h4>${fac.heroe.length > 1 ? "Héroes (se invoca uno)" : "Héroe"}</h4>
           <div class="fr-codex-tropas">${fac.heroe.map(hid => { const h = HEROES[hid]; return `<div class="fr-codex-tropa heroe">${retLider(f, 84, "fr-codex-ret", hid)}<div><strong>${esc(h.variantes ? h.variantes.join(" o ") : h.nombre)}</strong><small>${esc(h.titulo)}</small>
-            <span class="fr-recluta-cifras">${ico("vida")}${h.hp} ${ico("ataque")}${h.atq} ${ico("defensa")}${h.def} ${ico("mov")}${h.mov}${h.alc > 1 ? ` ${ico("alcance")}${h.alc}` : ""}</span><p>${esc(h.aspecto)}</p><p class="fr-sub">${esc(h.texto)}${h.ef.activa ? ` ${esc(h.ef.activa.nombre)}: ${esc(h.ef.activa.texto)}` : ""}</p>
-            <p class="fr-sub"><strong>Para invocarlo:</strong> ${h.req.map(r => r.texto || (r.t === "edificio" ? `tener ${EDIFICIOS[r.id].nombre}` : r.t === "fortaleza" ? "tener una fortaleza" : r.t === "saber" ? `dominar ${r.n} escalones del saber` : r.t === "ciudades" ? `${r.n} ciudades` : r.t === "regiones" ? `${r.n} provincias` : r.t === "turno" ? `turno ${r.n}` : r.t === "consagradas" ? `${r.n} casillas consagradas` : r.t === "mercado" ? "controlar el Mercado de las Sombras" : "")).filter(Boolean).concat([`pagar ${costeTexto(h.coste)}`]).join("; ").toLowerCase()}.</p></div></div>`; }).join("")}</div>
+            <span class="fr-recluta-cifras">${ico("vida")}${h.hp} ${ico("ataque")}${h.atq} ${ico("defensa")}${h.def} ${ico("mov")}${h.mov}${h.alc > 1 ? ` ${ico("alcance")}${h.alc}` : ""}</span><p>${esc(h.aspecto)}</p><p class="fr-sub">${esc(h.texto)}</p>${habilidadesHtml(h)}
+            <p class="fr-sub"><strong>Para invocarlo:</strong> ${h.req.map(r => r.texto || (r.t === "edificio" ? `tener ${EDIFICIOS[r.id].nombre}` : r.t === "fortaleza" ? "tener una fortaleza" : r.t === "saber" ? `dominar ${r.n} escalones del saber` : r.t === "ciudades" ? `${r.n} ciudades` : r.t === "regiones" ? `${r.n} provincias` : r.t === "turno" ? `turno ${r.n}` : r.t === "consagradas" ? `${r.n} casillas consagradas` : r.t === "mercado" ? "controlar el Mercado de las Sombras" : r.t === "muertos" ? `que caigan ${r.n} soldados en la guerra` : r.t === "matados" ? `matar a ${r.n} enemigos` : r.t === "oficiales" ? `matar a ${r.n} oficiales enemigos` : "")).filter(Boolean).concat([`${D.RENOMBRE_HEROE} de renombre`, `llegar al turno ${D.TURNO_HEROE.pequeno} a ${D.TURNO_HEROE.enorme}, según el tamaño del mapa`, `pagar ${costeTexto(h.coste)}`]).join("; ").toLowerCase()}.</p></div></div>`; }).join("")}</div>
         </article>`;
       pintarFiguras(c);
     };
@@ -868,7 +873,7 @@ pintarHero();
 
   function crearTablero() {
     if (!window.FracturaTableroPhaser) return null;
-    return window.FracturaTableroPhaser.crear($("frTablero"), { alTocar: tocar, alPasar: pasarPor, alSonar: son, alMoverVista: pintarMiniPronto });
+    return window.FracturaTableroPhaser.crear($("frTablero"), { alTocar: tocar, alPasar: pasarPor, alSonar: son, alMoverVista: pintarMiniPronto, alCaja: elegirGrupo });
   }
 
   function entrarGuerra(nueva) {
@@ -889,7 +894,7 @@ pintarHero();
       const rivales = est.jugadores.filter(j => j.id !== humano()).map(j => FACCIONES[j.faccion].corto);
       cartel(`${TIPOS_FRACTURA[est.tipo].nombre}`, 2200, `${FACCIONES[est.jugadores[humano()].faccion].corto} contra ${rivales.join(", ")}${est.tregua ? ` · tregua hasta el turno ${est.tregua}` : ""}`);
       son("turno");
-    } else if (est.activo === humano()) { cartel(`Turno ${est.turno}`, 1200); atenderOfertas(); }
+    } else if (est.activo === humano()) { if (!avisoNucleo()) cartel(`Turno ${est.turno}`, 1200); atenderOfertas(); }
   }
   function reservarVista() {
     if (!tablero) return;
@@ -901,6 +906,7 @@ pintarHero();
   /* Toda acción mía pasa por aquí: en una guerra entre jugadores se anota para enviarla al terminar el turno */
   function aplicarYo(acc) {
     const antes = tablero ? tablero.instantanea() : null;
+    if (!cumpliendo && (acc.t === "mover" || acc.t === "atacar" || acc.t === "habilidad" || acc.t === "portal") && acc.uid && est.unidades[acc.uid] && est.unidades[acc.uid].orden) delete est.unidades[acc.uid].orden;
     const r = FM.aplicar(est, acc);
     if (r.ok && pvp) pvp.acciones.push(acc);
     if (r.ok && tablero && r.ev && r.ev.length) tablero.reproducir(r.ev, antes);
@@ -981,11 +987,22 @@ pintarHero();
     abrirPanel("bandos");
   });
 
+  /* Al empezar mi turno: si alguien retiene el Núcleo del Sueño, se avisa en grande y se marca en el mapa */
+  function avisoNucleo() {
+    const H = humano(), n = est.nucleo;
+    const k = est.nucleoHold.findIndex(x => x > 0);
+    if (k < 0 || !n) return false;
+    const lleva = est.nucleoHold[k], faltan = est.hold - lleva;
+    if (k === H) cartel(`Retienes el Núcleo · ${lleva}/${est.hold}`, 2400, faltan === 1 ? "Si aguantas un turno más, ganas la guerra." : `Te faltan ${faltan} turnos para ganar. Todos irán a por ti.`, bandos[k].col);
+    else cartel(`${FACCIONES[est.jugadores[k].faccion].corto} retiene el Núcleo · ${lleva}/${est.hold}`, 3200, faltan === 1 ? "Si sigue ahí al acabar su próximo turno, gana la guerra." : `Si llega a ${est.hold} turnos seguidos, gana la guerra. Échalo de ahí.`, k !== H && !FM.mismoEquipo(est, k, H) ? "#ff7a6a" : bandos[k].col);
+    if (tablero) tablero.onda(n.x, n.y, k === H ? bandos[k].col : "#ff7a6a");
+    return true;
+  }
   function pintarTurno() {
     const H = humano(), activo = est.jugadores[est.activo];
     const tregua = FM.enTregua(est) ? `<span class="fr-tregua" title="Durante la tregua no se puede atacar a otros bandos ni entrar en sus ciudades">Tregua · ${est.tregua - est.turno + 1}</span>` : "";
     const hold = est.nucleoHold.map((n, k) => ({ n, k })).filter(o => o.n > 0)[0];
-    const nucleo = hold ? `<span class="fr-nucleo" style="--c:${bandos[hold.k].col}" title="${esc(est.jugadores[hold.k].nombre)} lleva ${hold.n} de ${est.hold} turnos sobre el Núcleo del Sueño">◎ ${hold.n}/${est.hold}</span>` : "";
+    const nucleo = hold ? `<button type="button" class="fr-nucleo${hold.k !== H && !FM.mismoEquipo(est, hold.k, H) ? " peligro" : ""}" data-ir-nucleo style="--c:${bandos[hold.k].col}" title="${esc(est.jugadores[hold.k].nombre)} lleva ${hold.n} de ${est.hold} turnos sobre el Núcleo del Sueño. Si llega a ${est.hold}, gana. Toca para verlo.">◎ ${esc(FACCIONES[est.jugadores[hold.k].faccion].corto)} ${hold.n}/${est.hold}</button>` : "";
     $("frTurno").innerHTML = `${tregua}${nucleo}<span class="fr-turno-n" title="Al acabar el último turno gana quien tenga más puntos">Turno <b>${est.turno}</b> / ${est.maxTurnos}</span>`;
     void H; void activo;
   }
@@ -1005,6 +1022,8 @@ pintarHero();
       } else modo.casillas.forEach(k => e.objetivosHab.add(k));
     }
     if (botar && soyYo()) botar.casillas.forEach(k => e.objetivosHab.add(k));
+    if (grupo) grupo.forEach(uid => { const w = est.unidades[uid]; if (w) e.objetivosHab.add(`${w.x},${w.y}`); });
+    if (sel.ciudad && est.ciudades[sel.ciudad] && est.ciudades[sel.ciudad].reunion) { const q = est.ciudades[sel.ciudad].reunion; e.objetivosHab.add(`${q.x},${q.y}`); }
     if (verAmenaza) e.amenaza = zonaAmenaza();
     tablero.estado(e);
   }
@@ -1115,6 +1134,21 @@ pintarHero();
       if (enCasilla && visible) { sel = { uid: enCasilla.uid, ciudad: null }; refrescar(); }
       return;
     }
+    // Conquistar con un grupo: la ciudad que se toque
+    if (grupoConquista && grupo) {
+      grupoConquista = false;
+      const ci = FM.ciudadEn(est, x, y);
+      if (ci && ci.dueno !== humano() && (ci.dueno === null || FM.hostil(est, ci.dueno, humano()))) { grupo.forEach(id => { const w = est.unidades[id]; if (w) w.orden = { tipo: "conquistar", x, y, ciudad: ci.id }; }); aviso(`A por ${ci.nombre}.`); son("clic"); }
+      else aviso("Eso no es una ciudad que se pueda tomar.", true);
+      refrescar(); return;
+    }
+    // El punto de reunión de una ciudad: cualquier casilla de tierra
+    if (marcarReunion) {
+      const ci = est.ciudades[marcarReunion]; marcarReunion = null;
+      const c = FM.casilla(est, x, y);
+      if (ci && c && D.TERRENOS[c.t].mov > 0) { ci.reunion = { x, y }; aviso(`Lo que entrene ${ci.nombre} irá a reforzar esa casilla.`); son("clic"); }
+      refrescar(); return;
+    }
     // Un barco esperando sitio en el agua
     if (botar) {
       const b = botar; botar = null;
@@ -1127,6 +1161,17 @@ pintarHero();
     }
     // Habilidades que piden una casilla
     if (modo && u) {
+      if (modo.casillas.has(`${x},${y}`) && modo.orden) {
+        const ci = FM.ciudadEn(est, x, y);
+        ponerOrden(u, Object.assign({}, modo.orden, { x, y, ciudad: ci ? ci.id : undefined }));
+        modo = null; refrescar(); return;
+      }
+      if (modo.casillas.has(`${x},${y}`) && modo.especial === "portal") {
+        const r = aplicarYo({ t: "portal", uid: u.uid, ciudad: FM.ciudadEn(est, x, y).id });
+        modo = null;
+        if (!r.ok) { aviso(r.error, true); son("error"); } else son("magia");
+        return despuesDeAccion();
+      }
       if (modo.casillas.has(`${x},${y}`)) {
         const r = aplicarYo(Object.assign({ t: "habilidad", uid: u.uid, x, y }, modo.acc));
         modo = null;
@@ -1217,7 +1262,7 @@ pintarHero();
   /* --- Avisos de acontecimientos importantes (conquistas, bajas de mando, reliquias...) --- */
   let cronicaVista = 0, resumenDesde = 0;
   const TOAST = { conquista: ["Conquista", "⚑", "conq"], fortaleza: ["Fortaleza tomada", "⚑", "conq"], lider: ["Cae un líder", "☠", "baja"], heroico: ["Hazaña", "★", "oro"], reliquia: ["Reliquia", "◆", "oro"], nucleo: ["Núcleo del Sueño", "◎", "cian"],
-    reanimacion: ["Vuelve de entre los muertos", "✦", "cian"], tecnologia: ["Conocimiento", "✎", ""], heroe: ["Llega un héroe", "✪", "oro"], heroe_cae: ["Cae un héroe", "☠", "baja"], eliminado: ["Un bando cae", "✕", "baja"], refugio: ["Refugio", "⌂", "conq"], pacto: ["Pacto", "⚭", "cian"], traicion: ["Traición", "⚡", "baja"] };
+    reanimacion: ["Vuelve de entre los muertos", "✦", "cian"], leyendas: ["Duelo de leyendas", "⚔", "oro"], tecnologia: ["Conocimiento", "✎", ""], heroe: ["Llega un héroe", "✪", "oro"], heroe_cae: ["Cae un héroe", "☠", "baja"], eliminado: ["Un bando cae", "✕", "baja"], refugio: ["Refugio", "⌂", "conq"], pacto: ["Pacto", "⚭", "cian"], traicion: ["Traición", "⚡", "baja"] };
   function procesarCronica() {
     const nuevos = est.cronica.slice(cronicaVista);
     const base = cronicaVista;
@@ -1271,7 +1316,7 @@ pintarHero();
   $("frResumen").addEventListener("click", () => $("frResumen").classList.add("hidden"));
 
   /* --- Pista: una línea que dice qué se puede hacer ahora --- */
-  function pendientes() { const H = humano(); return FM.unidadesDe(est, H).filter(u => !(u.desatado > 0) && (u.pm > 0 || !u.atacado) && u.quieto && !u.atacado); }
+  function pendientes() { const H = humano(); return FM.unidadesDe(est, H).filter(u => !u.orden && !(u.desatado > 0) && (u.pm > 0 || !u.atacado) && u.quieto && !u.atacado); }
   function pintarPista() {
     const el = $("frPista");
     if (!ajustes.pistas || est.ganador !== null) { el.textContent = ""; return; }
@@ -1315,6 +1360,7 @@ pintarHero();
     refrescar();
   }
   $("frSiguiente").addEventListener("click", siguienteTropa);
+  $("frTurno").addEventListener("click", ev => { if (ev.target.closest("[data-ir-nucleo]") && est && tablero) { tablero.irA(est.nucleo.x, est.nucleo.y); tablero.onda(est.nucleo.x, est.nucleo.y, "#ff7a6a"); } });
 
   /* --- Tarjeta de selección: tropa, ciudad o terreno --- */
   const NOMBRE_RASGO = FM.RASGO_NOMBRE;
@@ -1351,28 +1397,52 @@ pintarHero();
       const precio = FM.heroeVivo(est, H) && HEROES[FM.heroeVivo(est, H).heroe].ef.sobornoMitad ? Math.ceil(fac.mods.soborno / 2) : fac.mods.soborno;
       out.push({ ic: "¤", nombre: `Sobornar a ${FM.nombreUnidad(w)}`, texto: "La criatura lucha por ti 2 turnos.", coste: { oro: precio }, razon: ya || (jh.recursos.oro < precio ? "No te alcanza el oro." : null), acc: { id: "sobornar", x: w.x, y: w.y } });
     });
+    // El portal de la ciudad: a otra ciudad propia con portal
+    if (FM.ciudadPortalDe(est, u)) {
+      const de = FM.ciudadPortalDe(est, u), cas = new Set();
+      FM.ciudadesDe(est, H).forEach(c => { if (c !== de && !FM.razonNoPortal(est, H, u.uid, c.id)) cas.add(`${c.x},${c.y}`); });
+      const co = FM.costePortal(u);
+      out.push({ ic: "◎", nombre: `Cruzar ${D.nombreEdificio("portal", jh.faccion)}`, texto: "Lleva a esta tropa al instante a otra ciudad tuya con portal. Llega sin movimiento.", coste: co,
+        razon: ya || (cas.size ? null : "No hay otra ciudad con portal libre."), casillas: cas, especial: "portal" });
+    }
     if (u.heroe) {
       const h = HEROES[u.heroe];
+      const tregua = FM.enTregua(est);
       [[h.ef.activa, 1, u.cd], [h.ef.activa2, 2, u.cd2]].forEach(([ab, n, cd]) => {
         if (!ab) return;
-        let razon = ya || (cd > 0 ? (cd > 50 ? "Solo se puede usar una vez." : `Le faltan ${cd} turnos.`) : ab.coste && !FM.puedePagar(jh, ab.coste) ? "No te alcanzan los recursos." : null);
+        let razon = ya || (cd > 0 ? (cd > 50 ? "Solo se puede usar una vez por guerra." : `Le faltan ${cd} turnos.`) : ab.coste && !FM.puedePagar(jh, ab.coste) ? "No te alcanzan los recursos." : null);
         const base = { ic: "✪", nombre: ab.nombre, texto: ab.texto, coste: ab.coste, heroe: true };
-        if (ab.id === "area" || ab.id === "muro") {
-          const cas = new Set();
-          for (let y = u.y - ab.alc; y <= u.y + ab.alc; y++) for (let x = u.x - ab.alc; x <= u.x + ab.alc; x++) {
-            const c = FM.casilla(est, x, y);
-            if (!c || c.t === "vacio") continue;
-            if (ab.id === "muro" ? (!c.est && !FM.unidadEn(est, x, y) && D.TERRENOS[c.t].mov > 0) : junto(x, y).some(w => FM.hostil(est, w.dueno, H) && FM.veUnidad(est, H, w))) cas.add(`${x},${y}`);
-          }
-          if (!razon && !cas.size) razon = ab.id === "muro" ? "No hay sitio." : "No hay enemigos al alcance.";
-          if (!razon && ab.id === "area" && FM.enTregua(est)) razon = "Hay tregua.";
-          out.push(Object.assign(base, { razon, casillas: cas, acc: { id: "heroe", n } }));
-        } else if (ab.id === "contratar") {
-          const ws = junto(u.x, u.y).filter(w => w.dueno === -1);
-          if (!ws.length) out.push(Object.assign(base, { razon: razon || "No hay ninguna criatura salvaje a su lado." }));
-          ws.slice(0, 2).forEach(w => out.push(Object.assign({}, base, { nombre: `${ab.nombre}: ${FM.nombreUnidad(w)}`, razon, acc: { id: "heroe", n, x: w.x, y: w.y } })));
-        } else out.push(Object.assign(base, { razon, acc: { id: "heroe", n } }));
+        const alc = ab.alc || 1, cas = new Set();
+        const recorre = (r, f) => { for (let y = u.y - r; y <= u.y + r; y++) for (let x = u.x - r; x <= u.x + r; x++) if (FM.dentro(est, x, y) && f(x, y)) cas.add(`${x},${y}`); };
+        const enemigoVisto = (x, y) => { const w = FM.unidadEn(est, x, y); return w && FM.hostil(est, w.dueno, H) && FM.veUnidad(est, H, w) ? w : null; };
+        const libre = (x, y) => { const c = FM.casilla(est, x, y); return c && !FM.unidadEn(est, x, y) && D.TERRENOS[c.t].mov > 0; };
+        let pide = true;
+        if (ab.id === "area") recorre(alc, (x, y) => junto(x, y).some(w => FM.hostil(est, w.dueno, H) && FM.veUnidad(est, H, w)));
+        else if (ab.id === "muro") recorre(alc, (x, y) => (x !== u.x || y !== u.y) && libre(x, y) && !FM.casilla(est, x, y).est);
+        else if (ab.id === "comprar" || ab.id === "contratar") recorre(alc, (x, y) => { const w = FM.unidadEn(est, x, y); return !!w && (w.dueno === -1 || (ab.id === "comprar" && FM.hostil(est, w.dueno, H) && !w.heroe && !w.lider && !FM.esBarco(w) && (!w.s || S.rangoIndice(w.s.victorias + (w.vicG || 0)) === 0))); });
+        else if (ab.id === "sello") recorre(alc, (x, y) => { const c = FM.ciudadEn(est, x, y); return !!c && c.dueno === H; });
+        else if (ab.id === "juicio" || ab.id === "desafio") recorre(alc, (x, y) => !!enemigoVisto(x, y));
+        else if (ab.id === "engullir") recorre(1, (x, y) => { const w = enemigoVisto(x, y); return !!w && !w.heroe && !w.lider && w.hp * 3 <= FM.ef(est, w).hpMax; });
+        else if (ab.id === "salto") recorre(alc, (x, y) => libre(x, y));
+        else if (ab.id === "linea") recorre(1, (x, y) => x !== u.x || y !== u.y);
+        else pide = false;
+        if (!pide) { out.push(Object.assign(base, { razon, acc: { id: "heroe", n } })); return; }
+        if (!razon && !cas.size) razon = ab.id === "muro" || ab.id === "salto" ? "No hay sitio." : "No hay a quién a su alcance.";
+        if (!razon && (ab.id === "area" || ab.id === "juicio" || ab.id === "linea") && tregua) razon = "Hay tregua.";
+        out.push(Object.assign(base, { razon, casillas: cas, acc: { id: "heroe", n } }));
       });
+    }
+    // Órdenes que la tropa cumple sola cada turno
+    if (!u.lider) {
+      const ordenBtn = (tipo, extra) => Object.assign({ ic: ORD[tipo].ic, nombre: ORD[tipo].nombre, texto: ORD[tipo].texto, orden: { tipo }, ordenBtn: true, activa: u.orden && u.orden.tipo === tipo }, extra || {});
+      out.push(ordenBtn("explorar"));
+      out.push(ordenBtn("defender", { orden: { tipo: "defender", x: u.x, y: u.y }, texto: "Se queda aquí y ataca a lo que se acerque a 2 casillas." }));
+      const metas = new Set();
+      Object.values(est.ciudades).forEach(c => { if (c.dueno !== H && (c.dueno === null || FM.hostil(est, c.dueno, H)) && est.vision[H][c.y * est.ancho + c.x] > 0) metas.add(`${c.x},${c.y}`); });
+      out.push(ordenBtn("conquistar", { casillas: metas, razon: metas.size ? null : "No conoces ninguna ciudad que tomar." }));
+      out.push(ordenBtn("matanza"));
+      out.push(ordenBtn("curarse", { razon: FM.ciudadesDe(est, H).length ? null : "No tienes ciudades." }));
+      if (u.orden) out.push({ ic: "○", nombre: "Quitar la orden", texto: "La tropa vuelve a esperar tus órdenes.", orden: null, ordenBtn: true });
     }
     return out;
   }
@@ -1391,6 +1461,12 @@ pintarHero();
     if (est.hayNoche && u.dueno >= 0 && FACCIONES[est.jugadores[u.dueno].faccion].mods.noche && u.dueno === humano()) { const rivs = FM.rivalesDe(est, u.dueno); out.push(rivs.length && rivs.every(q => FM.oculta(est, u, q)) ? ["Oculta en la noche", "cian"] : ["A la vista", ""]); }
     (u.rasgos || []).forEach(k => out.push([NOMBRE_RASGO[k], "cian"]));
     if (u.dueno >= 0 && FM.consagradaPara(est, u.dueno, u.x, u.y)) out.push(["En suelo consagrado", "oro"]);
+    if (u.orden && ORD[u.orden.tipo]) out.push([`Orden: ${ORD[u.orden.tipo].nombre}`, "oro"]);
+    if (u.efectos && u.efectos.oculto >= est.turno) out.push(["Oculta", ""]);
+    if (u.efectos && u.efectos.miasma && u.efectos.miasma.hasta >= est.turno) out.push([`−${u.efectos.miasma.n} de ataque`, "rojo"]);
+    if (u.efectos && u.efectos.traba >= est.turno) out.push(["Trabada", "rojo"]);
+    if (FM.desafioDe(est, u)) out.push(["En un desafío", "oro"]);
+    if (u.reanimado || u.invocado) out.push(["No ocupa límite", ""]);
     if (u.s && u.s.luto) out.push([`De luto por ${u.s.luto.nombre}`, ""]);
     return out;
   }
@@ -1401,6 +1477,7 @@ pintarHero();
     const c = $("frSeleccion"), H = humano();
     const u = sel.uid && est.unidades[sel.uid];
     accionesActuales = [];
+    if (grupo && !u) { tarjetaGrupo(c); return; }
     if (u) {
       const e = FM.ef(est, u), tr = tropaDe(u), jug = u.dueno >= 0 ? est.jugadores[u.dueno] : null, mia = u.dueno === H;
       const b = u.dueno >= 0 ? bandos[u.dueno] : { col: "#8c8c8c", forma: "·" };
@@ -1425,7 +1502,7 @@ pintarHero();
           <p class="fr-sel-texto">${esc(tr.texto)}</p>
           ${FM.embarcada(est, u) ? `<p class="fr-sel-texto fr-sel-nota">${esc((() => { const nv = FM.navalDe(est, u.dueno); return nv.marinos ? "Va embarcada. Los suyos pelean igual sobre el agua." : nv.fondo ? "Cruza andando por el fondo. No puede atacar hasta salir del agua, pero conserva su defensa." : "Va embarcada: no puede atacar y no tiene defensa. Al desembarcar gasta el movimiento que le quede."; })())}</p>` : ""}
         </div>
-        ${accionesActuales.length ? `<div class="fr-sel-acciones">${accionesActuales.map((a, i) => `<button type="button" class="fr-accion${a.razon ? " no" : ""}${modo && modo.i === i ? " activa" : ""}" data-accion="${i}" title="${esc(a.texto)}${a.razon ? ` — ${esc(a.razon)}` : ""}"><i>${a.ic}</i><span>${esc(a.nombre)}</span>${a.coste ? costeHtml(a.coste, est.jugadores[H]) : ""}${a.razon ? `<small>${esc(a.razon)}</small>` : ""}</button>${a.caido ? `<button type="button" class="fr-enlace fr-ver-caido" data-ver-caido="${i}">Ver a ${esc(a.caido.s.nombre)}</button>` : ""}`).join("")}</div>` : ""}
+        ${accionesActuales.length ? `<div class="fr-sel-acciones">${accionesActuales.map((a, i) => `<button type="button" class="fr-accion${a.razon ? " no" : ""}${(modo && modo.i === i) || a.activa ? " activa" : ""}${a.ordenBtn ? " fr-accion-orden" : ""}" data-accion="${i}" title="${esc(a.texto)}${a.razon ? ` — ${esc(a.razon)}` : ""}"><i>${a.ic}</i><span>${esc(a.nombre)}</span>${a.coste ? costeHtml(a.coste, est.jugadores[H]) : ""}${a.razon ? `<small>${esc(a.razon)}</small>` : ""}</button>${a.caido ? `<button type="button" class="fr-enlace fr-ver-caido" data-ver-caido="${i}">Ver a ${esc(a.caido.s.nombre)}</button>` : ""}`).join("")}</div>` : ""}
         <button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button>
       </div>`;
       const ret = c.querySelector("[data-ret]");
@@ -1449,7 +1526,7 @@ pintarHero();
   function pintarCasilla(c, x, y) {
     const ca = FM.casilla(est, x, y), t = D.TERRENOS[ca.t], rg = est.regiones[ca.region], H = humano();
     const dueno = rg && rg.dueno !== null ? est.jugadores[rg.dueno] : null;
-    const rinde = Object.keys(t.rinde).map(k => `<b>${ico(k)}${t.rinde[k]}</b>`).join("") || "<em>nada</em>";
+    const rinde = Object.keys(t.rinde).map(k => `<b>${ico(k)}${String(t.rinde[k]).replace(".", ",")}</b>`).join("") || "<em>nada</em>";
     const que = ca.est ? { costura: "Une este fragmento con otro (el otro extremo va marcado en el mapa). Pisarla cuesta 1 de movimiento y te lleva allí. Si hay una tropa en un extremo, el enemigo no puede usarla.", nucleo: `Quien tenga aquí una tropa ${est.hold} turnos seguidos gana la guerra.`, ruinas: ca.saqueada ? "Ya se registraron." : "Quien las pise se lleva lo que guardan. Puede haber una reliquia.", fortaleza: "Se toma entrando en ella. Da defensa, vista y cuenta para dominar la provincia.", ciudad: "" }[ca.est] : "";
     c.innerHTML = `<div class="fr-sel fr-sel-casilla" style="--c:${dueno ? bandos[rg.dueno].col : "#8f8498"}">
       <div class="fr-sel-cuerpo">
@@ -1503,7 +1580,7 @@ pintarHero();
       return `<div class="fr-heroe${rq.ok ? " listo" : ""}">${retLider(jug.faccion, 64, "fr-heroe-ret", hf.id)}
         <div><strong>${esc(hf.nombre)}</strong><small>${esc(h.titulo)}</small>
           <span class="fr-recluta-cifras">${ico("vida")}${h.hp} ${ico("ataque")}${h.atq} ${ico("defensa")}${h.def} ${ico("mov")}${h.mov}${h.alc > 1 ? ` ${ico("alcance")}${h.alc}` : ""}</span>
-          <p>${esc(h.texto)}${h.ef.activa ? ` <em>${esc(h.ef.activa.nombre)}:</em> ${esc(h.ef.activa.texto)}` : ""}</p>
+          <p>${esc(h.texto)}</p>${habilidadesHtml(h)}
           <ul class="fr-requisitos">${rq.lista.map(r => `<li class="${r.ok ? "ok" : "no"}">${r.ok ? "✔" : "✖"} ${esc(r.texto)}${r.de && !r.ok ? ` <b>${r.lleva}/${r.de}</b>` : ""}</li>`).join("")}</ul>
           <button type="button" class="fr-btn fr-btn-chico${rq.ok ? " fr-btn-principal" : ""}" data-invoca="${hf.id}" data-razon="${esc(rq.ok ? "" : rq.razon)}">Invocar${rq.ok ? "" : " (falta algo)"}</button></div></div>`;
     }).join("");
@@ -1515,6 +1592,7 @@ pintarHero();
             <h4 class="fr-h4-flota">Flota <small>${esc(nvC.nivel ? `marina: ${nvC.nivel.toLowerCase()}` : "")}</small></h4><p class="fr-sel-texto fr-sel-nota">${esc(notaMar)}</p>${barcos ? `<div class="fr-reclutas">${barcos}</div>` : ""}</section>
           <section><h4>Edificios <small>${enHuecos} de ${ci.nivel + 2}</small>${ci.nivel < 5 ? `<button type="button" class="fr-btn fr-btn-chico fr-crecer" data-mejora="${ci.id}"${FM.puedePagar(jug, costeCrecer) ? "" : " disabled"} title="${esc(`Pasa a ${D.nivelCiudad(jug.faccion, ci.nivel + 1)}: un hueco más, más oro y ${(FACCIONES[jug.faccion].poblacion.porNivel[ci.nivel] || 0)} tropas más de límite`)}">Crecer ${costeHtml(costeCrecer, jug)}</button>` : ""}</h4>${notaDesh(ci)}
             <div class="fr-huecos">${edificios}${vacios}</div><div class="fr-obras">${obras}</div></section>
+          <section><h4>Obras y mando</h4>${panelObras(ci, jug)}</section>
           <section><h4>Héroe</h4>${heroe}</section>
         </div>
       </div><button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button></div>`;
@@ -1532,6 +1610,31 @@ pintarHero();
   $("frSeleccion").addEventListener("mouseleave", () => { if (marcaHover) { marcaHover = null; if (est) pintarResaltes(); } });
 
   /* Ficha de un caído que no es de tu ejército (o que ya no está en él): retrato, rango y características */
+  /* Obras de ciudad, Transmutación y punto de reunión */
+  function panelObras(ci, jug) {
+    const ob = Object.keys(D.OBRAS).map(id => {
+      const o = D.OBRAS[id], activa = id === "levas" ? ci.levasT === est.turno : ci.obras && ci.obras[id] >= est.turno;
+      const razon = activa ? "Ya está en marcha." : !FM.puedePagar(jug, o.coste) ? "No te alcanzan los recursos." : "";
+      return `<button type="button" class="fr-obra${razon ? " no" : ""}${activa ? " activa" : ""}" data-obra="${id}" data-razon="${esc(razon)}" title="${esc(o.texto)}"><strong>${esc(o.nombre)}</strong>${activa ? `<small>${id === "levas" ? "este turno" : `hasta el turno ${ci.obras[id]}`}</small>` : costeHtml(o.coste, jug)}<small>${esc(o.texto)}</small></button>`;
+    }).join("");
+    let tr = "";
+    if (ci.edificios.includes("transmutacion")) {
+      const usado = ci.transT === est.turno ? ci.transN || 0 : 0, queda = 6 - usado;
+      const opc = (sel, sinAnima) => D.RECURSOS.filter(k => !(sinAnima && k === "anima")).map(k => `<option value="${k}"${k === sel ? " selected" : ""}>${esc(D.RECURSO_NOMBRE[k])}</option>`).join("");
+      tr = `<div class="fr-transmuta"><b>${esc(D.nombreEdificio("transmutacion", jug.faccion))}</b> <small>${queda} más este turno · ${FACCIONES[jug.faccion].mods.transmutaBien ? "1 por 1" : "3 por 2"}</small>
+        <div class="fr-fila"><select data-tr-de aria-label="Lo que das">${opc("materiales")}</select><select data-tr-n aria-label="Cuánto">${[3, 6].filter(n => n <= queda).map(n => `<option value="${n}">${n}</option>`).join("") || `<option value="0">0</option>`}</select>
+        <span>→</span><select data-tr-a aria-label="Lo que recibes">${opc("oro", true)}</select><button type="button" class="fr-btn fr-btn-chico" data-transmutar${queda < 3 ? " disabled" : ""}>Cambiar</button></div></div>`;
+    }
+    const q = ci.reunion;
+    const reu = `<div class="fr-reunion"><b>Punto de reunión</b> <small>${q ? "Lo que entrene aquí irá solo a la casilla marcada." : "Sin marcar: lo que entrene se queda en la ciudad."}</small>
+      <div class="fr-fila"><button type="button" class="fr-btn fr-btn-chico" data-reunion>${q ? "Cambiarlo" : "Marcarlo en el mapa"}</button>${q ? `<button type="button" class="fr-btn fr-btn-chico" data-reunion-quitar>Quitarlo</button>` : ""}</div></div>`;
+    return `<div class="fr-obras">${ob}</div>${tr}${reu}`;
+  }
+  /* Las dos habilidades de un héroe, con su espera */
+  function habilidadesHtml(h) {
+    const ab = [h.ef.activa, h.ef.activa2].filter(Boolean);
+    return ab.length ? `<ul class="fr-habilidades">${ab.map(a => `<li><strong>${esc(a.nombre)}</strong>${a.cd ? ` <small>cada ${a.cd} turnos</small>` : ""}. ${esc(a.texto)}</li>`).join("")}</ul>` : "";
+  }
   /* Por qué hay edificios tachados en una ciudad y hasta cuándo */
   function notaDesh(ci) {
     const rotos = ci.edificios.filter(e => ci.desh[e] >= est.turno);
@@ -1561,6 +1664,13 @@ pintarHero();
       if (par) { const o = par.a.x === sel.casilla.x && par.a.y === sel.casilla.y ? par.b : par.a; sel = { uid: null, ciudad: null, casilla: { x: o.x, y: o.y } }; tablero.irA(o.x, o.y); son("clic"); refrescar(); }
       return;
     }
+    const go = t.closest("[data-grupo-orden]");
+    if (go && grupo) {
+      const tipo = go.dataset.grupoOrden, us = grupo.map(id => est.unidades[id]).filter(Boolean);
+      if (tipo === "conquistar") { grupoConquista = true; aviso("Toca en el mapa la ciudad que deben tomar."); son("clic"); return; }
+      us.forEach(u => { if (tipo === "quitar") delete u.orden; else u.orden = tipo === "defender" ? { tipo, x: u.x, y: u.y } : { tipo }; });
+      aviso(tipo === "quitar" ? "Sin órdenes." : `${us.length} tropas: ${ORD[tipo].nombre.toLowerCase()}.`); son("clic"); refrescar(); return;
+    }
     const vc = t.closest("[data-ver-caido]");
     if (vc) { const a = accionesActuales[+vc.dataset.verCaido]; if (a && a.caido) abrirFichaCaido(a.caido); return; }
     const un = t.closest("[data-uid]");
@@ -1572,7 +1682,8 @@ pintarHero();
       const i = +ac.dataset.accion, a = accionesActuales[i], u = sel.uid && est.unidades[sel.uid];
       if (!a || !u) return;
       if (a.razon) { aviso(a.razon, true); son("error"); return; }
-      if (a.casillas) { modo = modo && modo.i === i ? null : { i, acc: a.acc, casillas: a.casillas }; son("clic"); refrescar(); return; }
+      if (a.ordenBtn && !a.casillas) { ponerOrden(u, a.orden ? Object.assign({}, a.orden) : null); refrescar(); return; }
+      if (a.casillas) { modo = modo && modo.i === i ? null : { i, acc: a.acc, casillas: a.casillas, orden: a.ordenBtn ? a.orden : undefined, especial: a.especial }; son("clic"); refrescar(); return; }
       const r = aplicarYo(Object.assign({ t: "habilidad", uid: u.uid }, a.acc));
       if (!r.ok) { aviso(r.error, true); son("error"); } else son(a.acc.id === "consagrar" ? "consagra" : "magia");
       despuesDeAccion();
@@ -1592,10 +1703,21 @@ pintarHero();
       }
       r = aplicarYo({ t: "reclutar", ciudad: sel.ciudad, clase: rec.dataset.recluta }); if (r.ok) son("recluta");
     }
-    else if (rec && sel.ciudad) { r = aplicarYo({ t: "reclutar", ciudad: sel.ciudad, clase: rec.dataset.recluta }); if (r.ok) son("recluta"); }
+    else if (rec && sel.ciudad) {
+      r = aplicarYo({ t: "reclutar", ciudad: sel.ciudad, clase: rec.dataset.recluta });
+      if (r.ok) { son("recluta"); const q = est.ciudades[sel.ciudad].reunion, nu = r.uid && est.unidades[r.uid]; if (q && nu) nu.orden = { tipo: "reforzar", x: q.x, y: q.y }; }
+    }
     else if (con && sel.ciudad) { r = aplicarYo({ t: "construir", ciudad: sel.ciudad, edificio: con.dataset.construye }); if (r.ok) son("obra"); }
     else if (mej) { r = aplicarYo({ t: "mejorar", ciudad: mej.dataset.mejora }); if (r.ok) son("obra"); }
     else if (inv && sel.ciudad) r = aplicarYo({ t: "invocar", ciudad: sel.ciudad, heroe: inv.dataset.invoca });
+    else if (t.closest("[data-obra]") && sel.ciudad) { r = aplicarYo({ t: "obra", ciudad: sel.ciudad, id: t.closest("[data-obra]").dataset.obra }); if (r.ok) son("obra"); }
+    else if (t.closest("[data-transmutar]") && sel.ciudad) {
+      const caja = t.closest(".fr-transmuta");
+      r = aplicarYo({ t: "transmutar", ciudad: sel.ciudad, de: caja.querySelector("[data-tr-de]").value, a: caja.querySelector("[data-tr-a]").value, n: +caja.querySelector("[data-tr-n]").value });
+      if (r.ok) son("obra");
+    }
+    else if (t.closest("[data-reunion]") && sel.ciudad) { marcarReunion = sel.ciudad; aviso("Toca en el mapa la casilla adonde irá lo que entrene esta ciudad."); son("clic"); return; }
+    else if (t.closest("[data-reunion-quitar]") && sel.ciudad) { delete est.ciudades[sel.ciudad].reunion; son("clic"); refrescar(); return; }
     if (r) { if (!r.ok) { aviso(r.error, true); son("error"); } despuesDeAccion(); }
     void H;
   });
@@ -1842,7 +1964,12 @@ pintarHero();
     if (!soyYo()) return;
     const n = pendientes().filter(u => !u.lider).length;
     if (n >= 3 && !(await dialogo.confirmar(`Tienes ${n} tropas sin órdenes. ¿Terminar el turno?`, { aceptar: "Terminar" }))) return;
-    sel = { uid: null, ciudad: null }; modo = null; limpiarPrevia();
+    sel = { uid: null, ciudad: null }; modo = null; grupo = null; limpiarPrevia();
+    // Antes de pasar, las tropas con orden la cumplen
+    if (FM.unidadesDe(est, humano()).some(u => u.orden)) {
+      await cumplirOrdenesUI();
+      if (!est || est.ganador !== null || !soyYo()) return;
+    }
     $("frResumen").classList.add("hidden");
     resumenDesde = est.cronica.length;
     aplicarYo({ t: "terminar" });
@@ -1850,6 +1977,53 @@ pintarHero();
     if (pvp) { refrescar(); await enviarTurnoMesa("turno"); return; }
     await turnosDeLosDemas();
   });
+
+  /* Mayús + arrastrar: elige varias tropas propias para darles la misma orden */
+  function elegirGrupo(x0, y0, x1, y1) {
+    if (!est || !soyYo()) return;
+    const H = humano(), lo = { x: Math.min(x0, x1), y: Math.min(y0, y1) }, hi = { x: Math.max(x0, x1), y: Math.max(y0, y1) };
+    const us = FM.unidadesDe(est, H).filter(u => !u.lider && u.x >= lo.x && u.x <= hi.x && u.y >= lo.y && u.y <= hi.y);
+    modo = null;
+    if (!us.length) { grupo = null; refrescar(); return; }
+    if (us.length === 1) { grupo = null; sel = { uid: us[0].uid, ciudad: null }; refrescar(); return; }
+    grupo = us.map(u => u.uid); sel = { uid: null, ciudad: null };
+    son("elegir"); refrescar();
+  }
+  function tarjetaGrupo(c) {
+    const us = grupo.map(id => est.unidades[id]).filter(Boolean);
+    if (!us.length) { grupo = null; c.innerHTML = ""; return; }
+    const btn = (tipo, txt) => `<button type="button" class="fr-accion" data-grupo-orden="${tipo}" title="${esc(txt || ORD[tipo].texto)}"><i>${ORD[tipo].ic}</i><span>${ORD[tipo].nombre}</span></button>`;
+    c.innerHTML = `<div class="fr-sel"><div class="fr-sel-cuerpo"><div class="fr-sel-cab"><h3>${us.length} tropas</h3><p>Mayús + arrastrar para elegir otras. La orden se da a todas a la vez.</p></div>
+      <div class="fr-grupo-lista">${us.map(u => `<button type="button" class="fr-grupo-u" data-uid="${u.uid}">${esc(FM.nombreUnidad(u))}${u.orden ? ` <small>${esc(ORD[u.orden.tipo].nombre)}</small>` : ""}</button>`).join("")}</div></div>
+      <div class="fr-sel-acciones">${btn("explorar")}${btn("defender", "Cada una se queda donde está y ataca a lo que se acerque.")}${btn("conquistar", "Elige en el mapa la ciudad que tomar.")}${btn("matanza")}${btn("curarse")}
+        <button type="button" class="fr-accion" data-grupo-orden="quitar"><i>○</i><span>Quitar órdenes</span></button></div>
+      <button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button></div>`;
+  }
+
+  /* Las tropas con orden la cumplen solas (con la lógica de la máquina) y se anima lo que hacen */
+  async function cumplirOrdenesUI() {
+    const H = humano(), antes = tablero.instantanea(), evs = [];
+    let avisos = [];
+    cumpliendo = true;
+    try {
+      avisos = IA.cumplirOrdenes(est, H, acc => {
+        const r = FM.aplicar(est, acc);
+        if (r.ok) { if (pvp) pvp.acciones.push(acc); if (r.ev) evs.push(...r.ev); }
+        return r;
+      });
+    } finally { cumpliendo = false; }
+    if (evs.length) await new Promise(res => tablero.reproducir(evs, antes, { tope: 4200, rapidez: 0.9, seguir: true, alTerminar: res }));
+    else tablero.redibujar();
+    procesarCronica();
+    refrescar();
+    avisos.slice(0, 6).forEach(a => toast("Órdenes", a.texto, "⚑", ""));
+    if (est.ganador !== null) setTimeout(terminarGuerraUI, 600);
+  }
+  function ponerOrden(u, o) {
+    if (o) u.orden = o; else delete u.orden;
+    aviso(o ? `${FM.nombreUnidad(u)}: ${ORD[o.tipo].nombre.toLowerCase()}.` : `${FM.nombreUnidad(u)} ya no tiene orden.`);
+    son("clic");
+  }
 
   /* Los demás bandos juegan de uno en uno: cartel con su nombre, y lo que se ve de su turno se anima */
   async function turnosDeLosDemas() {
@@ -1885,7 +2059,7 @@ pintarHero();
     refrescar();
     if (est.ganador !== null) { setTimeout(terminarGuerraUI, 600); return; }
     if (pvp && pvp.mesa) { estadoMesa(); return; }
-    cartel(`Turno ${est.turno}`, 1100, `de ${est.maxTurnos}`);
+    if (!avisoNucleo()) cartel(`Turno ${est.turno}`, 1100, `de ${est.maxTurnos}`);
     son("turno");
     resumenDeRonda();
     const cap = est.capitales[H];
@@ -1987,7 +2161,7 @@ pintarHero();
   /* --- Cómo se juega: secciones con índice y buscador. Las tablas salen de los datos del juego, con los nombres de tu ejército --- */
   const TIPO_TROPA = { infanteria: "infantería", tirador: "tiradores", magia: "magos", jinete_pesado: "caballería pesada", jinete: "caballería ligera", piquero: "piqueros", apoyo: "apoyo", asedio: "asedio", monstruo: "monstruos", volador: "voladores", barco: "barcos", heroe: "héroes" };
   const DE_DONDE = {
-    comida: ["Granjas, llanuras y agua alrededor de tus ciudades.", "Mantener a las tropas: cada ciudad alimenta a algunas y el resto come 1 por turno. Sin alimento pasan hambre y pierden vida."],
+    comida: ["Granjas, llanuras y agua alrededor de tus ciudades.", "Mantener a las tropas: cada ciudad alimenta a 2 y el resto come 1 por turno. Sin alimento pasan hambre y pierden vida."],
     materiales: ["Aserraderos y bosques cerca de tus ciudades.", "Construir edificios y hacer crecer las ciudades."],
     mineral: ["Minas y montañas cerca de tus ciudades.", "Tropas pesadas, barcos y edificios militares."],
     oro: ["Las ciudades, los mercados y bancos, los desiertos cercanos, el saqueo de ruinas y algunas cosas del saber.", "Casi todo: tropas, edificios, crecer, sobornos y acoger tropas sin bandera."],
@@ -2005,7 +2179,7 @@ pintarHero();
       const k = CLASES[cl], contra = Object.keys(k.contra || {});
       return `<tr><th>${esc(nom(cl))}</th><td>${(k.tipo || []).map(x => TIPO_TROPA[x] || x).join(", ")}</td><td>${contra.map(x => `${TIPO_TROPA[x] || x} (+${k.contra[x]})`).join(", ") || "—"}</td></tr>`;
     }).join("");
-    const filasTerreno = Object.keys(D.TERRENOS).filter(t => t !== "vacio").map(t => { const te = D.TERRENOS[t]; return `<tr><th><i class="fr-ay-color" style="background:${te.color}"></i>${esc(te.nombre)}</th><td>${te.mov ? `${te.mov}` : "solo barcos y voladores"}</td><td>${te.def ? `+${te.def}` : "0"}</td><td>${Object.keys(te.rinde).map(k => `${te.rinde[k]} ${RECURSO_NOMBRE[k].toLowerCase()}`).join(", ") || "nada"}</td></tr>`; }).join("");
+    const filasTerreno = Object.keys(D.TERRENOS).filter(t => t !== "vacio").map(t => { const te = D.TERRENOS[t]; return `<tr><th><i class="fr-ay-color" style="background:${te.color}"></i>${esc(te.nombre)}</th><td>${te.mov ? `${te.mov}` : "solo barcos y voladores"}</td><td>${te.def ? `+${te.def}` : "0"}</td><td>${Object.keys(te.rinde).map(k => `${String(te.rinde[k]).replace(".", ",")} ${RECURSO_NOMBRE[k].toLowerCase()}`).join(", ") || "nada"}</td></tr>`; }).join("");
     const filasRec = RECURSOS.map(k => `<tr><th>${ico(k)} ${RECURSO_NOMBRE[k]}</th><td>${DE_DONDE[k][0]}</td><td>${DE_DONDE[k][1]}</td></tr>`).join("");
     const filasEd = Object.keys(EDIFICIOS).filter(e => !EDIFICIOS[e].solo || EDIFICIOS[e].solo === f).map(e => `<tr><th>${esc(f ? D.nombreEdificio(e, f) : EDIFICIOS[e].nombre)}</th><td>${esc(D.textoEdificio(e, f))}</td></tr>`).join("");
     const fac = f ? FACCIONES[f] : null, SBf = f && window.FracturaSaber ? window.FracturaSaber : null;
@@ -2025,9 +2199,10 @@ pintarHero();
         <li>Atacar a un aliado te pregunta si quieres traicionarlo.</li></ul>`],
       ["tipos", "Tipos de tropa", `<p>Cada tropa pertenece a uno o más tipos. Algunas pegan más a ciertos tipos, como los piqueros a la caballería o los tiradores a los voladores.</p>
         <table class="fr-ay-tabla"><tr><th>Tropa</th><th>Tipo</th><th>Pega más a</th></tr>${filasTipo}</table>
-        <p>El número es el ataque de más. Tu saber y algunos héroes añaden ventajas propias.</p>`],
+        <p>El número es el ataque de más. Tu saber y algunos héroes añaden ventajas propias.</p>
+        <p><strong>La magia contra los no muertos.</strong> Las tropas de magia pegan 2 más a los no muertos: todo el ejército de Osses y cualquier tropa levantada de entre los muertos. Contra Osses, haz más magos.</p>`],
       ["terreno", "Casillas y terreno", `<table class="fr-ay-tabla"><tr><th>Terreno</th><th>Cuesta</th><th>Defensa</th><th>Rinde a la ciudad</th></tr>${filasTerreno}</table>
-        <ul><li><strong>Ciudad</strong>: +1 de defensa a quien la ocupa. Rinde según el terreno de alrededor y sus edificios.</li>
+        <ul><li><strong>Ciudad</strong>: +1 de defensa a quien la ocupa. Rinde según el terreno de alrededor y sus edificios. Cuenta el terreno a 1 casilla; desde el nivel 3, también a 2 casillas, pero ese anillo de fuera rinde la mitad. Las fracciones se suman y se redondean.</li>
         <li><strong>Fortaleza</strong>: +2 de defensa. Quien la tiene domina su provincia.</li>
         <li><strong>Ruinas</strong>: al pisarlas se registran. Pueden dar una reliquia, oro o una sorpresa. Algunas tienen guardianes.</li>
         <li><strong>Portal</strong>: une dos casillas lejanas. Si hay una tropa enemiga en cualquiera de sus dos extremos, nadie más puede usarlo. Toca un portal para ver su pareja.</li>
@@ -2046,8 +2221,6 @@ pintarHero();
       ["saber", "Saber", `<p>Cada ejército tiene su propio árbol de conocimiento: cuatro ramas de seis escalones. Cada escalón pide el anterior de su rama. Algunos saberes piden avanzar en <strong>dos ramas</strong> a la vez.</p>
         ${SBf ? `<ul>${SBf.ramas(f).map(r => `<li><strong style="color:${r.color}">${esc(r.nombre)}</strong>: ${r.escalones.map(e => esc(e.nombre)).join(" → ")}</li>`).join("")}</ul>
         <p>Especiales: ${SBf.cruces(f).map(x => `<strong>${esc(x.nombre)}</strong>`).join(", ")}.</p>` : ""}`],
-      ["heroes", "Héroes", `<ul><li>Cada ejército puede invocar a <strong>un héroe</strong> por guerra, desde una ciudad, cuando cumple sus requisitos. Los requisitos se ven en la ciudad, con lo que llevas.</li>
-        <li>Si el héroe cae, no vuelve en esa guerra.</li></ul>`],
       ["mar", "El mar", `<ul><li>El agua clara se navega. El mar oscuro de fuera, no.</li>
         <li>Con un <strong>Muelle</strong> en una ciudad que tenga agua a dos casillas, esa ciudad bota barcos y tus tropas pueden embarcar desde cualquier orilla.</li>
         <li>Embarcar y desembarcar gastan el movimiento. Una tropa embarcada va despacio, no ataca y no tiene defensa.</li>
@@ -2059,6 +2232,38 @@ pintarHero();
         <li>Cuando cae un ejército, sus tropas se quedan <strong>sin bandera</strong>: no atacan a nadie. Una tropa tuya a su lado puede <strong>acogerlas</strong> pagando oro.</li></ul>`],
       ["frentes", "Frentes y mesas", `<ul><li>Los <strong>frentes</strong> son guerras ya montadas contra la máquina: tres al día y una gran guerra a la semana. Ganarlos da cartas. Puedes jugarlos aunque ya hayas cobrado.</li>
         <li>En <strong>Mesas</strong> se juega contra otros jugadores, de 2 a 8, por turnos y cada quien cuando puede. Cada jugador apuesta las cartas que quiera, o ninguna. Quien gana se lleva las de los que pierden.</li></ul>`],
+      ["ordenes", "Órdenes", `<p>Una tropa con orden actúa sola al terminar tu turno. Así no tienes que mover tus tropas una a una.</p>
+        <ul>${Object.keys(ORD).map(k => `<li><strong>${esc(ORD[k].nombre)}.</strong> ${esc(ORD[k].texto)}</li>`).join("")}</ul>
+        <ul><li>Las órdenes se dan desde la tarjeta de la tropa. En el mapa, un iconito junto a su barra de vida dice qué orden cumple.</li>
+        <li>Si mueves o atacas con ella a mano, la orden se quita.</li>
+        <li><strong>Grupos.</strong> Mantén <kbd>Mayús</kbd> y arrastra sobre el mapa para elegir varias tropas a la vez. Les puedes dar la misma orden a todas.</li>
+        <li>Una tropa con poca vida deja lo que estaba haciendo y se va a curar. Cuando se recupera, vuelve a su orden.</li>
+        <li>Las tropas con orden no cuentan como pendientes al pulsar <kbd>N</kbd>.</li></ul>`],
+      ["retaguardia", "Retaguardia y portales", `<ul><li><strong>Caminos.</strong> Moverse por las provincias que son tuyas cuesta la mitad. Las tropas nuevas llegan antes al frente.</li>
+        <li><strong>Punto de reunión.</strong> En el panel de la ciudad puedes marcar una casilla del mapa. Lo que entrene esa ciudad irá allí solo.</li>
+        <li><strong>${esc(f ? D.nombreEdificio("portal", f) : EDIFICIOS.portal.nombre)}.</strong> La última mejora de una ciudad grande. Con dos ciudades que lo tengan, una tropa que esté dentro o al lado de una pasa a la otra al instante.</li>
+        <li>Construirlo cuesta mucho, y cada viaje se paga: 4 de oro y 2 de maná. Las tropas pesadas, los héroes y los gigantes pagan el doble.</li>
+        <li>Cada portal hace un viaje por turno. No funciona si alguna de las dos ciudades está sitiada o tiene enemigos al lado.</li></ul>`],
+      ["administracion", "Gobernar muchas ciudades", `<ul><li><strong>Administración.</strong> Las tres primeras ciudades no cuestan nada. Desde la cuarta, cada ciudad más cuesta oro cada turno, y cada vez más: 1 con cuatro ciudades, 3 con cinco, 6 con seis, 10 con siete. Sale en el desglose del oro.</li>
+        <li><strong>${esc(f ? D.nombreEdificio("transmutacion", f) : EDIFICIOS.transmutacion.nombre)}.</strong> Cambia hasta 6 de un recurso por otro cada turno en esa ciudad. Das 3 y recibes 2${fac && fac.mods.transmutaBien ? ". Tu ejército cambia 1 por 1" : ""}. El Ánima no se consigue así.</li></ul>
+        <h4 class="fr-h4">Obras de ciudad</h4>
+        <p>Se encargan desde el panel de la ciudad, en Obras y mando. Gastan lo que sobra.</p>
+        <ul>${Object.keys(D.OBRAS).map(k => `<li><strong>${esc(D.OBRAS[k].nombre)}</strong> (${Object.keys(D.OBRAS[k].coste).map(r => `${D.OBRAS[k].coste[r]} ${RECURSO_NOMBRE[r].toLowerCase()}`).join(", ")}). ${esc(D.OBRAS[k].texto)}</li>`).join("")}</ul>`],
+      ["sanadores", "Sanadores", `<p>Cada ejército tiene una tropa que cura. Al empezar tu turno cura a las tropas aliadas que tiene al lado. No hace falta gastar su acción.</p>
+        <ul>${Object.keys(FACCIONES).map(k => { const c = Object.keys(CLASES).find(x => CLASES[x].sanador && CLASES[x].exclusiva === k); return c ? `<li><strong>${esc(D.tropa(k, c).nombre)}</strong> (${esc(FACCIONES[k].corto)}): ${esc(CLASES[c].texto || "")}</li>` : ""; }).join("")}</ul>`],
+      ["heroes", "Héroes", `<p>Los héroes son leyendas. No salen en todas las guerras: casi solo en las largas.</p>
+        <ul><li><strong>Requisitos.</strong> Además de lo que pide cada uno, hace falta <strong>${D.RENOMBRE_HEROE} de renombre</strong> y que la guerra vaya por cierto turno: ${Object.keys(D.TURNO_HEROE).map(k => `${k === "pequeno" ? "pequeño" : k} ${D.TURNO_HEROE[k]}`).join(", ")}. En un mapa hecho para más de cuatro bandos, 2 turnos más. Los requisitos se ven en la ciudad, con lo que llevas.</li>
+        <li><strong>Renombre.</strong> Se gana matando (más si es un oficial o un héroe, o si tu tropa peleaba sola), tomando ciudades (más si es una capital) y en duelos.</li>
+        <li>Cuestan mucho, pero son mucho más fuertes que cualquier tropa. Cada héroe tiene una pasiva y dos habilidades. Lo que hace cada uno sale en el Códice.</li>
+        <li><strong>Aguante.</strong> El primer golpe que mataría a un héroe lo deja con 1 de vida. Solo pasa una vez por guerra.</li>
+        <li>Se curan 3 de vida al empezar cada turno.</li>
+        <li><strong>Duelo de leyendas.</strong> Cuando un héroe ataca a otro, todo el mapa lo ve y queda en la crónica.</li>
+        <li>Cada ejército invoca un héroe por guerra como mucho. Si cae, no vuelve en esa guerra.</li></ul>`],
+      ["gigantes", "Gigantes", `<p>Algunos héroes son tan grandes que ocupan 2×2 casillas: ${["rykerd", "zaphar", "ebonrabia", "engranaje"].filter(h => HEROES[h]).map(h => `<strong>${esc(HEROES[h].nombre)}</strong>`).join(", ")}.</p>
+        <ul><li>Se mueven como cualquier otra tropa, pero el bosque no los frena.</li>
+        <li>Se les ataca desde cualquier casilla que toque su cuerpo.</li>
+        <li>Para cruzar el mar cada uno tiene su manera. Dos de ellos saltan por encima del agua. Uno tiende un puente y avanza una casilla por turno, sin defensa mientras está sobre el agua. El de metal camina por el fondo a media marcha, y allí abajo nadie le puede tocar ni él puede atacar.</li>
+        <li>Cruzar por portal les cuesta el doble.</li></ul>`],
       ["soldados", "Tus soldados", `<p>Tus soldados viven de una guerra a otra. Lo que les pasa se queda en su ficha.</p>
         <ul><li><strong>Rangos.</strong> Suben con las victorias: ${D.RANGOS.map(r => `${esc(r.nombre)} (${r.desde})`).join(", ")}. Desde veterano eligen una especialización: ${Object.values(ESPECIALIZACIONES).map(e => esc(e.nombre)).join(", ")}.</li>
         <li><strong>Contingente.</strong> Llevas 6 soldados a cada guerra, y uno más por cada 3 guerras ganadas (hasta 12).</li>
@@ -2539,7 +2744,7 @@ pintarHero();
     }
     if (est.ganador !== null) { pararSondeo(); terminarGuerraUI(); return; }
     if (est.jugadores[yoIdx].eliminado) { fueraDeLaMesa(); return; }
-    if (est.activo === yoIdx) { pararSondeo(); cartel("Tu turno", 1400, `Turno ${est.turno} de ${est.maxTurnos}`); son("turno"); resumenDeRonda(); atenderOfertas(); refrescar(); }
+    if (est.activo === yoIdx) { pararSondeo(); if (!avisoNucleo()) cartel("Tu turno", 1400, `Turno ${est.turno} de ${est.maxTurnos}`); son("turno"); resumenDeRonda(); atenderOfertas(); refrescar(); }
     else { cartel(`Turno de ${nombreAsiento(est.activo)}`, 0, plazoTexto(pvp.limite), bandos[est.activo] ? bandos[est.activo].col : null); iniciarSondeo(); refrescar(); }
   }
 

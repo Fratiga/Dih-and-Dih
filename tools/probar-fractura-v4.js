@@ -191,7 +191,7 @@ Object.keys(D.FACCIONES).forEach(f => {
   const cap = FM.ciudadesDe(est, 0).find(c => c.capital), a = libre(est, cap, 3);
   const u = poner(est, 0, "coloso", a.x, a.y);
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (dx || dy) { const c = est.casillas[a.y + dy] && est.casillas[a.y + dy][a.x + dx]; if (c && !c.est) c.t = "bosque"; }
-  u.pm = 1;
+  u.pm = 1; est.regiones.forEach(r => { r.dueno = null; });   // fuera de su territorio (en el propio, el bosque cuesta la mitad)
   ok(FM.alcanzables(est, u).destinos.size === 0, "el coloso rodeado de bosque aún se mueve");
   const r = FM.aplicar(est, { t: "habilidad", id: "talar", uid: u.uid, x: a.x + 1, y: a.y });
   ok(r.ok && est.casillas[a.y][a.x + 1].t === "llanura", `no derriba el bosque: ${r.error}`);

@@ -535,3 +535,60 @@ Las partidas guardadas con reglas anteriores no se cargan (`D.REGLAS = 4`).
 - `node tools/probar-fractura-v4.js` (saber, límite, asedio, portales, acoger, renegados, voladores, tipos, mapas).
 - `node tools/probar-fractura-mesa.js 4` (mesas en varios navegadores).
 - `BD=fractura_mesas sh docs/pruebas/t_fractura_mesas.sh` (SQL de frentes y mesas).
+
+## 16. Reglas 5 (noviembre de 2026)
+
+Las partidas guardadas y las mesas en curso con reglas anteriores no se cargan (`D.REGLAS = 5`). El plan completo está en `docs/fractura-plan-v5.md`.
+
+### Órdenes
+- Seis órdenes (`ORDENES` en `js/fractura-ia.js`): Explorar, Defender, Conquistar, Matanza, Reforzar y Curarse. Viven en `u.orden` y no entran en la firma del estado.
+- `IA.cumplirOrdenes(est, j, aplicar)` las convierte en acciones normales al terminar el turno, así que funcionan igual en las mesas. Devuelve los avisos de las órdenes que se cortan.
+- Con poca vida (35 % o menos) la tropa pasa a Curarse y recuerda su orden anterior.
+- Mayús + arrastrar en el tablero elige un grupo (`alCaja` en `escena.ts`), y el grupo recibe la misma orden.
+
+### Retaguardia
+- Moverse por provincias propias cuesta la mitad (en `alcanzables`).
+- Punto de reunión por ciudad (`ciudad.reunion`): lo que entrena va solo con la orden Reforzar.
+- Portal: edificio de ciudad de nivel 5 con el escalón 4 del saber. Cada viaje cuesta 4 de oro y 2 de maná, el doble para las tropas pesadas, los héroes y los gigantes. Un viaje por portal y turno, y no funciona con la ciudad sitiada o con enemigos al lado.
+
+### Recursos
+- Administración: desde la cuarta ciudad, cada turno se pagan `(n-3)(n-2)/2` de oro.
+- Transmutación: hasta 6 por ciudad y turno, 3 por 2 (Dolbred 1 por 1). El Ánima no se consigue así.
+- Obras de ciudad (`OBRAS` en los datos): Fortificar, Fiesta, Levas y Vigías.
+
+### Sanadores
+- Un sanador propio por ejército (`sanador` en cada clase, con variantes: cobra oro, solo cura a los suyos, repara máquinas, cura más las heridas de monstruo, cura barcos, cura a 2 casillas).
+
+### Héroes
+- Más raros: piden `RENOMBRE_HEROE` de renombre y un turno mínimo según el tamaño del mapa (`TURNO_HEROE`, 2 más si el mapa es para más de 4 bandos). Cuestan el triple.
+- Más fuertes: unos 50 de vida y 10 de ataque, una pasiva y dos habilidades (`ef.activa` y `ef.activa2`, bloque `HEROES_V5`).
+- El primer golpe mortal los deja con 1 de vida (`aguanteUsado`). Se curan 3 por turno. Un héroe que ataca a otro dispara el «Duelo de leyendas» (evento en el tablero y en la crónica).
+- El Ceniciento levanta a 2 por turno a 3 casillas o menos, con su misma clase si eran de Osses (los demás vuelven como Legión). No cuentan para el límite y no le quitan su habilidad.
+
+### Gigantes
+- Rykerd, Zaphar, Ebonrabia y el Primer Engranaje ocupan 2×2 (`tam: 2`, anclados arriba a la izquierda). `dist`, `ocupa`, `celdasDe` y `unidadEn` tienen en cuenta su huella.
+- Se mueven con `alcanzablesGrande`: el bosque les cuesta 1. Para cruzar el mar, Rykerd salta 5 y Ebonrabia 3, Zaphar tiende un puente (1 casilla por turno, sin defensa) y el Engranaje camina por el fondo a media marcha (allí no ataca ni le atacan).
+- En el tablero se dibujan 1,7 veces más grandes, centrados en su huella, con la textura al doble de resolución para que no se pixelen.
+- Figuras y retratos propios: Rykerd (según una maqueta del usuario: torso con costillas, piernas de dragón, sonrisa de dientes, cola de ramas con espinas), Zaphar (señor de la colmena con abdomen, seis patas, guadañas y racimo de ojos) y el Primer Engranaje (coloso armado con sus cuatro autómatas como brazos y piernas, cada uno de un color).
+
+### Núcleo del Sueño
+- Al empezar el turno, si alguien retiene el Núcleo sale un aviso grande con la cuenta (n de `est.hold`) y una onda sobre el Núcleo. En la barra de arriba, el aviso late en rojo si es un rival, y al tocarlo la vista va al Núcleo.
+- La máquina va a por quien lo retiene: en `mejorAccionDeAtaque`, atacarlo suma 8 + 2,5 por turno retenido; al moverse, toda tropa a 14 casillas o menos va hacia el Núcleo, y todas cuando faltan 2 turnos.
+
+### Requisitos de los héroes
+- `REQ_V5` en los datos endurece los requisitos propios de cada héroe. Tipos nuevos en `requisitosHeroe`: `muertos` (caídos en la guerra, de cualquier bando), `matados` (enemigos que ha matado tu ejército) y `oficiales` (líderes, capitanes y veteranos enemigos).
+
+### Magia contra no muertos
+- Las tropas de tipo magia pegan 2 más a los no muertos: todo el ejército de Osses (`mods.sinComida`), los levantados y las tropas `muertoViviente`. La máquina entrena el doble de magos si tiene a Osses de rival. Osses no se tocó: la respuesta es que los demás sepan pelearle.
+
+### Recursos
+- El terreno rinde fracciones: llanura y agua 0,5 de comida; bosque, montaña y desierto 0,75; zona mágica 1,5 de maná. El anillo exterior de las ciudades de nivel 3 o más rinde la mitad. Se suma todo y se redondea al final de `ingresoDe`.
+- Cada ciudad alimenta a 2 tropas, no a 3.
+- Medir lo que sobra: `node scratchpad/medir_recursos.js [desde] [cuántas]` (fuera de git).
+
+### Figuras
+- Cada figura del tablero se revisó contra su retrato (`scratchpad/figura_retrato.html?f=ejercito`, fuera de git).
+
+### Pruebas
+- Además de las de las reglas 4: `node tools/probar-fractura-v5.js` (órdenes, caminos, portal, administración, transmutación, obras, sanadores, héroes y gigantes).
+- `node tools/probar-fractura.js 2` ahora cuenta, por tamaño de mapa, las guerras con héroe y los recursos que sobran al final.

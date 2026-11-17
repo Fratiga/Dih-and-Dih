@@ -62,7 +62,7 @@ function guerra(semilla, bandos, equipos) {
 }
 
 const firma = est => JSON.stringify([est.turno, est.ganador, est.razon, est.rs, Object.values(est.unidades).map(u => [u.uid, u.x, u.y, u.hp, u.dueno]), est.jugadores.map(j => j.recursos)]);
-const resumen = {}, heroesVistos = new Set(), finales = {};
+const resumen = {}, heroesVistos = new Set(), finales = {}, extra = {};
 const t0 = Date.now();
 for (let bandos = 2; bandos <= 8; bandos++) {
   if (SOLO && bandos !== SOLO) continue;
@@ -73,6 +73,11 @@ for (let bandos = 2; bandos <= 8; bandos++) {
     try { r = guerra(semilla, bandos, equipos); }
     catch (e) { fallos++; console.log(`  REVIENTA: semilla ${semilla}, ${bandos} bandos: ${e.stack.split("\n").slice(0, 4).join(" | ")}`); continue; }
     r.heroes.forEach(h => heroesVistos.add(h));
+    // Héroes por guerra y lo que sobra al final, por tamaño de mapa
+    const tam = r.est.tamano || "normal";
+    extra[tam] = extra[tam] || { guerras: 0, conHeroe: 0, sobra: 0, turnos: 0 };
+    extra[tam].guerras++; extra[tam].turnos += r.est.turno; if (r.heroes.size) extra[tam].conHeroe++;
+    extra[tam].sobra += r.est.jugadores.reduce((a, jg) => a + Object.values(jg.recursos).reduce((b, v) => b + v, 0), 0) / r.est.jugadores.length;
     const motivo = /capital/.test(r.est.razon) ? "capital" : /Núcleo/.test(r.est.razon) ? "nucleo" : /tiempo/.test(r.est.razon) ? "tiempo" : /último|tropas/.test(r.est.razon) ? "aniquilado" : "otro";
     finales[motivo] = (finales[motivo] || 0) + 1;
     resumen[bandos] = resumen[bandos] || { guerras: 0, turnos: 0 };
@@ -87,6 +92,7 @@ console.log("Cómo terminan:", JSON.stringify(finales));
 console.log("Por forma de mapa:", Object.keys(mar.porForma).map(f => `${f} ${mar.porForma[f].guerras} guerras, ${(mar.porForma[f].turnos / mar.porForma[f].guerras).toFixed(0)} turnos, ${mar.porForma[f].capital} por capital`).join(" | "));
 console.log(`Mar: ${mar.barcos} barcos botados, ${mar.muelles} muelles al final, ${mar.embarcadas} tropas vistas embarcadas. Pactos: ${mar.pactos}. Traiciones: ${mar.traiciones}.`);
 console.log("Victorias por ejército:", JSON.stringify(resumen.gana || {}));
+Object.keys(extra).forEach(t => { const e = extra[t]; console.log(`Mapa ${t}: ${e.guerras} guerras, ${(e.turnos / e.guerras).toFixed(0)} turnos, con héroe ${e.conHeroe}, recursos sobrantes por bando ${(e.sobra / e.guerras).toFixed(0)}`); });
 console.log(`Héroes invocados (${heroesVistos.size} de ${Object.keys(D.HEROES).length}):`, Array.from(heroesVistos).join(", "));
 console.log(`${comprobaciones} comprobaciones, ${fallos} fallos, ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 process.exit(fallos ? 1 : 0);

@@ -17,6 +17,7 @@ import {
 export interface Ganchos {
   alTocar: (x: number, y: number, tactil: boolean) => void;
   alPasar?: (x: number, y: number) => void;
+  alCaja?: (x0: number, y0: number, x1: number, y1: number) => void;
   alSonar?: (nombre: string) => void;
   alMoverVista?: () => void;
 }
@@ -124,6 +125,13 @@ export class EscenaGuerra extends Phaser.Scene {
         return;
       }
       if (this.viaje) { this.viaje.stop(); this.viaje = null; }
+      const ev = p.event as MouseEvent | undefined;
+      if (ev && ev.shiftKey && this.ganchos.alCaja) {
+        const c0 = casillaEn(p.x, p.y);
+        this.caja = { id: p.id, x0: c0.x, y0: c0.y, x1: c0.x, y1: c0.y };
+        this.pintarCaja();
+        return;
+      }
       this.toque = { id: p.id, x: p.x, y: p.y, cx: this.cx, cy: this.cy, mov: false, tactil: !!p.wasTouch };
     });
     this.input.on("pointermove", (p: Phaser.Input.Pointer) => {
@@ -133,6 +141,11 @@ export class EscenaGuerra extends Phaser.Scene {
         const a = this.input.pointer1, b = this.input.pointer2, dist = Math.hypot(a.x - b.x, a.y - b.y);
         if (this.pinza.dist > 0 && dist > 0) this.acercar(dist / this.pinza.dist, (a.x + b.x) / 2, (a.y + b.y) / 2);
         this.pinza.dist = dist;
+        return;
+      }
+      if (this.caja && this.caja.id === p.id && p.isDown) {
+        const c1 = casillaEn(p.x, p.y);
+        if (c1.x !== this.caja.x1 || c1.y !== this.caja.y1) { this.caja.x1 = c1.x; this.caja.y1 = c1.y; this.pintarCaja(); }
         return;
       }
       const t = this.toque;
@@ -151,6 +164,11 @@ export class EscenaGuerra extends Phaser.Scene {
       }
     });
     const soltar = (p: Phaser.Input.Pointer): void => {
+      if (this.caja && this.caja.id === p.id) {
+        const k = this.caja; this.caja = null; this.pintarCaja();
+        if (this.ganchos.alCaja) this.ganchos.alCaja(k.x0, k.y0, k.x1, k.y1);
+        return;
+      }
       if (this.pinza && !(this.input.pointer1.isDown && this.input.pointer2.isDown)) this.pinza = null;
       const t = this.toque;
       if (!t || t.id !== p.id) return;
@@ -389,7 +407,7 @@ export class EscenaGuerra extends Phaser.Scene {
       const fort = fi >= 0 ? est.fortalezasDueno[fi] : null;
       const hold = c.est === "nucleo" ? est.nucleoHold.map((n: number, k: number) => (n > 0 ? `${k}:${n}` : "")).join("") : "";
       const cons = est.consagradas && est.consagradas[`${x},${y}`] !== undefined ? `g${est.consagradas[`${x},${y}`]}` : "";
-      const muro = est.muros && est.muros.some((m: any) => m.x === x && m.y === y) ? "M" : "";
+      const muro = (est.muros && est.muros.some((m: any) => m.x === x && m.y === y) ? "M" : "") + (est.fuego && est.fuego.some((f: any) => f.x === x && f.y === y && f.hasta >= est.turno) ? "F" : "") + (ci && ci.sello >= est.turno ? "S" : "");
       const fe = v === 0 ? "" : [c.est || "", ci ? `${ci.dueno}:${ci.nivel}:${ci.capital ? 1 : 0}:${ci.nombre}:${ci.asedio ? 1 : 0}` : "", fi >= 0 ? `f${fort}` : "", c.saqueada ? "s" : "", c.objetos && c.objetos.length ? "o" : "", hold, cons, muro, v].join("|");
       if (this.firmaEstr[i] !== fe || forzar) { this.firmaEstr[i] = fe; this.rehacerEstructura(i, x, y, c, v, ci, fort); }
     }
@@ -523,6 +541,18 @@ export class EscenaGuerra extends Phaser.Scene {
       lista.push(an, br);
       if (!REDUCIDO) { this.tweens.add({ targets: an, angle: 360, duration: 9000, repeat: -1 }); this.tweens.add({ targets: br, alpha: 0.18, duration: 900, yoyo: true, repeat: -1, ease: "Sine.easeInOut" }); }
     }
+    // Fuego en el suelo (Ilvaren) y sello de runas sobre una ciudad (Custodia)
+    if (est.fuego && est.fuego.some((f: any) => f.x === x && f.y === y && f.hasta >= est.turno)) {
+      const br = this.brillo(X + T / 2, Y + T * 0.55, T * 1.05, 0xff6a2a, 0.55).setDepth(9.5);
+      const br2 = this.brillo(X + T / 2, Y + T * 0.4, T * 0.6, 0xffd27a, 0.6).setDepth(9.6);
+      lista.push(br, br2);
+      if (!REDUCIDO) this.tweens.add({ targets: [br, br2], alpha: 0.25, duration: 260 + (x * 37 + y * 53) % 200, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    }
+    if (ci && ci.sello >= est.turno) {
+      const br = this.brillo(X + T / 2, Y + T / 2, T * 1.5, 0xb98cff, 0.45).setDepth(9.4);
+      lista.push(br);
+      if (!REDUCIDO) this.tweens.add({ targets: br, alpha: 0.2, duration: 900, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    }
     if (c.objetos && c.objetos.length) {
       const gm = this.add.image(X + T * 0.78, Y + T * 0.3, this.tex("gema", 64, 64, g => pintarGema(g, 64))).setDisplaySize(T * 0.3, T * 0.3).setDepth(26);
       const br = this.brillo(X + T * 0.78, Y + T * 0.3, T * 0.5, 0xf6d46c, 0.4).setDepth(25.9);
@@ -550,12 +580,13 @@ export class EscenaGuerra extends Phaser.Scene {
     };
   }
 
-  private texFigura(d: any, pose: string, barca?: string): string {
+  /* R: resolución de la textura. Los gigantes se dibujan al doble para que no se pixelen al verse grandes */
+  private texFigura(d: any, pose: string, barca?: string, R = 1): string {
     const bando = d.dueno >= 0 ? this.bandos[d.dueno] : { col: "#8c8c8c", ban: "#3a3a3a" };
-    const clave = `u:${d.faccion}:${d.clase}:${d.heroe || ""}:${bando.col}:${pose}:${d.cap ? 1 : 0}:${barca || ""}`;
-    const w = Math.round(FIG * 2.3), h = Math.round(FIG * 2.1), p = POSES[pose];
+    const clave = `u:${d.faccion}:${d.clase}:${d.heroe || ""}:${bando.col}:${pose}:${d.cap ? 1 : 0}:${barca || ""}:${R}`;
+    const w = Math.round(FIG * 2.3 * R), h = Math.round(FIG * 2.1 * R), p = POSES[pose];
     this.tex(clave, w, h, g => {
-      W.FracturaFiguras.figura(g, { faccion: d.faccion, clase: d.clase, heroe: d.heroe }, bando, { x: w / 2, y: h * 0.86, s: FIG * 0.95, dir: 1, mov: p.mov, fase: p.fase, sw: p.sw, t: 1.3, cap: d.cap, rango: d.rango, barca });
+      W.FracturaFiguras.figura(g, { faccion: d.faccion, clase: d.clase, heroe: d.heroe }, bando, { x: w / 2, y: h * 0.86, s: FIG * 0.95 * R, dir: 1, mov: p.mov, fase: p.fase, sw: p.sw, t: 1.3, cap: d.cap, rango: d.rango, barca });
     });
     return clave;
   }
@@ -566,8 +597,9 @@ export class EscenaGuerra extends Phaser.Scene {
     const icono = iconoDe(d), especial = !!(d.heroe || d.lider);
     const clave = this.tex(`ficha:${bando.col}:${icono}:${especial ? 1 : 0}`, 96, 96, gg => pintarFicha(gg, 96, bando.col, bando.ban, icono, especial));
     if (o.clave !== clave) { o.spr.setTexture(clave); o.clave = clave; }
-    const cx = (X + 0.5 + (a.dx || 0)) * T, cy = (Y + 0.5 + (a.dy || 0)) * T;
-    o.spr.setOrigin(0.5).setPosition(cx, cy).setDisplaySize(T * 0.84, T * 0.84).setFlipX(false).setRotation(0).setDepth(10 + (Y + 0.5) / 100).setAlpha(a.alfa !== undefined ? a.alfa : 1);
+    const lg = this.est && this.est.unidades[d.uid], gt = lg && lg.tam === 2 ? 2 : 1;
+    const cx = (X + 0.5 * gt + (a.dx || 0)) * T, cy = (Y + 0.5 * gt + (a.dy || 0)) * T;
+    o.spr.setOrigin(0.5).setPosition(cx, cy).setDisplaySize(T * 0.84 * gt, T * 0.84 * gt).setFlipX(false).setRotation(0).setDepth(10 + (Y + 0.5) / 100).setAlpha(a.alfa !== undefined ? a.alfa : 1);
     if (a.flash > 0.15) o.spr.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL); else o.spr.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
     if (a.alfa !== undefined && a.alfa < 0.4) return;
     // la vida, en un arco alrededor de la ficha
@@ -635,26 +667,29 @@ export class EscenaGuerra extends Phaser.Scene {
       let pose = "idle";
       if (a.mov && !enAgua) pose = Math.floor(t / 110) % 2 ? "w2" : "w1";
       else if (a.sw > 0.7) pose = "a2"; else if (a.sw > 0.25) pose = "a1"; else if (a.sw < -0.2) pose = "a0";
-      const clave = this.texFigura(d, pose, barca);
+      const lgT = est.unidades[d.uid], RT = lgT && lgT.tam === 2 ? 2 : 1;
+      const clave = this.texFigura(d, pose, barca, RT);
       if (o.clave !== clave) { o.spr.setTexture(clave); o.clave = clave; }
       const elegida = this.ui.sel === d.uid && !this.anim;
       const idle = REDUCIDO ? 0 : Math.sin(t / (enAgua ? 620 : 420) + d.uid.length * 1.7 + (d.x * 3 + d.y)) * T * (enAgua ? 0.022 : 0.012);
       const mece = enAgua && !REDUCIDO ? Math.sin(t / 780 + d.x * 2.1 + d.y) * 0.035 : 0;
       const salto = elegida && !REDUCIDO ? Math.abs(Math.sin(t / 260)) * T * 0.04 : 0;
       const paso = a.mov && !enAgua ? Math.abs(Math.sin((a.fase || 0) * 2)) * T * 0.04 : 0;
-      const cxp = (X + 0.5 + (a.dx || 0)) * T, cyp = (Y + 0.86 + (a.dy || 0)) * T - idle - salto - paso;
+      // Los gigantes ocupan 2×2: la figura se centra en su huella y se ve más grande
+      const logica = est.unidades[d.uid];
+      const gt = logica && logica.tam === 2 ? 2 : 1, esc = gt === 2 ? 1.7 : 1;
+      const cxp = (X + 0.5 * gt + (a.dx || 0)) * T, cyp = (Y + gt - 0.14 + (a.dy || 0)) * T - idle - salto - paso;
       // Por defecto cada tropa mira hacia el centro del mapa (hacia donde está la guerra)
       const dir = a.dir || (d.x + 0.5 < est.ancho / 2 ? 1 : -1);
-      o.spr.setPosition(cxp, cyp).setScale(T / FIG).setFlipX(dir < 0).setDepth(10 + (Y + 0.86) / 100);
+      o.spr.setPosition(cxp, cyp).setScale((T / FIG) * esc / RT).setFlipX(dir < 0).setDepth(10 + (Y + gt - 0.14) / 100);
       o.spr.setRotation(a.rot ? a.rot : mece).setAlpha(a.alfa !== undefined ? a.alfa : 1);
-      const logica = est.unidades[d.uid];
       const gastada = !this.anim && logica && d.dueno === est.activo && d.dueno === H && logica.pm <= 0 && logica.atacado;
       if (a.flash > 0.15) o.spr.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
       else if (gastada) o.spr.setTint(0x8a8794).setTintMode(Phaser.TintModes.MULTIPLY);
       else o.spr.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
       // vida y marca del bando
       if (a.alfa === undefined || a.alfa > 0.4) {
-        const bw = T * 0.6, f = Math.max(0, Math.min(1, hp / d.hpMax)), by = cyp + T * 0.085, bh = Math.max(5, T * 0.07), bx = cxp - bw / 2 + T * 0.07;
+        const bw = T * 0.6 * (gt === 2 ? 1.5 : 1), f = Math.max(0, Math.min(1, hp / d.hpMax)), by = cyp + T * 0.085, bh = Math.max(5, T * 0.07), bx = cxp - bw / 2 + T * 0.07;
         const col = d.dueno >= 0 ? colorNum(this.bandos[d.dueno].col) : 0x9a9a9a;
         g.fillStyle(0x060408, 0.92).fillRect(bx - 1.5, by - 1.5, bw + 3, bh + 3);
         g.fillStyle(f > 0.5 ? 0x74c75e : f > 0.25 ? 0xe6bd4a : 0xdc5a4c, 1).fillRect(bx, by, bw * f, bh);
@@ -666,12 +701,14 @@ export class EscenaGuerra extends Phaser.Scene {
         // galones de rango, corona de líder y estrella de héroe
         for (let k = 0; k < Math.min(4, d.rango || 0); k++) g.fillStyle(0xf0cf6a, 1).fillRect(bx + bw + 3, by + bh - 2.4 - k * 3.4, T * 0.07, 2.2);
         if (d.heroe || d.lider) {
-          const yy = cyp - T * (d.heroe ? 1.36 : 1.3) + Math.sin(t / 380) * 2;
+          const yy = cyp - T * (d.heroe ? 1.36 : 1.3) * esc + Math.sin(t / 380) * 2;
           g.fillStyle(0x08060c, 0.85).fillCircle(cxp, yy, T * 0.085);
           g.fillStyle(d.heroe ? 0xfff0a0 : 0xf0cf6a, 1);
           if (d.heroe) { const pts: Phaser.Math.Vector2[] = []; for (let k = 0; k < 10; k++) { const rr = k % 2 ? T * 0.03 : T * 0.07, an = -Math.PI / 2 + (k * Math.PI) / 5; pts.push(new Phaser.Math.Vector2(cxp + Math.cos(an) * rr, yy + Math.sin(an) * rr)); } g.fillPoints(pts, true); }
           else { g.fillRect(cxp - T * 0.05, yy - T * 0.01, T * 0.1, T * 0.04); g.fillTriangle(cxp - T * 0.05, yy - T * 0.01, cxp - T * 0.03, yy - T * 0.01, cxp - T * 0.05, yy - T * 0.055); g.fillTriangle(cxp + T * 0.05, yy - T * 0.01, cxp + T * 0.03, yy - T * 0.01, cxp + T * 0.05, yy - T * 0.055); g.fillTriangle(cxp - T * 0.02, yy - T * 0.01, cxp + T * 0.02, yy - T * 0.01, cxp, yy - T * 0.06); }
         }
+        // la orden que cumple sola (solo en las tropas propias)
+        if (logica && logica.orden && d.dueno === H) this.iconoOrden(g, logica.orden.tipo, bx - T * 0.02, by - T * 0.13);
         // puede actuar todavía: un punto encendido junto a la barra
         if (!this.anim && logica && d.dueno === H && est.activo === H && est.ganador === null && (logica.pm > 0 || !logica.atacado)) {
           const lat = 0.6 + 0.4 * Math.sin(t / 300 + d.x);
@@ -680,6 +717,32 @@ export class EscenaGuerra extends Phaser.Scene {
       }
     });
     this.unidades.forEach((o, uid) => { if (!usados.has(uid)) { o.spr.destroy(); this.unidades.delete(uid); } });
+  }
+
+  /* Un iconito con la forma de cada orden: se reconoce sin leer */
+  private iconoOrden(g: Phaser.GameObjects.Graphics, tipo: string, x: number, y: number): void {
+    const r = T * 0.07, col: Record<string, number> = { explorar: 0x8fd8ff, defender: 0xe9e2cf, conquistar: 0xf0cf6a, matanza: 0xff7a6a, reforzar: 0x9af27a, curarse: 0x9af27a };
+    const c = col[tipo] || 0xffffff;
+    g.fillStyle(0x08060c, 0.9).fillCircle(x, y, r * 1.35);
+    g.lineStyle(Math.max(1.5, r * 0.28), c, 1);
+    if (tipo === "explorar") { g.strokeCircle(x, y, r * 0.75); g.fillStyle(c, 1).fillCircle(x, y, r * 0.3); }
+    else if (tipo === "defender") { g.fillStyle(c, 1).fillRect(x - r * 0.6, y - r * 0.6, r * 1.2, r * 1.2); }
+    else if (tipo === "conquistar") { g.lineBetween(x - r * 0.5, y + r * 0.8, x - r * 0.5, y - r * 0.8); g.fillStyle(c, 1).fillTriangle(x - r * 0.5, y - r * 0.8, x + r * 0.8, y - r * 0.4, x - r * 0.5, y); }
+    else if (tipo === "matanza") { g.lineBetween(x - r * 0.65, y - r * 0.65, x + r * 0.65, y + r * 0.65); g.lineBetween(x + r * 0.65, y - r * 0.65, x - r * 0.65, y + r * 0.65); }
+    else if (tipo === "reforzar") { g.lineBetween(x - r * 0.7, y, x + r * 0.6, y); g.fillStyle(c, 1).fillTriangle(x + r * 0.8, y, x + r * 0.2, y - r * 0.5, x + r * 0.2, y + r * 0.5); }
+    else { g.fillStyle(c, 1).fillRect(x - r * 0.18, y - r * 0.7, r * 0.36, r * 1.4); g.fillRect(x - r * 0.7, y - r * 0.18, r * 1.4, r * 0.36); }
+  }
+  /* La caja de selección (Mayús + arrastrar) */
+  private caja: { id: number; x0: number; y0: number; x1: number; y1: number } | null = null;
+  private gCaja: Phaser.GameObjects.Graphics | null = null;
+  private pintarCaja(): void {
+    if (!this.gCaja) this.gCaja = this.add.graphics().setDepth(40);
+    const g = this.gCaja; g.clear();
+    const k = this.caja;
+    if (!k) return;
+    const x = Math.min(k.x0, k.x1) * T, y = Math.min(k.y0, k.y1) * T, w = (Math.abs(k.x1 - k.x0) + 1) * T, h = (Math.abs(k.y1 - k.y0) + 1) * T;
+    g.fillStyle(0xf0cf6a, 0.12).fillRect(x, y, w, h);
+    g.lineStyle(Math.max(2, T * 0.04), 0xf0cf6a, 0.9).strokeRect(x, y, w, h);
   }
 
   /* ===================================================================== resaltes */
@@ -776,6 +839,7 @@ export class EscenaGuerra extends Phaser.Scene {
       else if (e.k === "cura") add("cura", 300, { uid: e.uid, x: e.x, y: e.y, n: e.n }, true);
       else if (e.k === "consagra" || e.k === "aura" || e.k === "muro") add("onda", 380, { x: e.x, y: e.y, que: e.k, dueno: e.dueno });
       else if (e.k === "mejora") add("texto", 500, { x: e.x, y: e.y, texto: e.texto });
+      else if (e.k === "leyendas") add("leyendas", 900, { x: e.x, y: e.y });
     });
     return { items, total: cursor };
   }
@@ -908,6 +972,8 @@ export class EscenaGuerra extends Phaser.Scene {
         if (!it.hecho) { it.hecho = true; if (!saltando && this.visibleEn(it.x, it.y)) { this.onda(it.x, it.y, it.que === "consagra" ? "#ffe9a6" : it.que === "muro" ? "#b98cff" : "#fff0b0", 4.6); this.sonar(it.que === "consagra" ? "consagra" : "magia"); } }
       } else if (it.tipo === "texto") {
         if (!it.hecho) { it.hecho = true; if (!saltando) this.texto(it.x, it.y, it.texto, "#e8ff7a"); }
+      } else if (it.tipo === "leyendas") {
+        if (!it.hecho) { it.hecho = true; if (!saltando) { A.lento = performance.now() + 1400; this.onda(it.x, it.y, "#f0cf6a", 3.4); this.texto(it.x, it.y, "Duelo de leyendas", "#f0cf6a"); this.cameras.main.shake(260, 0.006); } }
       }
     });
   }

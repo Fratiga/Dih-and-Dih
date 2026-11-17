@@ -63,6 +63,10 @@
       "{bando} invocó a {nombre} en {ciudad}.",
       "En {ciudad} apareció {nombre}, llamado por {bando}."
     ],
+    leyendas: [
+      "{a} y {b} se enfrentaron. Los dos ejércitos pararon a mirar.",
+      "Hubo duelo de leyendas: {a} atacó a {b}."
+    ],
     heroe_cae: [
       "{nombre} cayó en {region}{por}.",
       "En {region} se deshizo el eco de {nombre}{por}."
@@ -128,7 +132,7 @@
     const datos = {
       por: e.por ? `${e.por}` : "", ciudad: e.ciudad, region: e.region, bando: bandoDe(e.dueno), rival: rivalDe(e.dueno), nombre: e.nombre, escuela: e.escuela,
       reliquia: e.reliquia, edificio: e.edificio, estado: e.estado, estado_min: e.estado ? e.estado.charAt(0).toLowerCase() + e.estado.slice(1) : "",
-      compania: ROMANOS[e.compania] || e.compania || ""
+      compania: ROMANOS[e.compania] || e.compania || "", a: e.a, b: e.b
     };
     let clave = e.tipo === "conquista" && e.capital ? (J.length > 2 ? "capitalVarios" : "capital") : e.tipo === "caida" && e.capitan ? "caidaCapitan" : e.tipo;
     if (!PLANTILLAS[clave]) return null;

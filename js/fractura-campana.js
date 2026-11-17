@@ -210,7 +210,7 @@
       const fac = FACCIONES[ej.faccion];
       const r = { s: ej.rs };
       const mezcla = ["guerrero", "cazador", "guerrero", "cazador", "picaro", "paladin"];
-      const propia = (FACCIONES[ej.faccion].clasesExtra || []).find(c => !CLASES[c].requiere.edificio && c !== "sanador");
+      const propia = (FACCIONES[ej.faccion].clasesExtra || []).find(c => !CLASES[c].requiere.edificio && !CLASES[c].sanador);
       if (propia) mezcla.splice(4, 2, propia, propia);
       for (let i = 0; i < falta; i++) {
         let clase = mezcla[(soldados.length + i) % mezcla.length];

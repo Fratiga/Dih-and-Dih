@@ -27,8 +27,8 @@
     mravec: { odia: [], gusto: "rico" }, nernib: { odia: ["mravec"], gusto: "invasor" }, balutia: { odia: [], gusto: "debil" }
   };
   const PREF_EDIFICIO = {
-    militar: ["granja", "aserradero", "cuartel", "mina", "mercado", "herreria", "santuario", "arsenal", "academia_militar", "banco", "biblioteca", "fortaleza"],
-    magico: ["granja", "santuario", "aserradero", "mina", "biblioteca", "mercado", "cuartel", "torre_magia", "banco", "herreria"]
+    militar: ["granja", "aserradero", "cuartel", "mina", "mercado", "herreria", "santuario", "arsenal", "academia_militar", "banco", "biblioteca", "fortaleza", "transmutacion"],
+    magico: ["granja", "santuario", "aserradero", "mina", "biblioteca", "mercado", "cuartel", "torre_magia", "banco", "herreria", "transmutacion"]
   };
   const PESOS_CLASE = { guerrero: 3, cazador: 2.2, picaro: 1, paladin: 1.4, arcanista: 1.6, caballero: 2.4, archimago: 2.2, esqueleto: 3, ballestero: 2.4, mercenario: 2.6, sanador: 1.4, eco: 1,
     capo: 1.2, maestro: 2.2, berserker: 2.6, barrilero: 1.2, quimera: 2.2, automata: 2.4, condenado: 2.6,
@@ -84,7 +84,7 @@
     let v = 1;
     if (t.lider) v += 3;
     if (t.s && (t.s.capitan || S.rangoIndice(t.s.victorias + (t.vicG || 0)) >= 2)) v += 1.5;
-    if (["arcanista", "archimago", "eco", "cazador", "ballestero", "sanador"].includes(t.clase)) v += 0.6;
+    if (["arcanista", "archimago", "eco", "cazador", "ballestero"].includes(t.clase) || CLASES[t.clase].sanador) v += 0.6;
     if (t.dueno === -1) v = t.guardia ? 1.1 : 0.6;
     return v;
   }
@@ -118,7 +118,7 @@
   }
 
   function mejorAccionDeAtaque(est, u, azar, nivel) {
-    if (u.atacado || u.clase === "sanador") return null;
+    if (u.atacado || CLASES[u.clase].sanador) return null;
     const e = FM.ef(est, u);
     const info = FM.alcanzables(est, u);
     const posiciones = [{ x: u.x, y: u.y, recorrido: u.recorrido, c: 0 }];
@@ -128,6 +128,8 @@
     else if (!u.quieto) return null;
     let mejor = null;
     if (FM.enTregua(est) && u.dueno >= 0) { /* durante la tregua solo se ataca a las criaturas */ }
+    // Quien retiene el Núcleo del Sueño es el blanco de todos: cuanto más lleva, más urge echarlo
+    const nuc = est.nucleo, enNucleo = t => nuc && t.dueno >= 0 && est.nucleoHold[t.dueno] > 0 && FM.ocupa(t, nuc.x, nuc.y);
     const enemigos = Object.values(est.unidades).filter(w => FM.hostil(est, w.dueno, u.dueno) && !(FM.enTregua(est) && w.dueno >= 0));
     posiciones.forEach(p => {
       enemigos.forEach(t => {
@@ -141,6 +143,7 @@
         // Preferir quedarse en buen terreno
         puntos += TERRENOS[est.casillas[p.y][p.x].t].def * 0.4;
         if (nivel === "dificil" && t.hp < FM.ef(est, t).hpMax) puntos += 0.8;
+        if (enNucleo(t)) puntos += 8 + est.nucleoHold[t.dueno] * 2.5;
         if (!mejor || puntos > mejor.puntos) mejor = { puntos, p, t, ev };
       });
     });
@@ -169,10 +172,14 @@
     const cuenta = {};
     mios.forEach(u => { cuenta[u.clase] = (cuenta[u.clase] || 0) + 1; });
     const total = Math.max(1, mios.length);
+    // Contra un ejército de no muertos (Osses) hacen falta más magos: la magia les pega 2 más
+    const contraMuertos = est.jugadores.some((o, k) => k !== j && !o.eliminado && FACCIONES[o.faccion].mods.sinComida && FM.hostil(est, k, j));
     let mejor = null;
     FM.clasesDisponibles(est, j).forEach(cl => {
       if (FM.razonNoReclutar(est, j, ciudad.id, cl)) return;
       let peso = (PESOS_CLASE[cl] || 1);
+      const mago = (CLASES[cl].tipo || []).includes("magia");
+      if (contraMuertos && mago) peso *= 2.2;
       if (CLASES[cl].naval) {
         const nivelMar = (FACCIONES[jug.faccion].naval || {}).nivel;
         peso *= (GANA_MAR[nivelMar] === undefined ? 0.8 : GANA_MAR[nivelMar]) * pesoMar(est) * 0.85;
@@ -182,8 +189,8 @@
       }
       const deseado = peso / 12;
       let puntos = (deseado - (cuenta[cl] || 0) / total) * 10 + azar() * 1.5;
-      if (cl === "arcanista" && (cuenta[cl] || 0) >= 3) puntos -= 4;
-      if (["sanador", "eco", "archimago"].includes(cl) && (cuenta[cl] || 0) >= 2) puntos -= 4;
+      if (cl === "arcanista" && (cuenta[cl] || 0) >= (contraMuertos ? 6 : 3)) puntos -= 4;
+      if ((CLASES[cl].sanador || ["eco", "archimago"].includes(cl)) && (cuenta[cl] || 0) >= 2) puntos -= 4;
       const coste = FM.costeReclutar(est, j, cl, ciudad);
       puntos -= Object.values(coste).reduce((a, b) => a + b, 0) * 0.08;
       if (!mejor || puntos > mejor.puntos) mejor = { cl, puntos };
@@ -218,6 +225,20 @@
         else if (!ed && c.edificios.length >= c.nivel + 2 && c.nivel < 4 && jug.recursos.oro >= 14 && jug.recursos.materiales >= 14) FM.aplicar(est, { t: "mejorar", ciudad: c.id });
       }
     });
+    // Obras y transmutación: en lo que se va lo que sobra
+    const rec = jug.recursos;
+    FM.ciudadesDe(est, j).forEach(c => {
+      const amenaza = Object.values(est.unidades).some(w => w.dueno >= 0 && w.dueno !== j && FM.hostil(est, w.dueno, j) && cheb(w, c) <= 3);
+      if (amenaza && !(c.obras && c.obras.fortificar >= est.turno) && rec.materiales >= 16 && rec.oro >= 10) FM.aplicar(est, { t: "obra", ciudad: c.id, id: "fortificar" });
+      if (c.edificios.includes("transmutacion")) {
+        const orden = D.RECURSOS.filter(k => k !== "anima").sort((a, b) => rec[b] - rec[a]);
+        const mucho = orden[0], poco = orden[orden.length - 1];
+        if (rec[mucho] >= 30 && rec[poco] < 10) FM.aplicar(est, { t: "transmutar", ciudad: c.id, de: mucho, a: poco, n: 6 });
+      }
+    });
+    const capO = FM.ciudadesDe(est, j).find(c => c.capital);
+    if (capO && FM.cuentaTropas(est, j) >= FM.limiteTropas(est, j) && rec.comida >= 24 && rec.oro >= 24) FM.aplicar(est, { t: "obra", ciudad: capO.id, id: "fiesta" });
+    if (capO && rec.oro >= 40 && rec.comida >= 20 && FM.cuentaTropas(est, j) < FM.limiteTropas(est, j) - 2) FM.aplicar(est, { t: "obra", ciudad: capO.id, id: "levas" });
     // Reclutamiento
     const tope = Math.min(FM.limiteTropas(est, j), 5 + Math.floor(est.turno * 0.7) + (nivel === "dificil" ? 2 : 0));
     FM.ciudadesDe(est, j).forEach(c => {
@@ -346,7 +367,7 @@
         if (cheb(u, cerca) > 0) { metas = [cerca]; clave = `casa${cerca.id}`; }
         else return;
       }
-      if (!metas && ["arcanista", "archimago", "eco", "sanador", "cazador", "ballestero"].includes(u.clase)) {
+      if (!metas && (["arcanista", "archimago", "eco", "cazador", "ballestero"].includes(u.clase) || CLASES[u.clase].sanador)) {
         // Los de apoyo avanzan solo con escolta
         const escolta = FM.unidadesDe(est, j).some(o => o !== u && !o.lider && CLASES[o.clase].alc === 1 && cheb(o, u) <= 2);
         if (!escolta && est.turno > 1) {
@@ -367,7 +388,11 @@
         // El más valioso por distancia; el rival tiene prioridad si la capital propia está en peligro
         // Los barcos no toman ciudades: una flota rondando la capital no es motivo para encerrarse
         const amenaza = Object.values(est.unidades).filter(o => esRival(o.dueno) && cheb(o, capPropia) <= 4 && !FM.esBarco(o));
-        if (amenaza.length >= 2 && cheb(u, capPropia) <= 6) { metas = [capPropia]; clave = "defensa"; }
+        // Si un rival retiene el Núcleo, todo el que pueda llegar va a echarlo. Al final de la cuenta, van todos.
+        const retiene = est.nucleoHold.findIndex((n, k) => n > 0 && esRival(k));
+        const urge = retiene >= 0 ? est.nucleoHold[retiene] >= est.hold - 2 : false;
+        if (retiene >= 0 && (urge || cheb(u, nuc) <= 14) && !(amenaza.length >= 3 && cheb(u, capPropia) <= 3)) { metas = [nuc]; clave = "nucleo"; }
+        else if (amenaza.length >= 2 && cheb(u, capPropia) <= 6) { metas = [capPropia]; clave = "defensa"; }
         else {
           libres.forEach(l => { l.s = l.v * 3 - cheb(u, l) * 0.9 + azar() * 1.2; });
           // Repartir: no mandar a todos al mismo sitio
@@ -412,10 +437,15 @@
       const h = u.heroe ? HEROES[u.heroe] : null;
       const junto = (x, y) => Object.values(est.unidades).filter(w => cheb(w, { x, y }) <= 1);
       if (h) {
+        const enemigos = Object.values(est.unidades).filter(w => esRival(w.dueno) || (w.dueno === -1 && (w.errante || w.guardia)));
+        const cerca = (p, r) => enemigos.filter(w => cheb(w, p) <= r);
+        const mios = r => FM.unidadesDe(est, j).filter(w => cheb(w, u) <= r);
+        const usar = (n, extra) => aplicar(Object.assign({ t: "habilidad", id: "heroe", uid: u.uid, n }, extra || {})).ok;
         for (const n of [1, 2]) {
           const ab = n === 2 ? h.ef.activa2 : h.ef.activa;
           if (!ab || (n === 2 ? u.cd2 : u.cd) > 0 || (ab.coste && !FM.puedePagar(jug, ab.coste))) continue;
-          if (ab.id === "area" && !tregua) {
+          const id = ab.id;
+          if (id === "area" && !tregua) {
             let mejor = null;
             for (let y = u.y - ab.alc; y <= u.y + ab.alc; y++) for (let x = u.x - ab.alc; x <= u.x + ab.alc; x++) {
               if (!FM.dentro(est, x, y)) continue;
@@ -423,18 +453,63 @@
               const v = dianas.length + dianas.filter(w => w.hp <= ab.dano).length;
               if (v >= 2 && (!mejor || v > mejor.v)) mejor = { x, y, v };
             }
-            if (mejor && aplicar({ t: "habilidad", id: "heroe", uid: u.uid, n, x: mejor.x, y: mejor.y }).ok) return true;
-          } else if (ab.id === "curar") {
+            if (mejor && usar(n, { x: mejor.x, y: mejor.y })) return true;
+          } else if (id === "curar") {
             const heridos = FM.unidadesDe(est, j).filter(w => cheb(w, u) <= ab.radio && w.hp <= FM.ef(est, w).hpMax - 3);
-            if (heridos.length >= 2 && aplicar({ t: "habilidad", id: "heroe", uid: u.uid, n }).ok) return true;
-          } else if (ab.id === "formar") {
-            const cercaEnemigo = Object.values(est.unidades).some(w => esRival(w.dueno) && cheb(w, u) <= 3);
-            if (cercaEnemigo && FM.vecinosAliados(est, u).length >= 2 && aplicar({ t: "habilidad", id: "heroe", uid: u.uid, n }).ok) return true;
-          } else if (ab.id === "contratar") {
-            const t = junto(u.x, u.y).find(w => w.dueno === -1);
-            if (t && aplicar({ t: "habilidad", id: "heroe", uid: u.uid, n, x: t.x, y: t.y }).ok) return true;
-          } else if (ab.id === "alzar") {
-            if (est.tumbas.some(t => t.dueno === j) && aplicar({ t: "habilidad", id: "heroe", uid: u.uid, n }).ok) return true;
+            if (heridos.length >= 2 && usar(n)) return true;
+          } else if (id === "formar" || id === "muralla" || id === "marea" || id === "ocultar") {
+            if (cerca(u, 3).length && mios(ab.radio || 1).length >= 3 && usar(n)) return true;
+          } else if (id === "reino") {
+            if (cerca(u, 4).length >= 2 && mios(ab.radio).filter(w => w !== u && w.atacado).length >= 3 && usar(n)) return true;
+          } else if (id === "contratar" || id === "comprar") {
+            const t = Object.values(est.unidades).find(w => cheb(w, u) <= (ab.alc || 1) && (w.dueno === -1 || (esRival(w.dueno) && id === "comprar" && !w.heroe && !w.lider && !FM.esBarco(w) && (!w.s || S.rangoIndice(w.s.victorias + (w.vicG || 0)) === 0))));
+            if (t && usar(n, { x: t.x, y: t.y })) return true;
+          } else if (id === "pagaDoble") {
+            const merc = FM.unidadesDe(est, j).filter(w => w.clase === "mercenario" && !w.atacado && cerca(w, 2).length);
+            if (merc.length >= 2 && usar(n)) return true;
+          } else if (id === "reparar") {
+            if (mios(ab.radio).some(w => (FM.esBarco(w) || CLASES[w.clase].sinComida) && w.hp <= FM.ef(est, w).hpMax - 4) && usar(n)) return true;
+          } else if (id === "montaje") {
+            if (est.turno > 2 && usar(n)) return true;
+          } else if (id === "miasma") {
+            if (cerca(u, ab.radio).filter(w => w.dueno >= 0).length >= 2 && usar(n)) return true;
+          } else if (id === "sello") {
+            const ci = FM.ciudadesDe(est, j).find(c => cheb(c, u) <= ab.alc && (c.asedio || cerca(c, 1).length));
+            if (ci && usar(n, { x: ci.x, y: ci.y })) return true;
+          } else if (id === "alzar") {
+            if (est.tumbas.some(t => t.dueno === j && cheb(t, u) <= (ab.radio || 99)) && usar(n)) return true;
+          } else if (id === "juicio") {
+            const t = cerca(u, ab.alc).filter(w => FM.veUnidad(est, j, w)).sort((a, b) => a.hp - b.hp)[0];
+            if (t && usar(n, { x: t.x, y: t.y })) return true;
+          } else if (id === "alba") {
+            const algo = Object.values(est.unidades).some(w => cheb(w, u) <= ab.radio && FM.consagradaPara(est, j, w.x, w.y) && (esRival(w.dueno) || (w.dueno === j && w.hp < FM.ef(est, w).hpMax - 3)));
+            if (algo && usar(n)) return true;
+          } else if (id === "corte") {
+            if (FM.vecinosEnemigos(est, u).length >= 2 && usar(n)) return true;
+          } else if (id === "desafio") {
+            const t = cerca(u, ab.alc).filter(w => w.dueno >= 0 && FM.veUnidad(est, j, w)).sort((a, b) => (b.heroe ? 1 : 0) - (a.heroe ? 1 : 0) || b.hp - a.hp)[0];
+            if (t && (t.heroe || t.lider || (t.s && t.s.capitan)) && usar(n, { x: t.x, y: t.y })) return true;
+          } else if (id === "salto" && ab.golpe) {
+            let mejor = null;
+            for (let y = u.y - ab.alc; y <= u.y + ab.alc; y++) for (let x = u.x - ab.alc; x <= u.x + ab.alc; x++) {
+              const c = FM.casilla(est, x, y);
+              if (!c || FM.unidadEn(est, x, y) || TERRENOS[c.t].mov === 0) continue;
+              const v = cerca({ x, y }, 1).filter(w => w.dueno >= 0).length;
+              if (v >= 2 && (!mejor || v > mejor.v)) mejor = { x, y, v };
+            }
+            if (mejor && usar(n, { x: mejor.x, y: mejor.y })) return true;
+          } else if (id === "engullir") {
+            const t = FM.vecinosEnemigos(est, u).find(w => !w.heroe && !w.lider && w.hp * 3 <= FM.ef(est, w).hpMax);
+            if (t && usar(n, { x: t.x, y: t.y })) return true;
+          } else if (id === "linea") {
+            let mejor = null;
+            for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+              if (!dx && !dy) continue;
+              let v = 0;
+              for (let k = 1; k <= ab.largo; k++) { const w = FM.unidadEn(est, u.x + dx * k, u.y + dy * k); if (w && FM.hostil(est, w.dueno, j)) v++; }
+              if (v >= 2 && (!mejor || v > mejor.v)) mejor = { x: u.x + dx, y: u.y + dy, v };
+            }
+            if (mejor && usar(n, { x: mejor.x, y: mejor.y })) return true;
           }
         }
         return false;
@@ -475,6 +550,158 @@
     return pasos;
   }
 
+
+  /* =========================================================================
+     ÓRDENES DE LAS TROPAS DEL JUGADOR. Cada turno, antes de terminarlo, las tropas con orden la cumplen solas
+     con la misma lógica que la máquina. Devuelve los avisos (órdenes que se cortan o se cumplen).
+     aplicar(acc) es la función que aplica la acción (en una mesa también la anota para enviarla).
+  ========================================================================= */
+  const ORDENES = {
+    explorar: { nombre: "Explorar", ic: "◉", texto: "Va hacia lo que no se ve y evita las peleas. Se para si ve a un enemigo más fuerte o le queda poca vida." },
+    defender: { nombre: "Defender", ic: "■", texto: "Se queda donde está y ataca a lo que se acerque a 2 casillas. No se corta nunca." },
+    conquistar: { nombre: "Conquistar", ic: "⚑", texto: "Marcha hacia la ciudad que elijas y la asedia. Se para al tomarla o si queda muy herida." },
+    matanza: { nombre: "Matanza", ic: "✕", texto: "Busca al enemigo más cercano o más débil y lo ataca. Se para si queda muy herida." },
+    reforzar: { nombre: "Reforzar", ic: "➜", texto: "Va al punto de reunión de su ciudad. Al llegar se queda defendiéndolo." },
+    curarse: { nombre: "Curarse", ic: "✚", texto: "Vuelve a la ciudad propia más cercana y espera a estar sana. Luego vuelve a su orden anterior." }
+  };
+  const fuerzaDe = (est, w) => w.hp * Math.max(1, FM.ef(est, w).atq);
+  const nunca = () => 0.99;
+
+  function moverHacia(est, u, metas, aplicar, opts) {
+    opts = opts || {};
+    if (!metas.length || u.pm <= 0) return false;
+    const w = est.ancho;
+    const modo = FM.esBarco(u) ? "mar" : (FM.puedeEmbarcar(est, u.dueno) ? "anfibio" : "tierra");
+    const cm = campo(est, metas, modo);
+    const actual = cm[u.y * w + u.x];
+    let mejor = null;
+    FM.alcanzables(est, u).destinos.forEach(n => {
+      let v = cm[n.y * w + n.x];
+      if (v >= 1e9) return;
+      v -= TERRENOS[est.casillas[n.y][n.x].t].def * 0.2;
+      if (opts.cauto) v += Object.values(est.unidades).filter(o => FM.hostil(est, o.dueno, u.dueno) && (o.dueno >= 0 || o.errante || o.guardia) && cheb(o, n) <= 2).length * 3;
+      if (!mejor || v < mejor.v) mejor = { v, n };
+    });
+    if (mejor && mejor.v < actual - 0.2) return aplicar({ t: "mover", uid: u.uid, x: mejor.n.x, y: mejor.n.y }).ok;
+    return false;
+  }
+  /* El mejor golpe sin moverse */
+  function ataqueAqui(est, u) {
+    if (u.atacado || CLASES[u.clase].sanador) return null;
+    const alc = FM.ef(est, u).alc;
+    let mejor = null;
+    Object.values(est.unidades).forEach(t => {
+      if (!FM.hostil(est, t.dueno, u.dueno) || FM.razonNoAtacar(est, u, t)) return;
+      if (t.dueno === -1 && !t.guardia && !t.errante) return;
+      if (cheb(u, t) > alc) return;
+      const ev = evaluarAtaque(est, u, { x: u.x, y: u.y }, t);
+      if (ev && (!mejor || ev.puntos > mejor.puntos)) mejor = { t, puntos: ev.puntos };
+    });
+    return mejor && mejor.puntos > 0 ? mejor.t : null;
+  }
+  function golpear(est, u, aplicar, a) {
+    if (!a) return false;
+    if (a.p.x !== u.x || a.p.y !== u.y) { if (!aplicar({ t: "mover", uid: u.uid, x: a.p.x, y: a.p.y }).ok) return false; }
+    if (est.unidades[u.uid] && !u.atacado) return aplicar({ t: "atacar", uid: u.uid, x: a.t.x, y: a.t.y }).ok;
+    return true;
+  }
+  function golpearAqui(est, u, aplicar) {
+    if (!est.unidades[u.uid] || u.atacado) return false;
+    const t = ataqueAqui(est, u);
+    return t ? aplicar({ t: "atacar", uid: u.uid, x: t.x, y: t.y }).ok : false;
+  }
+
+  function cumplirOrdenes(est, j, aplicar) {
+    cacheAlc = new Map();
+    const avisos = [];
+    const avisa = (u, texto) => avisos.push({ uid: u.uid, x: u.x, y: u.y, texto: `${FM.nombreUnidad(u)} ${texto}` });
+    const esRival = d => d !== null && d >= 0 && FM.hostil(est, d, j);
+    const peligrosos = w => FM.hostil(est, w.dueno, j) && (w.dueno >= 0 || w.errante || w.guardia);
+    FM.unidadesDe(est, j).filter(u => u.orden && ORDENES[u.orden.tipo]).forEach(u => {
+      if (est.ganador !== null || est.activo !== j || !est.unidades[u.uid] || !u.orden) return;
+      const e = FM.ef(est, u), o = u.orden;
+      // Muy herida: vuelve a curarse (las que defienden aguantan)
+      if (o.tipo !== "curarse" && o.tipo !== "defender" && u.hp <= e.hpMax * 0.35 && FM.ciudadesDe(est, j).length && !FM.esBarco(u)) {
+        u.orden = { tipo: "curarse", anterior: o };
+        avisa(u, "está muy herida y vuelve a curarse.");
+      }
+      const ord = u.orden;
+      if (ord.tipo === "explorar") {
+        const amenaza = Object.values(est.unidades).find(w => peligrosos(w) && FM.veUnidad(est, j, w) && cheb(w, u) <= 3 && fuerzaDe(est, w) >= fuerzaDe(est, u));
+        if (amenaza) { delete u.orden; avisa(u, "ve un enemigo más fuerte y espera órdenes."); return; }
+        const vis = est.vision[j], metas = [];
+        const barco = FM.esBarco(u);
+        for (let y = 0; y < est.alto; y++) for (let x = 0; x < est.ancho; x++) {
+          if (vis[y * est.ancho + x] > 0) continue;
+          const t = est.casillas[y][x].t;
+          if (barco ? t !== "agua" : TERRENOS[t].mov === 0) continue;
+          metas.push({ x, y, d: cheb(u, { x, y }) });
+        }
+        if (!metas.length) { delete u.orden; avisa(u, "no tiene nada más por explorar."); return; }
+        metas.sort((a, b) => a.d - b.d || a.y - b.y || a.x - b.x);
+        moverHacia(est, u, metas.slice(0, 24), aplicar, { cauto: true });
+        return;
+      }
+      if (ord.tipo === "defender") {
+        const ancla = { x: ord.x, y: ord.y };
+        const a = mejorAccionDeAtaque(est, u, nunca, "normal");
+        if (a && cheb(a.p, ancla) <= 2) { golpear(est, u, aplicar, a); return; }
+        if (cheb(u, ancla) > 0) moverHacia(est, u, [ancla], aplicar);
+        golpearAqui(est, u, aplicar);
+        return;
+      }
+      if (ord.tipo === "conquistar") {
+        const ci = est.ciudades[ord.ciudad];
+        if (!ci) { delete u.orden; avisa(u, "ya no tiene ciudad que conquistar."); return; }
+        if (ci.dueno === j) { delete u.orden; avisa(u, `ha tomado ${ci.nombre} y espera órdenes.`); return; }
+        if (ci.dueno !== null && !esRival(ci.dueno)) { delete u.orden; avisa(u, `no puede atacar ${ci.nombre}: es de un aliado.`); return; }
+        if (u.x === ci.x && u.y === ci.y) { golpearAqui(est, u, aplicar); return; }
+        const a = mejorAccionDeAtaque(est, u, nunca, "normal");
+        if (a && cheb(a.p, ci) <= cheb(u, ci)) { golpear(est, u, aplicar, a); return; }
+        moverHacia(est, u, [ci], aplicar);
+        golpearAqui(est, u, aplicar);
+        return;
+      }
+      if (ord.tipo === "matanza") {
+        const a = mejorAccionDeAtaque(est, u, nunca, "normal");
+        if (a) { golpear(est, u, aplicar, a); return; }
+        const vistos = Object.values(est.unidades).filter(w => peligrosos(w) && FM.veUnidad(est, j, w));
+        let metas = vistos.length ? vistos.slice().sort((p, q) => cheb(u, p) - cheb(u, q)).slice(0, 4).map(w => ({ x: w.x, y: w.y })) : null;
+        if (!metas) {
+          const ciu = Object.values(est.ciudades).filter(c => esRival(c.dueno) && est.vision[j][c.y * est.ancho + c.x] > 0);
+          if (ciu.length) metas = ciu.sort((p, q) => cheb(u, p) - cheb(u, q)).slice(0, 2).map(c => ({ x: c.x, y: c.y }));
+        }
+        if (!metas) { delete u.orden; avisa(u, "no encuentra enemigos y espera órdenes."); return; }
+        moverHacia(est, u, metas, aplicar);
+        golpearAqui(est, u, aplicar);
+        return;
+      }
+      if (ord.tipo === "reforzar") {
+        const dest = { x: ord.x, y: ord.y };
+        if (cheb(u, dest) > 1) moverHacia(est, u, [dest], aplicar);
+        if (est.unidades[u.uid] && cheb(u, dest) <= 1) { u.orden = { tipo: "defender", x: u.x, y: u.y }; avisa(u, "llega al punto de reunión y se queda a defenderlo."); }
+        golpearAqui(est, u, aplicar);
+        return;
+      }
+      if (ord.tipo === "curarse") {
+        const propias = FM.ciudadesDe(est, j);
+        if (!propias.length) { if (ord.anterior) u.orden = ord.anterior; else delete u.orden; return; }
+        const aqui = propias.find(c => c.x === u.x && c.y === u.y);
+        if (aqui) {
+          if (u.hp >= e.hpMax * 0.9) {
+            if (ord.anterior) u.orden = ord.anterior; else delete u.orden;
+            avisa(u, ord.anterior ? `está curada y vuelve a ${ORDENES[ord.anterior.tipo].nombre.toLowerCase()}.` : "está curada y espera órdenes.");
+          }
+          return;
+        }
+        const libres = propias.filter(c => !FM.unidadEn(est, c.x, c.y));
+        const destino = (libres.length ? libres : propias).slice().sort((p, q) => cheb(u, p) - cheb(u, q))[0];
+        moverHacia(est, u, [destino], aplicar);
+      }
+    });
+    return avisos;
+  }
+
   /* Juega el turno completo del jugador j y lo termina */
   function turnoCompleto(est, j) {
     if (est.activo !== j || est.ganador !== null) return [];
@@ -483,6 +710,6 @@
     return pasos;
   }
 
-  raiz.FracturaIA = { jugarTurno, turnoCompleto, campo, marRelevante };
+  raiz.FracturaIA = { jugarTurno, turnoCompleto, campo, marRelevante, cumplirOrdenes, ORDENES };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FracturaIA;
 })(typeof window !== "undefined" ? window : globalThis);
