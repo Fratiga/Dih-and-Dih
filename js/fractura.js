@@ -2071,6 +2071,13 @@ pintarHero();
         <li><strong>Heridas.</strong> Quien cae a veces sobrevive con una herida grave y pasa 2 guerras convaleciente. Ayudan la Voluntad y la Constitución. Cada vez que se salva por poco suma una cicatriz.</li>
         <li><strong>Apodos.</strong> Se ganan por lo que hace: matar un líder o un héroe, salvarse una y otra vez, hacer muchas bajas a un mismo ejército, cazar monstruos, las cicatrices... Nadie del mismo ejército repite apodo.</li></ul>
         <p>Cómo se llevan entre ellos y con el enemigo está en <strong>Relaciones</strong>.</p>`],
+      ["equipo", "Equipo y reliquias", `<p>Cada soldado tiene cuatro huecos: <strong>arma</strong>, <strong>armadura</strong>, <strong>accesorio</strong> y <strong>estandarte</strong>. Solo un capitán puede llevar estandarte. Lo que hace cada objeto sale en la ficha del soldado y en la pestaña Reliquias.</p>
+        <ul><li><strong>Qué dan.</strong> Las armas suelen dar ataque o alcance; las armaduras, defensa y vida; los accesorios, cosas como movimiento, visión o curación. Los estandartes ayudan a los aliados a 2 casillas o menos.</li>
+        <li><strong>Dónde se encuentran.</strong> Al registrar unas ruinas (más a menudo en ${esc(TIPOS_FRACTURA.archivo ? TIPOS_FRACTURA.archivo.nombre : "el Archivo")}) y en lo que dejan los guardianes de ruinas y fortalezas al caer.</li>
+        <li><strong>Durante la guerra.</strong> Quien recoge una reliquia se la pone si tiene el hueco libre. Si no, va al reliquiario. Cuando cae un soldado, lo que llevaba se queda en el suelo y lo puede recoger cualquiera, también el enemigo.</li>
+        <li><strong>Al acabar la guerra.</strong> Lo que llevan tus soldados vivos y lo del reliquiario vuelve contigo. Lo que quedó en el suelo lo recuperas si ganas; si pierdes, puedes perderlo. Lo que se llevó el enemigo, se pierde.</li>
+        <li><strong>Entre guerras.</strong> Equipa y quita reliquias desde la ficha de cada soldado. Las de los caídos vuelven al reliquiario.</li>
+        <li><strong>Herencias.</strong> Si una reliquia pasa de un padre a su hijo, queda anotada como herencia en su historia.</li></ul>`],
       ["relaciones", "Relaciones", `<p>Así se relacionan tus soldados entre ellos y con el enemigo. Todo queda en la ficha de cada uno, en Familia y compañeros, Manías y Su historia.</p>
         <ul><li><strong>Compañeros de armas.</strong> Cada guerra que dos soldados pasan juntos cuenta. Con 3 o más ya son compañeros y sale en sus fichas.</li>
         <li><strong>Luto.</strong> Si cae alguien con quien combatió al menos 3 guerras, queda de luto: +1 de ataque durante 3 guerras. Por cada caído, solo los dos que más guerras compartieron con él. Lleva un brazalete negro en el retrato.</li>
