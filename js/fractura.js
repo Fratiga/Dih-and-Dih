@@ -2058,11 +2058,19 @@ pintarHero();
           <li>Al elegir el contingente automático, los capitanes van primero.</li>
           <li>Cuidado: si el capitán cae, su compañía pelea con −1 de ataque durante 3 turnos. Y el enemigo lo trata como oficial: va a por él.</li></ul></li>
         <li><strong>Heridas.</strong> Quien cae a veces sobrevive con una herida grave y pasa 2 guerras convaleciente. Ayudan la Voluntad y la Constitución. Cada vez que se salva por poco suma una cicatriz.</li>
-        <li><strong>Luto.</strong> Si muere alguien con quien combatió al menos 3 guerras, queda de luto: +1 de ataque durante 3 guerras. Por cada caído, solo los dos que más guerras compartieron con él.</li>
-        <li><strong>Manías.</strong> Se le notan según cómo lo uses: si pelea de lejos o cuerpo a cuerpo, el terreno que prefiere, el ejército al que más bajas hace, si se salva por poco a menudo... Salen en su ficha.</li>
-        <li><strong>Apodos.</strong> Se ganan por lo que hace: matar un líder o un héroe, salvarse una y otra vez, hacer muchas bajas a un mismo ejército, cazar monstruos, las cicatrices... Nadie del mismo ejército repite apodo.</li>
-        <li><strong>Familias.</strong> Los veteranos pueden formar familia y sus hijos se alistan con el apellido de la casa.</li>
-        <li><strong>Némesis.</strong> Quien mata a uno de tus veteranos y sobrevive vuelve en otra guerra como capitán enemigo.</li></ul>`],
+        <li><strong>Apodos.</strong> Se ganan por lo que hace: matar un líder o un héroe, salvarse una y otra vez, hacer muchas bajas a un mismo ejército, cazar monstruos, las cicatrices... Nadie del mismo ejército repite apodo.</li></ul>
+        <p>Cómo se llevan entre ellos y con el enemigo está en <strong>Relaciones</strong>.</p>`],
+      ["relaciones", "Relaciones", `<p>Así se relacionan tus soldados entre ellos y con el enemigo. Todo queda en la ficha de cada uno, en Familia y compañeros, Manías y Su historia.</p>
+        <ul><li><strong>Compañeros de armas.</strong> Cada guerra que dos soldados pasan juntos cuenta. Con 3 o más ya son compañeros y sale en sus fichas.</li>
+        <li><strong>Luto.</strong> Si cae alguien con quien combatió al menos 3 guerras, queda de luto: +1 de ataque durante 3 guerras. Por cada caído, solo los dos que más guerras compartieron con él. Lleva un brazalete negro en el retrato.</li>
+        <li><strong>Parejas e hijos.</strong> Un veterano de 28 años o más, con 10 victorias y 4 años de servicio, puede formar familia. Su pareja puede ser alguien de fuera o un compañero con el que lleve 4 guerras o más. Los hijos crecen en el cuartel y se alistan a los 16 años, con el apellido de la casa. La mitad de las veces siguen el oficio de su padre o su madre.</li>
+        <li><strong>Casas y herencias.</strong> Cada apellido es una casa, con su árbol en la pestaña Casas. Una reliquia que pasa de padres a hijos queda anotada como herencia.</li>
+        <li><strong>Capitanes y compañías.</strong> Una compañía es su capitán y hasta 4 soldados. Pelean mejor juntos (+1 de defensa cerca de su capitán) y lo pasan mal si lo pierden (−1 de ataque durante 3 turnos).</li>
+        <li><strong>Manías.</strong> Se le notan según cómo lo uses: si pelea de lejos o cuerpo a cuerpo, el terreno que prefiere, si se salva por poco a menudo, si remata rezagados, si entra el primero en las ciudades...</li>
+        <li><strong>Rencores.</strong> El ejército al que más bajas hace un soldado queda entre sus manías («Le tiene ganas a...»). Con muchas bajas al mismo puede ganarse el apodo de Azote de ese ejército.</li>
+        <li><strong>Ejércitos que se odian.</strong> Cada ejército odia a otros por su historia (Osses odia a todos los vivos). Si pactas con uno de ellos, algunos de tus soldados se niegan y se vuelven contra todos.</li>
+        <li><strong>Némesis.</strong> Si un enemigo mata a uno de tus veteranos y sobrevive a la guerra, se convierte en tu némesis. Vuelve en otra guerra como capitán enemigo, con su nombre, su apodo y sus victorias. Si lo matas, desaparece para siempre y queda en la crónica.</li>
+        <li><strong>Desertores.</strong> Quien traiciona un pacto pierde soldados. Esos desertores pueden aparecer después en las filas de otro ejército cuando entrena la misma tropa.</li></ul>`],
       ["teclas", "Teclas", `<p><kbd>N</kbd> siguiente tropa · <kbd>E</kbd> terminar turno · <kbd>C</kbd> ir a tus tropas · <kbd>A</kbd> alcance de los enemigos · <kbd>I</kbd> saber · <kbd>+</kbd> <kbd>−</kbd> zoom · <kbd>Esc</kbd> soltar o abrir el menú. Arrastra el mapa para moverlo.</p>`]
     ];
   }
