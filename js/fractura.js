@@ -661,11 +661,14 @@ pintarHero();
   /* =========================================================================
      FICHA DE UN SOLDADO
   ========================================================================= */
+  /* Lo que hace una reliquia (el texto de su ficha; si no lo trae, el de su modelo) */
+  const textoReliquia = r => r.texto || (D.RELIQUIAS[r.def] ? D.RELIQUIAS[r.def].texto : "") || "";
   /* Lo que hace cada característica en este soldado, en una línea */
   const signo = n => (n > 0 ? `+${n}` : `${n}`);
   function efectoStat(s, k) {
     const cl = CLASES[s.clase] || {}, v = s.stats ? s.stats[k] : 5, pega = cl.atqEstat === k;
-    const atq = pega ? `${signo(Math.floor((v - 5) / 3))} al ataque (su tropa pega con esto). ` : "";
+    const ma = Math.floor((v - 5) / 3);
+    const atq = pega ? (ma ? `${signo(ma)} al ataque (su tropa pega con esto). ` : "Su tropa pega con esto, pero aún no le suma ataque (con 8, +1). ") : "";
     if (k === "FUE") return `${atq}${pega ? "" : "Su tropa no pega con fuerza."}`;
     if (k === "CON") return `${signo(S.modHp(s))} de vida. Ayuda a salir vivo de una herida grave.`;
     if (k === "VEL") return `${atq}${S.modMov(s) ? `${signo(S.modMov(s))} de movimiento.` : "Movimiento normal (con 9 o más, +1)."}`;
@@ -689,7 +692,7 @@ pintarHero();
       const rid = s.equipo && s.equipo[slot];
       const r = rid && ej.reliquias[rid];
       const libres = C.reliquiasLibres(ej).filter(x => x.slot === slot);
-      return `<div class="fr-slot"><b>${SLOT_NOMBRE[slot]}</b> ${r ? `${esc(r.nombre)} <button type="button" class="fr-enlace" data-quita="${slot}">quitar</button>` : (slot === "estandarte" && !s.capitan) ? "<small>solo capitanes</small>" : vivo && libres.length ? `<select data-pon-equipo="${slot}"><option value="">Equipar...</option>${libres.map(x => `<option value="${x.id}">${esc(x.nombre)}</option>`).join("")}</select>` : "<small>nada</small>"}</div>`;
+      return `<div class="fr-slot"><b>${SLOT_NOMBRE[slot]}</b> ${r ? `${esc(r.nombre)} <button type="button" class="fr-enlace" data-quita="${slot}">quitar</button><small class="fr-slot-ef">${esc(textoReliquia(r))}</small>` : (slot === "estandarte" && !s.capitan) ? "<small>solo capitanes</small>" : vivo && libres.length ? `<select data-pon-equipo="${slot}"><option value="">Equipar...</option>${libres.map(x => `<option value="${x.id}">${esc(x.nombre)} · ${esc(textoReliquia(x))}</option>`).join("")}</select>` : "<small>nada</small>"}</div>`;
     }).join("");
     const rel = C.relaciones(ej, s).map(r => `<li>${esc(r.tipo)} <button type="button" class="fr-enlace" data-ficha-otro="${r.s.id}">${esc(nombreApodo(r.s))}</button></li>`).join("");
     const caps = C.capitanes(ej);

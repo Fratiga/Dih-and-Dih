@@ -605,3 +605,4 @@ article.fr-mesa header h4 { margin: 0; font-size: 1rem; color: var(--fr-marfil);
 .fr-ficha-ret canvas { max-width: 100%; height: auto; }
 /* La franja de la carta (A la guerra / Quitar) en una sola línea, sin que se monten las letras en cartas estrechas */
 .fr-carta-accion { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; letter-spacing: .08em; padding: 5px 4px; }
+.fr-slot .fr-slot-ef { display: block; margin: 1px 0 6px; font-size: .78rem; color: #9a8f86; }
