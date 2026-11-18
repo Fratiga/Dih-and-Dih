@@ -12,9 +12,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Almendra:ital,wght@0,400;0,700;1,400;1,700&family=Press+Start+2P&family=Special+Elite&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/buhonero.css?v=20271111">
-  <link rel="stylesheet" href="css/hipodromo.css?v=20271238">
-  <link rel="stylesheet" href="css/hipodromo-criadero.css?v=20271190">
-  <link rel="stylesheet" href="css/hipodromo-juego.css?v=20271238">
+  <link rel="stylesheet" href="css/hipodromo.css?v=20271240">
+  <link rel="stylesheet" href="css/hipodromo-criadero.css?v=20271240">
+  <link rel="stylesheet" href="css/hipodromo-juego.css?v=20271240">
   <script>if (/[?&]cuadra(&|$)/.test(location.search)) document.documentElement.classList.add("hip-pleno");</script>
 </head>
 <body class="mj-pagina hip-tema hip-juego" data-fase="abierta" data-pestana="inicio">
@@ -79,6 +79,7 @@
         <div class="hip-col-principal">
           <section id="hipPrograma" class="hip-tarjeta hip-programa" aria-label="Próxima carrera"></section>
           <section id="hipCopas" class="hip-tarjeta hip-copas" aria-label="Copas de la semana"></section>
+          <section id="hipCalendario" class="hip-tarjeta hidden" aria-label="Próximas carreras"></section>
           <section class="hip-tarjeta" aria-label="Inscritas">
             <h3>Inscritas</h3>
             <div id="hipInscritos"></div>
@@ -168,6 +169,11 @@
       <button type="button" id="hipCriaMas" class="hip-boton hidden">Mostrar más</button>
     </div>
 
+    <!-- SUBASTAS: el corro. Los lotes viajan en el perfil público de cada criatura (js/hipodromo-pagina.js, «el corro de subastas») -->
+    <div id="hipPanel-subastas" class="hip-panel hidden">
+      <div id="hipSubastas"></div>
+    </div>
+
     <!-- NOTICIAS -->
     <div id="hipPanel-noticias" class="hip-panel hidden">
       <div id="hipNoticiasLista" class="hip-noticias"></div>
@@ -177,9 +183,19 @@
     <div id="hipPanel-novedades" class="hip-panel hip-novedades hidden">
       <p class="hip-nota">Lo último que se añadió al hipódromo y dónde encontrarlo.</p>
       <section>
+        <h3>18 de noviembre</h3>
+        <ul>
+          <li><strong>Subastas.</strong> Hay un sitio nuevo en el recinto, el corro de subastas (también en la barra de abajo, tecla 5). La casa saca cada día una cría de buen linaje. Para subastar una tuya: Mi cuadra, su ficha, botón «Subastar».</li>
+          <li><strong>Divisa de la cuadra.</strong> En Mi cuadra, botón «Divisa». Eliges dos colores, un dibujo y un emblema. Sale junto a tu nombre en el programa, en las fichas y en el registro.</li>
+          <li><strong>Obras.</strong> En Mi cuadra, botón «Obras»: más plazas (hasta 8), enfermería y pista de entrenamiento.</li>
+          <li><strong>Patrocinar una carrera.</strong> En Carrera, bloque «Próximas carreras», botón «Patrocinar». Lo que pones sube la bolsa y puedes ponerle nombre a la carrera.</li>
+          <li><strong>Cuadras y salón de la fama.</strong> En Mundo: cada cuadra con su vitrina de copas, y las leyendas del hipódromo.</li>
+        </ul>
+      </section>
+      <section>
         <h3>14 de noviembre</h3>
         <ul>
-          <li><strong>El hipódromo es ahora un recinto.</strong> Se entra por el dibujo del hipódromo: cada cartel lleva a una sección. La barra de abajo hace lo mismo, y también las teclas del 1 al 9. A la izquierda está el programa de la próxima carrera con sus inscritas.</li>
+          <li><strong>El hipódromo es ahora un recinto.</strong> Se entra por el dibujo del hipódromo: cada cartel lleva a una sección. La barra de abajo hace lo mismo, y también las teclas del 1 al 9 y el 0. A la izquierda está el programa de la próxima carrera con sus inscritas.</li>
           <li><strong>El marcador.</strong> Arriba tienes el reloj de la carrera, tus tokens (púlsalos para ver tus apuestas), el sonido y la pantalla completa (tecla F).</li>
           <li><strong>Avisos de tu cuadra.</strong> Ahora te llega un aviso si una criatura tuya se lesiona, se retira, se escapa o muere. La que se retira por una lesión pasa a la cría y sigue en tu cuadra. Los avisos están en Mi cuadra, botón «Avisos».</li>
         </ul>
@@ -212,6 +228,8 @@
     <!-- MUNDO -->
     <div id="hipPanel-mundo" class="hip-panel hidden">
       <div id="hipMundoDatos"></div>
+      <section id="hipCuadras" class="hip-tarjeta hidden" aria-label="Las cuadras de los jugadores"></section>
+      <section id="hipFama" class="hip-tarjeta" aria-label="Salón de la fama"></section>
       <section id="hipCuadrasNpc" class="hip-tarjeta" aria-label="Las cuadras del mundo"></section>
       <div class="hip-tarjeta hip-solo-local">
         <h3>Ajustes de prueba</h3>
@@ -230,6 +248,7 @@
       <button type="button" role="tab" data-pestana="carrera" aria-selected="false" class="hj-dock-principal"><i data-ico="carrera"></i><span>Carrera</span></button>
       <button type="button" role="tab" data-pestana="cuadra" aria-selected="false"><i data-ico="cuadra"></i><span>Mi cuadra</span></button>
       <button type="button" role="tab" data-pestana="criaturas" aria-selected="false"><i data-ico="criaturas"></i><span>Criaturas</span></button>
+      <button type="button" role="tab" data-pestana="subastas" aria-selected="false"><i data-ico="subastas"></i><span>Subastas</span></button>
       <button type="button" role="tab" data-pestana="cartas" aria-selected="false"><i data-ico="cartas"></i><span>Cartas</span></button>
       <button type="button" role="tab" data-pestana="noticias" aria-selected="false"><i data-ico="noticias"></i><span>Noticias</span></button>
       <button type="button" role="tab" data-pestana="apuestas" aria-selected="false"><i data-ico="apuestas"></i><span>Mis apuestas</span></button>
@@ -251,20 +270,20 @@
   <script src="js/hipodromo-rasgos.js?v=20271111"></script>
   <script src="js/hipodromo-npc.js?v=20271203"></script>
   <script src="js/hipodromo-motor.js?v=20271203"></script>
-  <script src="js/hipodromo-dibujo.js?v=20271120"></script>
+  <script src="js/hipodromo-dibujo.js?v=20271240"></script>
   <script src="js/hipodromo-vida.js?v=20271121"></script>
   <script src="js/hipodromo-criadero-objetos.js?v=20271193"></script>
   <script src="js/hipodromo-criadero.js?v=20271193"></script>
   <script src="js/hipodromo-pista.js?v=20271111"></script>
   <script src="js/hipodromo-espera.js?v=20271111"></script>
   <script src="js/hipodromo-glosario.js?v=20271111"></script>
-  <script src="js/hipodromo-sonido.js?v=20271201"></script>
-  <script src="js/hipodromo-recinto.js?v=20271202"></script>
+  <script src="js/hipodromo-sonido.js?v=20271240"></script>
+  <script src="js/hipodromo-recinto.js?v=20271240"></script>
   <script src="js/hipodromo-cartas.js?v=20271111"></script>
-  <script src="js/hipodromo-cuadra.js?v=20271194"></script>
+  <script src="js/hipodromo-cuadra.js?v=20271240"></script>
   <script src="js/fichas-supabase.js?v=20271111"></script>
-  <script src="js/hipodromo-online.js?v=20271111"></script>
-  <script src="js/hipodromo-pagina.js?v=20271238"></script>
+  <script src="js/hipodromo-online.js?v=20271240"></script>
+  <script src="js/hipodromo-pagina.js?v=20271240"></script>
   <script src="js/interruptores.js?v=20271111"></script>
   <script src="js/avisos-admin.js?v=20271111"></script>
   <script src="js/musica-paginas.js?v=20271111"></script>

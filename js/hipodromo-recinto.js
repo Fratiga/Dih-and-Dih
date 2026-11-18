@@ -19,6 +19,8 @@ window.HipodromoRecinto = (function () {
     mundo: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
     novedades: '<rect x="4" y="4" width="16" height="12"/><path d="M8 16v5M16 16v5M8 8h8M8 11h5"/>',
     vivo: '<path d="M8 5l11 7-11 7z"/>',
+    subastas: '<path d="M10.5 6.5l4-4 5 5-4 4z"/><path d="M12.5 8.5L4 17"/><path d="M12 21h9"/>',
+    trofeo: '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8"/>',
     sonido: '<path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/>',
     pleno: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'
   };
@@ -31,6 +33,7 @@ window.HipodromoRecinto = (function () {
     { id: "vivo", nombre: "En vivo", x: 60, y: 23.5, enlace: "hipodromo-vivo.html" },
     { id: "cuadra", nombre: "Mi cuadra", x: 40, y: 29.5 },
     { id: "mundo", nombre: "Mundo", x: 83.2, y: 21 },
+    { id: "subastas", nombre: "Subastas", x: 93.6, y: 43.6 },
     { id: "apuestas", nombre: "Mis apuestas", x: 90, y: 59.5 },
     { id: "criaturas", nombre: "Criaturas", x: 42.5, y: 75 },
     { id: "novedades", nombre: "Novedades", x: 55.8, y: 77 },
@@ -43,10 +46,11 @@ window.HipodromoRecinto = (function () {
     carrera: ["La pista", "Carrera", "El programa, las inscritas y tu boleto para la próxima carrera."],
     cartas: ["El carromato del Buhonero", "Cartas", "Cambia cartas por tokens de juego, o tokens por cartas."],
     criaturas: ["El paddock", "Criaturas", "Todas las criaturas del mundo, con su ficha."],
+    subastas: ["El corro de subastas", "Subastas", "Criaturas que salen a puja. Se las lleva quien más ofrece."],
     noticias: ["El quiosco", "Noticias", "Lo que se cuenta en el hipódromo."],
     novedades: ["El tablón", "Novedades", "Lo último que se añadió y dónde encontrarlo."],
     apuestas: ["La taquilla", "Mis apuestas", "Tus tokens, lo que tienes en juego y tu historial."],
-    mundo: ["El registro", "Mundo", "El mundo en cifras y las cuadras de la tribuna."]
+    mundo: ["El registro", "Mundo", "El mundo en cifras, las cuadras y el salón de la fama."]
   };
 
   /* ---------------------------------------------------------------- el dibujo */
@@ -154,6 +158,18 @@ window.HipodromoRecinto = (function () {
     <g class="hj-vuelta v1"><g class="hj-mira">${bicho("#b98a4e")}</g></g><g class="hj-vuelta v2"><g class="hj-mira">${bicho("#8f8f96")}</g></g><g class="hj-vuelta v3"><g class="hj-mira">${bicho("#a5523a")}</g></g>
   </g>
 
+  <!-- el corro de subastas: un redondel de arena con el estrado del subastador -->
+  <g>
+    <ellipse cx="1512" cy="500" rx="68" ry="9" fill="#000" opacity=".16"/>
+    <ellipse cx="1512" cy="490" rx="62" ry="18" fill="#d9c38c"/>
+    <ellipse cx="1512" cy="490" rx="62" ry="18" fill="none" stroke="#7b4a2c" stroke-width="4"/>
+    <path d="M1452 484v13M1474 475v12M1550 475v12M1572 484v13" stroke="#7b4a2c" stroke-width="5" stroke-linecap="round"/>
+    <rect x="1540" y="436" width="34" height="40" fill="#5a3a22"/><rect x="1536" y="432" width="42" height="7" fill="#3d2416"/>
+    <path d="M1532 436v-22M1582 436v-22" stroke="#4a2f19" stroke-width="3"/>
+    <path d="M1526 416 h62 l-8 -18 h-46z" fill="#6e1f2b"/><path d="M1541 398 l-3 18 h13 l1 -18z M1564 398 l1 18 h13 l-5 -18z" fill="#f2edd5"/>
+    <g transform="translate(1498 494) scale(.9)">${bicho("#8a5a3c")}</g>
+  </g>
+
   <!-- la taquilla -->
   <g>
     <ellipse cx="1456" cy="642" rx="64" ry="8" fill="#000" opacity=".16"/>
@@ -224,7 +240,7 @@ window.HipodromoRecinto = (function () {
   function montar() {
     const lienzo = document.getElementById("hjLienzo");
     if (lienzo && !lienzo.firstChild) lienzo.innerHTML = arte();
-    document.querySelectorAll(".hj-dock [data-ico]").forEach((i, k) => { i.innerHTML = icono(i.dataset.ico); const b = i.closest("button"); if (b && k < 9) b.insertAdjacentHTML("beforeend", `<kbd>${k + 1}</kbd>`); });
+    document.querySelectorAll(".hj-dock [data-ico]").forEach((i, k) => { i.innerHTML = icono(i.dataset.ico); const b = i.closest("button"); if (b && k < 10) b.insertAdjacentHTML("beforeend", `<kbd>${(k + 1) % 10}</kbd>`); });
     const pl = document.getElementById("hjPleno"); if (pl) pl.innerHTML = icono("pleno");
     const so = document.getElementById("hjSonido"); if (so) so.innerHTML = icono("sonido");
     Object.keys(CABECERAS).forEach(id => {

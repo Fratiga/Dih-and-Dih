@@ -576,3 +576,12 @@ body[data-fase="corriendo"] .hip-fase::before { background: var(--hip-rojo); ani
 /* Rendimiento: la respiración y la cola de las siluetas avanzan a saltos (unos 10 por segundo), no en cada fotograma */
 .hip-silueta.grande .hip-resp, .hip-silueta.mediana .hip-resp { animation-timing-function: steps(38); }
 .hip-silueta.grande .hip-cola, .hip-silueta.mediana .hip-cola { animation-timing-function: steps(46); }
+
+/* La divisa de una cuadra (js/hipodromo-dibujo.js, divisa): una casaca pequeña junto al nombre. Sin tamaño, un SVG ocuparía todo el ancho */
+.hip-divisa { display: inline-block; flex: none; width: 1.15em; height: 1.15em; vertical-align: -.2em; color: var(--muted); }
+.hip-divisa.mini { width: 1.1em; height: 1.1em; margin-right: .3em; }
+.hip-divisa.chica { width: 30px; height: 30px; }
+.hip-divisa.media { width: 1.6em; height: 1.6em; margin-right: .35em; vertical-align: -.4em; }
+.hip-divisa.grande { width: 96px; height: 96px; }
+.hip-emblema { display: block; width: 22px; height: 22px; }
+.hj-cuadra { display: inline-flex; align-items: center; white-space: nowrap; }

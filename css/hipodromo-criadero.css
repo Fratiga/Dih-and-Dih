@@ -167,3 +167,26 @@ button.hip-ar-b:hover { border-color: var(--accent); }
 
 .hip-tienda-ben { display: block; margin-top: 3px; font: 600 .74rem Karla, sans-serif; color: var(--hip-verde); }
 .hip-tienda-ben.deco { color: var(--muted); font-weight: 400; }
+
+/* ---- el taller de la divisa y las obras (js/hipodromo-cuadra.js) */
+.hcp-barra h2 .hip-divisa { width: 1.3em; height: 1.3em; margin-right: .35em; vertical-align: -.25em; }
+.hip-dv-taller { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: center; margin: 8px 0 4px; }
+.hip-dv-maniqui { display: grid; place-items: center; height: 120px; background: #e9e1c6; border: 1px solid var(--border); box-shadow: 3px 3px 0 rgba(0, 0, 0, .3); }
+.hip-dv-maniqui .hip-divisa.grande { width: 104px; height: 104px; }
+.hip-muestras { display: flex; flex-wrap: wrap; gap: 6px; }
+.hip-muestra { width: 26px; height: 26px; padding: 0; background: var(--c); border: 2px solid rgba(0, 0, 0, .45); cursor: pointer; transition: transform .12s cubic-bezier(.3, 1.6, .5, 1); }
+.hip-muestra span { display: none; }
+.hip-muestra:hover { transform: translateY(-2px); }
+.hip-muestra[aria-pressed="true"] { outline: 3px solid var(--text); outline-offset: 2px; }
+.hip-dv-ops { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 6px; }
+.hip-dv-op { display: grid; justify-items: center; gap: 2px; padding: 6px 2px 4px; background: rgba(0, 0, 0, .14); border: 1px solid var(--border); color: var(--text); cursor: pointer; font: 600 .66rem Karla, sans-serif; text-transform: capitalize; }
+.hip-dv-op i { font-style: normal; line-height: 22px; }
+.hip-dv-op:hover { border-color: var(--accent); }
+.hip-dv-op[aria-pressed="true"] { border-color: var(--accent); background: rgba(0, 0, 0, .28); color: var(--accent); }
+.hip-dv-pie { margin: 14px 0 4px; }
+.hip-obra-niv { display: inline-flex; gap: 3px; margin-left: 4px; vertical-align: 1px; }
+.hip-obra-niv i { width: 9px; height: 9px; border: 1px solid var(--accent-soft); transform: rotate(45deg); }
+.hip-obra-niv i.hecho { background: var(--accent); border-color: var(--accent); }
+.hip-obras li { grid-template-columns: 1fr auto; }
+@media (max-width: 520px) { .hip-dv-taller { grid-template-columns: 1fr; } }
+.hip-obras strong { display: inline; } .hip-obras small { display: block; margin-top: 2px; }

@@ -202,6 +202,7 @@ window.HipodromoOnline = (function () {
       calendario: () => calendarioFilas.map(x => Object.assign({}, x, { cierra: x.hora - C.MINUTOS * 60000 + C.APLICAR_SEG * 1000 })),
       adoptada: () => adoptada || cuadraFilas.length > 0,
       refrescarCuenta: async () => { await leerMiCuenta(); alCambiar("cuenta"); },
+      refrescarDatos: async () => { if (enCurso || parado) return; await refrescarTrasOrden(); },   // criaturas y cuenta (las pujas del corro viajan en el perfil de cada lote)
       parar: () => { parado = true; clearTimeout(temporizador); }
     };
     return { ok: true, en };

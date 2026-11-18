@@ -457,3 +457,97 @@ body[data-fase="corriendo"] .hj-bandera { animation-timing-function: steps(10); 
 .hj-nube { animation-timing-function: steps(180); }
 .hj-nube.lenta { animation-timing-function: steps(180); }
 body[data-fase="corriendo"] .hj-gente, .hj-fondo.ovacion .hj-gente { animation-timing-function: steps(5); }
+
+/* ------------------------------------------------------------------ la cuadra como casa (noviembre de 2026)
+   Divisas junto a cada nombre, el patrocinio en el programa, el corro de subastas (arena, catálogo de papel y la pizarra del
+   subastador), las próximas carreras impresas, las placas de las cuadras con su balda de trofeos y el salón de la fama. */
+.hj-roster .hj-nom .hip-divisa { width: 13px; height: 13px; margin-right: 4px; vertical-align: -2px; }
+.hj-prog-pat { margin: 6px 0 0; padding: 5px 9px; border-left: 4px solid var(--laton-2); background: rgba(201, 164, 74, .14); font: 400 .82rem var(--maquina); color: var(--tinta); }
+.hip-juego .hip-insc-nombre .hj-cuadra .hip-divisa { width: 12px; height: 12px; }
+
+/* el corro: arena rastrillada dentro de un cerco de madera */
+.hip-juego #hipSubastas { padding: 20px 22px 24px; background-color: var(--arena); background-image: repeating-linear-gradient(172deg, rgba(90, 58, 34, .08) 0 2px, transparent 2px 11px); border: 10px solid var(--madera); outline: 3px solid var(--madera-3); box-shadow: 6px 6px 0 rgba(7, 18, 12, .55); color: var(--tinta); --text: #14241b; --muted: #55624f; --accent: #7d2419; --accent-soft: #8a7a52; --border: #b9ad88; }
+.hj-corro-reglas { margin: 0 0 18px; padding: 8px 12px; background: var(--papel); border-left: 5px solid var(--rojo); font: 400 .86rem var(--maquina); box-shadow: 3px 3px 0 rgba(61, 36, 22, .35); }
+.hj-corro-vacio { margin: 30px auto; max-width: 420px; text-align: center; font: 400 1rem var(--maquina); color: #5a3a22; }
+.hj-lotes { display: grid; gap: 18px; margin: 0; padding: 0; list-style: none; }
+.hj-lote { position: relative; display: grid; grid-template-columns: 64px 150px 1fr 200px; grid-template-areas: "num fig info piz" "num fig info acc"; gap: 6px 16px; align-items: start; padding: 14px 16px; background: var(--papel); background-image: repeating-linear-gradient(0deg, rgba(20, 36, 27, .03) 0 1px, transparent 1px 4px); box-shadow: 5px 5px 0 rgba(61, 36, 22, .45); animation: hjFila .45s cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(var(--i, 0) * 70ms); }
+.hj-lote.mando { box-shadow: 5px 5px 0 rgba(61, 36, 22, .45), inset 6px 0 0 #2f7d4a; }
+.hj-lote.mio { box-shadow: 5px 5px 0 rgba(61, 36, 22, .45), inset 6px 0 0 var(--laton-2); }
+.hj-lote-num { grid-area: num; display: grid; justify-items: center; align-content: start; align-self: stretch; padding-top: 4px; border-right: 2px dashed #b9ad88; }
+.hj-lote-num span { font: 600 .62rem Karla, sans-serif; letter-spacing: .24em; text-transform: uppercase; color: var(--rojo-2); }
+.hj-lote-num b { font: 700 2.2rem var(--font-heading), serif; line-height: 1; }
+.hj-lote-fig { grid-area: fig; align-self: center; }
+.hj-lote-fig .hip-silueta.mediana { width: 150px; }
+.hj-lote-info { grid-area: info; min-width: 0; }
+.hj-lote-info h3 { margin: 0 0 4px; font: 700 1.3rem var(--font-heading), serif; }
+.hj-lote-info h3 .hip-enlace { color: var(--tinta); }
+.hj-lote-info p { margin: 2px 0; font-size: .86rem; }
+.hj-lote-pizarra { grid-area: piz; display: grid; gap: 2px; padding: 8px 12px; background: var(--pizarra); border: 5px solid var(--madera); color: #f3f1e4; }
+.hj-lote-pizarra span { font: 600 .62rem Karla, sans-serif; letter-spacing: .2em; text-transform: uppercase; color: #a9c0c4; }
+.hj-lote-pizarra strong { font: 400 1.7rem var(--maquina); line-height: 1.1; }
+.hj-lote-pizarra small { font-size: .72rem; color: #cfd8d4; }
+.hj-lote-pizarra .hj-cuadra { color: #f3f1e4; }
+.hj-lote-accion { grid-area: acc; display: grid; gap: 6px; }
+.hj-lote-accion label { display: grid; gap: 3px; font: 400 .78rem var(--maquina); }
+.hip-pagina .hj-lote-accion input[type="number"] { width: 100%; padding: 7px 9px; background: #f8f3df; color: var(--tinta); border: 1px solid var(--tinta); border-radius: 0; font: 400 1.05rem var(--maquina); }
+.hj-lote-accion .hip-boton.principal { padding: 10px; background: var(--rojo); color: #fff; border: 2px solid var(--rojo-2); border-radius: 0; font: 700 .86rem Karla, sans-serif; letter-spacing: .2em; text-transform: uppercase; box-shadow: 3px 3px 0 rgba(20, 36, 27, .4); }
+.hj-lote-accion .hip-boton.principal:hover:not(:disabled) { background: var(--rojo-2); }
+.hj-lote-accion .hip-boton.principal:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: none; }
+.hj-lote-accion .hip-boton.chico { background: transparent; color: var(--tinta); border: 1px solid var(--tinta); border-radius: 0; }
+.hj-lote-nota { margin: 0; font-size: .74rem; color: #55624f; }
+.hj-lote-mando { margin: 0; padding: 6px; border: 3px solid #2f7d4a; color: #2f7d4a; text-align: center; font: 700 .9rem var(--font-heading), serif; letter-spacing: .14em; text-transform: uppercase; transform: rotate(-3deg); }
+.hj-corro-avisos { margin-top: 20px; padding: 10px 14px; background: var(--papel); box-shadow: 3px 3px 0 rgba(61, 36, 22, .35); }
+.hj-corro-avisos h3 { margin: 0 0 6px; font: 400 .9rem var(--maquina); color: var(--rojo-2); }
+.hj-corro-avisos ul { margin: 0; padding: 0; list-style: none; font-size: .84rem; }
+.hj-corro-avisos small { font-family: var(--maquina); color: #55624f; margin-right: 4px; }
+@media (max-width: 860px) {
+  .hj-lote { grid-template-columns: 48px 1fr; grid-template-areas: "num info" "num fig" "num piz" "num acc"; }
+  .hj-lote-num b { font-size: 1.7rem; }
+  .hj-lote-fig .hip-silueta.mediana { width: 130px; margin: 0; }
+}
+
+/* las próximas carreras: el calendario impreso, con su patrocinio */
+.hip-juego #hipCalendario { --text: #14241b; --muted: #55624f; --accent: #7d2419; --accent-soft: #8a7a52; --border: #b9ad88; background-color: var(--papel); background-image: repeating-linear-gradient(0deg, rgba(20, 36, 27, .03) 0 1px, transparent 1px 4px); color: var(--tinta); border: 0; border-top: 5px solid var(--tinta); }
+.hip-juego #hipCalendario h3 { color: var(--tinta); }
+.hj-cal { font-size: .84rem; }
+.hj-cal th, .hj-cal td { border-color: #cfc4a0; vertical-align: middle; }
+.hj-cal td:first-child, .hj-cal td:nth-child(2), .hj-cal-bolsa { font-family: var(--maquina); white-space: nowrap; }
+.hj-cal-grado { display: block; font: 600 .6rem Karla, sans-serif; letter-spacing: .2em; text-transform: uppercase; color: var(--rojo-2); }
+.hj-cal strong { display: block; font: 700 .9rem var(--font-heading), serif; }
+.hj-cal small { display: block; font-size: .72rem; color: #5a3a22; }
+.hj-cal tr.pat td { background: rgba(201, 164, 74, .16); }
+.hj-cal tr.copa strong { color: var(--rojo-2); }
+.hj-cal .hip-boton { background: transparent; color: var(--tinta); border: 1px solid var(--tinta); border-radius: 0; white-space: nowrap; }
+.hj-cal .hip-boton:hover:not(:disabled) { background: var(--tinta); color: var(--marfil); }
+
+/* las cuadras de los jugadores: una placa, sus números y la balda de trofeos */
+.hj-casas { display: grid; gap: 18px; margin: 12px 0 0; padding: 0; list-style: none; }
+.hj-casa { display: grid; gap: 10px; padding: 14px 16px; background: var(--madera-2); border: 1px solid var(--madera-3); box-shadow: 5px 5px 0 rgba(7, 18, 12, .55); }
+.hj-casa.mia { outline: 2px solid var(--laton); outline-offset: -2px; }
+.hj-casa-placa { display: flex; align-items: center; gap: 12px; }
+.hj-casa-placa .hip-divisa.grande { width: 58px; height: 58px; color: #d9c38c; }
+.hj-casa-placa strong { display: block; font: 700 1.25rem var(--font-heading), serif; color: var(--marfil); letter-spacing: .04em; }
+.hj-casa-placa small { color: #dccfa8; font-size: .78rem; }
+.hj-casa-nums { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; }
+.hj-casa-nums div { display: grid; }
+.hj-casa-nums dt { font: 600 .6rem Karla, sans-serif; letter-spacing: .18em; text-transform: uppercase; color: var(--laton); }
+.hj-casa-nums dd { margin: 0; font: 400 1.15rem var(--maquina); color: var(--marfil); }
+.hj-casa-balda { min-height: 64px; padding: 8px 10px 12px; background: #4a2d1a; border-bottom: 8px solid #2a180e; }
+.hj-casa-balda p { margin: 12px 0 0; font: 400 .8rem var(--maquina); color: #b9a07a; }
+.hj-casa-balda ul { display: flex; gap: 10px; margin: 0; padding: 0; list-style: none; overflow-x: auto; scrollbar-width: thin; }
+.hj-casa-balda li { flex: none; display: grid; justify-items: center; width: 86px; text-align: center; color: var(--laton); }
+.hj-casa-balda li.copa { color: #e3c44a; }
+.hj-casa-balda li.gp { color: #bfc6c8; }
+.hj-casa-balda .hj-ico { width: 34px; height: 34px; stroke-width: 1.6; }
+.hj-casa-balda span { width: 100%; font: 600 .62rem Karla, sans-serif; color: var(--marfil); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hj-casa-balda small { width: 100%; font-size: .6rem; color: #b9a07a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hj-casa-cri { margin: 0; font-size: .84rem; color: #dccfa8; }
+
+/* el salón de la fama: retratos enmarcados */
+.hj-fama { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; margin: 12px 0 0; padding: 0; list-style: none; }
+.hj-fama button { display: grid; justify-items: center; gap: 2px; width: 100%; padding: 0 0 8px; background: none; border: 0; color: var(--marfil); cursor: pointer; text-align: center; font-family: Karla, sans-serif; transition: transform .14s cubic-bezier(.3, 1.6, .5, 1); }
+.hj-fama button:hover { transform: translateY(-3px); }
+.hj-fama-marco { display: block; width: 100%; padding: 8px; background: #e9e1c6; border: 7px solid var(--laton-2); outline: 2px solid var(--madera-3); box-shadow: 4px 4px 0 rgba(7, 18, 12, .55); margin-bottom: 6px; }
+.hj-fama-marco .hip-silueta.mediana { width: 100%; }
+.hj-fama strong { font: 700 .92rem var(--font-heading), serif; }
+.hj-fama small { font-size: .72rem; color: #dccfa8; }

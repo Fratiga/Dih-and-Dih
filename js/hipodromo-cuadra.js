@@ -25,17 +25,20 @@ window.HipodromoCuadraUI = (function () {
     let selId = null, panel = !pleno || window.innerWidth >= 700;
     const escena = window.HipodromoCriadero && window.HipodromoVida ? window.HipodromoCriadero.crear(api, { alSeleccionar: id => { selId = id; vista = "mias"; if (pleno) panel = true; pintar(true); } }) : null;
     const mon = x => api.monedas(x);
+    const casa = () => (api.cuadra ? api.cuadra() : { plazas: M.C.MAX_CABALLOS, ampliacion: 0, inst: { vet: 0, pista: 0 }, divisa: null });
+    const hayCasa = () => !!(api.casa && api.casa() && M.DIVISA);   // el servidor ya corre con el motor que sabe de divisas, obras y subastas
     const horaTxt = ms => new Date(ms).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
 
     let vista = "mias", mercOrden = "precio", mercMax = 12, enCurso = null;
+    let prueba = null;   // la divisa que se está probando en el taller (sin guardar)
     const semSel = {}, montaTxt = {};   // el semental elegido en cada cruce y lo escrito en el precio de monta: sobreviven a repintar
-    const TEXTO_ESPERA = { objeto: "Un momento...", entrenar: "Entrenando...", cuidar: "Cuidando...", inscribir: "Inscribiendo...", desinscribir: "Quitando...", comprar: "Comprando...", vender: "Vendiendo...", retirar: "Retirando...", nombre: "Bautizando...", cruzar: "Cruzando...", adoptar: "Adoptando...", monta: "Guardando..." };
+    const TEXTO_ESPERA = { divisa: "Pintando...", ampliar: "Construyendo...", instalacion: "Construyendo...", subastar: "Llevando al corro...", objeto: "Un momento...", entrenar: "Entrenando...", cuidar: "Cuidando...", inscribir: "Inscribiendo...", desinscribir: "Quitando...", comprar: "Comprando...", vender: "Vendiendo...", retirar: "Retirando...", nombre: "Bautizando...", cruzar: "Cruzando...", adoptar: "Adoptando...", monta: "Guardando..." };
     /* La orden que se está esperando pone su botón en «cargando» y los demás se apagan. Se llama después de cada dibujo, porque pintar() reescribe todo el HTML. */
     function marcarEspera() {
       if (!enCurso) return;
       const clave = `${enCurso.tipo}|${enCurso.id != null ? enCurso.id : enCurso.madre != null ? enCurso.madre : enCurso.objeto || ""}|${enCurso.n != null ? enCurso.n : ""}`;
       cont.querySelectorAll("[data-o]").forEach(b => {
-        if (`${b.dataset.o}|${b.dataset.id || b.dataset.objeto || ""}|${b.dataset.n || ""}` === clave) window.HipEspera.poner(b, TEXTO_ESPERA[enCurso.tipo]);
+        if (`${b.dataset.o}|${b.dataset.id || b.dataset.objeto || ""}|${b.dataset.n || ""}` === clave || (b.dataset.o === enCurso.tipo && !b.dataset.id && !b.dataset.objeto && enCurso.id == null && enCurso.objeto == null)) window.HipEspera.poner(b, TEXTO_ESPERA[enCurso.tipo]);
         else b.disabled = true;
       });
     }
@@ -76,6 +79,7 @@ window.HipodromoCuadraUI = (function () {
       if (p.lesion) sellos.push(`<span class="hip-sello rojo">${esc(p.lesion.tipo)}</span>`);
       if (c.entreno) sellos.push(`<span class="hip-sello">entrena ${esc(STATS[c.entreno.stat].toLowerCase())} hasta la n.º ${c.entreno.hasta}</span>`);
       if (p.estado === "criador") sellos.push(`<span class="hip-sello">${T("criador", "en la cría")}</span>`);
+      if (p.subasta) sellos.push(`<span class="hip-sello oro">en subasta${p.subasta.pujador ? `: ${mon(p.subasta.puja)}` : ""}</span>`);
       if (c.cruce && c.cruce.length) sellos.push(`<span class="hip-sello oro">espera cría de ${esc(c.cruce[0].padre)} (n.º ${c.cruce[0].n})</span>`);
       if (c.entradas && c.entradas.length) sellos.push(`<a class="hip-sello" href="hipodromo.html#carrera" title="Ir a la carrera">inscrita en la n.º ${c.entradas.map(en => en.n).join(", ")}</a>`);
       const cap = M.STATS.map(k => `<div class="hip-cap"><span>${T("cap_" + k, STATS[k])}</span>${barra(c.capacidades[k], 100)}<b>${c.capacidades[k]}</b>${c.mejoras[k] ? `<small class="${c.mejoras[k] > 0 ? "sube" : "baja"}">${c.mejoras[k] > 0 ? "+" : ""}${(Math.round(c.mejoras[k] * 10) / 10)}</small>` : ""}</div>`).join("");
@@ -84,7 +88,7 @@ window.HipodromoCuadraUI = (function () {
       let acciones = "";
       if (corre) {
         acciones += `<details data-d="ins${p.id}"${abierta("ins" + p.id)}><summary>${T("inscribir", "Inscribir en carreras")}${c.entradas.length ? ` (${c.entradas.length})` : ""}</summary>${calendarioHtml(c, p, cal)}</details>`;
-        acciones += `<details data-d="ent${p.id}"${abierta("ent" + p.id)}><summary>${T("entrenar", "Entrenar")}</summary><p class="hip-nota">Una sesión dura ${M.C.ENTRENO_CARRERAS} carreras y mientras dura no corre. Mejora una capacidad un poco (más en las jóvenes, menos cuanto más entrenada) y puede lesionarla. Cuesta ${mon(c.costeEntrenar != null ? c.costeEntrenar : M.C.ENTRENO_COSTE)}.</p>
+        acciones += `<details data-d="ent${p.id}"${abierta("ent" + p.id)}><summary>${T("entrenar", "Entrenar")}</summary><p class="hip-nota">Una sesión dura ${c.carrerasEntreno || M.C.ENTRENO_CARRERAS} carreras y mientras dura no corre. Mejora una capacidad un poco (más en las jóvenes, menos cuanto más entrenada) y puede lesionarla. Cuesta ${mon(c.costeEntrenar != null ? c.costeEntrenar : M.C.ENTRENO_COSTE)}.</p>
           <select data-stat="${p.id}">${M.STATS.map(k => `<option value="${k}">${STATS[k]}</option>`).join("")}</select> <button type="button" class="hip-boton chico" data-o="entrenar" data-id="${p.id}"${c.entreno || p.lesion ? " disabled" : ""}>Entrenar</button></details>`;
       }
       let fila = `<div class="hip-fila-acc">`;
@@ -92,7 +96,9 @@ window.HipodromoCuadraUI = (function () {
       fila += `<button type="button" class="hip-boton chico" data-o="cuidar" data-id="${p.id}"${c.puedeCuidar && (c.fatiga > 5 || p.lesion) ? "" : " disabled"} title="Quita ${c.quitaFatiga || 20} de cansancio y acorta una lesión">Cuidar (${c.costeCuidar != null ? c.costeCuidar : M.C.CUIDADO_COSTE})</button>`;
       if (!c.renombrada) fila += `<button type="button" class="hip-boton chico" data-o="nombre" data-id="${p.id}">Bautizar (${M.C.NOMBRE_COSTE})</button>`;
       if (corre) fila += `<button type="button" class="hip-boton chico" data-o="retirar" data-id="${p.id}">Retirar a la cría</button>`;
-      fila += `<button type="button" class="hip-boton chico" data-o="vender" data-id="${p.id}">Vender (${mon(c.venta)})</button></div>`;
+      fila += `<button type="button" class="hip-boton chico" data-o="vender" data-id="${p.id}"${p.subasta ? " disabled" : ""}>Vender (${mon(c.venta)})</button>`;
+      if (hayCasa()) fila += p.subasta ? `<a class="hip-boton chico" href="hipodromo.html${/[?&]local\b/.test(location.search) ? "?local" : ""}#subastas">Ver en el corro</a>` : `<button type="button" class="hip-boton chico" data-o="subastar" data-id="${p.id}" title="Llevarla al corro de subastas">Subastar</button>`;
+      fila += "</div>";
       if (p.estado === "criador" && p.sexo === "f" && !(c.cruce && c.cruce.length)) {
         const sel = semSel[p.id] != null && semental.some(s => s.id === semSel[p.id]) ? semSel[p.id] : (semental[0] ? semental[0].id : null);
         const sp = sel != null ? api.perfil(sel) : null;
@@ -111,7 +117,7 @@ window.HipodromoCuadraUI = (function () {
         <p class="hip-nota">${p.sexo === "f" ? "Hembra" : "Macho"} · ${esc(p.etapa)} · ${api.edadTxt(p)} · ${p.salidas ? `${p.salidas} salidas · ${p.vic}-${p.seg}-${p.ter}` : "sin salidas"}</p>
         <p class="hip-sellos">${sellos.join("")}</p>${chips(p) ? `<p class="hip-chips">${chips(p)}</p>` : ""}${temperamentoHtml(p)}<p class="hip-nota">Ahora mismo: <span data-ahora="${p.id}"></span></p></div></div>
         <div class="hip-caps"><div class="hip-cap"><span>${T("cansancio", "Cansancio")}</span>${barra(c.fatiga, 100, c.fatiga > 55 ? "mal" : "")}<b>${c.fatiga}</b></div><p class="hip-nota">${T("forma", "Forma")}: ${esc(c.forma)}.</p>${cap}<p class="hip-nota">Tu entrenador estima las ${T("capacidades", "capacidades")} de cinco en cinco. La suerte del día no sale ahí.</p></div>
-        ${fila}<p class="hip-cuidar-nota">Cuidar (${c.costeCuidar != null ? c.costeCuidar : M.C.CUIDADO_COSTE}): quita ${c.quitaFatiga || 20} de cansancio${p.lesion && p.lesion.gravedad !== "grave" ? ` y acorta la lesión un ${c.quitaLesion || 40} %` : ""}. Se puede cada ${M.C.CUIDADO_ESPERA} carreras.</p>${acciones}${familiaHtml(p)}${arbolHtml(p)}${carrerasHtml(p)}${historiaHtml(p)}</article>`;
+        ${fila}<p class="hip-cuidar-nota">Cuidar (${c.costeCuidar != null ? c.costeCuidar : M.C.CUIDADO_COSTE}): quita ${c.quitaFatiga || 20} de cansancio${p.lesion && p.lesion.gravedad !== "grave" ? ` y acorta la lesión un ${c.quitaLesion || 40} %` : ""}. Se puede cada ${c.esperaCuidar || M.C.CUIDADO_ESPERA} carreras.</p>${acciones}${familiaHtml(p)}${arbolHtml(p)}${carrerasHtml(p)}${historiaHtml(p)}</article>`;
     }
     /* El temperamento que se le nota en el criadero (js/hipodromo-criadero.js): solo presentación */
     function temperamentoHtml(p) {
@@ -227,6 +233,35 @@ window.HipodromoCuadraUI = (function () {
       return `<h3>Objetos del criadero</h3><p class="hip-nota">Aparecen en la escena y las criaturas los usan. No cambian las carreras. Algunos abaratan un poco el cuidado o el entrenamiento. Los de siempre (comedero, bebedero, refugio, cama de heno, poste y pelota) ya los tienes.</p>
         ${grupos.map(([g, t]) => `<p class="hip-tienda-grupo">${t}</p><ul class="hip-tienda">${Object.keys(cat).filter(id => cat[id].grupo === g).map(fila).join("")}</ul>`).join("")}`;
     }
+    /* La divisa: se prueba aquí (la casaca cambia al momento) y se guarda con un botón. Las cuadras de los demás no se pueden copiar (lo comprueba el motor). */
+    function divisaHtml() {
+      const DV = M.DIVISA, actual = casa().divisa, v = prueba || actual || { c1: "rojo", c2: "blanco", patron: "banda", emblema: "ninguno" };
+      const cambia = !actual || ["c1", "c2", "patron", "emblema"].some(k => actual[k] !== v[k]);
+      const muestras = k => Object.keys(DV.colores).map(c => `<button type="button" class="hip-muestra" data-dv="${k}" data-valor="${c}" aria-pressed="${v[k] === c}" title="${c}" style="--c:${DV.colores[c]}"><span class="hidden">${c}</span></button>`).join("");
+      const dibujos = DV.patrones.map(pt => `<button type="button" class="hip-dv-op" data-dv="patron" data-valor="${pt}" aria-pressed="${v.patron === pt}" title="${pt}">${D.divisa(Object.assign({}, v, { patron: pt, emblema: "ninguno" }), { clase: "chica" })}<small>${pt}</small></button>`).join("");
+      const emblemas = DV.emblemas.map(e => `<button type="button" class="hip-dv-op emb" data-dv="emblema" data-valor="${e}" aria-pressed="${v.emblema === e}" title="${e}">${e === "ninguno" ? "<i>—</i>" : D.emblema(e)}<small>${e}</small></button>`).join("");
+      return `<h3>Divisa de la cuadra</h3><p class="hip-nota">Los colores con los que corren tus criaturas. Salen junto a tu nombre en el programa, en las fichas y en el registro. La primera es gratis; cambiarla después cuesta ${mon(M.C.DIVISA_COSTE)}. Dos cuadras no pueden llevar los mismos colores con el mismo dibujo.</p>
+        <div class="hip-dv-taller"><div class="hip-dv-maniqui">${D.divisa(v, { clase: "grande" })}</div>
+          <div class="hip-dv-elige"><p class="hip-tienda-grupo">Color de fondo</p><div class="hip-muestras">${muestras("c1")}</div>
+            <p class="hip-tienda-grupo">Segundo color</p><div class="hip-muestras">${muestras("c2")}</div></div></div>
+        <p class="hip-tienda-grupo">Dibujo</p><div class="hip-dv-ops">${dibujos}</div>
+        <p class="hip-tienda-grupo">Emblema</p><div class="hip-dv-ops">${emblemas}</div>
+        <p class="hip-dv-pie">${cambia ? `<button type="button" class="hip-boton principal" data-o="divisa">${actual ? `Pintar la nueva divisa (${mon(M.C.DIVISA_COSTE)})` : "Estrenar esta divisa (gratis)"}</button>` : '<span class="hip-nota">Es la divisa con la que corres.</span>'}${prueba && cambia && actual ? ' <button type="button" class="hip-boton chico" data-dv-deshacer>Volver a la mía</button>' : ""}</p>`;
+    }
+    /* Las obras de la cuadra: plazas y las dos instalaciones con sus niveles */
+    function obrasHtml() {
+      const cs = casa(), saldo = api.saldo(), A = M.C.AMPLIAR, I = M.C.INSTALACION;
+      const pasos = (niv, max) => `<span class="hip-obra-niv" aria-label="nivel ${niv} de ${max}">${Array.from({ length: max }, (_, i) => `<i class="${i < niv ? "hecho" : ""}"></i>`).join("")}</span>`;
+      const fila = (titulo, texto, niv, max, coste, ahora, luego, orden, extra) => `<li class="${niv >= max ? "tengo" : ""}"><div><strong>${titulo}</strong> ${pasos(niv, max)}<small>${texto}</small><span class="hip-tienda-ben">Ahora: ${ahora}${niv < max ? ` · con la obra: ${luego}` : ""}</span></div>
+        <div class="hip-tienda-der">${niv < max ? `<b>${mon(coste)}</b><button type="button" class="hip-boton chico" data-o="${orden}"${extra || ""}${coste > saldo ? " disabled" : ""}>Construir</button>` : "<b>Terminada</b>"}</div></li>`;
+      const vet = M.INSTALACIONES.vet, pista = M.INSTALACIONES.pista, nv = cs.inst.vet || 0, np = cs.inst.pista || 0;
+      return `<h3>Obras</h3><p class="hip-nota">Lo que construyes en la cuadra se queda para siempre. No cambia las carreras: te deja tener más criaturas y cuidarlas o entrenarlas más seguido.</p>
+        <ul class="hip-tienda hip-obras">
+          ${fila("Más plazas", "Un box nuevo en las cuadras.", cs.ampliacion, A.length, A[cs.ampliacion], `${cs.plazas} plazas`, `${cs.plazas + 1} plazas`, "ampliar")}
+          ${fila(vet.nombre, vet.texto, nv, I.length, I[nv], vet.ben(nv), vet.ben(nv + 1), "instalacion", ' data-objeto="vet"')}
+          ${fila(pista.nombre, pista.texto, np, I.length, I[np], pista.ben(np), pista.ben(np + 1), "instalacion", ' data-objeto="pista"')}
+        </ul>`;
+    }
     function arbolPanelHtml() {
       const fp = api.perfil(arbolId);
       if (!fp) return "";
@@ -235,13 +270,15 @@ window.HipodromoCuadraUI = (function () {
     /* ---- la pantalla completa: la escena detrás de todo y, encima, la barra con los enlaces de la cuadra y un panel lateral */
     function pintarPleno(forzar) {
       if (api.listo && !api.listo()) return;
-      const mias = api.mias(), cal = api.calendario(), max = M.C.MAX_CABALLOS, adoptada = api.adoptada(), semental = api.sementales();
+      const mias = api.mias(), cal = api.calendario(), max = casa().plazas, adoptada = api.adoptada(), semental = api.sementales();
       if (selId == null && escena && escena.seleccionGuardada() != null) selId = escena.seleccionGuardada();
       if (!mias.some(e => e.p.id === selId)) selId = mias[0] ? mias[0].p.id : null;
       const elegida = mias.find(e => e.p.id === selId), nAvisos = api.avisos().length, merc = api.mercado().length;
       let lateral;
       if (vista === "mercado") lateral = `<h3>Mercado</h3><p class="hip-nota">Criaturas sin dueño que puedes comprar (las mejores del mundo no se venden: a esas hay que criarlas y entrenarlas). El precio sale de su palmarés y su linaje. Si luego quieres venderla, la casa paga el ${Math.round(M.C.VENTA * 100)} % de lo que costaría ahora.</p>${mercadoHtml()}`;
       else if (vista === "objetos") lateral = tiendaHtml();
+      else if (vista === "obras") lateral = obrasHtml();
+      else if (vista === "divisa") lateral = divisaHtml();
       else if (vista === "avisos") lateral = `<h3>Avisos de la cuadra</h3>${nAvisos ? `<ul class="hip-avisos">${api.avisos().slice(0, 40).map(a => `<li><small>n.º ${a.n}</small> ${esc(a.texto)}</li>`).join("")}</ul>` : '<p class="hip-vacio">Todavía no hay avisos.</p>'}`;
       else lateral = `${!adoptada && !mias.length ? `<div class="hip-adoptar"><h4>Recibe tu primera criatura</h4><p class="hip-nota">La casa te da una criatura joven, de cuerpo corriente, lista para debutar. Es gratis y solo se hace una vez.</p>
           <label>Sexo <select id="hipAdoptarSexo"><option value="f">Hembra</option><option value="m">Macho</option></select></label> <button type="button" class="hip-boton principal" data-o="adoptar">Adoptar</button></div>` : ""}
@@ -250,9 +287,9 @@ window.HipodromoCuadraUI = (function () {
       const boton = (v, t, n) => `<button type="button" data-vista="${v}" aria-pressed="${vista === v}">${t}${n != null ? ` <small>${n}</small>` : ""}</button>`;
       const modo = (document.querySelector(".hip-modo") || {}).textContent || "", pl = /[?&]local\b/.test(location.search) ? "?local" : "";
       const html = `<div class="hcp-escena-hueco"></div>
-        <header class="hcp-barra"><a class="hcp-volver" href="hipodromo.html${pl}">← Hipódromo</a><h2>${T("cuadra", "Mi cuadra")}</h2><span class="hcp-tokens">Tokens <strong>${mon(api.saldo())}</strong></span>
-          <nav class="hcp-enlaces" aria-label="Tu cuadra">${boton("mias", "Criaturas", mias.length + "/" + max)}${boton("mercado", "Mercado", merc)}${boton("objetos", "Objetos")}${boton("avisos", "Avisos", nAvisos)}
-            <a href="hipodromo.html${pl}#carrera">Próxima carrera</a><a href="hipodromo.html${pl}#cartas" title="Vende cartas para tener tokens">Cartas por tokens</a><a href="hipodromo.html${pl}#criaturas">Criaturas del mundo</a><a href="hipodromo-vivo.html">▶ Ver en vivo</a></nav></header>
+        <header class="hcp-barra"><a class="hcp-volver" href="hipodromo.html${pl}">← Hipódromo</a><h2>${hayCasa() ? D.divisa(casa().divisa, { clase: "media", titulo: "Tu divisa" }) : ""}${T("cuadra", "Mi cuadra")}</h2><span class="hcp-tokens">Tokens <strong>${mon(api.saldo())}</strong></span>
+          <nav class="hcp-enlaces" aria-label="Tu cuadra">${boton("mias", "Criaturas", mias.length + "/" + max)}${boton("mercado", "Mercado", merc)}${boton("objetos", "Objetos")}${hayCasa() ? boton("obras", "Obras") + boton("divisa", "Divisa") : ""}${boton("avisos", "Avisos", nAvisos)}
+            <a href="hipodromo.html${pl}#carrera">Próxima carrera</a><a href="hipodromo.html${pl}#cartas" title="Vende cartas para tener tokens">Cartas por tokens</a><a href="hipodromo.html${pl}#criaturas">Criaturas del mundo</a>${hayCasa() ? `<a href="hipodromo.html${pl}#subastas">Subastas</a>` : ""}<a href="hipodromo-vivo.html">▶ Ver en vivo</a></nav></header>
         ${arbolId != null ? arbolPanelHtml() : ""}
         <aside class="hcp-lateral${panel ? "" : " cerrado"}" aria-label="Panel de la cuadra"><div class="hcp-lateral-cuerpo">${lateral}</div></aside>
         <button type="button" class="hcp-pestana${panel ? " abierto" : ""}" data-panel aria-expanded="${panel}" aria-label="${panel ? "Esconder el panel" : "Enseñar el panel"}">${panel ? "▸" : "◂ Ficha"}</button>
@@ -270,7 +307,7 @@ window.HipodromoCuadraUI = (function () {
     function pintar(forzar) {
       if (pleno) { pintarPleno(forzar); return; }
       if (api.listo && !api.listo()) return;
-      const mias = api.mias(), cal = api.calendario(), max = M.C.MAX_CABALLOS, adoptada = api.adoptada();
+      const mias = api.mias(), cal = api.calendario(), max = casa().plazas, adoptada = api.adoptada();
       const semental = api.sementales();
       if (!mias.some(e => e.p.id === selId)) selId = mias[0] ? mias[0].p.id : null;
       const elegida = mias.find(e => e.p.id === selId);
@@ -278,11 +315,13 @@ window.HipodromoCuadraUI = (function () {
       const subpestanas = `<nav class="hip-subpestanas" aria-label="Secciones de la cuadra">
         <button type="button" data-vista="mias" aria-pressed="${vista === "mias"}">Mis criaturas <small>${mias.length}/${max}</small></button>
         <button type="button" data-vista="mercado" aria-pressed="${vista === "mercado"}">Mercado <small>${merc}</small></button>
-        <button type="button" data-vista="avisos" aria-pressed="${vista === "avisos"}">Avisos <small>${nAvisos}</small></button></nav>`;
+        <button type="button" data-vista="avisos" aria-pressed="${vista === "avisos"}">Avisos <small>${nAvisos}</small></button>${hayCasa() ? `<button type="button" data-vista="obras" aria-pressed="${vista === "obras"}">Obras</button><button type="button" data-vista="divisa" aria-pressed="${vista === "divisa"}">Divisa</button>` : ""}</nav>`;
       const cabecera = `<div class="hip-cuadra-cab"><h3>${T("cuadra", "Mi cuadra")}</h3><p>Tokens: <strong>${mon(api.saldo())}</strong></p></div>
         <p class="hip-aviso ${msg.clase}" role="status" aria-live="polite">${esc(msg.texto)}</p>`;
       let cuerpo;
       if (vista === "mercado") cuerpo = `<section class="hip-tarjeta"><h3>Mercado</h3><p class="hip-nota">Criaturas sin dueño que puedes comprar (las mejores del mundo no se venden: a esas hay que criarlas y entrenarlas). El precio sale de su palmarés y su linaje, como lo ve todo el mundo. Si luego quieres venderla, la casa paga el ${Math.round(M.C.VENTA * 100)} % de lo que costaría ahora.</p>${mercadoHtml()}</section>`;
+      else if (vista === "obras") cuerpo = `<section class="hip-tarjeta">${obrasHtml()}</section>`;
+      else if (vista === "divisa") cuerpo = `<section class="hip-tarjeta">${divisaHtml()}</section>`;
       else if (vista === "avisos") cuerpo = `<section class="hip-tarjeta"><h3>Avisos de la cuadra</h3>${nAvisos ? `<ul class="hip-avisos">${api.avisos().slice(0, 25).map(a => `<li><small>n.º ${a.n}</small> ${esc(a.texto)}</li>`).join("")}</ul>` : '<p class="hip-vacio">Todavía no hay avisos.</p>'}</section>`;
       else cuerpo = `<section class="hip-tarjeta"><p class="hip-nota hip-nota-cuadra">Aquí eres el dueño. Inscribes a tus criaturas en las carreras que quieras (los entrenadores del mundo no las mueven), las entrenas, las cuidas y, cuando se retiren, las cruzas. Cada carrera paga una bolsa a los cinco primeros y esa bolsa es tuya. Correr cuesta una inscripción y entrenar y cuidar también cuestan: no a todas les sale a cuenta.</p>
         ${!adoptada && !mias.length ? `<div class="hip-adoptar"><h4>Recibe tu primera criatura</h4><p class="hip-nota">La casa te da una criatura joven, de cuerpo corriente, lista para debutar. Es gratis y solo se hace una vez.</p>
@@ -317,6 +356,9 @@ window.HipodromoCuadraUI = (function () {
       const ab = e.target.closest("[data-arbol]"); if (ab) { arbolId = Number(ab.dataset.arbol); pintar(true); if (api.cargarHistoria) api.cargarHistoria().then(si => { if (si) pintar(true); }); return; }   // las retiradas y fallecidas se leen la primera vez que se abre un árbol
       const ir = e.target.closest("[data-arbol-ir]"); if (ir) { arbolId = Number(ir.dataset.arbolIr); pintar(true); return; }
       if (e.target.closest("[data-arbol-cierra]")) { arbolId = null; pintar(true); return; }
+      const dv = e.target.closest("[data-dv]");
+      if (dv) { prueba = Object.assign({}, prueba || casa().divisa || { c1: "rojo", c2: "blanco", patron: "banda", emblema: "ninguno" }, { [dv.dataset.dv]: dv.dataset.valor }); pintar(true); return; }
+      if (e.target.closest("[data-dv-deshacer]")) { prueba = null; pintar(true); return; }
       const v = e.target.closest("[data-vista]");
       if (v) { vista = v.dataset.vista; pintar(true); return; }
       if (e.target.closest("[data-mercmas]")) { mercMax += 12; pintar(true); return; }
@@ -324,6 +366,29 @@ window.HipodromoCuadraUI = (function () {
       if (sl) { const id = Number(sl.dataset.sel); selId = id; vista = "mias"; if (pleno) panel = true; if (escena) { escena.seleccionar(id, false); escena.destacar(id); } pintar(true); return; }
       const b = e.target.closest("[data-o]"); if (!b || b.disabled) return;
       const id = Number(b.dataset.id), tipo = b.dataset.o;
+      if (tipo === "divisa") {
+        const v2 = prueba || casa().divisa; if (!v2) return;
+        if (casa().divisa && !(await dialogo.confirmar(`Cambiar la divisa cuesta ${mon(M.C.DIVISA_COSTE)} tokens.`, { titulo: "Nueva divisa", aceptar: "Pintar" }))) return;
+        await mandar({ tipo, divisa: v2, nombre: api.nombreJugador() }); if (msg.clase === "bien") prueba = null; pintar(true); return;
+      }
+      if (tipo === "ampliar") {
+        const k = casa().ampliacion, coste = M.C.AMPLIAR[k];
+        if (!(await dialogo.confirmar(`Un box nuevo en las cuadras: pasas de ${casa().plazas} a ${casa().plazas + 1} plazas. Cuesta ${mon(coste)} tokens y es para siempre.`, { titulo: "Más plazas", aceptar: "Construir" }))) return;
+        return mandar({ tipo });
+      }
+      if (tipo === "instalacion") {
+        const k = b.dataset.objeto, def = M.INSTALACIONES[k], niv = (casa().inst || {})[k] || 0;
+        if (!def || !(await dialogo.confirmar(`${def.nombre}, nivel ${niv + 1}: ${def.ben(niv + 1)}. Cuesta ${mon(M.C.INSTALACION[niv])} tokens y es para siempre.`, { titulo: "Obras", aceptar: "Construir" }))) return;
+        return mandar({ tipo, objeto: k });
+      }
+      if (tipo === "subastar") {
+        const e2 = api.mias().find(x => x.p.id === id); if (!e2) return;
+        const base = Math.max(M.C.SUBASTA_MIN, e2.c.venta), tope = Math.max(1000, M.C.SUBASTA_TOPE * (e2.c.mercado || e2.c.venta));
+        const t = await dialogo.pedir(`${e2.p.nombre} sale al corro de subastas durante ${M.C.SUBASTA_CARRERAS} carreras y se la lleva la puja más alta. ¿Con qué precio de salida? (de ${mon(M.C.SUBASTA_MIN)} a ${mon(tope)}; la casa te pagaría ${mon(e2.c.venta)}). La casa se queda el ${Math.round(M.C.SUBASTA_COMISION * 100)} % de la venta. Si nadie puja, vuelve a tu cuadra.`, String(base), { titulo: "Subastar", marcador: "Tokens", aceptar: "Llevar al corro" });
+        if (t === null) return;
+        const precio = Math.round(Number(String(t).replace(/[^\d]/g, "")));
+        return mandar({ tipo, id, precio, nombre: api.nombreJugador() });
+      }
       if (tipo === "adoptar") return mandar({ tipo, nombre: api.nombreJugador(), sexo: (cont.querySelector("#hipAdoptarSexo") || {}).value || "f" });
       if (tipo === "inscribir" || tipo === "desinscribir") return mandar({ tipo, id, n: Number(b.dataset.n) });
       if (tipo === "entrenar") return mandar({ tipo, id, stat: (cont.querySelector(`[data-stat="${id}"]`) || {}).value });

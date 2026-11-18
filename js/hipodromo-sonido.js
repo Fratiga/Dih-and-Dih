@@ -48,6 +48,7 @@ window.HipodromoSonido = (function () {
     campana: () => { [1, 2.76, 5.4, 8.9].forEach((p, i) => nota("sine", 620 * p, 620 * p, 1.5 / (1 + i * 0.7), 0.2 / (1 + i * 1.4))); [0.34].forEach(c => [1, 2.76, 5.4].forEach((p, i) => nota("sine", 620 * p, 620 * p, 1.3 / (1 + i * 0.7), 0.16 / (1 + i * 1.4), c))); },
     cierre: () => { nota("square", 520, 390, 0.16, 0.05); nota("square", 390, 300, 0.2, 0.05, 0.16); },            // se cierran las apuestas
     tic: () => { nota("square", 1500, 1500, 0.025, 0.035); },
+    mazo: () => { nota("triangle", 300, 110, 0.09, 0.3); ruido(0.05, 0.24, 900, 1.2); nota("triangle", 280, 100, 0.09, 0.22, 0.17); ruido(0.05, 0.17, 900, 1.2, 0.17); },   // la puja que manda
     llegada: () => { [0, 0.11, 0.22].forEach((c, i) => nota("triangle", [523, 659, 784][i], [523, 659, 784][i], 0.22, 0.11, c)); },
     ovacion: () => { ruido(0.9, 0.12, 1200, 0.5); ruido(0.7, 0.07, 2600, 0.6, 0.1); },
     hora: () => { nota("sine", 880, 880, 0.9, 0.14); nota("sine", 660, 660, 1.1, 0.12, 0.3); }

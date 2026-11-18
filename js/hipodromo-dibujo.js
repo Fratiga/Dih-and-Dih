@@ -497,5 +497,48 @@ window.HipodromoDibujo = (function () {
     if (activo) svg.unpauseAnimations(); else { svg.setCurrentTime(0); svg.pauseAnimations(); }
   }
 
-  return { silueta, colorCapa, registrar, rasgos, rasgosDetalle, mutacionesDetalle, maniasDetalle, galope, ponerEstilo, estilos: Object.keys(ESTILOS) };
+  /* ---------------------------------------------------------------- la divisa de una cuadra
+     La casaca de su jinete: dos colores, un dibujo y, si cabe, un emblema en el pecho. Los colores, dibujos y emblemas posibles los fija el motor
+     (HipodromoMotor.DIVISA). Sin divisa sale la casaca sin pintar, a trazos. opc: { clase, titulo, sinEmblema }. */
+  const EMBLEMAS = {
+    herradura: '<path d="M-3.2 3.4 V-.4 a3.2 3.2 0 0 1 6.4 0 V3.4" fill="none" stroke-width="1.7" stroke-linecap="round"/>',
+    estrella: '<path d="M0 -4.2 L1.2 -1.4 L4.2 -1.2 L1.9 .7 L2.6 3.6 L0 2 L-2.6 3.6 L-1.9 .7 L-4.2 -1.2 L-1.2 -1.4 Z" stroke="none"/>',
+    corona: '<path d="M-4 3 L-4 -2.6 L-1.8 0 L0 -3.5 L1.8 0 L4 -2.6 L4 3 Z" stroke="none"/>',
+    hoja: '<path d="M0 4.2 C-5 1 -3.6 -3.4 0 -4.3 C3.6 -3.4 5 1 0 4.2 Z" stroke="none"/>',
+    rayo: '<path d="M1.4 -4.5 L-3 .6 L-.4 .6 L-1.6 4.5 L3 -1 L.4 -1 Z" stroke="none"/>',
+    luna: '<path d="M2.2 -3.9 A4.2 4.2 0 1 0 2.2 3.9 A3.3 3.3 0 0 1 2.2 -3.9 Z" stroke="none"/>',
+    llave: '<circle cx="0" cy="-2.4" r="1.8" fill="none" stroke-width="1.5"/><path d="M0 -.6 V4.2 M0 2 H2 M0 3.9 H1.6" fill="none" stroke-width="1.5" stroke-linecap="round"/>',
+    torre: '<path d="M-3.4 4 V-3.9 H-1.7 V-2.3 H-.8 V-3.9 H.8 V-2.3 H1.7 V-3.9 H3.4 V4 Z" stroke="none"/>',
+    espada: '<path d="M0 -4.6 V2.2 M-2.4 1.2 H2.4 M0 2.2 V4.4" fill="none" stroke-width="1.7" stroke-linecap="round"/>'
+  };
+  const DIBUJOS_DIVISA = {
+    liso: "",
+    banda: '<path d="M9 7.4 L12.4 5.6 L24 20.6 L24 27 L21.6 27 L8.7 10.6 Z"/>',
+    aros: '<path d="M8.75 11 H23.25 L23.4 14.4 H8.6 Z M8.4 18.4 H23.6 L23.8 21.8 H8.2 Z"/>',
+    mitades: '<path d="M16 7 Q17.6 6.6 19 5.2 L23 7.4 L24 27 L16 27 Z"/>',
+    cuartos: '<path d="M16 7 Q17.6 6.6 19 5.2 L23 7.4 L23.5 17 L16 17 Z M8.5 17 H16 V27 H8 Z"/>',
+    rombos: '<path d="M16 8.4 l3 4 -3 4 -3 -4z M11.8 16.4 l2.6 3.6 -2.6 3.6 -2.6 -3.6z M20.2 16.4 l2.6 3.6 -2.6 3.6 -2.6 -3.6z"/>',
+    galones: '<path d="M8.7 10.6 L16 16.2 L23.3 10.6 L23.5 14.2 L16 19.8 L8.5 14.2 Z M8.4 18.4 L16 24 L23.6 18.4 L23.8 22 L16 27 L8.2 22 Z"/>',
+    lunares: '<circle cx="12" cy="11.5" r="1.7"/><circle cx="20" cy="11.5" r="1.7"/><circle cx="16" cy="16.5" r="1.7"/><circle cx="12" cy="21.5" r="1.7"/><circle cx="20" cy="21.5" r="1.7"/>'
+  };
+  const escDv = t => String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const esOscuro = hex => { const n = parseInt(String(hex).slice(1), 16); return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) < 140; };
+  function divisa(dv, opc) {
+    opc = opc || {};
+    const DV = (window.HipodromoMotor && window.HipodromoMotor.DIVISA) || { colores: {} };
+    const CUERPO = "M9 7.4 L13 5.2 Q16 8.2 19 5.2 L23 7.4 L24 27 L8 27 Z", MANGAS = "M9 7.4 L2.2 17.6 L6.2 20.6 L9.6 15.4 Z M23 7.4 L29.8 17.6 L25.8 20.6 L22.4 15.4 Z";
+    const abre = `<svg class="hip-divisa ${opc.clase || ""}" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" ${opc.titulo ? `role="img" aria-label="${escDv(opc.titulo)}"` : 'aria-hidden="true"'}>${opc.titulo ? `<title>${escDv(opc.titulo)}</title>` : ""}`;
+    if (!dv || !DV.colores[dv.c1]) return `${abre}<path d="${MANGAS} ${CUERPO}" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="2.6 2" stroke-linejoin="round" opacity=".6"/></svg>`;
+    const a = DV.colores[dv.c1], b = DV.colores[dv.c2] || a, liso = !DIBUJOS_DIVISA[dv.patron];
+    let emblema = "";
+    if (!opc.sinEmblema && EMBLEMAS[dv.emblema]) {
+      const fondo = esOscuro(a) ? "#f2edd5" : "#14241b", tinta = esOscuro(a) ? "#14241b" : "#f2edd5";
+      emblema = `<circle cx="16" cy="17" r="5.9" fill="${fondo}"/><g transform="translate(16 17)" fill="${tinta}" stroke="${tinta}">${EMBLEMAS[dv.emblema]}</g>`;
+    }
+    return `${abre}<path d="${MANGAS}" fill="${liso ? a : b}"/><path d="${CUERPO}" fill="${a}"/>${liso ? "" : `<g fill="${b}">${DIBUJOS_DIVISA[dv.patron]}</g>`}${emblema}<path d="${MANGAS} ${CUERPO}" fill="none" stroke="#14241b" stroke-width="1.1" stroke-linejoin="round"/></svg>`;
+  }
+  /* El emblema suelto (para elegirlo en la cuadra) */
+  const emblema = nombre => (EMBLEMAS[nombre] ? `<svg class="hip-emblema" viewBox="-6 -6 12 12" aria-hidden="true"><g fill="currentColor" stroke="currentColor">${EMBLEMAS[nombre]}</g></svg>` : "");
+
+  return { silueta, colorCapa, registrar, rasgos, rasgosDetalle, mutacionesDetalle, maniasDetalle, galope, ponerEstilo, estilos: Object.keys(ESTILOS), divisa, emblema };
 })();

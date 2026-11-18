@@ -16,7 +16,7 @@
   const SALDO_INICIAL = 1000, MAX_NOTICIAS = 200, MAX_ARCHIVO = 250, MAX_RESULTADOS = 12, MAX_HISTORIAL = 80;
   const VELOCIDADES = [[0, "Pausa"], [1, "1×"], [10, "10×"], [60, "60×"], [600, "600×"]];
   const FASES = { abierta: "Apuestas abiertas", cerrada: "Apuestas cerradas", corriendo: "En pista", terminada: "Resultado" };
-  const TIPOS_NOTICIA = { resultado: "Carrera", lesion: "Lesión", accidente: "Establo", enfermedad: "Salud", fuga: "Fuga", regreso: "Regreso", muerte: "Adiós", retiro: "Retiro", nacimiento: "Nacimiento", racha: "Racha", debut: "Debut", record: "Récord", rumor: "Rumor", suspendida: "Aviso" };
+  const TIPOS_NOTICIA = { resultado: "Carrera", lesion: "Lesión", accidente: "Establo", enfermedad: "Salud", fuga: "Fuga", regreso: "Regreso", muerte: "Adiós", retiro: "Retiro", nacimiento: "Nacimiento", racha: "Racha", debut: "Debut", record: "Récord", rumor: "Rumor", suspendida: "Aviso", subasta: "Subasta", patrocinio: "Patrocinio", cuadra: "Cuadras" };
 
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -35,9 +35,9 @@
   const filtros = { estado: "pista", orden: "vic", q: "" };
   try { oculto = localStorage.getItem(CLAVE_OCULTO) === "1"; pestana = "inicio"; } catch (e) { /* sin almacenamiento */ }
   // la página en vivo manda aquí con #carrera, #noticias... (apostar, resultados completos)
-  { const h = location.hash.slice(1); if (["inicio", "carrera", "cuadra", "cartas", "criaturas", "noticias", "novedades", "apuestas", "mundo"].includes(h)) pestana = h; }
+  { const h = location.hash.slice(1); if (["inicio", "carrera", "cuadra", "cartas", "criaturas", "subastas", "noticias", "novedades", "apuestas", "mundo"].includes(h)) pestana = h; }
   /* El aviso «nuevo» de la pestaña Novedades: se apaga al abrirla (se acuerda en el navegador de cuál fue la última que se vio) */
-  const NOVEDADES_ULTIMA = "2026-11-14", CLAVE_NOVEDADES = "hipodromoNovedadesVista";
+  const NOVEDADES_ULTIMA = "2026-11-18", CLAVE_NOVEDADES = "hipodromoNovedadesVista";
   function marcaNovedades(vista) {
     let v = null; try { if (vista) localStorage.setItem(CLAVE_NOVEDADES, NOVEDADES_ULTIMA); v = localStorage.getItem(CLAVE_NOVEDADES); } catch (e) { /* sin almacenamiento */ }
     const n = document.getElementById("hipNovedadesNuevo"); if (n) n.classList.toggle("hidden", v === NOVEDADES_ULTIMA);
@@ -233,6 +233,7 @@
         <div><span>${T("bolsa", "Bolsa")}</span><strong>${monedas(p.bolsa)}</strong><small>reparto entre los 5 primeros</small></div>
         <div><span>Pista en detalle</span><small class="hip-barras">${T("curvas", "Curvas")} ${barra(pista.curvas, "Curvas")} ${T("cuestas", "Cuestas")} ${barra(pista.cuestas, "Cuestas")} ${T("drenaje", "Drenaje")} ${barra(pista.drenaje, "Drenaje")}</small></div>
       </div>
+      ${p.patrocinio ? `<p class="hj-prog-pat">Patrocina ${cuadraTxt(p.patrocinio.dueno)}: ${monedas(p.patrocinio.monto)} tokens más en la bolsa.</p>` : ""}
       ${G.copa ? `<p class="hip-copa-nota"><strong>${esc(G.nombre)}.</strong> Corren las mejores del mundo (el ${Math.round(G.copa.top * 100)} % mejor valorado) y la bolsa es de ${monedas(p.bolsa)}: ${monedas(Math.round(p.bolsa * 0.5))} para quien gane. Inscribir cuesta ${monedas(M.inscripcionDe(G))}.</p>` : ""}
       ${pista.arcana ? `<p class="hip-arcana"><strong>${T("arcana", "Pista arcana")} · ${esc(M.REGLAS_ARCANAS[pista.arcana].nombre)}.</strong> ${esc(M.REGLAS_ARCANAS[pista.arcana].texto)} Las criaturas con núcleo responden mejor aquí.</p>` : ""}
       <div class="hip-pron"><span>${T("pronostico", "Pronóstico")}</span>${pronosticoTxt(p)}</div>
@@ -288,8 +289,8 @@
     const menor = p.entrantes.reduce((a, e) => (e.gan < a ? e.gan : a), Infinity);
     const items = p.entrantes.map((e, k) => {
       const per = perfilDe(e.id); if (!per) return "";
-      const fav = est.favoritos.includes(e.id), real = sec && sec.pReal ? sec.pReal.gan[k] : null, mia = e.dueno && e.dueno.id === YO;
-      const sellos = (e.gan === menor ? '<span class="hip-sello oro">Favorita</span>' : "") + (mia ? '<span class="hip-sello">★ Tuya</span>' : e.dueno ? `<span class="hip-sello gris">cuadra de ${esc(e.dueno.nombre || "otro jugador")}</span>` : "");
+      const fav = est.favoritos.includes(e.id), real = sec && sec.pReal ? sec.pReal.gan[k] : null, mia = e.dueno && soyYo(e.dueno.id);
+      const sellos = (e.gan === menor ? '<span class="hip-sello oro">Favorita</span>' : "") + (e.dueno ? `<span class="hip-sello${mia ? "" : " gris"} hj-cuadra">${casaca(e.dueno.divisa, "mini")}${mia ? "★ Tuya" : "cuadra de " + esc(e.dueno.nombre || "otro jugador")}</span>` : "");
       return `<li class="hip-insc${mia ? " mia" : ""}${e.gan === menor ? " favorita" : ""}">
         <span class="hip-insc-pta" title="Puerta de salida">${e.puerta}</span>
         <div class="hip-insc-fig">${D.silueta(per, { clase: "hip-mini" })}</div>
@@ -363,7 +364,7 @@
     const menor = p.entrantes.reduce((a, x) => (x.gan < a ? x.gan : a), Infinity);
     const cuota = tipo === "podio" ? e.pod : e.gan, prob = cuota ? Math.min(99, Math.round(100 / cuota)) : null;
     const mias = est.pendientes.filter(a => a.n === p.n && (a.tipo === "exacta" ? a.sel.includes(id) : a.sel === id)).reduce((t, a) => t + a.monto, 0);
-    const sellos = (e.gan === menor ? '<span class="hip-sello oro">Favorita</span>' : "") + (e.dueno && e.dueno.id === YO ? '<span class="hip-sello">★ Tuya</span>' : "");
+    const sellos = (e.gan === menor ? '<span class="hip-sello oro">Favorita</span>' : "") + (e.dueno && soyYo(e.dueno.id) ? '<span class="hip-sello">★ Tuya</span>' : "");
     return `<figure class="hip-retrato">
       <div class="hip-retrato-fig">${D.silueta(per, { clase: "hip-silueta mediana" })}<span class="hip-retrato-pta" title="Puerta de salida">${e.puerta}</span></div>
       <figcaption>
@@ -551,7 +552,9 @@
     return h;
   }
   function duenoHtml(p) {
-    if (p.dueno) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>De ${esc(p.dueno.nombre || "otro jugador")}${p.dueno.id === YO ? " (es tuya)" : ""}.${p.montaPrecio && p.estado === "criador" ? ` Monta: ${monedas(p.montaPrecio)} tokens.` : ""}</p></section>`;
+    const corro = p.subasta ? ` Está en el corro de subastas: ${p.subasta.pujador ? `manda una puja de ${monedas(p.subasta.puja)} tokens` : `sale por ${monedas(p.subasta.min)} tokens`}. <button type="button" class="hip-boton chico" data-ir="subastas" data-cierra-ficha>Ir al corro</button>` : "";
+    if (p.dueno) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>${casaca(p.dueno.divisa, "media", "Divisa de la cuadra")} De ${esc(p.dueno.nombre || "otro jugador")}${soyYo(p.dueno.id) ? " (es tuya)" : ""}.${corro}${p.montaPrecio && p.estado === "criador" ? ` Monta: ${monedas(p.montaPrecio)} tokens.` : ""}</p></section>`;
+    if (corro) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>Sin dueño.${corro}</p></section>`;
     if (p.precio) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>Sin dueño. A la venta por ${monedas(p.precio)} tokens. <button type="button" class="hip-boton chico" data-ir-cuadra>Ir al mercado</button></p></section>`;
     if (p.montaPrecio) return `<section class="hip-ficha-sec"><h3>Cuadra</h3><p>En la cría. Monta: ${monedas(p.montaPrecio)} tokens.</p></section>`;
     return "";
@@ -622,7 +625,7 @@
         <div><span>Carrera actual</span><strong>n.º ${m.n}</strong><small>${coma(Math.max(0, (m.n - 300) / POR_DIA), 1)} días de mundo en vivo</small></div>
         <div><span>Criaturas en pista</span><strong>${vivas}</strong><small>${cria} en la cría</small></div>
         <div><span>Leyendas</span><strong>${ley}</strong><small>ganadoras de 14 carreras o 3 Grandes Premios</small></div>
-        <div><span>Tu cuadra</span><strong>${online.mias().length}</strong><small>de ${C.MAX_CABALLOS} posibles</small></div></div>
+        <div><span>Tu cuadra</span><strong>${online.mias().length}</strong><small>de ${((online.mias()[0] || {}).c || {}).plazas || C.MAX_CABALLOS} plazas</small></div></div>
         <p class="hip-nota">Un año de las criaturas son ${C.ANIO} carreras (${coma(C.ANIO / POR_DIA, 1)} días). Hay una carrera cada ${C.MINUTOS} minutos para todo el mundo.</p>`);
       return;
     }
@@ -650,11 +653,13 @@
     const p = m.proxima, G = M.GRADOS[p.grado], mias = miasAhora(), pend = est.pendientes.length, ult = est.noticias[0];
     const vivas = online ? online.perfiles().filter(x => x.estado === "activo").length : m.vivos.length;
     let vista = true; try { vista = localStorage.getItem(CLAVE_NOVEDADES) === NOVEDADES_ULTIMA; } catch (e) { /* sin almacenamiento */ }
+    const nLotes = lotes().length;
     return {
       carrera: p.suspendida ? "Carrera aplazada" : `${G.nombre} · ${p.entrantes.length} inscritas`,
       vivo: "",
       cuadra: mias.length ? `${mias.length} ${mias.length === 1 ? "criatura" : "criaturas"} en tu cuadra` : "Aún no tienes criaturas",
       mundo: `Carrera n.º ${m.n} del mundo`,
+      subastas: nLotes ? `${pluralTxt(nLotes, "lote", "lotes")} en el corro` : "El corro está vacío",
       apuestas: pend ? `${pend} ${pend === 1 ? "boleto" : "boletos"} en juego` : "Tus boletos y tu historial",
       criaturas: `${vivas} en condiciones de correr`,
       novedades: vista ? "Lo último que se añadió" : "Hay novedades sin leer",
@@ -674,13 +679,13 @@
     const menor = p.entrantes.reduce((a, e) => (e.gan < a ? e.gan : a), Infinity);
     const filas = p.entrantes.map((e, i) => {
       const per = perfilDe(e.id); if (!per) return "";
-      const mia = e.dueno && e.dueno.id === YO;
-      return `<li style="--i:${i}" class="${mia ? "mia" : ""}"><button type="button" data-ficha="${e.id}" title="Ver la ficha de ${esc(per.nombre)}"><span class="hj-pta">${e.puerta}</span><span class="hj-fig">${D.silueta(per, { clase: "hip-mini" })}</span><span class="hj-nom">${esc(per.nombre)}<small>${mia ? "Tuya · " : e.gan === menor ? "Favorita · " : ""}${per.salidas ? `${per.vic} ${per.vic === 1 ? "victoria" : "victorias"} en ${per.salidas}` : "debuta"}</small></span><span class="hj-cuota">${M.fmtCuota(e.gan)}</span></button></li>`;
+      const mia = e.dueno && soyYo(e.dueno.id);
+      return `<li style="--i:${i}" class="${mia ? "mia" : ""}"><button type="button" data-ficha="${e.id}" title="Ver la ficha de ${esc(per.nombre)}"><span class="hj-pta">${e.puerta}</span><span class="hj-fig">${D.silueta(per, { clase: "hip-mini" })}</span><span class="hj-nom">${e.dueno ? casaca(e.dueno.divisa, "mini", "Cuadra de " + (e.dueno.nombre || "otro jugador")) : ""}${esc(per.nombre)}<small>${mia ? "Tuya · " : e.gan === menor ? "Favorita · " : ""}${per.salidas ? `${per.vic} ${per.vic === 1 ? "victoria" : "victorias"} en ${per.salidas}` : "debuta"}</small></span><span class="hj-cuota">${M.fmtCuota(e.gan)}</span></button></li>`;
     }).join("");
     poner($("hjPrograma"), `<p class="hj-prog-oficial"><span>Programa oficial</span><span>Carrera n.º ${p.n}</span></p>
       <p class="hj-prog-grado">${G.copa ? "★ " : ""}${esc(G.nombre)}</p>
       <h1>${esc(p.nombre)}</h1>
-      <p class="hj-prog-linea">${esc(pista.nombre)} · ${p.dist} m · bolsa de ${monedas(p.bolsa)}</p>
+      <p class="hj-prog-linea">${esc(pista.nombre)} · ${p.dist} m · bolsa de ${monedas(p.bolsa)}${p.patrocinio ? ` · patrocina ${esc(p.patrocinio.dueno.nombre || "una cuadra")}` : ""}</p>
       <div class="hj-prog-cuenta"><span id="hjFase"></span><strong id="hjCuenta"></strong></div>
       <div class="hj-prog-acciones"><button type="button" class="hj-btn principal" data-ir="carrera" id="hjCta"></button><a class="hj-btn" href="hipodromo-vivo.html" title="La pista a pantalla completa">${R.icono("vivo")}En vivo</a></div>
       <p class="hj-prog-sub"><span>Inscritas</span><small>puerta · criatura · paga por token</small></p>
@@ -782,9 +787,159 @@
       if (e.key === "Escape" && !$("hjResultado").classList.contains("hidden")) { cerrarResultado(); return; }
       if (e.key === "f" || e.key === "F") { plenoPantalla(); return; }
       if (fichaId != null) return;
-      const k = Number(e.key);
-      if (k >= 1 && k <= 9) { const b = document.querySelectorAll(".hj-dock [data-pestana]")[k - 1]; if (b) mostrarPestana(b.dataset.pestana); }
+      const k = e.key === "0" ? 10 : Number(e.key);
+      if (k >= 1 && k <= 10) { const b = document.querySelectorAll(".hj-dock [data-pestana]")[k - 1]; if (b) mostrarPestana(b.dataset.pestana); }
     });
+  }
+
+  /* ---------------------------------------------------------------- la cuadra como casa: divisas, cuadras, patrocinio y el corro de subastas
+     Las cuentas las hace el motor (js/hipodromo-motor.js, «la cuadra como casa»). Aquí se pinta: la casaca de cada cuadra junto a su nombre, las cuadras de los
+     jugadores y el salón de la fama en el registro, las próximas carreras con lo que cada dueño ha puesto en su bolsa, y los lotes del corro. Si el servidor
+     todavía corre con un motor anterior (su programa no trae las cuadras), estas piezas no salen. */
+  const soyYo = id => id != null && id === (online ? online.yo : YO);
+  const hayCasa = () => !online || !!(m && m.proxima && m.proxima.cuadras);
+  const nombreMio = () => { try { return localStorage.getItem("compendioUsername") || (online ? "Jugador" : "Tú"); } catch (e) { return "Jugador"; } };
+  const casaca = (dv, clase, titulo) => (D.divisa ? D.divisa(dv, { clase: clase || "mini", titulo, sinEmblema: !clase || clase === "mini" }) : "");
+  const cuadraTxt = d => (d ? `<span class="hj-cuadra">${casaca(d.divisa, "mini")}${esc(d.nombre || "otro jugador")}</span>` : "");
+  const pluralTxt = (k, uno, varios) => `${k} ${k === 1 ? uno : varios}`;
+  async function ordenCasa(o, boton, texto) {
+    if (boton) window.HipEspera.poner(boton, texto || "Un momento...");
+    let r; try { r = await (online ? online.ordenar(o) : apiLocal.ordenar(o)); } catch (e) { r = { ok: false, error: "No se pudo enviar la orden." }; }
+    if (boton) window.HipEspera.quitar(boton);
+    avisar(r.ok ? r.texto || "Hecho." : r.error || "No se pudo.", r.ok ? "bien" : "mal");
+    return r;
+  }
+
+  /* ---- el corro de subastas */
+  function lotes() {
+    if (!m || !hayCasa()) return [];
+    const ps = online ? online.perfiles() : (m.subastas || []).map(x => M.buscar(m, x.id)).filter(Boolean).map(c => M.perfil(m, c));
+    return ps.filter(p => p && p.subasta).sort((a, b) => a.subasta.hasta - b.subasta.hasta || a.id - b.id);
+  }
+  function cuandoCierra(s) {
+    const quedan = Math.max(1, s.hasta - m.n), ms = m.proxima.hora + (quedan - 1) * C.MINUTOS * 60000 + C.APLICAR_SEG * 1000, d = new Date(ms), hoy = new Date(est.virtual);
+    const dia = d.toDateString() === hoy.toDateString() ? "hoy" : d.toLocaleDateString("es", { weekday: "long" });
+    return { quedan, texto: `${dia}, hacia las ${horaTxt(ms)}` };
+  }
+  function pintarSubastas() {
+    const el = $("hipSubastas"); if (!el || !m || !m.proxima) return;
+    if (!hayCasa()) { poner(el, '<p class="hip-vacio">El corro de subastas todavía no ha abierto en el servidor. Vuelve en un rato.</p>'); return; }
+    const l = lotes();
+    const items = l.map((p, i) => {
+      const s = p.subasta, mio = s.vendedor && soyYo(s.vendedor.id), mando = s.pujador && soyYo(s.pujador.id), c = cuandoCierra(s), lleno = s.sigue > s.tope;
+      const linaje = p.padre && p.madre ? `${esc(p.padre.nombre)} × ${esc(p.madre.nombre)}` : p.gen === 1 ? "fundadora" : "de otra región";
+      let accion;
+      if (mio) accion = `<p class="hj-lote-nota">Es tu lote.</p>${s.pujador ? "" : `<button type="button" class="hip-boton chico" data-lote-retirar="${p.id}">Retirar del corro</button>`}`;
+      else if (mando) accion = '<p class="hj-lote-mando">Mandas tú</p><p class="hj-lote-nota">Si te superan, tu puja vuelve entera.</p>';
+      else if (lleno) accion = '<p class="hj-lote-nota">Ha llegado a su tope: ya no admite más pujas.</p>';
+      else accion = `<label>Tu puja <input type="number" data-puja="${p.id}" min="${s.sigue}" max="${s.tope}" step="10" value="${s.sigue}" inputmode="numeric"></label><button type="button" class="hip-boton principal" data-pujar="${p.id}">Pujar</button><p class="hj-lote-nota">Mínimo ${monedas(s.sigue)}.</p>`;
+      return `<li class="hj-lote${mio ? " mio" : ""}${mando ? " mando" : ""}" data-lote="${p.id}" style="--i:${i}">
+        <div class="hj-lote-num"><span>Lote</span><b>${i + 1}</b></div>
+        <div class="hj-lote-fig">${D.silueta(p, { clase: "hip-silueta mediana" })}</div>
+        <div class="hj-lote-info"><h3><button type="button" class="hip-enlace" data-ficha="${p.id}">${esc(p.nombre)}</button></h3>
+          <p>${sexoTxt(p)} · ${esc(p.etapa)} · ${edadTxt(p)}${p.salidas ? ` · ${p.salidas} salidas, ${p.vic} victorias` : " · sin salidas"}</p>
+          <p>Linaje: ${linaje}</p>
+          <p>Vende ${s.vendedor ? cuadraTxt(s.vendedor) : "la casa"} · en el mercado valdría unos ${monedas(s.valor)}</p></div>
+        <div class="hj-lote-pizarra"><span>${s.pujador ? "Puja que manda" : "Salida"}</span><strong>${monedas(s.pujador ? s.puja : s.min)}</strong>
+          <small>${s.pujador ? `${cuadraTxt(s.pujador)} · ${pluralTxt(s.pujas, "puja", "pujas")}` : "nadie ha pujado todavía"}</small>
+          <small>Se adjudica ${esc(c.texto)} (${c.quedan === 1 ? "al terminar esta carrera" : `quedan ${c.quedan} carreras`})</small></div>
+        <div class="hj-lote-accion">${accion}</div></li>`;
+    }).join("");
+    const mios = (est.avisos || []).filter(a => /subasta|adjudic|Pujan|pujó/i.test(a.texto)).slice(0, 5);
+    poner(el, `<p class="hj-corro-reglas">La puja se cobra al hacerla y vuelve entera si alguien te supera. Cada puja sube al menos un ${Math.round(C.SUBASTA_SUBE * 100)} %. La casa saca cada día una cría de buen linaje, y desde Mi cuadra puedes traer una de las tuyas (la casa se queda el ${Math.round(C.SUBASTA_COMISION * 100)} % de la venta).</p>
+      ${items ? `<ol class="hj-lotes">${items}</ol>` : '<p class="hj-corro-vacio">El corro está vacío. El subastador barre la arena y espera el lote de mañana.</p>'}
+      ${mios.length ? `<section class="hj-corro-avisos"><h3>Lo último que te toca del corro</h3><ul>${mios.map(a => `<li><small>n.º ${a.n}</small> ${esc(a.texto)}</li>`).join("")}</ul></section>` : ""}`);
+  }
+  async function pujar(b) {
+    const id = Number(b.dataset.pujar), p = perfilDe(id), inp = document.querySelector(`[data-puja="${id}"]`), v = Math.round(Number(inp && inp.value));
+    if (!p || !p.subasta) return;
+    if (!(v >= p.subasta.sigue)) { avisar(`Hay que ofrecer al menos ${monedas(p.subasta.sigue)} tokens.`, "mal"); return; }
+    if (v > est.saldo) { avisar("No tienes tokens suficientes para esa puja.", "mal"); return; }
+    if (!(await dialogo.confirmar(`Pujas ${monedas(v)} tokens por ${p.nombre}. Se cobran ahora y vuelven enteros si alguien te supera.`, { titulo: "Pujar", aceptar: "Pujar" }))) return;
+    const r = await ordenCasa({ tipo: "pujar", id, precio: v, nombre: nombreMio() }, b, "Pujando...");
+    if (r.ok) {
+      S.tocar("mazo"); pintarSubastas();
+      const li = document.querySelector(`[data-lote="${id}"]`);
+      if (li && !QUIETO) { li.classList.remove("hj-golpe"); void li.offsetWidth; li.classList.add("hj-golpe"); li.insertAdjacentHTML("beforeend", '<span class="hj-sello verde">Mandas</span>'); setTimeout(() => { const x = li.querySelector(".hj-sello"); if (x) x.remove(); }, 2000); }
+    }
+  }
+  async function retirarLote(b) {
+    const id = Number(b.dataset.loteRetirar), p = perfilDe(id); if (!p) return;
+    if (!(await dialogo.confirmar(`${p.nombre} sale del corro y sigue en tu cuadra.`, { titulo: "Retirar del corro", aceptar: "Retirar" }))) return;
+    const r = await ordenCasa({ tipo: "subastar", id, quitar: true }, b, "Retirando..."); if (r.ok) pintarSubastas();
+  }
+
+  /* ---- las próximas carreras y su patrocinio */
+  function pintarCalendario() {
+    const el = $("hipCalendario"); if (!el) return;
+    let cal = []; try { cal = online ? online.calendario() : apiLocal.calendario(); } catch (e) { /* aún sin datos */ }
+    if (!hayCasa() || !cal.length) { poner(el, ""); el.classList.add("hidden"); return; }
+    el.classList.remove("hidden");
+    const cuando = ms => { const d = new Date(ms), hoy = new Date(est.virtual); return (d.toDateString() === hoy.toDateString() ? "" : d.toLocaleDateString("es", { weekday: "short" }) + " ") + horaTxt(ms); };
+    const filas = cal.map(x => {
+      const pt = x.patrocinio, puedo = !pt || soyYo(pt.dueno.id);
+      return `<tr class="${x.copa ? "copa" : ""}${pt ? " pat" : ""}"><td>${x.n}</td><td>${esc(cuando(x.hora))}</td>
+        <td><span class="hj-cal-grado">${x.copa ? "★ " : ""}${esc(x.gradoNombre)}</span><strong>${esc(x.nombre)}</strong>${pt ? `<small>Patrocina ${cuadraTxt(pt.dueno)} con ${monedas(pt.monto)} tokens</small>` : ""}</td>
+        <td>${x.dist} m</td><td class="hj-cal-bolsa">${monedas(x.bolsa)}</td>
+        <td>${puedo ? `<button type="button" class="hip-boton chico" data-patrocinar="${x.n}">${pt ? "Poner más" : "Patrocinar"}</button>` : ""}</td></tr>`;
+    }).join("");
+    poner(el, `<h3>Próximas carreras</h3>
+      <p class="hip-nota">Una cuadra puede patrocinar una carrera. Lo que pone (de ${monedas(C.PATROCINIO_MIN)} a ${monedas(C.PATROCINIO_MAX)} tokens) se suma a la bolsa y la carrera puede llevar el nombre que elija. La inscripción no sube. Si la carrera no se corre, el patrocinio se devuelve.</p>
+      <div class="hip-tabla-ancha"><table class="hip-tabla hj-cal"><thead><tr><th>n.º</th><th>Hora</th><th>Carrera</th><th>Dist.</th><th>Bolsa</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`);
+  }
+  async function patrocinar(b) {
+    const n = Number(b.dataset.patrocinar);
+    let cal = []; try { cal = online ? online.calendario() : apiLocal.calendario(); } catch (e) { /* sin datos */ }
+    const x = cal.find(k => k.n === n); if (!x) return;
+    const txt = await dialogo.pedir(`¿Cuántos tokens pones en la bolsa de «${x.nombre}» (carrera n.º ${n})? De ${monedas(C.PATROCINIO_MIN)} a ${monedas(C.PATROCINIO_MAX)}. Tienes ${monedas(est.saldo)}. Ahora la bolsa es de ${monedas(x.bolsa)}.`, String(Math.max(C.PATROCINIO_MIN, Math.min(1000, Math.floor(est.saldo / 100) * 100))), { titulo: "Patrocinar una carrera", marcador: "Tokens", aceptar: "Seguir" });
+    if (txt === null) return;
+    const monto = Math.round(Number(String(txt).replace(/[^\d]/g, "")));
+    if (!(monto >= C.PATROCINIO_MIN && monto <= C.PATROCINIO_MAX)) { avisar(`El patrocinio va de ${monedas(C.PATROCINIO_MIN)} a ${monedas(C.PATROCINIO_MAX)} tokens.`, "mal"); return; }
+    if (monto > est.saldo) { avisar("No tienes tokens suficientes.", "mal"); return; }
+    let titulo = "";
+    if (!x.copa) {
+      const t = await dialogo.pedir(`Pones ${monedas(monto)} tokens. Si quieres, la carrera corre con el nombre que escribas (de 3 a 32 letras). Déjalo vacío y conserva el suyo.`, "", { titulo: "Nombre de la carrera", marcador: x.nombre, aceptar: "Patrocinar" });
+      if (t === null) return; titulo = t.trim();
+    } else if (!(await dialogo.confirmar(`Pones ${monedas(monto)} tokens en la bolsa de ${x.nombre}. Las copas conservan su nombre.`, { titulo: "Patrocinar una copa", aceptar: "Patrocinar" }))) return;
+    const r = await ordenCasa({ tipo: "patrocinar", n, monto, titulo, nombre: nombreMio() }, b, "Patrocinando...");
+    if (r.ok) { S.tocar("monedas"); pintarCalendario(); pintarCopas(); }
+  }
+
+  /* ---- el registro: las cuadras de los jugadores, con su vitrina, y el salón de la fama */
+  function pintarCuadras() {
+    const el = $("hipCuadras"); if (!el) return;
+    const l = (m.proxima && m.proxima.cuadras) || [];
+    if (!l.length) { poner(el, ""); el.classList.add("hidden"); return; }
+    el.classList.remove("hidden");
+    const items = l.slice().sort((a, b) => b.copas - a.copas || b.gp - a.gp || b.vic - a.vic || b.premios - a.premios).map(q => {
+      const cri = q.criaturas.map(perfilDe).filter(Boolean), obras = [q.inst && q.inst.vet ? `enfermería ${q.inst.vet}` : "", q.inst && q.inst.pista ? `pista ${q.inst.pista}` : ""].filter(Boolean).join(" · ");
+      const trofeos = q.trofeos.slice().reverse().map(t => `<li class="${M.GRADOS[t.grado] && M.GRADOS[t.grado].copa ? "copa" : "gp"}" title="${esc(t.carrera)}, con ${esc(t.nombre)} (carrera n.º ${t.n})">${R.icono("trofeo")}<span>${esc(t.carrera)}</span><small>${esc(t.nombre)}</small></li>`).join("");
+      const num = (t, v) => `<div><dt>${t}</dt><dd>${v}</dd></div>`;
+      return `<li class="hj-casa${soyYo(q.id) ? " mia" : ""}">
+        <div class="hj-casa-placa">${casaca(q.divisa, "grande", q.divisa ? "Divisa de " + (q.nombre || "la cuadra") : "Sin divisa")}<div><strong>${esc(q.nombre || "Cuadra sin nombre")}</strong><small>${soyYo(q.id) ? "Tu cuadra · " : ""}${cri.length} de ${q.plazas} plazas${obras ? " · " + obras : ""}</small></div></div>
+        <dl class="hj-casa-nums">${num("Victorias", q.vic)}${num("Salidas", q.salidas)}${num("Copas", q.copas)}${num("Grandes Premios", q.gp)}${num("Premios", monedas(q.premios))}${q.patrocinios ? num("Patrocinó", pluralTxt(q.patrocinios, "carrera", "carreras")) : ""}</dl>
+        <div class="hj-casa-balda">${trofeos ? `<ul>${trofeos}</ul>` : "<p>Balda vacía. Aquí irán sus copas y sus grandes premios.</p>"}</div>
+        <p class="hj-casa-cri">${cri.length ? cri.map(p => nombreBtn(p.id, p.nombre)).join(", ") : "sin criaturas ahora"}</p></li>`;
+    }).join("");
+    poner(el, `<h3>Las cuadras de los jugadores</h3><p class="hip-nota">Cada cuadra con su divisa, lo que ha ganado y su vitrina. Una copa se queda en la vitrina aunque la criatura se venda o muera.</p><ul class="hj-casas">${items}</ul>`);
+  }
+  function pintarFama() {
+    const el = $("hipFama"); if (!el || pestana !== "mundo") return;
+    const vistos = new Set(), todas = (online ? online.perfiles() : m.vivos.concat(m.criadores).filter(M.esLeyenda).map(c => M.perfil(m, c))).concat(Object.values(est.archivo));
+    const ley = todas.filter(p => p && p.leyenda && !vistos.has(p.id) && vistos.add(p.id)).sort((a, b) => (b.copas || 0) - (a.copas || 0) || b.gp - a.gp || b.vic - a.vic).slice(0, 12);
+    ley.forEach(p => D.registrar(p));
+    poner(el, `<h3>Salón de la fama</h3>${ley.length ? `<ul class="hj-fama">${ley.map(p => `<li><button type="button" data-ficha="${p.id}"><span class="hj-fama-marco">${D.silueta(p, { clase: "hip-silueta mediana" })}</span><strong>${esc(p.nombre)}</strong>
+      <small>${p.vic} victorias${p.gp ? ` · ${p.gp} GP` : ""}${p.copas ? ` · ${pluralTxt(p.copas, "copa", "copas")}` : ""}</small><small>${p.estado === "fallecido" ? "murió" : p.estado === "retirado" ? "retirada" : p.estado === "criador" ? "en la cría" : "sigue corriendo"}${p.dueno && p.dueno.nombre ? " · " + esc(p.dueno.nombre) : ""}</small></button></li>`).join("")}</ul>`
+      : '<p class="hip-vacio">Todavía no hay ninguna leyenda. Hacen falta 14 victorias o 3 Grandes Premios.</p>'}`);
+  }
+  function eventosCasa() {
+    document.addEventListener("click", e => {
+      const pj = e.target.closest("[data-pujar]"); if (pj && !pj.disabled) { pujar(pj); return; }
+      const rt = e.target.closest("[data-lote-retirar]"); if (rt && !rt.disabled) { retirarLote(rt); return; }
+      const pt = e.target.closest("[data-patrocinar]"); if (pt && !pt.disabled) patrocinar(pt);
+    });
+    // con el corro abierto, las pujas de los demás se ven sin esperar a la carrera siguiente
+    setInterval(() => { if (online && online.refrescarDatos && pestana === "subastas" && !document.hidden) online.refrescarDatos(); }, 20000);
   }
 
   /* ---------------------------------------------------------------- pintar */
@@ -797,10 +952,12 @@
       nUI = m.proxima.n;
       pintarPrograma(); pintarPanelApuesta(true); pintarPendientesCarrera(); pintarUltimo();
     }
-    pintarCopas();
+    pintarCopas(); pintarCalendario();
     pintarInscritos();
     pintarTribuna();
+    pintarCuadras(); pintarFama();
     pintarCuadrasNpc();
+    pintarSubastas();
     pintarCriaturas();
     if (cuadraUI) cuadraUI.pintar();
     if (cartasUI) cartasUI.pintar();
@@ -821,6 +978,8 @@
       if (id === "cuadra" && cuadraUI) cuadraUI.pintar();
       if (id === "cartas" && cartasUI) cartasUI.abrir();
       if (id === "inicio") pintarInicio();
+      if (id === "subastas") { pintarSubastas(); if (online && online.refrescarDatos) online.refrescarDatos(); }
+      if (id === "mundo") { pintarFama(); if (online && !online.retiradasCargadas) { online.retiradasCargadas = true; online.leerRetiradas().then(pintarFama, () => {}); } }
       if (cambia && !PLENO) window.scrollTo(0, 0);
     };
     clearTimeout(saleT); document.querySelectorAll(".hip-panel.hj-sale").forEach(p => p.classList.remove("hj-sale"));
@@ -833,7 +992,7 @@
   /* ---------------------------------------------------------------- eventos */
   function iniciarEventos() {
     if (R) R.montar();
-    eventosJuego();
+    eventosJuego(); eventosCasa();
     $("hipVelocidad").innerHTML = VELOCIDADES.map(([v, t]) => `<button type="button" class="hip-boton chico" data-vel="${v}" aria-pressed="false">${t}</button>`).join("");
     $("hipVelocidad").addEventListener("click", e => { const b = e.target.closest("[data-vel]"); if (!b) return; est.vel = Number(b.dataset.vel); guardar(); pintarReloj(); });
     $("hipSaltar").addEventListener("click", saltar);
@@ -850,6 +1009,7 @@
       const a = e.target.closest("[data-apostar]");
       if (a) { $("hipSel1").value = a.dataset.apostar; pintarPanelApuesta(false); if (esMovil()) abrirBoleto(true); else { $("hipPanelApuesta").scrollIntoView({ behavior: "smooth", block: "center" }); $("hipMonto").focus(); } return; }
       if (e.target.closest("[data-ir-cuadra]")) { cerrarFicha(); mostrarPestana("cuadra"); return; }
+      if (e.target.closest("[data-cierra-ficha]")) cerrarFicha();
       const fav = e.target.closest("[data-favorito]");
       if (fav) {
         const id = Number(fav.dataset.favorito), i = est.favoritos.indexOf(id);
@@ -916,6 +1076,8 @@
       todas: () => online.perfiles(),
       cargarHistoria: () => { if (online.retiradasCargadas) return Promise.resolve(false); online.retiradasCargadas = true; return online.leerRetiradas().then(() => true, () => false); },   // todas las criaturas que se conocen (para los descendientes del árbol)
       objetos: () => { const l = online.mias(); return (l[0] && l[0].c && l[0].c.objetos) || []; },   // los objetos del criadero viajan en lo privado de cada criatura mía
+      casa: () => hayCasa(),
+      cuadra: () => { const l = online.mias(), c = (l[0] && l[0].c) || {}; return { plazas: c.plazas || C.MAX_CABALLOS, ampliacion: c.ampliacion || 0, inst: c.inst || { vet: 0, pista: 0 }, divisa: c.divisa || null }; },   // y lo de la cuadra entera, igual
       clave: () => "s" + online.yo,
       ordenar: o => online.ordenar(o)
     };
@@ -971,6 +1133,8 @@
     avisos: () => est.avisos,
     todas: () => m.vivos.concat(m.criadores).map(c => M.perfil(m, c)),
     objetos: () => ((m.duenos && m.duenos[YO] && m.duenos[YO].objetos) || []),
+    casa: () => true,
+    cuadra: () => { const du = (m.duenos && m.duenos[YO]) || {}; return { plazas: M.maxCuadra(m, YO), ampliacion: du.ampliacion || 0, inst: { vet: M.nivelInst(m, YO, "vet"), pista: M.nivelInst(m, YO, "pista") }, divisa: du.divisa || null }; },
     clave: () => "local",
     async ordenar(o) {
       const saldos = { [YO]: est.saldo };
@@ -978,6 +1142,7 @@
       const res = r.resultados[0];
       if (!res.ok) return res;
       est.saldo = saldos[YO];
+      est.avisos = (r.avisos || []).filter(a => a.dueno === YO).reverse().concat(est.avisos || []).slice(0, 60);
       est.noticias = r.noticias.slice().reverse().concat(est.noticias).slice(0, MAX_NOTICIAS);
       nUI = -1; guardar(); pintarTodo();
       return res;
