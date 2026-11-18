@@ -16,6 +16,7 @@ import {
 
 export interface Ganchos {
   alTocar: (x: number, y: number, tactil: boolean) => void;
+  alTocarCiudad?: (x: number, y: number) => void;
   alPasar?: (x: number, y: number) => void;
   alCaja?: (x0: number, y0: number, x1: number, y1: number) => void;
   alSonar?: (nombre: string) => void;
@@ -111,7 +112,7 @@ export class EscenaGuerra extends Phaser.Scene {
       const m = this.aMundo(sx, sy);
       let x = Math.floor(m.x / T), y = Math.floor(m.y / T);
       // Un gigante sobresale mucho de sus 2×2 casillas: si se toca su figura donde no hay otra tropa, cuenta como tocarle a él
-      if (this.est && !this.lejos && !W.FracturaMotor.unidadEn(this.est, x, y)) {
+      if (this.est && !this.lejos && !W.FracturaMotor.unidadEn(this.est, x, y) && !W.FracturaMotor.ciudadEn(this.est, x, y)) {
         let mejor: any = null;
         this.unidades.forEach((o, uid) => {
           const lg = this.est.unidades[uid];
@@ -185,6 +186,12 @@ export class EscenaGuerra extends Phaser.Scene {
       if (!t || t.id !== p.id) return;
       this.toque = null;
       if (t.mov || this.pinza || !this.est || this.anim) return;
+      if (this.ganchos.alTocarCiudad && !this.lejos) {
+        const m = this.aMundo(p.x, p.y);
+        let placa: any = null;
+        this.placas.forEach(pl => { if (!placa && pl.cont.active && pl.cont.visible && pl.cont.getBounds().contains(m.x, m.y)) placa = pl; });
+        if (placa) { this.ganchos.alTocarCiudad(placa.x, placa.y); return; }
+      }
       const c = casillaEn(p.x, p.y);
       if (c.dentro) this.ganchos.alTocar(c.x, c.y, t.tactil);
     };
@@ -225,6 +232,9 @@ export class EscenaGuerra extends Phaser.Scene {
     this.placas.forEach(p => {
       if (!p.cont.active) return;
       const X = p.x * T, Y = p.y * T, abajo = ocupada.has(`${p.x},${p.y + 1}`), arriba = ocupada.has(`${p.x},${p.y - 1}`);
+      // Un gigante encima de la ciudad la tapa entera: el rótulo va justo debajo de sus pies, donde se ve y se puede tocar
+      const gig: any = Object.values(this.est.unidades).find((u: any) => u.tam === 2 && W.FracturaMotor.ocupa(u, p.x, p.y));
+      if (gig) { p.cont.setPosition(X + T / 2, (gig.y + 2) * T + T * 0.04).setAlpha(1); return; }
       if (abajo && !arriba) p.cont.setPosition(X + T / 2, Y - T * 0.32).setAlpha(1);
       else p.cont.setPosition(X + T / 2, Y + T * 1.0).setAlpha(abajo ? 0.5 : 1);
     });

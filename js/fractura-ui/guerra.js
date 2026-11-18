@@ -13,7 +13,7 @@
 
   function crearTablero() {
     if (!window.FracturaTableroPhaser) return null;
-    return window.FracturaTableroPhaser.crear($("frTablero"), { alTocar: tocar, alPasar: pasarPor, alSonar: son, alMoverVista: pintarMiniPronto, alCaja: elegirGrupo });
+    return window.FracturaTableroPhaser.crear($("frTablero"), { alTocar: tocar, alTocarCiudad: tocarCiudad, alPasar: pasarPor, alSonar: son, alMoverVista: pintarMiniPronto, alCaja: elegirGrupo });
   }
 
   function entrarGuerra(nueva) {
@@ -274,6 +274,15 @@
     }
   }
 
+  /* Tocar el rótulo de una ciudad: si algo espera una casilla (conquistar, reunión, una orden...), cuenta como tocar la ciudad; si no, se elige la ciudad */
+  function tocarCiudad(x, y) {
+    if (!est) return;
+    if (modo || grupoPendiente || marcarReunion || botar || !soyYo()) { tocar(x, y); return; }
+    const ci = FM.ciudadEn(est, x, y);
+    if (!ci || !(FM.veCasilla(est, humano(), x, y))) { tocar(x, y); return; }
+    limpiarPrevia(); grupo = null;
+    sel = { uid: null, ciudad: ci.id }; modo = null; son("clic"); refrescar();
+  }
   /* --- Tocar el mapa --- */
   async function tocar(x, y, tactil) {
     if (!est || est.ganador !== null) return;
