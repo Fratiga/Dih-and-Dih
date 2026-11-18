@@ -101,6 +101,13 @@
       <button type="button" class="fr-menu-btn" data-pm="ajustes"><span>Ajustes</span></button>
       ${document.documentElement.requestFullscreen ? `<button type="button" class="fr-menu-btn" data-pm="pantalla"><span>Pantalla completa</span><small>También con la tecla F</small></button>` : ""}`;
     animarPortada();
+    if (FMH) FMH.esAdmin().then(ok => {
+      if (!ok || menu.querySelector('[data-pm="musicaHeroes"]')) return;
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "fr-menu-btn fr-menu-admin"; b.dataset.pm = "musicaHeroes";
+      b.innerHTML = `<span>Música de los héroes</span><small>Solo Admin</small>`;
+      menu.appendChild(b);
+    });
     await cargarEjercitos();
     if (!$("frPortada").classList.contains("hidden")) {
       const enCurso = Red.cargarGuerra();
@@ -124,6 +131,7 @@
     else if (m === "ayuda") abrirAyuda();
     else if (m === "ajustes") abrirAjustes();
     else if (m === "pantalla") pantallaCompleta();
+    else if (m === "musicaHeroes" && FMH) FMH.abrir();
   });
   $("frAPortada").addEventListener("click", pintarPortada);
 
@@ -783,13 +791,15 @@ pintarHero();
   const esRival = d => d !== null && d >= 0 && FM.hostil(est, d, humano());
   /* El color con el que se escribe el nombre de una tropa: el de su bando (más claro para que se lea sobre fondo oscuro) */
   const colorDe = d => (d !== null && d >= 0 && bandos[d] ? FF.claro(bandos[d].col, 0.25) : "#cfc6b4");
-  const musicaPartida = si => { if (window.MusicaPaginas) window.MusicaPaginas.partida(si); };
+  const FMH = window.FracturaMusicaHeroes || null;
+  const musicaPartida = si => { if (!si && FMH) FMH.alTerminar(); if (window.MusicaPaginas) window.MusicaPaginas.partida(si); };
   const tropaDe = u => (u.heroe ? { nombre: HEROES[u.heroe].titulo, texto: HEROES[u.heroe].texto, rol: "Héroe", aspecto: HEROES[u.heroe].aspecto } : u.dueno >= 0 ? D.tropa(est.jugadores[u.dueno].faccion, u.clase) : { nombre: CLASES[u.clase].nombre, texto: CLASES[u.clase].texto, rol: CLASES[u.clase].rol, aspecto: "" });
 
   /* --- Ajustes del juego (se guardan en este navegador) --- */
   let ajustes = { rapidez: 1, seguir: true, pistas: true };
   try { ajustes = Object.assign(ajustes, JSON.parse(localStorage.getItem("fracturaAjustes") || "{}")); } catch (e) { /* sin almacenamiento */ }
-  const guardarAjustes = () => { try { localStorage.setItem("fracturaAjustes", JSON.stringify(ajustes)); } catch (e) { /* nada */ } if (tablero) tablero.ajustes(ajustes); };
+  const guardarAjustes = () => { try { localStorage.setItem("fracturaAjustes", JSON.stringify(ajustes)); } catch (e) { /* nada */ } if (tablero) tablero.ajustes(ajustes); if (FMH) FMH.activar(ajustes.musicaHeroes !== false); };
+  if (FMH) FMH.activar(ajustes.musicaHeroes !== false);
 
   /* --- Iconos: dibujos pequeños en vez de palabras --- */
   const ICONOS = {
@@ -1268,6 +1278,8 @@ pintarHero();
     const base = cronicaVista;
     cronicaVista = est.cronica.length;
     nuevos.forEach((e, i) => {
+      if (FMH && e.heroe && e.tipo === "heroe") FMH.alInvocar(e.heroe);
+      if (FMH && e.heroe && e.tipo === "heroe_cae") FMH.alCaer(e.heroe);
       let t = TOAST[e.tipo];
       if (e.tipo === "caida") { if (!(e.capitan || (e.victorias || 0) >= 10)) return; t = [e.capitan ? "Cae un capitán" : "Cae un veterano", "☠", "baja"]; }
       if (e.tipo === "tecnologia" && e.dueno !== humano()) return;
@@ -2139,6 +2151,7 @@ pintarHero();
       <label class="fr-ajuste"><span>Sonido</span><input type="range" min="0" max="100" value="${Math.round(vol * 100)}" data-aj="vol"><button type="button" class="fr-btn fr-btn-chico" data-aj="mudo">${mudo ? "Activar" : "Silenciar"}</button></label>
       <div class="fr-ajuste"><span>Animaciones</span><div class="fr-segmentos">${[[0.6, "Lentas"], [1, "Normales"], [1.8, "Rápidas"]].map(([v, t]) => `<button type="button" class="fr-opcion${ajustes.rapidez === v ? " sel" : ""}" data-aj="rapidez" data-v="${v}">${t}</button>`).join("")}</div></div>
       <div class="fr-ajuste"><span>Seguir con la vista el turno de los demás</span><div class="fr-segmentos"><button type="button" class="fr-opcion${ajustes.seguir ? " sel" : ""}" data-aj="seguir" data-v="1">Sí</button><button type="button" class="fr-opcion${!ajustes.seguir ? " sel" : ""}" data-aj="seguir" data-v="0">No</button></div></div>
+      ${FMH ? `<div class="fr-ajuste"><span>Música de los héroes al invocarlos</span><div class="fr-segmentos"><button type="button" class="fr-opcion${ajustes.musicaHeroes !== false ? " sel" : ""}" data-aj="musicaHeroes" data-v="1">Sí</button><button type="button" class="fr-opcion${ajustes.musicaHeroes === false ? " sel" : ""}" data-aj="musicaHeroes" data-v="0">No</button></div></div>` : ""}
       <div class="fr-ajuste"><span>Pistas de qué hacer</span><div class="fr-segmentos"><button type="button" class="fr-opcion${ajustes.pistas ? " sel" : ""}" data-aj="pistas" data-v="1">Sí</button><button type="button" class="fr-opcion${!ajustes.pistas ? " sel" : ""}" data-aj="pistas" data-v="0">No</button></div></div>
       ${document.documentElement.requestFullscreen ? `<div class="fr-ajuste"><span>Pantalla completa</span><button type="button" class="fr-btn fr-btn-chico" data-aj="pantalla">${document.fullscreenElement ? "Salir" : "Activar"}</button></div>` : ""}`;
     if (!$("frAjustes").open) $("frAjustes").showModal();
@@ -2212,8 +2225,26 @@ pintarHero();
         <table class="fr-ay-tabla"><tr><th>Recurso</th><th>De dónde sale</th><th>Para qué sirve</th></tr>${filasRec}</table>`],
       ["ciudades", "Ciudades y tropas", `<ul><li>Cada ciudad entrena una tropa por turno. Algunas tropas piden un edificio o un escalón del saber.</li>
         <li>Arriba, junto a los recursos, ves cuántas tropas tienes y cuántas puedes tener. El límite sube al hacer <strong>crecer</strong> tus ciudades, y cada ejército crece a su manera.${niveles ? ` El tuyo: ${niveles}.` : ""}</li>
-        <li>Los levantados de entre los muertos no cuentan para el límite.</li></ul>
+        <li>Los levantados de entre los muertos no cuentan para el límite. Cómo subirlo, ejército por ejército, está en <strong>Límite de tropas</strong>.</li></ul>
         <h4 class="fr-h4">Edificios</h4><table class="fr-ay-tabla">${filasEd}</table>`],
+      ["limite", "Límite de tropas", `<p>Cada ejército puede tener un número máximo de tropas a la vez. Se ve arriba, junto a los recursos. Cuando llegas al máximo, tus ciudades no pueden entrenar más.</p>
+        <h4 class="fr-h4">Cómo subirlo</h4>
+        <ul><li><strong>Haz crecer tus ciudades.</strong> Pulsa «Crecer» en el panel de la ciudad. Cada nivel de cada ciudad suma tropas al límite, y cuántas depende del ejército (en la tabla).</li>
+        <li><strong>Toma más ciudades.</strong> Cada ciudad tuya suma lo de sus niveles. Desde la cuarta ciudad se paga administración en oro.</li>
+        <li><strong>Aprende el saber que lo sube.</strong> Algunos escalones dan más tropas. Salen en la última columna.</li>
+        <li><strong>Encarga una Fiesta.</strong> Es una obra de ciudad: +2 al límite durante 3 turnos por cada ciudad que la celebre.</li>
+        <li>Nunca pasa del tope de tu ejército.</li></ul>
+        <p>No ocupan sitio los levantados de entre los muertos ni lo que traen algunos héroes al usar sus habilidades.</p>
+        <table class="fr-ay-tabla fr-ay-limite"><tr><th>Ejército</th><th>Base</th><th>Por nivel de ciudad</th><th>Tope</th><th>Saber que lo sube</th></tr>${Object.keys(FACCIONES).map(k => {
+          const F = FACCIONES[k], pb = F.poblacion || { base: 4, porNivel: [3, 3, 3, 3, 3], tope: 30, niveles: [] };
+          const sabe = [];
+          if (window.FracturaSaber) {
+            window.FracturaSaber.ramas(k).forEach(r => r.escalones.forEach((e, i) => { if (e.ef && e.ef.poblacion) sabe.push(`${esc(e.nombre)} (${esc(r.nombre)} ${i + 1}) +${e.ef.poblacion}`); }));
+            window.FracturaSaber.cruces(k).forEach(x => { if (x.ef && x.ef.poblacion) sabe.push(`${esc(x.nombre)} +${x.ef.poblacion}`); });
+          }
+          return `<tr${k === f ? ' class="mio"' : ""}><th>${esc(F.corto)}</th><td>${pb.base}</td><td>${pb.porNivel.map((n, i) => `${pb.niveles && pb.niveles[i] ? esc(pb.niveles[i]) + " " : ""}+${n}`).join(" · ")}</td><td>${pb.tope || 30}</td><td>${sabe.join("; ") || "ninguno"}</td></tr>`;
+        }).join("")}</table>
+        <p>Ejemplo: con ${fac && fac.poblacion ? esc(fac.corto) : "Brurland"}, una capital de nivel 3 y una ciudad de nivel 1 dan ${(() => { const pb = (fac && fac.poblacion) || FACCIONES["caballeros-del-reino"].poblacion; return pb.base + pb.porNivel.slice(0, 3).reduce((a, b) => a + b, 0) + pb.porNivel[0]; })()} tropas de límite, antes del saber.</p>`],
       ["asedio", "Tomar ciudades", `<ul><li>Una ciudad <strong>sin dueño</strong> se toma entrando en ella.</li>
         <li>Una ciudad <strong>con dueño</strong> se asedia: entras y te quedas. Si tu tropa sigue dentro cuando empieza tu siguiente turno, la ciudad es tuya. Si la echan o la matan antes, el asedio se levanta.</li>
         <li>En el mapa, una ciudad sitiada lleva ⚔ delante del nombre.</li>

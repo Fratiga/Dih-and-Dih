@@ -586,6 +586,13 @@ Las partidas guardadas y las mesas en curso con reglas anteriores no se cargan (
 - Cada ciudad alimenta a 2 tropas, no a 3.
 - Medir lo que sobra: `node scratchpad/medir_recursos.js [desde] [cuántas]` (fuera de git).
 
+### Música de los héroes (Admin)
+- `js/fractura-musica-heroes.js`: el Admin elige en la portada («Música de los héroes», solo con su cuenta) una canción de la Rocola de fondos para cada héroe, con volumen y modo («Mientras viva» en bucle hasta que cae, o «Una vez»). Se guarda en `musica_paginas`, fila `fractura-heroes.html`, con `musica_pagina_guardar` (sin SQL nuevo).
+- Suena al llegar a la crónica la entrada `heroe` (ahora lleva el id del héroe; `heroe_cae` también), así que vale para la máquina y para las mesas. Mientras suena, la música de la partida (`MusicaPaginas.audio`) queda en pausa. Respeta el ♪ silenciado y el ajuste «Música de los héroes al invocarlos».
+
+### Ayuda
+- Sección «Límite de tropas»: cómo subirlo y una tabla con base, lo que suma cada nivel de ciudad, el tope y los escalones del saber que lo suben, de los trece ejércitos.
+
 ### Figuras
 - Cada figura del tablero se revisó contra su retrato (`scratchpad/figura_retrato.html?f=ejercito`, fuera de git).
 

@@ -1201,7 +1201,7 @@
       const importante = u.s.capitan || u.vicG > 0 || S.rangoIndice(u.s.victorias + (u.vicG || 0)) >= 1;
       if (importante) crono(est, "caida", { soldado: u.s.id, nombre: nombreUnidad(u), dueno, region: reg0.nombre, por: por ? nombreUnidad(por) : null, porId: por && por.s ? por.s.id : null, capitan: !!u.s.capitan, victorias: u.s.victorias + (u.vicG || 0), compania: u.s.compania, x: u.x, y: u.y });
     }
-    if (u.heroe && dueno >= 0) crono(est, "heroe_cae", { nombre: nombreUnidad(u), dueno, region: reg0.nombre, por: por ? nombreUnidad(por) : null });
+    if (u.heroe && dueno >= 0) crono(est, "heroe_cae", { nombre: nombreUnidad(u), dueno, region: reg0.nombre, por: por ? nombreUnidad(por) : null, heroe: u.heroe });
     if (u.lider && dueno >= 0) {
       const jug = est.jugadores[dueno];
       jug.liderMuerto = true;
@@ -1910,7 +1910,7 @@
         if (h.ef.temible) est.hayTemible = true;
         est.ev.push({ k: "heroe", uid: u.uid, x: u.x, y: u.y, dueno: j });
         reg(est, `${jug.nombre} invoca a ${ficha.nombre}.`, "heroe");
-        crono(est, "heroe", { dueno: j, nombre: ficha.nombre, ciudad: ciudad.nombre });
+        crono(est, "heroe", { dueno: j, nombre: ficha.nombre, ciudad: ciudad.nombre, heroe: acc.heroe });
         (h.ef.llegaCon || []).forEach(clase => {
           if (!hayHueco(est, j)) return;
           const lib = casillaLibreCerca(est, ciudad, j);

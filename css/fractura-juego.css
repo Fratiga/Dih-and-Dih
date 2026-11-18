@@ -631,3 +631,23 @@ button.fr-nucleo { font: inherit; font-size: .8rem; background: transparent; cur
 .fr-nucleo.peligro { color: #ff9a8a; border-color: #ff7a6a; animation: fr-nucleo-latido 1.1s ease-in-out infinite; }
 @keyframes fr-nucleo-latido { 50% { background: rgba(255, 122, 106, .18); } }
 @media (prefers-reduced-motion: reduce) { .fr-nucleo.peligro { animation: none; background: rgba(255, 122, 106, .14); } }
+/* Música de los héroes (solo Admin) */
+.fr-menu-btn.fr-menu-admin small { color: var(--accent); }
+.fmh .fmh-lista { display: flex; flex-direction: column; gap: 4px; max-height: 46vh; overflow-y: auto; margin-top: 10px; }
+.fmh-fila { display: grid; grid-template-columns: 40px minmax(120px, 1fr) minmax(150px, 1.6fr) auto auto auto; gap: 8px; align-items: center; padding: 4px 6px; background: var(--fr-hierro-2); border: 1px solid var(--fr-filete); }
+.fmh-fila img { width: 40px; height: auto; display: block; }
+.fmh-nombre strong { display: block; font-size: .86rem; }
+.fmh-nombre small { color: #9a8f86; font-size: .72rem; }
+.fmh-fila select { font: inherit; font-size: .8rem; color: var(--fr-marfil); background: var(--fr-hierro); border: 1px solid var(--fr-filete); padding: 3px 5px; min-width: 0; }
+.fmh-fila select:focus { outline: 1px solid var(--accent); }
+.fmh-fila select:disabled, .fmh-fila input:disabled { opacity: .45; }
+.fmh-vol { display: flex; align-items: center; gap: 4px; font-size: .72rem; color: #b8a99c; }
+.fmh-vol input { width: 80px; accent-color: var(--accent); }
+[data-oir].sonando { border-color: var(--accent); color: var(--accent); }
+.fmh-biblio { margin-top: 8px; border: 1px solid var(--fr-filete); padding: 6px 8px; background: var(--fr-tinta); }
+.fmh-biblio summary { cursor: pointer; font-size: .84rem; color: var(--accent); }
+.fmh-biblio-cuerpo { margin-top: 8px; max-height: 34vh; overflow-y: auto; }
+.fmh-estado { min-height: 1.2em; font-size: .8rem; color: var(--fr-ok); margin: 8px 0 0; }
+.fmh-estado.mal { color: var(--fr-mal); }
+@media (max-width: 700px) { .fmh-fila { grid-template-columns: 40px 1fr; } .fmh-fila > select, .fmh-fila > button, .fmh-vol { grid-column: 2; } }
+.fr-ay-limite tr.mio th, .fr-ay-limite tr.mio td { background: var(--fr-hierro-2); color: var(--accent); }
