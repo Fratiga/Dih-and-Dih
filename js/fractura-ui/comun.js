@@ -19,6 +19,7 @@
   let marcarReunion = null; // ciudad cuyo punto de reunión se está marcando en el mapa
   let grupo = null;        // varias tropas elegidas con Mayús + arrastrar: [uid, ...]
   let cumpliendo = false;
+  let grupoPendiente = null;   // orden del grupo que espera su objetivo en el mapa (conquistar, explorar, defender, matanza)
   let grupoConquista = false;   // el grupo espera a que se toque la ciudad que conquistar  // mientras las tropas cumplen sus órdenes (sus acciones no las borran)
   const ORD = window.FracturaIA ? window.FracturaIA.ORDENES : {};
   let guardarEstadoTimer = null;
@@ -407,7 +408,8 @@
         <li>En <strong>Mesas</strong> se juega contra otros jugadores, de 2 a 8, por turnos y cada quien cuando puede. Cada jugador apuesta las cartas que quiera, o ninguna. Quien gana se lleva las de los que pierden.</li></ul>`],
       ["ordenes", "Órdenes", `<p>Una tropa con orden actúa sola al terminar tu turno. Así no tienes que mover tus tropas una a una.</p>
         <ul>${Object.keys(ORD).map(k => `<li><strong>${esc(ORD[k].nombre)}.</strong> ${esc(ORD[k].texto)}</li>`).join("")}</ul>
-        <ul><li>Las órdenes se dan desde la tarjeta de la tropa. En el mapa, un iconito junto a su barra de vida dice qué orden cumple.</li>
+        <ul><li>Explorar, Defender, Conquistar y Matanza piden un objetivo: después de pulsar la orden, toca en el mapa el punto, la ciudad o la tropa propia que quieres. Si tocas la propia tropa, la orden se cumple sin objetivo. Con el objetivo marcado, al elegir la tropa se ve en el mapa.</li>
+        <li>Las órdenes se dan desde la tarjeta de la tropa. En el mapa, un iconito junto a su barra de vida dice qué orden cumple.</li>
         <li>Si mueves o atacas con ella a mano, la orden se quita.</li>
         <li><strong>Grupos.</strong> Mantén <kbd>Mayús</kbd> y arrastra sobre el mapa para elegir varias tropas a la vez. Les puedes dar la misma orden a todas.</li>
         <li>Una tropa con poca vida deja lo que estaba haciendo y se va a curar. Cuando se recupera, vuelve a su orden.</li>

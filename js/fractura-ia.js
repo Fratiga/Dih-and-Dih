@@ -557,10 +557,10 @@
      aplicar(acc) es la función que aplica la acción (en una mesa también la anota para enviarla).
   ========================================================================= */
   const ORDENES = {
-    explorar: { nombre: "Explorar", ic: "◉", texto: "Va hacia lo que no se ve y evita las peleas. Se para si ve a un enemigo más fuerte o le queda poca vida." },
-    defender: { nombre: "Defender", ic: "■", texto: "Se queda donde está y ataca a lo que se acerque a 2 casillas. No se corta nunca." },
+    explorar: { nombre: "Explorar", ic: "◉", texto: "Va hacia el punto que marques y evita las peleas. Al llegar, o si no marcas ninguno, va hacia lo que no se ve. Se para si ve a un enemigo más fuerte o le queda poca vida." },
+    defender: { nombre: "Defender", ic: "■", texto: "Guarda la casilla o escolta a la tropa que elijas, y ataca a lo que se acerque a 2 casillas. No se corta nunca." },
     conquistar: { nombre: "Conquistar", ic: "⚑", texto: "Marcha hacia la ciudad que elijas y la asedia. Se para al tomarla o si queda muy herida." },
-    matanza: { nombre: "Matanza", ic: "✕", texto: "Busca al enemigo más cercano o más débil y lo ataca. Se para si queda muy herida." },
+    matanza: { nombre: "Matanza", ic: "✕", texto: "Va hacia el punto que marques atacando todo lo que encuentra por el camino. Al llegar, o si no marcas ninguno, busca al enemigo más cercano. Se para si queda muy herida." },
     reforzar: { nombre: "Reforzar", ic: "➜", texto: "Va al punto de reunión de su ciudad. Al llegar se queda defendiéndolo." },
     curarse: { nombre: "Curarse", ic: "✚", texto: "Vuelve a la ciudad propia más cercana y espera a estar sana. Luego vuelve a su orden anterior." }
   };
@@ -629,6 +629,13 @@
       if (ord.tipo === "explorar") {
         const amenaza = Object.values(est.unidades).find(w => peligrosos(w) && FM.veUnidad(est, j, w) && cheb(w, u) <= 3 && fuerzaDe(est, w) >= fuerzaDe(est, u));
         if (amenaza) { delete u.orden; avisa(u, "ve un enemigo más fuerte y espera órdenes."); return; }
+        // Con un punto marcado: va hacia él; al llegar sigue explorando por su cuenta
+        if (ord.x !== undefined) {
+          const punto = { x: ord.x, y: ord.y };
+          if (cheb(u, punto) > 1) { moverHacia(est, u, [punto], aplicar, { cauto: true }); if (!est.unidades[u.uid] || cheb(u, punto) > 1) return; }
+          u.orden = { tipo: "explorar" }; avisa(u, "llega al punto marcado y sigue explorando.");
+          return;
+        }
         const vis = est.vision[j], metas = [];
         const barco = FM.esBarco(u);
         for (let y = 0; y < est.alto; y++) for (let x = 0; x < est.ancho; x++) {
@@ -643,6 +650,16 @@
         return;
       }
       if (ord.tipo === "defender") {
+        // Escoltar a una tropa: el ancla es ella, vaya donde vaya
+        if (ord.uid) {
+          const w = est.unidades[ord.uid];
+          if (!w || w.dueno !== j) { u.orden = { tipo: "defender", x: u.x, y: u.y }; avisa(u, "perdió a quien escoltaba y se queda a defender donde está."); return; }
+          const aE = mejorAccionDeAtaque(est, u, nunca, "normal");
+          if (aE && cheb(aE.t, w) <= 2) { golpear(est, u, aplicar, aE); return; }
+          if (cheb(u, w) > 1) moverHacia(est, u, [w], aplicar);
+          golpearAqui(est, u, aplicar);
+          return;
+        }
         const ancla = { x: ord.x, y: ord.y };
         const a = mejorAccionDeAtaque(est, u, nunca, "normal");
         if (a && cheb(a.p, ancla) <= 2) { golpear(est, u, aplicar, a); return; }
@@ -665,6 +682,13 @@
       if (ord.tipo === "matanza") {
         const a = mejorAccionDeAtaque(est, u, nunca, "normal");
         if (a) { golpear(est, u, aplicar, a); return; }
+        // Con un punto marcado: va hacia él y ataca todo lo que encuentra por el camino; al llegar busca enemigos por su cuenta
+        if (ord.x !== undefined) {
+          const punto = { x: ord.x, y: ord.y };
+          if (cheb(u, punto) > 0) { moverHacia(est, u, [punto], aplicar); if (est.unidades[u.uid]) golpearAqui(est, u, aplicar); if (!est.unidades[u.uid] || cheb(u, punto) > 1) return; }
+          u.orden = { tipo: "matanza" }; avisa(u, "llega al punto marcado y busca a quién atacar.");
+          return;
+        }
         const vistos = Object.values(est.unidades).filter(w => peligrosos(w) && FM.veUnidad(est, j, w));
         let metas = vistos.length ? vistos.slice().sort((p, q) => cheb(u, p) - cheb(u, q)).slice(0, 4).map(w => ({ x: w.x, y: w.y })) : null;
         if (!metas) {

@@ -26,6 +26,7 @@
   let marcarReunion = null; // ciudad cuyo punto de reunión se está marcando en el mapa
   let grupo = null;        // varias tropas elegidas con Mayús + arrastrar: [uid, ...]
   let cumpliendo = false;
+  let grupoPendiente = null;   // orden del grupo que espera su objetivo en el mapa (conquistar, explorar, defender, matanza)
   let grupoConquista = false;   // el grupo espera a que se toque la ciudad que conquistar  // mientras las tropas cumplen sus órdenes (sus acciones no las borran)
   const ORD = window.FracturaIA ? window.FracturaIA.ORDENES : {};
   let guardarEstadoTimer = null;
@@ -414,7 +415,8 @@
         <li>En <strong>Mesas</strong> se juega contra otros jugadores, de 2 a 8, por turnos y cada quien cuando puede. Cada jugador apuesta las cartas que quiera, o ninguna. Quien gana se lleva las de los que pierden.</li></ul>`],
       ["ordenes", "Órdenes", `<p>Una tropa con orden actúa sola al terminar tu turno. Así no tienes que mover tus tropas una a una.</p>
         <ul>${Object.keys(ORD).map(k => `<li><strong>${esc(ORD[k].nombre)}.</strong> ${esc(ORD[k].texto)}</li>`).join("")}</ul>
-        <ul><li>Las órdenes se dan desde la tarjeta de la tropa. En el mapa, un iconito junto a su barra de vida dice qué orden cumple.</li>
+        <ul><li>Explorar, Defender, Conquistar y Matanza piden un objetivo: después de pulsar la orden, toca en el mapa el punto, la ciudad o la tropa propia que quieres. Si tocas la propia tropa, la orden se cumple sin objetivo. Con el objetivo marcado, al elegir la tropa se ve en el mapa.</li>
+        <li>Las órdenes se dan desde la tarjeta de la tropa. En el mapa, un iconito junto a su barra de vida dice qué orden cumple.</li>
         <li>Si mueves o atacas con ella a mano, la orden se quita.</li>
         <li><strong>Grupos.</strong> Mantén <kbd>Mayús</kbd> y arrastra sobre el mapa para elegir varias tropas a la vez. Les puedes dar la misma orden a todas.</li>
         <li>Una tropa con poca vida deja lo que estaba haciendo y se va a curar. Cuando se recupera, vuelve a su orden.</li>
@@ -762,6 +764,9 @@
       if (!modo) {
         if (u.pm > 0) FM.alcanzables(est, u).destinos.forEach((n, k) => e.mover.set(k, n));
         Object.values(est.unidades).forEach(w => { if (FM.hostil(est, w.dueno, H) && FM.veUnidad(est, H, w) && !FM.razonNoAtacar(est, u, w)) e.atacar.add(`${w.x},${w.y}`); });
+        const o = u.orden;
+        if (o && o.uid && est.unidades[o.uid]) { const w = est.unidades[o.uid]; e.objetivosHab.add(`${w.x},${w.y}`); }
+        else if (o && o.x !== undefined && o.tipo !== "defender") e.objetivosHab.add(`${o.x},${o.y}`);
       } else modo.casillas.forEach(k => e.objetivosHab.add(k));
     }
     if (botar && soyYo()) botar.casillas.forEach(k => e.objetivosHab.add(k));
@@ -878,8 +883,15 @@
       return;
     }
     // Conquistar con un grupo: la ciudad que se toque
-    if (grupoConquista && grupo) {
-      grupoConquista = false;
+    if (grupoPendiente && grupo && grupoPendiente !== "conquistar") {
+      const tipo = grupoPendiente; grupoPendiente = null;
+      const us = grupo.map(id => est.unidades[id]).filter(Boolean);
+      us.forEach(w => { w.orden = ordenConObjetivo(tipo, w, x, y, grupo); });
+      aviso(`${us.length} tropas: ${ORD[tipo].nombre.toLowerCase()}.`); son("clic");
+      refrescar(); return;
+    }
+    if (grupoPendiente && grupo) {
+      grupoPendiente = null;
       const ci = FM.ciudadEn(est, x, y);
       if (ci && ci.dueno !== humano() && (ci.dueno === null || FM.hostil(est, ci.dueno, humano()))) { grupo.forEach(id => { const w = est.unidades[id]; if (w) w.orden = { tipo: "conquistar", x, y, ciudad: ci.id }; }); aviso(`A por ${ci.nombre}.`); son("clic"); }
       else aviso("Eso no es una ciudad que se pueda tomar.", true);
@@ -904,9 +916,8 @@
     }
     // Habilidades que piden una casilla
     if (modo && u) {
-      if (modo.casillas.has(`${x},${y}`) && modo.orden) {
-        const ci = FM.ciudadEn(est, x, y);
-        ponerOrden(u, Object.assign({}, modo.orden, { x, y, ciudad: ci ? ci.id : undefined }));
+      if (modo.orden && (modo.libre || modo.casillas.has(`${x},${y}`))) {
+        ponerOrden(u, ordenConObjetivo(modo.orden.tipo, u, x, y));
         modo = null; refrescar(); return;
       }
       if (modo.casillas.has(`${x},${y}`) && modo.especial === "portal") {
@@ -923,6 +934,8 @@
       }
       modo = null; refrescar(); return;
     }
+    // Tocar el mapa sin nada pendiente suelta el grupo elegido con Mayús + arrastrar
+    if (grupo) { grupo = null; grupoPendiente = null; }
     if (alternarEnCasilla(x, y, enCasilla, visible)) return;
     if (enCasilla && enCasilla.dueno === H) { limpiarPrevia(); sel = { uid: enCasilla.uid, ciudad: null }; modo = null; son("elegir"); refrescar(); return; }
     // Tocar a un aliado (de pacto o de equipo) con una tropa elegida: se pregunta si se quiere traicionar
@@ -1180,12 +1193,13 @@
     // Órdenes que la tropa cumple sola cada turno
     if (!u.lider) {
       const ordenBtn = (tipo, extra) => Object.assign({ ic: ORD[tipo].ic, nombre: ORD[tipo].nombre, texto: ORD[tipo].texto, orden: { tipo }, ordenBtn: true, activa: u.orden && u.orden.tipo === tipo }, extra || {});
-      out.push(ordenBtn("explorar"));
-      out.push(ordenBtn("defender", { orden: { tipo: "defender", x: u.x, y: u.y }, texto: "Se queda aquí y ataca a lo que se acerque a 2 casillas." }));
+      const libre = (pista) => ({ casillas: new Set(), libre: true, pista });
+      out.push(ordenBtn("explorar", libre("Toca en el mapa adónde ir a explorar. Si tocas la propia tropa, explora por su cuenta.")));
+      out.push(ordenBtn("defender", libre("Toca una tropa tuya para escoltarla o una casilla para guardarla. Si tocas la propia tropa, defiende donde está.")));
       const metas = new Set();
       Object.values(est.ciudades).forEach(c => { if (c.dueno !== H && (c.dueno === null || FM.hostil(est, c.dueno, H)) && est.vision[H][c.y * est.ancho + c.x] > 0) metas.add(`${c.x},${c.y}`); });
       out.push(ordenBtn("conquistar", { casillas: metas, razon: metas.size ? null : "No conoces ninguna ciudad que tomar." }));
-      out.push(ordenBtn("matanza"));
+      out.push(ordenBtn("matanza", libre("Toca en el mapa adónde ir: atacará todo lo que encuentre por el camino. Si tocas la propia tropa, busca enemigos por su cuenta.")));
       out.push(ordenBtn("curarse", { razon: FM.ciudadesDe(est, H).length ? null : "No tienes ciudades." }));
       if (u.orden) out.push({ ic: "○", nombre: "Quitar la orden", texto: "La tropa vuelve a esperar tus órdenes.", orden: null, ordenBtn: true });
     }
@@ -1206,7 +1220,11 @@
     if (est.hayNoche && u.dueno >= 0 && FACCIONES[est.jugadores[u.dueno].faccion].mods.noche && u.dueno === humano()) { const rivs = FM.rivalesDe(est, u.dueno); out.push(rivs.length && rivs.every(q => FM.oculta(est, u, q)) ? ["Oculta en la noche", "cian"] : ["A la vista", ""]); }
     (u.rasgos || []).forEach(k => out.push([NOMBRE_RASGO[k], "cian"]));
     if (u.dueno >= 0 && FM.consagradaPara(est, u.dueno, u.x, u.y)) out.push(["En suelo consagrado", "oro"]);
-    if (u.orden && ORD[u.orden.tipo]) out.push([`Orden: ${ORD[u.orden.tipo].nombre}`, "oro"]);
+    if (u.orden && ORD[u.orden.tipo]) {
+      const o = u.orden, w = o.uid && est.unidades[o.uid], ci = o.ciudad && est.ciudades[o.ciudad];
+      const destino = w ? ` · escolta a ${FM.nombreUnidad(w)}` : ci ? ` · ${ci.nombre}` : o.x !== undefined && o.tipo !== "defender" && o.tipo !== "reforzar" ? " · hacia el punto marcado" : "";
+      out.push([`Orden: ${ORD[o.tipo].nombre}${destino}`, "oro"]);
+    }
     if (u.efectos && u.efectos.oculto >= est.turno) out.push(["Oculta", ""]);
     if (u.efectos && u.efectos.miasma && u.efectos.miasma.hasta >= est.turno) out.push([`−${u.efectos.miasma.n} de ataque`, "rojo"]);
     if (u.efectos && u.efectos.traba >= est.turno) out.push(["Trabada", "rojo"]);
@@ -1330,20 +1348,32 @@
           <button type="button" class="fr-btn fr-btn-chico${rq.ok ? " fr-btn-principal" : ""}" data-invoca="${hf.id}" data-razon="${esc(rq.ok ? "" : rq.razon)}">Invocar${rq.ok ? "" : " (falta algo)"}</button></div></div>`;
     }).join("");
     const costeCrecer = { materiales: 4 * ci.nivel, oro: 3 * ci.nivel };
+    // Una sección a la vez, con pestañas: nada de columnas con su propio scroll
+    const listoHeroe = !jug.heroeInvocado && jug.heroes.some(hf => FM.requisitosHeroe(est, H, hf.id, ci.id).ok);
+    const TABS = [["entrenar", "Entrenar", ci.reclutado ? "hecho" : ""], ["edificios", "Edificios", `${enHuecos}/${ci.nivel + 2}`], ["obras", "Obras y mando", ""], ["heroe", "Héroe", listoHeroe ? "¡listo!" : ""], ["flota", "Flota", ""]];
+    if (!TABS.some(t => t[0] === pestanaCiudad)) pestanaCiudad = "entrenar";
+    const cuerpo = {
+      entrenar: `${ci.reclutado ? `<p class="fr-sel-texto fr-sel-nota">Esta ciudad ya entrenó este turno.</p>` : ""}<div class="fr-reclutas">${reclutas}</div>`,
+      edificios: `${notaDesh(ci)}<div class="fr-huecos">${edificios}${vacios}</div><div class="fr-obras fr-obras-lista">${obras}</div>`,
+      obras: panelObras(ci, jug),
+      heroe: heroe,
+      flota: `<p class="fr-sel-texto fr-sel-nota">${esc(nvC.nivel ? `Marina: ${nvC.nivel.toLowerCase()}. ` : "")}${esc(notaMar)}</p>${barcos ? `<div class="fr-reclutas">${barcos}</div>` : ""}`
+    }[pestanaCiudad];
     c.innerHTML = `<div class="fr-sel fr-sel-ciudad mia" style="--c:${bandos[H].col}">
-      <div class="fr-sel-cuerpo">${cab}
-        <div class="fr-ciudad-cols">
-          <section><h4>Entrenar ${ci.reclutado ? "<small>ya entrenó este turno</small>" : ""}</h4><div class="fr-reclutas">${reclutas}</div>
-            <h4 class="fr-h4-flota">Flota <small>${esc(nvC.nivel ? `marina: ${nvC.nivel.toLowerCase()}` : "")}</small></h4><p class="fr-sel-texto fr-sel-nota">${esc(notaMar)}</p>${barcos ? `<div class="fr-reclutas">${barcos}</div>` : ""}</section>
-          <section><h4>Edificios <small>${enHuecos} de ${ci.nivel + 2}</small>${ci.nivel < 5 ? `<button type="button" class="fr-btn fr-btn-chico fr-crecer" data-mejora="${ci.id}"${FM.puedePagar(jug, costeCrecer) ? "" : " disabled"} title="${esc(`Pasa a ${D.nivelCiudad(jug.faccion, ci.nivel + 1)}: un hueco más, más oro y ${(FACCIONES[jug.faccion].poblacion.porNivel[ci.nivel] || 0)} tropas más de límite`)}">Crecer ${costeHtml(costeCrecer, jug)}</button>` : ""}</h4>${notaDesh(ci)}
-            <div class="fr-huecos">${edificios}${vacios}</div><div class="fr-obras">${obras}</div></section>
-          <section><h4>Obras y mando</h4>${panelObras(ci, jug)}</section>
-          <section><h4>Héroe</h4>${heroe}</section>
-        </div>
+      <div class="fr-sel-cuerpo">
+        <div class="fr-ciudad-cab">${cab}${ci.nivel < 5 ? `<button type="button" class="fr-btn fr-btn-chico fr-crecer" data-mejora="${ci.id}"${FM.puedePagar(jug, costeCrecer) ? "" : " disabled"} title="${esc(`Pasa a ${D.nivelCiudad(jug.faccion, ci.nivel + 1)}: un hueco más, más oro y ${(FACCIONES[jug.faccion].poblacion.porNivel[ci.nivel] || 0)} tropas más de límite`)}">Crecer ${costeHtml(costeCrecer, jug)}</button>` : ""}</div>
+        <nav class="fr-ciudad-tabs" role="tablist">${TABS.map(([id, t, extra]) => `<button type="button" role="tab" class="${id === pestanaCiudad ? "activa" : ""}" data-ctab="${id}" aria-selected="${id === pestanaCiudad}">${esc(t)}${extra ? ` <small>${esc(extra)}</small>` : ""}</button>`).join("")}</nav>
+        <div class="fr-ciudad-sec" data-sec="${pestanaCiudad}">${cuerpo}</div>
       </div><button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button></div>`;
     pintarFiguras(c);
   }
 
+  let pestanaCiudad = "entrenar";
+  $("frSeleccion").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-ctab]");
+    if (!b) return;
+    pestanaCiudad = b.dataset.ctab; son("clic"); pintarSeleccion();
+  });
   // Pasar el ratón por una acción con casilla (reanimar) la marca en el mapa
   $("frSeleccion").addEventListener("mouseover", ev => {
     const b = ev.target.closest("[data-accion]"), a = b ? accionesActuales[+b.dataset.accion] : null;
@@ -1398,7 +1428,7 @@
 
   $("frSeleccion").addEventListener("click", async ev => {
     const t = ev.target, H = humano();
-    if (t.closest("[data-soltar]")) { sel = { uid: null, ciudad: null }; modo = null; son("soltar"); refrescar(); return; }
+    if (t.closest("[data-soltar]")) { sel = { uid: null, ciudad: null }; modo = null; grupo = null; grupoPendiente = null; son("soltar"); refrescar(); return; }
     if (t.closest("[data-ir-portal]") && sel.casilla) {
       const ca = FM.casilla(est, sel.casilla.x, sel.casilla.y), par = ca && est.costuras[ca.costura];
       if (par) { const o = par.a.x === sel.casilla.x && par.a.y === sel.casilla.y ? par.b : par.a; sel = { uid: null, ciudad: null, casilla: { x: o.x, y: o.y } }; tablero.irA(o.x, o.y); son("clic"); refrescar(); }
@@ -1407,8 +1437,10 @@
     const go = t.closest("[data-grupo-orden]");
     if (go && grupo) {
       const tipo = go.dataset.grupoOrden, us = grupo.map(id => est.unidades[id]).filter(Boolean);
-      if (tipo === "conquistar") { grupoConquista = true; aviso("Toca en el mapa la ciudad que deben tomar."); son("clic"); return; }
-      us.forEach(u => { if (tipo === "quitar") delete u.orden; else u.orden = tipo === "defender" ? { tipo, x: u.x, y: u.y } : { tipo }; });
+      const PISTA_GRUPO = { conquistar: "Toca en el mapa la ciudad que deben tomar.", explorar: "Toca en el mapa adónde ir a explorar. Si tocas una tropa del grupo, cada una explora por su cuenta.",
+        defender: "Toca una tropa tuya para escoltarla o una casilla para guardarla. Si tocas una tropa del grupo, cada una defiende donde está.", matanza: "Toca en el mapa adónde ir atacando todo lo del camino. Si tocas una tropa del grupo, cada una busca enemigos por su cuenta." };
+      if (PISTA_GRUPO[tipo]) { grupoPendiente = grupoPendiente === tipo ? null : tipo; aviso(grupoPendiente ? PISTA_GRUPO[tipo] : "Orden cancelada."); son("clic"); refrescar(); return; }
+      us.forEach(u => { if (tipo === "quitar") delete u.orden; else u.orden = { tipo }; });
       aviso(tipo === "quitar" ? "Sin órdenes." : `${us.length} tropas: ${ORD[tipo].nombre.toLowerCase()}.`); son("clic"); refrescar(); return;
     }
     const vc = t.closest("[data-ver-caido]");
@@ -1423,7 +1455,11 @@
       if (!a || !u) return;
       if (a.razon) { aviso(a.razon, true); son("error"); return; }
       if (a.ordenBtn && !a.casillas) { ponerOrden(u, a.orden ? Object.assign({}, a.orden) : null); refrescar(); return; }
-      if (a.casillas) { modo = modo && modo.i === i ? null : { i, acc: a.acc, casillas: a.casillas, orden: a.ordenBtn ? a.orden : undefined, especial: a.especial }; son("clic"); refrescar(); return; }
+      if (a.casillas) {
+        modo = modo && modo.i === i ? null : { i, acc: a.acc, casillas: a.casillas, orden: a.ordenBtn ? a.orden : undefined, especial: a.especial, libre: !!a.libre };
+        if (modo && a.pista) aviso(a.pista);
+        son("clic"); refrescar(); return;
+      }
       const r = aplicarYo(Object.assign({ t: "habilidad", uid: u.uid }, a.acc));
       if (!r.ok) { aviso(r.error, true); son("error"); } else son(a.acc.id === "consagrar" ? "consagra" : "magia");
       despuesDeAccion();
@@ -1676,7 +1712,8 @@
     else if (k === "-") tablero.zoom(0.8);
     else if (k === "escape") {
       if (tablero.ocupado()) return;
-      if (modo) { modo = null; refrescar(); }
+      if (modo || grupoPendiente) { modo = null; grupoPendiente = null; refrescar(); }
+      else if (grupo) { grupo = null; refrescar(); }
       else if (sel.uid || sel.ciudad || sel.casilla) { sel = { uid: null, ciudad: null }; refrescar(); }
       else if (panel) abrirPanel(panel);
       else abrirMenu();
@@ -1719,10 +1756,10 @@
   function tarjetaGrupo(c) {
     const us = grupo.map(id => est.unidades[id]).filter(Boolean);
     if (!us.length) { grupo = null; c.innerHTML = ""; return; }
-    const btn = (tipo, txt) => `<button type="button" class="fr-accion" data-grupo-orden="${tipo}" title="${esc(txt || ORD[tipo].texto)}"><i>${ORD[tipo].ic}</i><span>${ORD[tipo].nombre}</span></button>`;
+    const btn = (tipo, txt) => `<button type="button" class="fr-accion${grupoPendiente === tipo ? " activa" : ""}" data-grupo-orden="${tipo}" title="${esc(txt || ORD[tipo].texto)}"><i>${ORD[tipo].ic}</i><span>${ORD[tipo].nombre}</span></button>`;
     c.innerHTML = `<div class="fr-sel"><div class="fr-sel-cuerpo"><div class="fr-sel-cab"><h3>${us.length} tropas</h3><p>Mayús + arrastrar para elegir otras. La orden se da a todas a la vez.</p></div>
       <div class="fr-grupo-lista">${us.map(u => `<button type="button" class="fr-grupo-u" data-uid="${u.uid}">${esc(FM.nombreUnidad(u))}${u.orden ? ` <small>${esc(ORD[u.orden.tipo].nombre)}</small>` : ""}</button>`).join("")}</div></div>
-      <div class="fr-sel-acciones">${btn("explorar")}${btn("defender", "Cada una se queda donde está y ataca a lo que se acerque.")}${btn("conquistar", "Elige en el mapa la ciudad que tomar.")}${btn("matanza")}${btn("curarse")}
+      <div class="fr-sel-acciones">${btn("explorar")}${btn("defender")}${btn("conquistar", "Elige en el mapa la ciudad que tomar.")}${btn("matanza")}${btn("curarse")}
         <button type="button" class="fr-accion" data-grupo-orden="quitar"><i>○</i><span>Quitar órdenes</span></button></div>
       <button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button></div>`;
   }
@@ -1745,6 +1782,19 @@
     refrescar();
     avisos.slice(0, 6).forEach(a => toast("Órdenes", a.texto, "⚑", ""));
     if (est.ganador !== null) setTimeout(terminarGuerraUI, 600);
+  }
+  /* La orden según lo que se tocó: la propia tropa (o una del grupo) = sin objetivo; una tropa propia = escoltarla (defender);
+     una ciudad = conquistarla; cualquier otra casilla = ir hacia ella */
+  function ordenConObjetivo(tipo, u, x, y, delGrupo) {
+    const H = humano(), w = FM.unidadEn(est, x, y), propia = w && (w === u || (delGrupo && delGrupo.includes(w.uid)));
+    if (tipo === "conquistar") { const ci = FM.ciudadEn(est, x, y); return { tipo, x, y, ciudad: ci ? ci.id : undefined }; }
+    if (tipo === "defender") {
+      if (propia) return { tipo, x: u.x, y: u.y };
+      if (w && w.dueno === H) return { tipo, uid: w.uid, x: w.x, y: w.y };
+      return { tipo, x, y };
+    }
+    if (propia) return { tipo };
+    return { tipo, x, y };
   }
   function ponerOrden(u, o) {
     if (o) u.orden = o; else delete u.orden;

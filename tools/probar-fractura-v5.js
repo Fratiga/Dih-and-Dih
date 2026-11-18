@@ -42,6 +42,36 @@ const rico = jug => Object.keys(jug.recursos).forEach(k => { jug.recursos[k] = 9
   IA.cumplirOrdenes(est, 0, x => FM.aplicar(est, x));
   ok(!e.orden, "Explorar no se corta al ver un enemigo más fuerte");
 }
+// --- Órdenes con objetivo: ir a un punto (explorar, matanza) y escoltar a una tropa (defender) ---
+{
+  const est = guerra(["caballeros-del-reino", "hijos-del-acero"]);
+  limpiar(est); est.activo = 0;
+  const cap = FM.ciudadesDe(est, 0).find(c => c.capital), enemiga = FM.ciudadesDe(est, 1).find(c => c.capital);
+  const d = (p, q) => Math.max(Math.abs(p.x - q.x), Math.abs(p.y - q.y));
+  const a = libre(est, cap, 2), ex = poner(est, 0, "guerrero", a.x, a.y);
+  const punto = { x: enemiga.x, y: enemiga.y };
+  ex.orden = { tipo: "explorar", x: punto.x, y: punto.y };
+  const d0 = d(ex, punto);
+  IA.cumplirOrdenes(est, 0, x => FM.aplicar(est, x));
+  ok(d(ex, punto) < d0, "Explorar con un punto marcado no se acerca a él");
+  ok(ex.orden && ex.orden.x === punto.x, "Explorar pierde el punto marcado antes de llegar");
+  const b = libre(est, cap, 3), ma = poner(est, 0, "guerrero", b.x, b.y);
+  ma.orden = { tipo: "matanza", x: punto.x, y: punto.y };
+  const d1 = d(ma, punto);
+  IA.cumplirOrdenes(est, 0, x => FM.aplicar(est, x));
+  ok(d(ma, punto) < d1, "Matanza con un punto marcado no se acerca a él");
+  // Escoltar: el guardián va junto a su protegido
+  const c0 = libre(est, cap, 4), prot = poner(est, 0, "arcanista", c0.x, c0.y);
+  const g0 = libre(est, c0, 5), guard = poner(est, 0, "guerrero", g0.x, g0.y);
+  guard.orden = { tipo: "defender", uid: prot.uid, x: prot.x, y: prot.y };
+  const m = (p, q) => Math.abs(p.x - q.x) + Math.abs(p.y - q.y), d2 = m(guard, prot);
+  IA.cumplirOrdenes(est, 0, x => FM.aplicar(est, x));
+  ok(m(guard, prot) < d2 || d(guard, prot) <= 1, "Defender a una tropa no se acerca a ella");
+  // Si el protegido cae, el guardián se queda defendiendo donde está
+  delete est.unidades[prot.uid];
+  const av = IA.cumplirOrdenes(est, 0, x => FM.aplicar(est, x));
+  ok(guard.orden && guard.orden.tipo === "defender" && !guard.orden.uid && av.some(t => t.texto.includes("escoltaba")), "el guardián no se entera de que cayó su protegido");
+}
 
 // --- Caminos propios: por tu territorio el bosque cuesta la mitad ---
 {

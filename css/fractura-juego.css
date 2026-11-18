@@ -708,3 +708,22 @@ body.fr-en-cuartel #frPestanas button.activa i { color: var(--accent); }
 .fr-vista .fr-carta:hover { transform: translateY(-4px); }
 @media (prefers-reduced-motion: reduce) { .fr-vista .fr-carta, .fr-vista .fr-carta:hover { transition: none; transform: none; } }
 @media (max-width: 700px) { body.fr-en-cuartel .pagmus { bottom: 96px; } body.fr-en-cuartel #frPestanas { bottom: 6px; } }
+
+/* Panel de una ciudad propia: cabecera fija, pestañas y una sola zona con scroll */
+.fr-seleccion:has(.fr-sel-ciudad.mia) { width: min(820px, calc(100vw - 420px)); }
+.fr-sel-ciudad.mia { max-height: none; }
+.fr-sel-ciudad.mia .fr-sel-cuerpo { overflow: visible; }
+.fr-ciudad-cab { display: flex; align-items: flex-start; gap: 10px; }
+.fr-ciudad-cab .fr-sel-cab { flex: 1; min-width: 0; }
+.fr-ciudad-cab .fr-crecer { flex: none; margin-top: 2px; }
+.fr-ciudad-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--fr-filete); }
+.fr-ciudad-tabs button { font: inherit; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; padding: 6px 12px 5px; background: none; color: #b8a99c; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; white-space: nowrap; }
+.fr-ciudad-tabs button:hover { color: var(--fr-marfil); }
+.fr-ciudad-tabs button.activa { color: var(--accent); border-bottom-color: var(--accent); }
+.fr-ciudad-tabs small { text-transform: none; letter-spacing: 0; color: #8f8498; font-size: .7rem; }
+.fr-ciudad-tabs button[data-ctab="heroe"] small { color: var(--accent); }
+.fr-ciudad-sec { height: min(36vh, 300px); overflow-y: auto; padding: 8px 2px 4px; }
+.fr-ciudad-sec .fr-reclutas { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+.fr-ciudad-sec[data-sec="edificios"] .fr-obras-lista { max-height: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px; margin-top: 8px; }
+.fr-ciudad-sec[data-sec="obras"] .fr-obras { max-height: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px; }
+.fr-ciudad-sec .fr-heroe { max-width: 640px; }
