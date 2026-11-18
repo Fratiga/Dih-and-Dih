@@ -667,3 +667,44 @@ button.fr-nucleo { font: inherit; font-size: .8rem; background: transparent; cur
 .fr-activa-estado { font-size: .72rem; color: #b8a99c; text-align: right; max-width: 120px; }
 .fr-activa.toca .fr-activa-estado { color: #17121b; background: var(--fr-marfil); padding: 3px 7px; font-weight: 600; }
 @media (max-width: 560px) { .fr-activa { grid-template-columns: 40px 1fr; } .fr-activa-estado { grid-column: 2; text-align: left; } .fr-activa-ret { width: 40px; height: 50px; } }
+
+/* =====================================================================
+   CUARTEL: escena del ejército, dock de secciones y un material por sección
+   ===================================================================== */
+.fr-hero { overflow: hidden; background: #0b0910; min-height: 280px; }
+.fr-hero::after { display: none; }
+.fr-hero-escena { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+.fr-hero .fr-esq, .fr-hero-banda, .fr-hero-ceniza { z-index: 1; }
+.fr-hero-ret canvas { box-shadow: none; border: 1px solid rgba(0, 0, 0, .6); }
+.fr-hero-cifras div { position: relative; min-width: 76px; padding: 6px 10px 6px 30px; background: rgba(12, 10, 16, .84); }
+.fr-hero-cifras b { font-size: 1.35rem; }
+.fr-cifra-ic { position: absolute; left: 8px; top: 8px; font-style: normal; color: var(--c); font-size: .95rem; }
+
+/* Dock de secciones, abajo y fijo */
+body.fr-en-cuartel .fr-contenido { padding-bottom: 96px; }
+body.fr-en-cuartel #frPestanas { position: fixed; z-index: 30; left: 50%; bottom: 10px; transform: translateX(-50%); display: flex; flex-wrap: nowrap; gap: 2px; margin: 0; padding: 4px; max-width: calc(100vw - 20px); overflow-x: auto; background: rgba(14, 11, 18, .96); border: 1px solid var(--fr-filete); border-bottom: 1px solid var(--fr-filete); }
+body.fr-en-cuartel #frPestanas button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 76px; padding: 6px 8px 5px; border: 0; border-top: 2px solid transparent; color: #b8a99c; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+body.fr-en-cuartel #frPestanas button i { font-style: normal; font-size: 1.15rem; line-height: 1.1; color: #8f8498; }
+body.fr-en-cuartel #frPestanas button kbd { position: absolute; top: 2px; right: 4px; font: inherit; font-size: .58rem; color: #6f6578; }
+body.fr-en-cuartel #frPestanas button:hover { color: var(--fr-marfil); background: var(--fr-hierro-2); }
+body.fr-en-cuartel #frPestanas button.activa { color: var(--accent); background: var(--fr-hierro-2); border-top-color: var(--accent); font-weight: 400; }
+body.fr-en-cuartel #frPestanas button.activa i { color: var(--accent); }
+@media (max-width: 700px) { body.fr-en-cuartel #frPestanas button { min-width: 58px; font-size: .6rem; } body.fr-en-cuartel #frPestanas button kbd { display: none; } }
+
+/* Cada sección con su material */
+.fr-vista { position: relative; padding: 18px 20px 22px; border: 1px solid var(--fr-filete); }
+.fr-vista[data-p="guerra"] { background: linear-gradient(rgba(240, 207, 106, .035) 1px, transparent 1px) 0 0 / 48px 48px, linear-gradient(90deg, rgba(240, 207, 106, .035) 1px, transparent 1px) 0 0 / 48px 48px, #17120e; border-top: 3px solid #5a4632; }
+.fr-vista[data-p="duelos"] { background: #10201a; border-top: 3px solid #2f5a44; }
+.fr-vista[data-p="soldados"] { background: repeating-linear-gradient(90deg, #16121a 0 118px, #110e15 118px 120px); border-top: 3px solid #4a3b52; }
+.fr-vista[data-p="casas"] { background: repeating-linear-gradient(0deg, transparent 0 27px, rgba(216, 196, 160, .045) 27px 28px), #1d1813; border-top: 3px solid #6a5636; }
+.fr-vista[data-p="reliquias"] { background: repeating-linear-gradient(180deg, transparent 0 220px, rgba(240, 207, 106, .1) 220px 222px), #0f1418; border-top: 3px solid #3a5260; }
+.fr-vista[data-p="salon"] { background: repeating-linear-gradient(0deg, transparent 0 38px, rgba(0, 0, 0, .3) 38px 40px), repeating-linear-gradient(90deg, transparent 0 78px, rgba(0, 0, 0, .2) 78px 80px), #1b1a1f; border-top: 3px solid #55535c; }
+.fr-vista[data-p="cronicas"] { background: linear-gradient(90deg, #1c1712 0 49.7%, #0d0a07 49.7% 50.3%, #1c1712 50.3%); border-top: 3px solid #6a5636; }
+.fr-vista[data-p="mundo"] { background: repeating-radial-gradient(circle at 30% 40%, transparent 0 22px, rgba(140, 180, 170, .05) 22px 23px), #121719; border-top: 3px solid #3a5a5a; }
+@media (max-width: 700px) { .fr-vista { padding: 12px 10px 16px; } .fr-vista[data-p="cronicas"] { background: #1c1712; } }
+
+/* Las cartas de soldado se levantan al pasar por encima */
+.fr-vista .fr-carta { transition: transform .14s, border-color .14s; }
+.fr-vista .fr-carta:hover { transform: translateY(-4px); }
+@media (prefers-reduced-motion: reduce) { .fr-vista .fr-carta, .fr-vista .fr-carta:hover { transition: none; transform: none; } }
+@media (max-width: 700px) { body.fr-en-cuartel .pagmus { bottom: 96px; } body.fr-en-cuartel #frPestanas { bottom: 6px; } }

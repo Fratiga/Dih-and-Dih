@@ -812,7 +812,20 @@ pintarHero();
       C.renombrarEjercito(ej, n); await guardar(); entrarCuartel();
     }
   });
-  $("frPestanas").addEventListener("click", ev => { const b = ev.target.closest("button[data-p]"); if (b) entrarCuartel(b.dataset.p); });
+  $("frPestanas").addEventListener("click", ev => { const b = ev.target.closest("button[data-p]"); if (b) { son("clic"); entrarCuartel(b.dataset.p); } });
+  /* El dock de secciones (abajo, como en el Hipódromo): cada botón con su icono y su tecla */
+  const ICONO_PESTANA = { guerra: "⚔", duelos: "♜", soldados: "☗", casas: "⌂", reliquias: "✦", salon: "✝", cronicas: "❡", mundo: "◍" };
+  $("frPestanas").querySelectorAll("button[data-p]").forEach((b, i) => {
+    const txt = b.textContent.trim();
+    b.innerHTML = `<i aria-hidden="true">${ICONO_PESTANA[b.dataset.p] || "•"}</i><span>${esc(txt)}</span><kbd>${i + 1}</kbd>`;
+    b.title = `${txt} (tecla ${i + 1})`;
+  });
+  document.addEventListener("keydown", ev => {
+    if ($("frCuartel").classList.contains("hidden") || ev.ctrlKey || ev.metaKey || ev.altKey || ev.target.closest("input, textarea, select, dialog[open]")) return;
+    const n = Number(ev.key);
+    const b = n >= 1 && n <= 9 ? $("frPestanas").querySelectorAll("button[data-p]")[n - 1] : null;
+    if (b) { ev.preventDefault(); son("clic"); entrarCuartel(b.dataset.p); }
+  });
 
   /* La cabecera del ejército: su soldado más condecorado, las cifras y la ceniza que sube */
   function pintarHero() {
@@ -824,6 +837,7 @@ pintarHero();
     const cifras = [[ej.guerras, pl(ej.guerras, "guerra", "guerras")], [ej.ganadas, pl(ej.ganadas, "victoria", "victorias")], [filas.length, "en filas"], [nCaidos, pl(nCaidos, "caído", "caídos")], [nRel, pl(nRel, "reliquia", "reliquias")], [nCasas, pl(nCasas, "casa", "casas")]];
     const cenizas = Array.from({ length: 16 }, (_, i) => `<i style="left:${(i * 37 + 11) % 96}%;animation-delay:-${((i * 1.3) % 9).toFixed(1)}s;animation-duration:${8 + (i % 4)}s;--dx:${((i * 53) % 60) - 30}px;width:${2 + (i % 3)}px;height:${2 + (i % 3)}px"></i>`).join("");
     $("frHero").innerHTML = `<div class="fr-hero" style="--c:${fac.color};--b:${fac.bandera}">
+      <canvas class="fr-hero-escena" aria-hidden="true"></canvas>
       <i class="fr-esq"></i><i class="fr-esq"></i><i class="fr-esq"></i><i class="fr-esq"></i>
       <span class="fr-hero-banda"></span>
       <div class="fr-hero-ceniza" aria-hidden="true">${cenizas}</div>
@@ -833,15 +847,84 @@ pintarHero();
         <p class="fr-hero-sobre">Año ${ej.anio} de la Fractura</p>
         <h2 class="fr-hero-nombre">${esc(ej.nombre)}</h2>
         <p class="fr-hero-faccion">${esc(fac.nombre)} · ${esc(fac.lider.titulo)}</p>
-        <div class="fr-hero-cifras">${cifras.map(([n, t]) => `<div><b>${n}</b>${t}</div>`).join("")}</div>
+        <div class="fr-hero-cifras">${cifras.map(([n, t], i) => `<div><i class="fr-cifra-ic" aria-hidden="true">${ICONO_CIFRA[i] || ""}</i><b>${n}</b>${t}</div>`).join("")}</div>
       </div>
       <div class="fr-hero-botones"><button type="button" class="fr-btn" data-atras>← Ejércitos</button><button type="button" class="fr-btn fr-btn-chico" data-renombrar>Renombrar</button></div>
     </div>`;
     pintarRetratos($("frHero"));
+    animarEscena();
+  }
+
+  /* --- La escena del ejército detrás de la cabecera: sus colores, dos estandartes y sus soldados formados ---
+     Va a 10 fotogramas por segundo y se para si no se ve (pestaña oculta o cabecera fuera de la pantalla). */
+  const ICONO_CIFRA = ["⚔", "♛", "⚑", "✝", "✦", "⌂"];
+  let escenaAnim = 0, escenaVisible = true, escenaObs = null;
+  function animarEscena() {
+    cancelAnimationFrame(escenaAnim);
+    const cv = document.querySelector(".fr-hero-escena");
+    if (!cv || !FF || !ej) return;
+    if (escenaObs) escenaObs.disconnect();
+    if (window.IntersectionObserver) { escenaObs = new IntersectionObserver(e => { escenaVisible = e[0].isIntersecting; }); escenaObs.observe(cv); }
+    const fac = FACCIONES[ej.faccion], bando = Object.assign(FF.colorFaccion(ej.faccion), { faccion: ej.faccion });
+    // Los que salen: los que están en filas, primero los más veteranos (hasta 14, en dos filas)
+    const tropa = C.enFila(ej).slice().sort((a, b) => b.victorias - a.victorias).slice(0, 14);
+    const atras = tropa.filter((_, i) => i % 2), delante = tropa.filter((_, i) => !(i % 2));
+    const montes = Array.from({ length: 18 }, (_, i) => 0.42 + 0.16 * Math.abs(Math.sin(i * 1.9 + ej.faccion.length)) + 0.05 * Math.sin(i * 0.7));
+    let ultimo = 0;
+    const paso = ahora => {
+      if (!cv.isConnected) return;
+      escenaAnim = requestAnimationFrame(paso);
+      if (!escenaVisible || document.hidden || ahora - ultimo < 100) return;
+      ultimo = ahora;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.25), w = cv.clientWidth, h = cv.clientHeight;
+      if (!w || !h) return;
+      if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+      const g = cv.getContext("2d"), t = ahora / 1000;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // cielo con el color del ejército
+      const cielo = g.createLinearGradient(0, 0, 0, h);
+      cielo.addColorStop(0, FF.mezcla(fac.bandera, "#06050a", 0.7)); cielo.addColorStop(0.6, FF.mezcla(fac.color, "#0a0810", 0.72)); cielo.addColorStop(1, "#0b0910");
+      g.fillStyle = cielo; g.fillRect(0, 0, w, h);
+      // dos sierras de montes, la de atrás más clara
+      [[0.82, FF.mezcla(fac.color, "#100c16", 0.8), 0], [0.9, "#0e0b13", 0.07]].forEach(([k, col, sube]) => {
+        g.fillStyle = col; g.beginPath(); g.moveTo(0, h);
+        montes.forEach((m, i) => g.lineTo((i / (montes.length - 1)) * w, h * (m * k + sube + (i % 3 ? 0.04 : 0))));
+        g.lineTo(w, h); g.closePath(); g.fill();
+      });
+      g.fillStyle = "#09070c"; g.fillRect(0, h * 0.84, w, h * 0.16);
+      // los estandartes
+      const estandarte = (x, alto, fase) => {
+        g.fillStyle = "#2a2018"; g.fillRect(x - 1.5, h * 0.9 - alto, 3, alto);
+        const top = h * 0.9 - alto + 4, ancho = alto * 0.34, largo = alto * 0.52;
+        g.fillStyle = fac.color; g.beginPath(); g.moveTo(x + 1.5, top);
+        for (let k = 0; k <= 6; k++) g.lineTo(x + 1.5 + (ancho * k) / 6, top + Math.sin(t * 2.2 + fase + k * 0.7) * 2.2 * (k / 6));
+        g.lineTo(x + 1.5 + ancho, top + largo); g.lineTo(x + 1.5 + ancho / 2, top + largo * 0.82); g.lineTo(x + 1.5, top + largo); g.closePath(); g.fill();
+        g.fillStyle = fac.bandera; g.fillRect(x + 1.5, top + largo * 0.18, ancho, largo * 0.12);
+        g.fillStyle = FF.claro(fac.color, 0.45); g.beginPath(); g.arc(x + 1.5 + ancho / 2, top + largo * 0.52, ancho * 0.18, 0, 7); g.fill();
+      };
+      if (w >= 700) { estandarte(w * 0.6, h * 0.6, 0); estandarte(w * 0.975, h * 0.66, 1.7); } else estandarte(w * 0.9, Math.min(h * 0.4, 150), 0);
+      // la tropa formada: la fila de atrás más pequeña, la de delante encima
+      const fila = (lista, y, s, x0, x1, desfase) => lista.forEach((sd, i) => {
+        const x = x0 + ((i + 0.5 + desfase) / Math.max(lista.length, 1)) * (x1 - x0);
+        FF.figura(g, { faccion: ej.faccion, clase: sd.clase }, bando, { x, y, s, dir: -1, t: t + i * 0.37, bob: Math.sin(t * 1.3 + i * 1.7) * 0.5, sinAro: true, cap: sd.capitan });
+      });
+      const estrecho = w < 700;
+      fila(atras, h * (estrecho ? 0.93 : 0.82), Math.min(h * 0.22, w * 0.075), w * (estrecho ? 0.3 : 0.63), w * 0.96, 0.5);
+      fila(delante, h * 0.99, Math.min(h * 0.28, w * 0.095), w * (estrecho ? 0.25 : 0.62), w * 0.99, 0);
+      // velo hacia la izquierda: ahí van el retrato y el texto
+      if (estrecho) { g.fillStyle = "rgba(10,8,14,.62)"; g.fillRect(0, 0, w, h * 0.86); }
+      else {
+        const velo = g.createLinearGradient(0, 0, w * 0.66, 0);
+        velo.addColorStop(0, "rgba(10,8,14,.92)"); velo.addColorStop(0.7, "rgba(10,8,14,.55)"); velo.addColorStop(1, "rgba(10,8,14,0)");
+        g.fillStyle = velo; g.fillRect(0, 0, w * 0.66, h);
+      }
+    };
+    escenaAnim = requestAnimationFrame(paso);
   }
 
   function pintarVista() {
     const v = $("frVista");
+    v.dataset.p = pestana;
     const fn = { guerra: vistaGuerra, duelos: vistaDuelos, soldados: vistaSoldados, casas: vistaCasas, reliquias: vistaReliquias, salon: vistaSalon, cronicas: vistaCronicas, mundo: vistaMundo }[pestana];
     fn(v, true);
   }
