@@ -19,7 +19,8 @@
   const KEY = "sb_publishable_c9kPJ1tWbzCSiqVvmBJ0og_rUW9uLee";
   const CLAVE_CACHE = "musicaPaginasCfg";
   const CLAVE_SILENCIO = "musicaPaginasSilencio";
-  const PAGINA = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  // Una página puede usar la música de otra (fractura-guerra.html usa la de fractura.html): window.MUSICA_PAGINA antes de cargar este script
+  const PAGINA = (window.MUSICA_PAGINA || location.pathname.split("/").pop() || "index.html").toLowerCase();
 
   // Páginas a las que se les puede poner música, y cuáles son juegos con partida
   const PAGINAS = [

@@ -599,3 +599,12 @@ Las partidas guardadas y las mesas en curso con reglas anteriores no se cargan (
 ### Pruebas
 - Además de las de las reglas 4: `node tools/probar-fractura-v5.js` (órdenes, caminos, portal, administración, transmutación, obras, sanadores, héroes y gigantes).
 - `node tools/probar-fractura.js 2` ahora cuenta, por tamaño de mapa, las guerras con héroe y los recursos que sobran al final.
+
+## 17. Dos páginas (noviembre de 2026)
+
+- `fractura.html`: portada, elegir ejército, cuartel, vestíbulo de mesas, Códice y ayuda. No carga el motor, la IA ni el tablero (Phaser).
+- `fractura-guerra.html`: el tablero, el final de la guerra y la guerra de una mesa. Se entra con `?f=<ejército>` (la guerra guardada), `?nueva=1` (una guerra preparada en el cuartel, que llega por `sessionStorage`) o `?mesa=<id>` (el ejército sale de la propia mesa). Al salir o acabar vuelve a `fractura.html?f=<ejército>&p=<pestaña>`, con un aviso si hace falta.
+- El código de la interfaz está en `js/fractura-ui/` (`comun.js`, `cuartel.js`, `guerra.js`). `node tools/construir-fractura-ui.js` arma `js/fractura-cuartel.js` y `js/fractura-guerra.js` (archivos generados: no se editan a mano) y avisa si una página usa algo que solo existe en la otra.
+- La música de partida de `fractura.html` suena también en la guerra (`window.MUSICA_PAGINA` en `js/musica-paginas.js`).
+- La portada enseña «Tus guerras»: la guardada en este navegador y las mesas en curso o en espera, con el ejército de cada una.
+
