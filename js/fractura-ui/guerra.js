@@ -184,14 +184,16 @@
   /* Cuánto pegaría y cuánto respondería, con los números reales del motor, y desde dónde atacaría */
   function previaAtaque(u, t) {
     const e = FM.ef(est, u);
+    // Distancia contando el tamaño (los gigantes ocupan 2×2): desde una casilla ancla p, con la huella de u
+    const dd0 = p => FM.dist({ x: p.x, y: p.y, tam: u.tam }, t);
     let desde = { x: u.x, y: u.y, rec: u.recorrido || 0 };
     const sx0 = u.x, sy0 = u.y;
     const aguaDesde = n => { u.x = n.x; u.y = n.y; const r = FM.razonAgua(est, u, t); u.x = sx0; u.y = sy0; return r; };
-    if (cheb(u, t) > e.alc || aguaDesde(u)) {
+    if (dd0(u) > e.alc || aguaDesde(u)) {
       if (FM.polvoraFac(est, u) || CLASES[u.clase].pesado) return null;
       const info = FM.alcanzables(est, u);
       let mejor = null;
-      info.destinos.forEach(n => { const dd = cheb(n, t); if (dd <= e.alc && dd >= 1 && !aguaDesde(n) && (!mejor || n.c < mejor.c || (n.c === mejor.c && dd > mejor.dd))) mejor = { x: n.x, y: n.y, c: n.c, dd }; });
+      info.destinos.forEach(n => { const dd = dd0(n); if (dd <= e.alc && dd >= 1 && !aguaDesde(n) && (!mejor || n.c < mejor.c || (n.c === mejor.c && dd > mejor.dd))) mejor = { x: n.x, y: n.y, c: n.c, dd }; });
       if (!mejor) return null;
       desde = { x: mejor.x, y: mejor.y, rec: (u.recorrido || 0) + cheb(u, mejor), mueve: true };
     }
@@ -199,7 +201,7 @@
     u.x = desde.x; u.y = desde.y; u.recorrido = desde.rec;
     const dmg = FM.calcularDano(est, u, t);
     let ret = 0;
-    if (dmg < t.hp && cheb(desde, t) <= FM.ef(est, t).alc && CLASES[t.clase].atq > 1 && !FM.razonAgua(est, t, u)) ret = Math.max(1, Math.ceil(FM.calcularDano(est, t, u) * 0.6));
+    if (dmg < t.hp && dd0(desde) <= FM.ef(est, t).alc && CLASES[t.clase].atq > 1 && !FM.razonAgua(est, t, u)) ret = Math.max(1, Math.ceil(FM.calcularDano(est, t, u) * 0.6));
     u.x = sx; u.y = sy; u.recorrido = sr;
     return { dmg, ret, mata: dmg >= t.hp, mueve: !!desde.mueve, hpT: t.hp, desde };
   }

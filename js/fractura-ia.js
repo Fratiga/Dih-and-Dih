@@ -100,7 +100,7 @@
     if (FM.razonAgua(est, u, t)) { u.x = sx; u.y = sy; u.recorrido = sr; return null; }
     const dmg = FM.calcularDano(est, u, t);
     let ret = 0;
-    if (dmg < t.hp && cheb(desde, t) <= FM.ef(est, t).alc && CLASES[t.clase].atq > 1 && !FM.razonAgua(est, t, u)) ret = Math.max(1, Math.ceil(FM.calcularDano(est, t, u) * 0.6));
+    if (dmg < t.hp && FM.dist({ x: desde.x, y: desde.y, tam: u.tam }, t) <= FM.ef(est, t).alc && CLASES[t.clase].atq > 1 && !FM.razonAgua(est, t, u)) ret = Math.max(1, Math.ceil(FM.calcularDano(est, t, u) * 0.6));
     // Riesgo: otros enemigos que lo alcanzarían donde se queda
     let riesgo = 0;
     Object.values(est.unidades).forEach(w => {
@@ -133,10 +133,11 @@
     const enemigos = Object.values(est.unidades).filter(w => FM.hostil(est, w.dueno, u.dueno) && !(FM.enTregua(est) && w.dueno >= 0));
     posiciones.forEach(p => {
       enemigos.forEach(t => {
-        if (cheb(p, t) > e.alc || cheb(p, t) < 1) return;
+        const dP = FM.dist({ x: p.x, y: p.y, tam: u.tam }, t);
+        if (dP > e.alc || dP < 1) return;
         if (t.dueno === -1 && !t.guardia && !t.errante) return;
-        if (cheb(p, t) > 1 && FM.oculta(est, t, u.dueno)) return;
-        if (cheb(p, t) > 1 && t.dueno >= 0 && !t.heroe && FM.vecinosAliados(est, t).some(w => w.heroe && HEROES[w.heroe].ef.velo)) return;
+        if (dP > 1 && FM.oculta(est, t, u.dueno)) return;
+        if (dP > 1 && t.dueno >= 0 && !t.heroe && FM.vecinosAliados(est, t).some(w => w.heroe && HEROES[w.heroe].ef.velo)) return;
         const ev = evaluarAtaque(est, u, p, t);
         if (!ev) return;
         let puntos = ev.puntos - p.c * 0.15;
@@ -593,7 +594,7 @@
     Object.values(est.unidades).forEach(t => {
       if (!FM.hostil(est, t.dueno, u.dueno) || FM.razonNoAtacar(est, u, t)) return;
       if (t.dueno === -1 && !t.guardia && !t.errante) return;
-      if (cheb(u, t) > alc) return;
+      if (FM.dist(u, t) > alc) return;
       const ev = evaluarAtaque(est, u, { x: u.x, y: u.y }, t);
       if (ev && (!mejor || ev.puntos > mejor.puntos)) mejor = { t, puntos: ev.puntos };
     });
