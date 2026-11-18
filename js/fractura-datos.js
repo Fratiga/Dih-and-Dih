@@ -221,7 +221,7 @@
   /* Obras de ciudad: se pagan, duran unos turnos y se pueden repetir */
   const OBRAS = {
     fortificar: { nombre: "Fortificar", turnos: 3, coste: { materiales: 6, oro: 4 }, texto: "+2 de defensa a quien esté en la ciudad durante 3 turnos." },
-    fiesta: { nombre: "Fiesta", turnos: 3, coste: { comida: 8, oro: 6 }, texto: "+2 al límite de tropas y se curan 2 más en la ciudad durante 3 turnos." },
+    fiesta: { nombre: "Fiesta", turnos: 3, coste: { comida: 8, oro: 6 }, texto: "+2 al límite de tropas, también por encima del máximo del ejército, y se curan 2 más en la ciudad durante 3 turnos." },
     levas: { nombre: "Levas", turnos: 1, coste: { oro: 8, comida: 4 }, texto: "La ciudad entrena dos tropas este turno en vez de una." },
     vigias: { nombre: "Vigías", turnos: 3, coste: { oro: 3, materiales: 2 }, texto: "La ciudad ve 2 casillas más lejos durante 3 turnos." }
   };

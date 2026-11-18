@@ -730,3 +730,5 @@ body.fr-en-cuartel #frPestanas button.activa i { color: var(--accent); }
 /* Espera de las habilidades de los héroes */
 .fr-cd { font-style: normal; font-size: .68rem; padding: 0 5px; margin-left: 4px; border: 1px solid #7a6a8a; color: #cdb8e0; white-space: nowrap; vertical-align: 1px; }
 .fr-cd.lista { border-color: var(--fr-filete); color: #9a8f86; }
+/* Con el panel de la derecha abierto (Saber, Ciudades...), la selección va en el hueco entre el minimapa y el panel */
+.fr-hud:has(.fr-panel:not(.hidden)) .fr-seleccion { left: calc(300px + (100% - 664px) / 2); width: min(820px, calc(100% - 680px)); }

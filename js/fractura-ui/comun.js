@@ -376,7 +376,7 @@
         <li><strong>Toma más ciudades.</strong> Cada ciudad tuya suma lo de sus niveles. Desde la cuarta ciudad se paga administración en oro.</li>
         <li><strong>Aprende el saber que lo sube.</strong> Algunos escalones dan más tropas. Salen en la última columna.</li>
         <li><strong>Encarga una Fiesta.</strong> Es una obra de ciudad: +2 al límite durante 3 turnos por cada ciudad que la celebre.</li>
-        <li>Nunca pasa del tope de tu ejército.</li></ul>
+        <li>Lo demás nunca pasa del tope de tu ejército. La Fiesta sí: suma por encima del tope, hasta un máximo absoluto de 40 tropas.</li></ul>
         <p>No ocupan sitio los levantados de entre los muertos ni lo que traen algunos héroes al usar sus habilidades.</p>
         <table class="fr-ay-tabla fr-ay-limite"><tr><th>Ejército</th><th>Base</th><th>Por nivel de ciudad</th><th>Tope</th><th>Saber que lo sube</th></tr>${Object.keys(FACCIONES).map(k => {
           const F = FACCIONES[k], pb = F.poblacion || { base: 4, porNivel: [3, 3, 3, 3, 3], tope: 30, niveles: [] };

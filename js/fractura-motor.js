@@ -98,9 +98,10 @@
   /* Cuántas tropas puede tener un bando: lo que da su ejército más lo que da cada ciudad por su nivel, más el saber */
   function limiteTropas(est, j) {
     const fac = facDe(est, j), pb = fac.poblacion || { base: 4, porNivel: [3, 3, 3, 3, 3], tope: 30 };
-    let n = pb.base + (sab(est, j).poblacion || 0);
-    ciudadesDe(est, j).forEach(c => { for (let k = 0; k < c.nivel && k < pb.porNivel.length; k++) n += pb.porNivel[k]; if (c.obras && c.obras.fiesta >= est.turno) n += 2; });
-    return Math.min(pb.tope || 30, MAX_UNIDADES, n);
+    let n = pb.base + (sab(est, j).poblacion || 0), fiesta = 0;
+    ciudadesDe(est, j).forEach(c => { for (let k = 0; k < c.nivel && k < pb.porNivel.length; k++) n += pb.porNivel[k]; if (c.obras && c.obras.fiesta >= est.turno) fiesta += 2; });
+    // La Fiesta suma por encima del tope del ejército (si no, con el ejército al máximo no serviría de nada); el tope absoluto sigue
+    return Math.min(MAX_UNIDADES, Math.min(pb.tope || 30, n) + fiesta);
   }
   // Los reanimados no cuentan para el límite
   const cuentaTropas = (est, j) => unidadesDe(est, j).filter(u => !u.reanimado && !u.invocado).length;
