@@ -697,7 +697,7 @@ begin
     for nuevo in select e ->> 'id' from jsonb_array_elements(p_estados) e
         where not exists (select 1 from jsonb_array_elements(coalesce(o.datos -> 'estados', '[]'::jsonb)) v where v ->> 'id' = e ->> 'id') loop
       if (nuevo = 'casteo_notas' and nombre !~ '\mryn\M')
-        or (nuevo = 'casteo_cartas' and nombre !~ '\meledar\M')
+        or (nuevo in ('casteo_cartas', 'zorro', 'zorro_defensa', 'zorro_ataque', 'zorro_inmolar') and nombre !~ '\meledar\M')
         or (nuevo = 'fumando' and nombre !~ '\m(torvrena|cassius)\M')
         or (nuevo in ('raudo', 'marca_cazador') and nombre !~ '\mcassius\M')
         or (nuevo in ('inspiracion_bardica', 'heroismo', 'manto_inspiracion') and nombre !~ '\mryn\M')

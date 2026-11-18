@@ -190,7 +190,71 @@
     const opcLuz = () => (st.escena && st.escena.opciones && st.escena.opciones.luz) || {};
     function bloqueaMovimiento() { const L = opcLuz(), b = L.bloquear || "luz"; return !!window.TBLuz && (b === "siempre" || (b === "luz" && !!L.activa)); }
     let luzPendiente = false;
-    const ANIMADOS = { casteo_notas: 1, casteo_cartas: 1, fumando: 1, raudo: 1, furia_salvaje: 1, marca_cazador: 1, inspiracion_bardica: 1, heroismo: 1, manto_inspiracion: 1, magia_reforzante: 1 };
+    const ANIMADOS = { casteo_notas: 1, casteo_cartas: 1, fumando: 1, raudo: 1, furia_salvaje: 1, marca_cazador: 1, inspiracion_bardica: 1, heroismo: 1, manto_inspiracion: 1, magia_reforzante: 1, zorro: 1, zorro_defensa: 1, zorro_ataque: 1, zorro_inmolar: 1 };
+    // El zorro de los destinos de Eledar (según los dibujos de Gabriel): cuerpo, oscuro, claro, marcas y nariz
+    const ZORROS = {
+      zorro: ["#e22bd9", "#8e1189", "#ff8af6", "#3f8dff"],
+      zorro_defensa: ["#2f86e6", "#164a96", "#86c6ff", "#35f070"],
+      zorro_ataque: ["#f2c51e", "#a87a07", "#fff09a", "#ff3fa2"],
+      zorro_inmolar: ["#ff2323", "#9a0000", "#ff8a8a", "#a347ff"]
+    };
+    function dibujarZorro(c, id, cx, cy, S, t) {
+      const [cuerpo, oscuro, claro, marca] = ZORROS[id];
+      const w = S, h = S * 0.95;
+      c.save();
+      c.translate(cx, cy + Math.sin(t * 2.2) * S * 0.08);
+      c.scale(1 + 0.03 * Math.sin(t * 3), 1 - 0.03 * Math.sin(t * 3));
+      // resplandor
+      const gl = c.createRadialGradient(0, 0, S * 0.5, 0, 0, S * 1.55);
+      gl.addColorStop(0, cuerpo + "55"); gl.addColorStop(1, cuerpo + "00");
+      c.fillStyle = gl; c.beginPath(); c.arc(0, 0, S * 1.55, 0, Math.PI * 2); c.fill();
+      // cuerpo: una cúpula con dos orejas y la falda ondulada que se mueve
+      c.beginPath();
+      c.moveTo(-w, h * 0.35);
+      c.bezierCurveTo(-w * 1.02, -h * 0.25, -w * 0.85, -h * 0.65, -w * 0.62, -h * 0.78);
+      c.lineTo(-w * 0.6, -h * 1.18); c.lineTo(-w * 0.28, -h * 0.92);
+      c.quadraticCurveTo(0, -h * 1.02, w * 0.28, -h * 0.92);
+      c.lineTo(w * 0.6, -h * 1.18); c.lineTo(w * 0.62, -h * 0.78);
+      c.bezierCurveTo(w * 0.85, -h * 0.65, w * 1.02, -h * 0.25, w, h * 0.35);
+      const ondas = 5;
+      for (let k = 0; k < ondas; k++) {
+        const x0 = w - (k + 0.5) * (2 * w / ondas), x1 = w - (k + 1) * (2 * w / ondas);
+        c.quadraticCurveTo(x0, h * (0.78 + 0.07 * Math.sin(t * 4 + k * 1.3)), x1, h * (0.38 + 0.04 * Math.sin(t * 4 + k)));
+      }
+      c.closePath();
+      const gc = c.createLinearGradient(0, -h, 0, h * 0.8);
+      gc.addColorStop(0, claro); gc.addColorStop(0.45, cuerpo); gc.addColorStop(1, oscuro);
+      c.globalAlpha = 0.95; c.fillStyle = gc; c.fill();
+      c.globalAlpha = 0.6; c.strokeStyle = claro; c.lineWidth = S * 0.04; c.stroke();
+      // borde punteado (la trama de puntos de los dibujos)
+      c.globalAlpha = 0.45; c.fillStyle = claro;
+      for (let i = 0; i < 28; i++) {
+        const a = i / 28 * Math.PI * 2;
+        c.beginPath(); c.arc(Math.cos(a) * w * 1.12, Math.sin(a) * h * 1.02 - h * 0.1, S * 0.025, 0, Math.PI * 2); c.fill();
+      }
+      // brillo arriba a la izquierda
+      c.globalAlpha = 0.35; c.fillStyle = "#ffffff";
+      c.beginPath(); c.ellipse(-w * 0.45, -h * 0.5, w * 0.2, h * 0.12, -0.6, 0, Math.PI * 2); c.fill();
+      // ojos cerrados
+      c.globalAlpha = 0.9; c.strokeStyle = oscuro; c.lineWidth = S * 0.07; c.lineCap = "round";
+      [-1, 1].forEach(lado => { c.beginPath(); c.arc(lado * w * 0.36, -h * 0.05, w * 0.2, Math.PI * 1.15, Math.PI * 1.85); c.stroke(); });
+      // marcas de la frente, bigotes y nariz
+      c.strokeStyle = marca; c.lineWidth = S * 0.06; c.globalAlpha = 0.95;
+      [[-0.12, -0.62, -0.2, -0.38], [0.02, -0.68, -0.06, -0.42], [0.16, -0.6, 0.08, -0.38]].forEach(([a, b, x2, y2]) => { c.beginPath(); c.moveTo(w * a, h * b); c.lineTo(w * x2, h * y2); c.stroke(); });
+      c.lineWidth = S * 0.035;
+      [-1, 1].forEach(lado => [[0.08, -0.02], [0.18, 0.06]].forEach(([dy0, dy1]) => { c.beginPath(); c.moveTo(lado * w * 0.42, h * (0.1 + dy0 * 0.5)); c.lineTo(lado * w * 0.95, h * (dy1 - 0.05)); c.stroke(); }));
+      c.fillStyle = marca;
+      c.beginPath(); c.moveTo(-w * 0.12, h * 0.1); c.quadraticCurveTo(0, h * 0.05, w * 0.12, h * 0.1); c.quadraticCurveTo(w * 0.04, h * 0.28, 0, h * 0.3); c.quadraticCurveTo(-w * 0.04, h * 0.28, -w * 0.12, h * 0.1); c.fill();
+      // al inmolarse, llamas que suben
+      if (id === "zorro_inmolar") {
+        for (let i = 0; i < 6; i++) {
+          const f = (t * 0.9 + i / 6) % 1, px = (i / 5 - 0.5) * w * 1.6 + Math.sin(t * 5 + i) * w * 0.08, py = -h * 0.6 - f * h * 0.9, r = S * 0.16 * (1 - f);
+          c.globalAlpha = 0.8 * (1 - f); c.fillStyle = i % 2 ? "#ffb02e" : marca;
+          c.beginPath(); c.moveTo(px, py - r * 2); c.quadraticCurveTo(px + r, py, px, py + r); c.quadraticCurveTo(px - r, py, px, py - r * 2); c.fill();
+        }
+      }
+      c.restore();
+    }
     // Estrella de cuatro puntas (destellos)
     function destello(c, x, y, r) {
       c.beginPath();
@@ -275,6 +339,9 @@
           figura(c, notas[i % 4], 0, 0, R * (0.36 + 0.05 * Math.sin(t * 2 + i)), tonos[i % 4], "rgba(110,40,0,.75)");
           c.restore();
         }
+      } else if (ZORROS[id]) {
+        // flota junto a Eledar, arriba a la derecha
+        dibujarZorro(c, id, x + R * 0.98, y - R * 0.62, R * 0.5, t);
       } else if (id === "marca_cazador") {
         // Marca del cazador: una mira roja que gira despacio y late, con cuatro puntas que apuntan a la presa
         const lat = 1 + 0.05 * Math.sin(t * 4), r = R * 1.12 * lat, giro = t * 0.6;

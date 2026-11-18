@@ -40,7 +40,11 @@
     m("heroismo", "Heroísmo", "sun-radiations", { anim: true, da: "ryn" }),
     m("manto_inspiracion", "Manto de inspiración", "star-swirl", { anim: true, da: "ryn" }),
     m("magia_reforzante", "Magia reforzante", "rainbow-star", { anim: true, da: "hooey" }),
-    m("furia_salvaje", "Furia de la magia salvaje", "magic-swirl", { anim: true, solo: "hooey" })
+    m("furia_salvaje", "Furia de la magia salvaje", "magic-swirl", { anim: true, solo: "hooey" }),
+    m("zorro", "Zorro de los destinos", "fox-head", { anim: true, solo: "eledar" }),
+    m("zorro_defensa", "Zorro: defiende", "fox-head", { anim: true, solo: "eledar" }),
+    m("zorro_ataque", "Zorro: mejora ataques", "fox-head", { anim: true, solo: "eledar" }),
+    m("zorro_inmolar", "Zorro: se inmola", "fox-head", { anim: true, solo: "eledar" })
   ];
   // Los estados de un personaje solo los pone su jugador en su ficha (el servidor lo comprueba igual). Se mira el nombre
   // original de la ficha, no el de una apariencia copiada.
