@@ -655,9 +655,21 @@
         if (ord.uid) {
           const w = est.unidades[ord.uid];
           if (!w || w.dueno !== j) { u.orden = { tipo: "defender", x: u.x, y: u.y }; avisa(u, "perdió a quien escoltaba y se queda a defender donde está."); return; }
+          // Defiende contra lo que se acerque a 2 casillas de cualquier parte del protegido (un gigante ocupa 2×2)
           const aE = mejorAccionDeAtaque(est, u, nunca, "normal");
-          if (aE && cheb(aE.t, w) <= 2) { golpear(est, u, aplicar, aE); return; }
-          if (cheb(u, w) > 1) moverHacia(est, u, [w], aplicar);
+          if (aE && FM.dist(aE.t, w) <= 2) { golpear(est, u, aplicar, aE); return; }
+          if (FM.dist(u, w) > 1) {
+            // Va a una de las casillas libres pegadas al protegido: todo su contorno, así las escoltas se reparten
+            const lado = w.tam === 2 ? 2 : 1, contorno = [];
+            for (let y = w.y - 1; y <= w.y + lado; y++) for (let x = w.x - 1; x <= w.x + lado; x++) {
+              if (!FM.dentro(est, x, y) || FM.ocupa(w, x, y)) continue;
+              if (!FM.esBarco(u) && TERRENOS[est.casillas[y][x].t].mov === 0) continue;
+              const otro = FM.unidadEn(est, x, y);
+              if (otro && otro !== u) continue;
+              contorno.push({ x, y });
+            }
+            moverHacia(est, u, contorno.length ? contorno : [w], aplicar);
+          }
           golpearAqui(est, u, aplicar);
           return;
         }
