@@ -530,7 +530,7 @@
   function accionesDeUnidad(u) {
     const H = humano(), jh = est.jugadores[H], fac = FACCIONES[jh.faccion], out = [];
     const ya = u.atacado ? "Ya actuó este turno." : null;
-    const junto = (x, y) => Object.values(est.unidades).filter(w => cheb(w, { x, y }) <= 1);
+    const junto = (x, y) => Object.values(est.unidades).filter(w => FM.dist(w, { x, y }) <= 1);
     if (u.clase === "picaro") {
       Object.values(est.ciudades).filter(ci => esRival(ci.dueno) && cheb(ci, u) <= 1).forEach(ci => ci.edificios.filter(e => !(ci.desh[e] >= est.turno)).slice(0, 3).forEach(e =>
         out.push({ ic: "✂", nombre: `Sabotear ${EDIFICIOS[e].nombre}`, texto: `Deja sin uso ${EDIFICIOS[e].nombre} de ${ci.nombre} durante 3 turnos.`, razon: ya || (FM.enTregua(est) ? "Hay tregua." : null), acc: { id: "sabotear", x: ci.x, y: ci.y, edificio: e } })));

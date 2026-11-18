@@ -506,9 +506,12 @@
             let mejor = null;
             for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
               if (!dx && !dy) continue;
-              let v = 0;
-              for (let k = 1; k <= ab.largo; k++) { const w = FM.unidadEn(est, u.x + dx * k, u.y + dy * k); if (w && FM.hostil(est, w.dueno, j)) v++; }
-              if (v >= 2 && (!mejor || v > mejor.v)) mejor = { x: u.x + dx, y: u.y + dy, v };
+              // Desde el borde del cuerpo hacia ese lado (un gigante ocupa 2×2), como hace el motor
+              const tU = (u.tam || 1) - 1, ox = dx > 0 ? u.x + tU : u.x, oy = dy > 0 ? u.y + tU : u.y;
+              const vistos = new Set();
+              for (let k = 1; k <= ab.largo; k++) { const w = FM.unidadEn(est, ox + dx * k, oy + dy * k); if (w && FM.hostil(est, w.dueno, j)) vistos.add(w.uid); }
+              const v = vistos.size;
+              if (v >= 2 && (!mejor || v > mejor.v)) mejor = { x: ox + dx, y: oy + dy, v };
             }
             if (mejor && usar(n, { x: mejor.x, y: mejor.y })) return true;
           }

@@ -756,15 +756,16 @@
     // El fuego quema a quien empieza su turno encima
     est.fuego = (est.fuego || []).filter(f => f.hasta >= est.turno);
     est.desafios = (est.desafios || []).filter(d => d.hasta >= est.turno && est.unidades[d.a] && est.unidades[d.b]);
-    unidadesDe(est, j).forEach(u => { const f = est.fuego.find(q => q.x === u.x && q.y === u.y); if (f && est.unidades[u.uid]) { est.ev.push({ k: "golpe", de: null, a: u.uid, x: u.x, y: u.y, dmg: f.dano, dist: 0, arma: "salpica" }); aplicarDano(est, u, f.dano, null); } });
+    unidadesDe(est, j).forEach(u => { const f = est.fuego.find(q => ocupa(u, q.x, q.y)); if (f && est.unidades[u.uid]) { est.ev.push({ k: "golpe", de: null, a: u.uid, x: u.x, y: u.y, dmg: f.dano, dist: 0, arma: "salpica" }); aplicarDano(est, u, f.dano, null); } });
     // Los sanadores y las reliquias que curan, y el descanso
     unidadesDe(est, j).forEach(u => {
       const e = ef(est, u);
       let cura = 0;
       if (u.descanso) cura += 2;
-      const c = ciudadEn(est, u.x, u.y);
+      const c = celdasDe(u).map(q => ciudadEn(est, q.x, q.y)).find(ci => ci && ci.dueno === j) || null;
+      const fortP = celdasDe(u).find(q => casilla(est, q.x, q.y).est === "fortaleza" && est.fortalezasDueno[est.fortalezas.findIndex(p => p.x === q.x && p.y === q.y)] === j);
       if (c && c.dueno === j) { cura += 3 + ((jug.sabEf || VACIO).curaCiudad || 0); if (c.edificios.includes("fortaleza")) cura += 2; if (c.obras && c.obras.fiesta >= est.turno) cura += 2; }
-      else if (casilla(est, u.x, u.y).est === "fortaleza" && est.fortalezasDueno[est.fortalezas.findIndex(p => p.x === u.x && p.y === u.y)] === j) cura += 2;
+      else if (fortP) cura += 2;
       cura += (e.cura || 0) + (CLASES[u.clase].regenera || 0);
       if (u.heroe) cura += 3;
       if (u.efectos && u.efectos.marea >= est.turno) cura += 2;
@@ -792,8 +793,10 @@
         let mejor = null;
         for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
           const x = u.x + dx, y = u.y + dy;
-          if ((!dx && !dy) || !dentro(est, x, y) || TERRENOS[est.casillas[y][x].t].mov === 0 || unidadEn(est, x, y)) continue;
-          const d = dist({ x, y }, t);
+          if (!dx && !dy) continue;
+          const libreQ = q => { if (!dentro(est, q.x, q.y) || TERRENOS[est.casillas[q.y][q.x].t].mov === 0) return false; const o = unidadEn(est, q.x, q.y); return !o || o === u; };
+          if (!celdasDe({ x, y, tam: u.tam || 1 }).every(libreQ)) continue;
+          const d = dist({ x, y, tam: u.tam || 1 }, t);
           if (!mejor || d < mejor.d) mejor = { x, y, d };
         }
         if (mejor) { const de = { x: u.x, y: u.y }; u.x = mejor.x; u.y = mejor.y; est.ev.push({ k: "mov", uid: u.uid, de, a: { x: u.x, y: u.y }, ruta: [de, { x: u.x, y: u.y }] }); }
@@ -1053,18 +1056,15 @@
     }
     if (a.clase === "arcanista" || a.clase === "archimago" || a.clase === "eco" || CLASES[a.clase].area) {
       const frac = (jug && (jug.sabEf || VACIO).area) || 0.5;
-      const vec = [];
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-        const w = unidadEn(est, d.x + dx, d.y + dy);
-        if (w && w !== d && hostil(est, w.dueno, a.dueno) && (dx || dy)) vec.push(w);
-      }
+      const vec = Object.values(est.unidades).filter(w => w !== d && hostil(est, w.dueno, a.dueno) && dist(w, d) <= 1);
       vec.forEach(w => { const sp = Math.max(1, Math.floor(dmg * frac)); if (est.unidades[w.uid]) { est.ev.push({ k: "golpe", de: a.uid, a: w.uid, x: w.x, y: w.y, dmg: sp, dist: 0, arma: "salpica" }); aplicarDano(est, w, sp, a); } });
       if (jug && (jug.sabEf || VACIO).frena && est.unidades[d.uid]) d.efectos.frenado = est.turno + 1;
     }
     // El Kirin: el rayo sigue hasta quien esté detrás y deja clavado a quien toca
     if ((a.heroe && HEROES[a.heroe].ef.linea) || CLASES[a.clase].linea) {
-      const w = unidadEn(est, d.x + Math.sign(d.x - a.x), d.y + Math.sign(d.y - a.y));
-      if (w && hostil(est, w.dueno, a.dueno) && est.unidades[w.uid]) { const sp = Math.max(1, Math.floor(dmg * 0.75)); est.ev.push({ k: "golpe", de: a.uid, a: w.uid, x: w.x, y: w.y, dmg: sp, dist: 0, arma: "salpica" }); if (!aplicarDano(est, w, sp, a)) w.efectos.clavado = true; }
+      const tD = (d.tam || 1) - 1, sx = Math.sign(d.x - a.x), sy = Math.sign(d.y - a.y);
+      const w = unidadEn(est, (sx > 0 ? d.x + tD : d.x) + sx, (sy > 0 ? d.y + tD : d.y) + sy);
+      if (w && w !== d && hostil(est, w.dueno, a.dueno) && est.unidades[w.uid]) { const sp = Math.max(1, Math.floor(dmg * 0.75)); est.ev.push({ k: "golpe", de: a.uid, a: w.uid, x: w.x, y: w.y, dmg: sp, dist: 0, arma: "salpica" }); if (!aplicarDano(est, w, sp, a)) w.efectos.clavado = true; }
       if (est.unidades[d.uid] && a.heroe) d.efectos.clavado = true;
     }
     const sinResp = (a.heroe && HEROES[a.heroe].ef.sinRespuesta) || CLASES[a.clase].sinRespuesta;
@@ -1180,10 +1180,9 @@
     if (u.clase === "barrilero") {
       est.ev.push({ k: "explosion", x: u.x, y: u.y });
       reg(est, `El barril de ${nombreUnidad(u)} estalla.`, "combate");
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-        const w = unidadEn(est, u.x + dx, u.y + dy);
-        if (w && est.unidades[w.uid]) { est.ev.push({ k: "golpe", de: u.uid, a: w.uid, x: w.x, y: w.y, dmg: 3, dist: 0, arma: "salpica" }); aplicarDano(est, w, 3, null); }
-      }
+      Object.values(est.unidades).filter(w => w !== u && dist(w, u) <= 1).forEach(w => {
+        if (est.unidades[w.uid]) { est.ev.push({ k: "golpe", de: u.uid, a: w.uid, x: w.x, y: w.y, dmg: 3, dist: 0, arma: "salpica" }); aplicarDano(est, w, 3, null); }
+      });
     }
     // Quien mata gana experiencia y el bando enemigo se lleva el Ánima
     if (por && por.dueno >= 0) {
@@ -2131,7 +2130,7 @@
         if (!dentro(est, acc.x, acc.y) || lejos) return error("Está fuera de alcance.");
         if (enTregua(est)) return error(`Hay tregua hasta el turno ${est.tregua}.`);
         const dianas = [];
-        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const w = enemigoEn(acc.x + dx, acc.y + dy); if (w) dianas.push(w); }
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const w = enemigoEn(acc.x + dx, acc.y + dy); if (w && !dianas.includes(w)) dianas.push(w); }
         if (!dianas.length) return error("No hay enemigos ahí.");
         est.ev.push({ k: "explosion", x: acc.x, y: acc.y, de: u.uid });
         dianas.forEach(w => { if (!est.unidades[w.uid]) return; est.ev.push({ k: "golpe", de: u.uid, a: w.uid, x: w.x, y: w.y, dmg: ab.dano, dist: 0, arma: "salpica" }); w.descanso = false; aplicarDano(est, w, ab.dano, u); });
@@ -2146,7 +2145,7 @@
         dianas.forEach(w => { w.efectos.miasma = { n: ab.atq, hasta: est.turno + ab.turnos - 1 }; if (ab.traba) { w.efectos.traba = est.turno + ab.turnos - 1; w.pm = 0; } });
         est.ev.push({ k: "aura", x: u.x, y: u.y, dueno: j });
       } else if (ab.id === "muro") {
-        if (!dentro(est, acc.x, acc.y) || lejos || (acc.x === u.x && acc.y === u.y)) return error("Elige una casilla a su alcance.");
+        if (!dentro(est, acc.x, acc.y) || lejos || ocupa(u, acc.x, acc.y)) return error("Elige una casilla a su alcance.");
         const cas = (ab.largo || 1) > 1 ? lineaCruzada(u, acc.x, acc.y, ab.largo) : [{ x: acc.x, y: acc.y }];
         const buenas = cas.filter(p => { const c = casilla(est, p.x, p.y); return c && !c.est && !unidadEn(est, p.x, p.y) && TERRENOS[c.t].mov > 0; });
         if (!buenas.length) return error("No se puede levantar un muro ahí.");
@@ -2220,10 +2219,13 @@
         radioDe(ab.radio).forEach(w => { w.efectos.muralla = { tope: ab.tope, hasta: est.turno + 1 }; });
         est.ev.push({ k: "aura", x: u.x, y: u.y, dueno: j });
       } else if (ab.id === "linea") {
-        const dx = Math.sign(acc.x - u.x), dy = Math.sign(acc.y - u.y);
+        const tU = (u.tam || 1) - 1;
+        const dx = acc.x > u.x + tU ? 1 : acc.x < u.x ? -1 : 0, dy = acc.y > u.y + tU ? 1 : acc.y < u.y ? -1 : 0;
         if (!dx && !dy) return error("Elige una dirección.");
+        // Desde la casilla del cuerpo que da a ese lado (en un gigante, la de su borde)
+        const ox = dx > 0 ? u.x + tU : dx < 0 ? u.x : Math.min(u.x + tU, Math.max(u.x, acc.x)), oy = dy > 0 ? u.y + tU : dy < 0 ? u.y : Math.min(u.y + tU, Math.max(u.y, acc.y));
         const dianas = [];
-        for (let k = 1; k <= ab.largo; k++) { const w = enemigoEn(u.x + dx * k, u.y + dy * k); if (w) dianas.push(w); }
+        for (let k = 1; k <= ab.largo; k++) { const w = enemigoEn(ox + dx * k, oy + dy * k); if (w && !dianas.includes(w)) dianas.push(w); }
         if (!dianas.length) return error("No hay enemigos en esa línea.");
         dianas.forEach(w => golpeDirecto(w, ab.dano));
       } else return error("Habilidad desconocida.");
