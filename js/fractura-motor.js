@@ -1136,7 +1136,7 @@
         jp0.cuenta.devorados++;
         const rasgo = RASGO_DE[u.clase] || "hp";
         por.rasgos = por.rasgos || [];
-        if (sinTope ? por.rasgos.length < 8 : (por.rasgos.length < 2 + (jp0.sabEf && jp0.sabEf.devora || 0) && !por.rasgos.includes(rasgo))) {
+        if (sinTope || (por.rasgos.length < 2 + (jp0.sabEf && jp0.sabEf.devora || 0) && !por.rasgos.includes(rasgo))) {
           por.rasgos.push(rasgo);
           if (rasgo === "hp") por.hp += 2;
           reg(est, `${nombreUnidad(por)} devora a su presa y se adapta: ${RASGO_NOMBRE[rasgo]}.`, "magia");

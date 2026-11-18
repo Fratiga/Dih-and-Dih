@@ -566,7 +566,9 @@
         let razon = ya || (cd > 0 ? (cd > 50 ? "Solo se puede usar una vez por guerra." : `Le faltan ${cd} turnos.`) : ab.coste && !FM.puedePagar(jh, ab.coste) ? "No te alcanzan los recursos." : null);
         const base = { ic: "✪", nombre: ab.nombre, texto: ab.texto, coste: ab.coste, heroe: true };
         const alc = ab.alc || 1, cas = new Set();
-        const recorre = (r, f) => { for (let y = u.y - r; y <= u.y + r; y++) for (let x = u.x - r; x <= u.x + r; x++) if (FM.dentro(est, x, y) && f(x, y)) cas.add(`${x},${y}`); };
+        // Los gigantes ocupan 2×2: se cuenta desde toda su huella, no solo desde su esquina
+        const gt = u.tam === 2 ? 1 : 0;
+        const recorre = (r, f) => { for (let y = u.y - r; y <= u.y + gt + r; y++) for (let x = u.x - r; x <= u.x + gt + r; x++) if (FM.dentro(est, x, y) && !FM.ocupa(u, x, y) && f(x, y)) cas.add(`${x},${y}`); };
         const enemigoVisto = (x, y) => { const w = FM.unidadEn(est, x, y); return w && FM.hostil(est, w.dueno, H) && FM.veUnidad(est, H, w) ? w : null; };
         const libre = (x, y) => { const c = FM.casilla(est, x, y); return c && !FM.unidadEn(est, x, y) && D.TERRENOS[c.t].mov > 0; };
         let pide = true;
@@ -580,6 +582,7 @@
         else if (ab.id === "linea") recorre(1, (x, y) => x !== u.x || y !== u.y);
         else pide = false;
         if (!pide) { out.push(Object.assign(base, { razon, acc: { id: "heroe", n } })); return; }
+        if (!razon && !cas.size && ab.id === "engullir" && FM.vecinosEnemigos(est, u).some(w => FM.veUnidad(est, H, w) && !w.heroe && !w.lider)) razon = "Los enemigos a su lado aún tienen más de un tercio de su vida.";
         if (!razon && !cas.size) razon = ab.id === "muro" || ab.id === "salto" ? "No hay sitio." : "No hay a quién a su alcance.";
         if (!razon && (ab.id === "area" || ab.id === "juicio" || ab.id === "linea") && tregua) razon = "Hay tregua.";
         out.push(Object.assign(base, { razon, casillas: cas, acc: { id: "heroe", n } }));

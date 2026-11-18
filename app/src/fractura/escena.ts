@@ -95,7 +95,7 @@ export class EscenaGuerra extends Phaser.Scene {
   create(): void {
     this.cameras.main.setBackgroundColor(0x05060c);
     this.gRes = this.add.graphics().setDepth(8);
-    this.gBarras = this.add.graphics().setDepth(27);
+    this.gBarras = this.add.graphics().setDepth(29.5);
     this.tex("brillo", 128, 128, g => pintarBrillo(g, 128));
     this.tex("anillo", 128, 128, g => pintarAnillo(g, 128));
     this.tex("aro", 128, 128, g => pintarAroSel(g, 128));
@@ -681,7 +681,7 @@ export class EscenaGuerra extends Phaser.Scene {
       const cxp = (X + 0.5 * gt + (a.dx || 0)) * T, cyp = (Y + gt - 0.14 + (a.dy || 0)) * T - idle - salto - paso;
       // Por defecto cada tropa mira hacia el centro del mapa (hacia donde está la guerra)
       const dir = a.dir || (d.x + 0.5 < est.ancho / 2 ? 1 : -1);
-      o.spr.setPosition(cxp, cyp).setScale((T / FIG) * esc / RT).setFlipX(dir < 0).setDepth(10 + (Y + gt - 0.14) / 100);
+      o.spr.setPosition(cxp, cyp).setScale((T / FIG) * esc / RT).setFlipX(dir < 0).setDepth(gt === 2 ? 28.5 + (Y + gt) / 1000 : 10 + (Y + gt - 0.14) / 100);   // los gigantes, por encima de los rótulos de las ciudades
       o.spr.setRotation(a.rot ? a.rot : mece).setAlpha(a.alfa !== undefined ? a.alfa : 1);
       const gastada = !this.anim && logica && d.dueno === est.activo && d.dueno === H && logica.pm <= 0 && logica.atacado;
       if (a.flash > 0.15) o.spr.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
