@@ -157,15 +157,15 @@
     const u = sel.uid && est.unidades[sel.uid];
     if (u && u.dueno === H && soyYo()) {
       if (!modo) {
-        if (u.pm > 0) FM.alcanzables(est, u).destinos.forEach((n, k) => e.mover.set(k, n));
-        Object.values(est.unidades).forEach(w => { if (FM.hostil(est, w.dueno, H) && FM.veUnidad(est, H, w) && !FM.razonNoAtacar(est, u, w)) e.atacar.add(`${w.x},${w.y}`); });
+        if (u.pm > 0) FM.alcanzables(est, u).destinos.forEach((n, k) => { if (u.tam === 2) FM.celdasDe({ x: n.x, y: n.y, tam: 2 }).forEach(q => { const kq = `${q.x},${q.y}`; if (!e.mover.has(kq) && !FM.ocupa(u, q.x, q.y)) e.mover.set(kq, n); }); else e.mover.set(k, n); });
+        Object.values(est.unidades).forEach(w => { if (FM.hostil(est, w.dueno, H) && FM.veUnidad(est, H, w) && !FM.razonNoAtacar(est, u, w)) FM.celdasDe(w).forEach(q => e.atacar.add(`${q.x},${q.y}`)); });
         const o = u.orden;
-        if (o && o.uid && est.unidades[o.uid]) { const w = est.unidades[o.uid]; e.objetivosHab.add(`${w.x},${w.y}`); }
+        if (o && o.uid && est.unidades[o.uid]) FM.celdasDe(est.unidades[o.uid]).forEach(q => e.objetivosHab.add(`${q.x},${q.y}`));
         else if (o && o.x !== undefined && o.tipo !== "defender") e.objetivosHab.add(`${o.x},${o.y}`);
       } else modo.casillas.forEach(k => e.objetivosHab.add(k));
     }
     if (botar && soyYo()) botar.casillas.forEach(k => e.objetivosHab.add(k));
-    if (grupo) grupo.forEach(uid => { const w = est.unidades[uid]; if (w) e.objetivosHab.add(`${w.x},${w.y}`); });
+    if (grupo) grupo.forEach(uid => { const w = est.unidades[uid]; if (w) FM.celdasDe(w).forEach(q => e.objetivosHab.add(`${q.x},${q.y}`)); });
     if (sel.ciudad && est.ciudades[sel.ciudad] && est.ciudades[sel.ciudad].reunion) { const q = est.ciudades[sel.ciudad].reunion; e.objetivosHab.add(`${q.x},${q.y}`); }
     if (verAmenaza) e.amenaza = zonaAmenaza();
     tablero.estado(e);
@@ -236,6 +236,13 @@
     if (t && FM.oculta(est, t, H)) t = null;
     if (t) { const e = FM.ef(est, t), tr = tropaDe(t); mostrarPrevia(x, y, `<b style="color:${colorDe(t.dueno)}">${esc(FM.nombreUnidad(t))}</b><span>${esc(tr.nombre)} · ${t.dueno >= 0 ? esc(FACCIONES[est.jugadores[t.dueno].faccion].corto) : "sin dueño"}</span><span class="fr-previa-cifras">${ico("vida")}${t.hp}/${e.hpMax} ${ico("ataque")}${e.atq} ${ico("defensa")}${e.def}</span>`); }
   }
+  /* El destino al que va una tropa si se toca (x, y). Un gigante (2×2) va a donde su huella cubra esa casilla: de los sitios posibles, el más barato */
+  function destinoTocado(u, info, x, y) {
+    if (u.tam !== 2) return info.destinos.get(`${x},${y}`) || null;
+    let mejor = null;
+    [[0, 0], [-1, 0], [0, -1], [-1, -1]].forEach(([dx, dy]) => { const n = info.destinos.get(`${x + dx},${y + dy}`); if (n && (!mejor || n.c < mejor.c)) mejor = n; });
+    return mejor;
+  }
   function calcularPrevia(u, x, y) {
     const H = humano();
     const t = FM.unidadEn(est, x, y);
@@ -245,7 +252,7 @@
       // el motivo real por el que no se puede (tregua, noche, pólvora, alcance)
       const sx = u.x, sy = u.y, q = u.quieto;
       if (p && p.mueve) { u.x = p.desde.x; u.y = p.desde.y; u.quieto = false; }
-      const razon = p ? FM.razonNoAtacar(est, u, t) : (FM.razonAgua(est, u, t) || ((FM.polvoraFac(est, u) || CLASES[u.clase].pesado) && cheb(u, t) > FM.ef(est, u).alc ? "No puede moverse y disparar: acércalo antes y dispara el turno siguiente" : "No llega este turno"));
+      const razon = p ? FM.razonNoAtacar(est, u, t) : (FM.razonAgua(est, u, t) || ((FM.polvoraFac(est, u) || CLASES[u.clase].pesado) && FM.dist(u, t) > FM.ef(est, u).alc ? "No puede moverse y disparar: acércalo antes y dispara el turno siguiente" : "No llega este turno"));
       u.x = sx; u.y = sy; u.quieto = q;
       if (!p || razon) { mostrarPrevia(x, y, `<b style="color:${colorDe(t.dueno)}">${esc(FM.nombreUnidad(t))}</b><span class="fr-previa-no">${esc(razon || "No llega este turno")}</span>`); return; }
       ataquePrevio = { x, y };
@@ -255,9 +262,9 @@
         <span>${p.mata ? "<strong>Lo derribas</strong>" : `Le quitas <strong>${p.dmg}</strong> de ${p.hpT}`}${p.ret ? ` · te responde <strong class="fr-neg">${p.ret}</strong>` : " · sin respuesta"}${p.mueve ? " · avanzas primero" : ""}</span>`);
     } else if (!t && u.pm > 0) {
       const info = FM.alcanzables(est, u);
-      const n = info.destinos.get(`${x},${y}`);
+      const n = destinoTocado(u, info, x, y);
       if (n) {
-        rutaPrevia = FM.camino(info, x, y);
+        rutaPrevia = FM.camino(info, n.x, n.y);
         const c = FM.casilla(est, x, y), ci = FM.ciudadEn(est, x, y);
         const cambiaAgua = !FM.esBarco(u) && (c.t === "agua") !== FM.enAgua(est, u);
         const nvU = FM.navalDe(est, u.dueno);
@@ -367,10 +374,11 @@
     }
     if (u && u.dueno === H && !enCasilla) {
       const info = FM.alcanzables(est, u);
-      if (info.destinos.has(`${x},${y}`) && u.pm > 0) {
+      const dn = u.pm > 0 ? destinoTocado(u, info, x, y) : null;
+      if (dn) {
         if (tactil && !(previaFija && previaFija.x === x && previaFija.y === y)) { previaFija = { x, y }; limpiarPreviaVisual(); calcularPrevia(u, x, y); pintarResaltes(); return; }
         limpiarPrevia();
-        const m = aplicarYo({ t: "mover", uid: u.uid, x, y });
+        const m = aplicarYo({ t: "mover", uid: u.uid, x: dn.x, y: dn.y });
         if (!m.ok) { aviso(m.error, true); son("error"); }
         return despuesDeAccion();
       }
@@ -1067,9 +1075,10 @@
     Object.values(est.ciudades).forEach(c => { if (vis[c.y * w + c.x] === 0) return; g.fillStyle = "#0a0810"; g.fillRect(c.x * k - 1, c.y * k - 1, k + 2, k + 2); g.fillStyle = c.dueno !== null ? bandos[c.dueno].col : "#d8d2c4"; g.fillRect(c.x * k, c.y * k, k, k); });
     g.fillStyle = "#fff0b0"; g.fillRect(est.nucleo.x * k + k * 0.2, est.nucleo.y * k + k * 0.2, k * 0.6, k * 0.6);
     Object.values(est.unidades).forEach(u => {
-      if (!(u.dueno === H || (vis[u.y * w + u.x] === 2 && !FM.oculta(est, u, H)))) return;
-      g.fillStyle = "#0a0810"; g.beginPath(); g.arc((u.x + 0.5) * k, (u.y + 0.5) * k, k * 0.46, 0, 7); g.fill();
-      g.fillStyle = u.dueno >= 0 ? bandos[u.dueno].col : "#b0a8a0"; g.beginPath(); g.arc((u.x + 0.5) * k, (u.y + 0.5) * k, k * 0.32, 0, 7); g.fill();
+      if (!(u.dueno === H || (FM.celdasDe(u).some(q => vis[q.y * w + q.x] === 2) && !FM.oculta(est, u, H)))) return;
+      const gs = u.tam === 2 ? 2 : 1, cx = (u.x + 0.5 * gs) * k, cy = (u.y + 0.5 * gs) * k;
+      g.fillStyle = "#0a0810"; g.beginPath(); g.arc(cx, cy, k * 0.46 * gs, 0, 7); g.fill();
+      g.fillStyle = u.dueno >= 0 ? bandos[u.dueno].col : "#b0a8a0"; g.beginPath(); g.arc(cx, cy, k * 0.32 * gs, 0, 7); g.fill();
     });
     const v = tablero.vista();
     g.strokeStyle = "#fff4d6"; g.lineWidth = 1.5;

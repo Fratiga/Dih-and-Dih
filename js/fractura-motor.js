@@ -480,7 +480,8 @@
     }
     return true;
   }
-  const veUnidad = (est, j, u) => veCasilla(est, j, u.x, u.y) && !oculta(est, u, j);
+  // Un gigante (2×2) se ve si se ve cualquiera de sus casillas
+  const veUnidad = (est, j, u) => (u.tam === 2 ? celdasDe(u).some(q => veCasilla(est, j, q.x, q.y)) : veCasilla(est, j, u.x, u.y)) && !oculta(est, u, j);
 
   /* --- Crear la guerra --- */
   function generarContingenteIA(est, j, n, anio, escala) {

@@ -109,7 +109,18 @@ export class EscenaGuerra extends Phaser.Scene {
     this.input.addPointer(1);
     const casillaEn = (sx: number, sy: number): { x: number; y: number; dentro: boolean } => {
       const m = this.aMundo(sx, sy);
-      const x = Math.floor(m.x / T), y = Math.floor(m.y / T);
+      let x = Math.floor(m.x / T), y = Math.floor(m.y / T);
+      // Un gigante sobresale mucho de sus 2×2 casillas: si se toca su figura donde no hay otra tropa, cuenta como tocarle a él
+      if (this.est && !this.lejos && !W.FracturaMotor.unidadEn(this.est, x, y)) {
+        let mejor: any = null;
+        this.unidades.forEach((o, uid) => {
+          const lg = this.est.unidades[uid];
+          if (!lg || lg.tam !== 2 || !o.spr.visible) return;
+          const b = o.spr.getBounds();
+          if (b.contains(m.x, m.y) && (!mejor || lg.y > mejor.y)) mejor = lg;
+        });
+        if (mejor) { x = mejor.x; y = mejor.y; }
+      }
       return { x, y, dentro: !!this.est && x >= 0 && y >= 0 && x < this.est.ancho && y < this.est.alto };
     };
     const umbral = 8 * this.dpr;
@@ -210,7 +221,7 @@ export class EscenaGuerra extends Phaser.Scene {
   private colocarPlacas(): void {
     if (!this.est || !this.placas.size) return;
     const ocupada = new Set<string>();
-    Object.values(this.est.unidades).forEach((u: any) => ocupada.add(`${u.x},${u.y}`));
+    Object.values(this.est.unidades).forEach((u: any) => W.FracturaMotor.celdasDe(u).forEach((q: any) => ocupada.add(`${q.x},${q.y}`)));
     this.placas.forEach(p => {
       if (!p.cont.active) return;
       const X = p.x * T, Y = p.y * T, abajo = ocupada.has(`${p.x},${p.y + 1}`), arriba = ocupada.has(`${p.x},${p.y - 1}`);
@@ -648,7 +659,8 @@ export class EscenaGuerra extends Phaser.Scene {
       const d = it.d, a = it.v || {};
       const X = a.x !== undefined ? a.x : d.x, Y = a.y !== undefined ? a.y : d.y;
       const tx = Math.round(X), ty = Math.round(Y);
-      let visible = (d.dueno >= 0 && FM.mismoEquipo(est, d.dueno, H)) || (ty >= 0 && ty < est.alto && tx >= 0 && tx < est.ancho && vis[ty * est.ancho + tx] === 2);
+      const lgV = est.unidades[d.uid], celdasV = lgV && lgV.tam === 2 ? FM.celdasDe({ x: tx, y: ty, tam: 2 }) : [{ x: tx, y: ty }];
+      let visible = (d.dueno >= 0 && FM.mismoEquipo(est, d.dueno, H)) || celdasV.some((q: any) => q.y >= 0 && q.y < est.alto && q.x >= 0 && q.x < est.ancho && vis[q.y * est.ancho + q.x] === 2);
       // La noche de Nikaalia: no se ve a sus tropas hasta tener a alguien al lado
       if (visible && est.hayNoche && d.dueno >= 0 && !FM.mismoEquipo(est, d.dueno, H)) { const lg = est.unidades[d.uid]; if (lg && FM.oculta(est, lg, H)) visible = false; }
       if (!visible) return;
@@ -799,8 +811,9 @@ export class EscenaGuerra extends Phaser.Scene {
     if (ui.previaAtq) this.esquinas(ui.previaAtq.x, ui.previaAtq.y, 0xffe3a0, 1, Math.max(3, T / 20), 0.34, 5);
     const u = ui.sel && est.unidades[ui.sel];
     if (u && !this.anim) {
-      if (this.lejos) this.aroSel.setVisible(true).setPosition((u.x + 0.5) * T, (u.y + 0.5) * T).setDisplaySize(T * 1.02, T * 1.02).setTint(0xfff0b0);
-      else this.aroSel.setVisible(true).setPosition((u.x + 0.5) * T, (u.y + 0.86) * T).setDisplaySize(T * 0.92, T * 0.34).setTint(0xfff0b0);
+      const gs = u.tam === 2 ? 2 : 1;
+      if (this.lejos) this.aroSel.setVisible(true).setPosition((u.x + 0.5 * gs) * T, (u.y + 0.5 * gs) * T).setDisplaySize(T * 1.02 * gs, T * 1.02 * gs).setTint(0xfff0b0);
+      else this.aroSel.setVisible(true).setPosition((u.x + 0.5 * gs) * T, (u.y + gs - 0.14) * T).setDisplaySize(T * 0.92 * gs, T * 0.34 * gs).setTint(0xfff0b0);
       if (!REDUCIDO) this.aroSel.setAlpha(0.75 + 0.25 * Math.sin(t / 200));
     } else this.aroSel.setVisible(false);
     if (ui.casilla) this.esquinas(ui.casilla.x, ui.casilla.y, 0xf2cf6a, 1, Math.max(2.5, T / 26), 0.28, 4);
