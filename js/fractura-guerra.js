@@ -1187,8 +1187,13 @@
       const tregua = FM.enTregua(est);
       [[h.ef.activa, 1, u.cd], [h.ef.activa2, 2, u.cd2]].forEach(([ab, n, cd]) => {
         if (!ab) return;
-        let razon = ya || (cd > 0 ? (cd > 50 ? "Solo se puede usar una vez por guerra." : `Le faltan ${cd} turnos.`) : ab.coste && !FM.puedePagar(jh, ab.coste) ? "No te alcanzan los recursos." : null);
-        const base = { ic: "✪", nombre: ab.nombre, texto: ab.texto, coste: ab.coste, heroe: true };
+        const falta = cd > 50 ? "Solo se puede usar una vez por guerra." : cd > 0 ? `Le faltan ${cd} ${cd === 1 ? "turno" : "turnos"}.` : null;
+        let razon = ya ? (falta ? `${ya} ${falta}` : ya) : falta || (ab.coste && !FM.puedePagar(jh, ab.coste) ? "No te alcanzan los recursos." : null);
+        // La espera siempre a la vista: cuánto le falta, o cada cuánto se puede usar si ya está lista
+        const espera = cd > 50 ? { t: "una vez", lista: false, titulo: "Ya la usó: solo se puede una vez por guerra." }
+          : cd > 0 ? { t: `⟳ faltan ${cd}`, lista: false, titulo: `Se recarga: le faltan ${cd} ${cd === 1 ? "turno" : "turnos"}.` }
+            : ab.cd ? { t: `⟳ cada ${ab.cd}`, lista: true, titulo: `Lista. Después de usarla tarda ${ab.cd} turnos en volver.` } : null;
+        const base = { ic: "✪", nombre: ab.nombre, texto: ab.texto, coste: ab.coste, heroe: true, espera };
         const alc = ab.alc || 1, cas = new Set();
         // Los gigantes ocupan 2×2: se cuenta desde toda su huella, no solo desde su esquina
         const gt = u.tam === 2 ? 1 : 0;
@@ -1287,7 +1292,7 @@
           <p class="fr-sel-texto">${esc(tr.texto)}</p>
           ${FM.embarcada(est, u) ? `<p class="fr-sel-texto fr-sel-nota">${esc((() => { const nv = FM.navalDe(est, u.dueno); return nv.marinos ? "Va embarcada. Los suyos pelean igual sobre el agua." : nv.fondo ? "Cruza andando por el fondo. No puede atacar hasta salir del agua, pero conserva su defensa." : "Va embarcada: no puede atacar y no tiene defensa. Al desembarcar gasta el movimiento que le quede."; })())}</p>` : ""}
         </div>
-        ${accionesActuales.length ? `<div class="fr-sel-acciones">${accionesActuales.map((a, i) => `<button type="button" class="fr-accion${a.razon ? " no" : ""}${(modo && modo.i === i) || a.activa ? " activa" : ""}${a.ordenBtn ? " fr-accion-orden" : ""}" data-accion="${i}" title="${esc(a.texto)}${a.razon ? ` — ${esc(a.razon)}` : ""}"><i>${a.ic}</i><span>${esc(a.nombre)}</span>${a.coste ? costeHtml(a.coste, est.jugadores[H]) : ""}${a.razon ? `<small>${esc(a.razon)}</small>` : ""}</button>${a.caido ? `<button type="button" class="fr-enlace fr-ver-caido" data-ver-caido="${i}">Ver a ${esc(a.caido.s.nombre)}</button>` : ""}`).join("")}</div>` : ""}
+        ${accionesActuales.length ? `<div class="fr-sel-acciones">${accionesActuales.map((a, i) => `<button type="button" class="fr-accion${a.razon ? " no" : ""}${(modo && modo.i === i) || a.activa ? " activa" : ""}${a.ordenBtn ? " fr-accion-orden" : ""}" data-accion="${i}" title="${esc(a.texto)}${a.razon ? ` — ${esc(a.razon)}` : ""}"><i>${a.ic}</i><span>${esc(a.nombre)}${a.espera ? ` <em class="fr-cd${a.espera.lista ? " lista" : ""}" title="${esc(a.espera.titulo)}">${esc(a.espera.t)}</em>` : ""}</span>${a.coste ? costeHtml(a.coste, est.jugadores[H]) : ""}${a.razon ? `<small>${esc(a.razon)}</small>` : ""}</button>${a.caido ? `<button type="button" class="fr-enlace fr-ver-caido" data-ver-caido="${i}">Ver a ${esc(a.caido.s.nombre)}</button>` : ""}`).join("")}</div>` : ""}
         <button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button>
       </div>`;
       const ret = c.querySelector("[data-ret]");

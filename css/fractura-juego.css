@@ -727,3 +727,6 @@ body.fr-en-cuartel #frPestanas button.activa i { color: var(--accent); }
 .fr-ciudad-sec[data-sec="edificios"] .fr-obras-lista { max-height: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px; margin-top: 8px; }
 .fr-ciudad-sec[data-sec="obras"] .fr-obras { max-height: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px; }
 .fr-ciudad-sec .fr-heroe { max-width: 640px; }
+/* Espera de las habilidades de los héroes */
+.fr-cd { font-style: normal; font-size: .68rem; padding: 0 5px; margin-left: 4px; border: 1px solid #7a6a8a; color: #cdb8e0; white-space: nowrap; vertical-align: 1px; }
+.fr-cd.lista { border-color: var(--fr-filete); color: #9a8f86; }
