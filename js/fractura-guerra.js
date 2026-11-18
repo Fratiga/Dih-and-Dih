@@ -603,7 +603,33 @@
   }
 
 
-  function guardarEnCurso() { if (pvp || !est) return; clearTimeout(guardarEstadoTimer); guardarEstadoTimer = setTimeout(() => { if (est && !ocupadoIA) Red.guardarGuerra(est, cfgGuerraActual); }, 400); }
+  // Se guarda al momento tras cada acción: si se cierra la página a mitad del turno, al volver sigue igual (no se puede rehacer el turno)
+  let avisoSinGuardar = false;
+  function guardarYa() {
+    if (pvp || !est) return;
+    const ok = Red.guardarGuerra(est, cfgGuerraActual);
+    if (ok === false && !avisoSinGuardar) { avisoSinGuardar = true; aviso("Este navegador no deja guardar la guerra (puede que no le quede espacio). Si cierras la página, perderás lo de este turno.", true); }
+  }
+  function guardarEnCurso() {
+    if (pvp || !est) return;
+    clearTimeout(guardarEstadoTimer);
+    if (!ocupadoIA) guardarYa();
+    else guardarEstadoTimer = setTimeout(() => { if (est && !ocupadoIA) guardarYa(); }, 400);
+  }
+  /* Mesas: lo hecho en este turno se apunta en el navegador al momento. Si se recarga antes de mandar el turno, se vuelve a aplicar tal cual */
+  const claveTurnoMesa = () => `fracturaMesaTurno:${pvp.id}`;
+  function anotarMesa(acc) {
+    if (!pvp) return;
+    pvp.acciones.push(acc);
+    try { localStorage.setItem(claveTurnoMesa(), JSON.stringify({ n: pvp.n, acciones: pvp.acciones })); } catch (e) { /* sin almacenamiento */ }
+  }
+  function olvidarTurnoMesa() { try { if (pvp) localStorage.removeItem(claveTurnoMesa()); } catch (e) { /* nada */ } }
+  function recuperarTurnoMesa() {
+    let g = null;
+    try { g = JSON.parse(localStorage.getItem(claveTurnoMesa()) || "null"); } catch (e) { g = null; }
+    if (!g || g.n !== pvp.n || !Array.isArray(g.acciones) || est.activo !== yoIdx) { olvidarTurnoMesa(); return; }
+    g.acciones.forEach(acc => { const r = FM.aplicar(est, acc); if (r.ok) pvp.acciones.push(acc); });
+  }
 
   function retomarGuerra() {
     const g = Red.cargarGuerra();
@@ -653,7 +679,7 @@
     const antes = tablero ? tablero.instantanea() : null;
     if (!cumpliendo && (acc.t === "mover" || acc.t === "atacar" || acc.t === "habilidad" || acc.t === "portal") && acc.uid && est.unidades[acc.uid] && est.unidades[acc.uid].orden) delete est.unidades[acc.uid].orden;
     const r = FM.aplicar(est, acc);
-    if (r.ok && pvp) pvp.acciones.push(acc);
+    if (r.ok && pvp) anotarMesa(acc);
     if (r.ok && tablero && r.ev && r.ev.length) tablero.reproducir(r.ev, antes);
     return r;
   }
@@ -1800,7 +1826,7 @@
     try {
       avisos = IA.cumplirOrdenes(est, H, acc => {
         const r = FM.aplicar(est, acc);
-        if (r.ok) { if (pvp) pvp.acciones.push(acc); if (r.ev) evs.push(...r.ev); }
+        if (r.ok) { if (pvp) anotarMesa(acc); if (r.ev) evs.push(...r.ev); }
         return r;
       });
     } finally { cumpliendo = false; }
@@ -2071,6 +2097,7 @@
     pvp = { id, mesa: true, n: 0, acciones: [], timer: null, humanos, nombres, limite: fila.limite, actualizada: fila.actualizada, estado: fila.estado, roto: false, horas: cfg.horas || 48,
       conApuestas: Object.values(fila.apuestas || {}).some(a => a && a.length) };
     aplicarTurnosMesa(fila);
+    if (est.ganador === null && fila.estado === "activa") recuperarTurnoMesa();
     // Si este ejército ya cerró su parte (cayó o la guerra terminó), no se vuelve a entrar: solo se mira cómo va
     if ((ej.mesasCerradas || []).includes(id)) {
       const fin = est.ganador !== null;
@@ -2129,7 +2156,7 @@
     const acc = pvp.acciones; pvp.acciones = [];
     // Lo que hará la máquina después se calcula en una copia: así el turno se manda ya y luego se ve en el mapa
     const d = MESA.despues(est, pvp.humanos, yoIdx);
-    try { await Red.mesaTurno(pvp.id, pvp.n, tipo, tipo === "ausente" ? [] : acc, d.siguiente, d.firma); pvp.n += 1; }
+    try { await Red.mesaTurno(pvp.id, pvp.n, tipo, tipo === "ausente" ? [] : acc, d.siguiente, d.firma); olvidarTurnoMesa(); pvp.n += 1; }
     catch (e) { aviso(`No se pudo enviar el turno (${e.message || e}). Se recarga la guerra.`, true); await abrirMesa(pvp.id); return; }
     pvp.limite = new Date(Date.now() + (pvp.horas || 48) * 3600000).toISOString();
     await turnosDeLosDemas();
