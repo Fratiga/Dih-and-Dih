@@ -11,8 +11,12 @@
   let TB = null, caja = null, fichas = null, cargando = null, enemigos = null;
   const CLAVE = "tbTiradas";
   const est = (() => {
-    const base = { vista: "personaje", ficha: null, filtro: "favoritas", modo: "normal", confirmar: false, susurro: false, busqueda: "", enemigo: null, recientes: [], filtroEnemigo: "Acciones" };
-    try { return Object.assign(base, JSON.parse(localStorage.getItem(CLAVE) || "{}")); } catch (e) { return base; }
+    const base = { vista: "personaje", ficha: null, filtro: "favoritas", modo: "normal", confirmar: true, susurro: false, busqueda: "", enemigo: null, recientes: [], filtroEnemigo: "Acciones" };
+    try {
+      const e = Object.assign(base, JSON.parse(localStorage.getItem(CLAVE) || "{}"));
+      if (!e.revisarV2) { e.confirmar = true; e.revisarV2 = true; }
+      return e;
+    } catch (e) { return base; }
   })();
   const guardar = () => { try { localStorage.setItem(CLAVE, JSON.stringify(est)); } catch (e) { /* nada */ } };
   const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+\d+$/, "").trim();
@@ -74,17 +78,21 @@
     if (ficha) gastarMunicion(ficha, item);
   }
   // Revisar antes de lanzar: descripción, cálculo, munición y el comando editable (como en el plugin)
+  function resumenComando(cmd) {
+    return String(cmd || "").split("\n").filter(l => l && !l.startsWith("/em")).map(l => l.replace(/\[\[(.*?)\]\]/g, "$1")).join("\n");
+  }
   function confirmarTirada(item, ficha) {
+    const calc = item.calc || resumenComando((item.cmd || {})[est.modo] || (item.cmd || {}).normal);
     const nombreBase = String(item.texto || "").split(":")[0].replace(/\s*\(nv\.\s*\d+\)\s*$/, "").trim();
     const cuerpo = el(`<div>
       <div class="tb-nota" style="text-transform:uppercase;letter-spacing:.05em">${esc(item.categoria || "")}</div>
       ${item.desc ? `<div class="tb-campo"><span>Descripción</span><div class="tb-tiradas-texto">${esc(item.desc)}</div></div>` : ""}
-      ${item.calc ? `<div class="tb-campo"><span>Cálculo</span><div class="tb-tiradas-texto">${esc(item.calc)}</div></div>` : ""}
+      ${calc ? `<div class="tb-campo"><span>Cálculo</span><div class="tb-tiradas-texto">${esc(calc)}</div></div>` : ""}
       ${item.municion ? `<div class="tb-campo"><span>Munición</span>${item.municion.actual > 0 ? `<label class="tb-casilla"><input type="checkbox" data-gastar checked> Gastar 1 (${item.municion.actual} → ${item.municion.actual - 1} de ${item.municion.max})</label>` : `<div class="tb-tiradas-texto">Sin munición (0 / ${item.municion.max}).</div>`}</div>` : ""}
-      <label class="tb-campo" data-bloque-nombre hidden><span>Nombre de la tirada</span><input type="text" data-nombre></label>
+      <label class="tb-campo" data-bloque-nombre hidden><span>Nombre de la tirada (editable)</span><input type="text" data-nombre></label>
       <div class="tb-campo"><span>Tirada (editable)</span><select data-modo style="margin-bottom:calc(6px * var(--tb-k))"><option value="normal">Normal</option><option value="ventaja">Ventaja</option><option value="desventaja">Desventaja</option></select>
         <textarea rows="5" data-cmd spellcheck="false" style="font-family:Consolas,monospace;font-size:calc(13px * var(--tb-k))"></textarea>
-        <span class="tb-nota" style="font-weight:400">Cambia los dados o los bonos dentro de [[ ]]. Cada línea se manda como un mensaje.</span></div></div>`);
+        <span class="tb-nota" style="font-weight:400">Cambia los dados o los bonos dentro de [[ ]]. Cada línea se manda como un mensaje al chat.</span></div></div>`);
     const q = s => cuerpo.querySelector(s);
     const area = q("[data-cmd]"), selModo = q("[data-modo]"), campoNombre = q("[data-nombre]");
     let nombreActual = nombreBase;
