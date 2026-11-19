@@ -1426,6 +1426,7 @@
       <div class="tb-cfgpag-calc"><span class="tb-etq">Tamaño de celda</span><span class="tb-ud gris"><input type="number" value="1" disabled><i>celdas</i></span><b>×</b><span class="tb-ud gris"><input type="number" value="70" disabled><i>px</i></span><b>=</b><span class="tb-ud"><input type="number" min="10" max="400" data-tam><i>px/celda</i></span></div>
       <p class="tb-nota">Los mapas que sueltas en la capa del mapa se encajan dentro de este lienzo.</p>
       <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Fondo</h4>
+      <div class="tb-fila-toggle" style="border:0"><span>Fondo: detectar el color dominante<small class="tb-nota" style="display:block;font-weight:400">Toma el color que más se repite en el mapa para la página y, más oscuro, para el tablero de alrededor.</small></span><span data-t-fondoauto></span></div>
       <div class="tb-fila-toggle" style="border:0"><span>Color del tablero (fuera de la página)</span><input type="color" data-tablero></div>
       <div class="tb-fila-toggle" style="border:0"><span>Color de fondo de la página</span><input type="color" data-fondo></div>
       <div class="tb-campo"><span>Miniatura</span><div data-mini style="max-width:calc(220px * var(--tb-k))"></div></div>
@@ -1463,6 +1464,8 @@
     ["[data-anchopx]", "[data-altopx]"].forEach(s => q(s).addEventListener("change", () => recalcular("px")));
     recalcular();
     q("[data-tablero]").value = opc.colorTablero; q("[data-fondo]").value = e.fondo || "#ffffff";
+    const tFondoAuto = interruptor(opc.fondoAuto !== false);
+    q("[data-t-fondoauto]").appendChild(tFondoAuto.el);
     q("[data-mini]").appendChild(mini.el);
     q("[data-pies]").value = c.pies; q("[data-unidad]").value = c.unidad || "pies";
     const tVis = interruptor(c.visible !== false), tAj = interruptor(c.ajustar !== false), tPre = interruptor(c.preciso !== false);
@@ -1485,7 +1488,7 @@
         nombre: q("[data-nombre]").value.trim().slice(0, 80) || "Página", carpeta: q("[data-carpeta]").value.trim().slice(0, 60),
         ancho: Math.max(1, Math.min(500, parseInt(q("[data-ancho]").value, 10) || 40)), alto: Math.max(1, Math.min(500, parseInt(q("[data-alto]").value, 10) || 40)),
         fondo: q("[data-fondo]").value, miniatura,
-        opciones: Object.assign({}, opc, { colorTablero: q("[data-tablero]").value, audio: pista ? { src: pista.src, nombre: pista.nombre } : null, miniaturaManual: !!miniatura && miniatura !== e.miniatura ? true : !!opc.miniaturaManual && !!miniatura }),
+        opciones: Object.assign({}, opc, { fondoAuto: tFondoAuto.valor(), colorTablero: q("[data-tablero]").value, audio: pista ? { src: pista.src, nombre: pista.nombre } : null, miniaturaManual: !!miniatura && miniatura !== e.miniatura ? true : !!opc.miniaturaManual && !!miniatura }),
         cuadricula: { tam: Math.max(10, Math.min(400, parseInt(q("[data-tam]").value, 10) || 70)), pies: Math.max(0.1, parseFloat(q("[data-pies]").value) || 5), unidad: q("[data-unidad]").value,
           visible: tVis.valor(), ajustar: tAj.valor(), preciso: tPre.valor(), diagonal: q("[data-diag]").value,
           dx: parseInt(q("[data-dx]").value, 10) || 0, dy: parseInt(q("[data-dy]").value, 10) || 0,

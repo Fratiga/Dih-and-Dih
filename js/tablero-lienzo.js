@@ -670,6 +670,51 @@
       }
       return e.red[lado];
     }
+    /* Fondo con el color dominante del mapa (como «Detectar el color dominante» de Roll20): el color que más se repite
+       en la imagen más grande de la capa del mapa pinta la página, y el tablero de alrededor lleva ese color oscurecido */
+    const dominantes = new Map();
+    function colorDominante() {
+      const mapas = [...st.nodos.values()].filter(n => n.o.capa === "mapa" && n.o.tipo === "imagen" && (n.o.datos || {}).src)
+        .sort((a, b) => b.o.ancho * b.o.alto - a.o.ancho * a.o.alto);
+      for (const n of mapas) {
+        const src = n.o.datos.src, e = st.imgs.get(src);
+        if (!e || !e.listo) continue;
+        if (dominantes.has(src)) return dominantes.get(src);
+        try {
+          const cv = document.createElement("canvas"); cv.width = 32; cv.height = 32;
+          const cx = cv.getContext("2d", { willReadFrequently: true });
+          cx.drawImage(e.img, 0, 0, 32, 32);
+          const px = cx.getImageData(0, 0, 32, 32).data, cubos = new Map();
+          for (let i = 0; i < px.length; i += 4) {
+            if (px[i + 3] < 128) continue;
+            const k = (px[i] >> 4) << 8 | (px[i + 1] >> 4) << 4 | (px[i + 2] >> 4);
+            const c = cubos.get(k) || [0, 0, 0, 0];
+            c[0] += px[i]; c[1] += px[i + 1]; c[2] += px[i + 2]; c[3]++;
+            cubos.set(k, c);
+          }
+          let mejor = null;
+          cubos.forEach(c => { if (!mejor || c[3] > mejor[3]) mejor = c; });
+          const col = mejor ? [mejor[0] / mejor[3], mejor[1] / mejor[3], mejor[2] / mejor[3]].map(Math.round) : null;
+          dominantes.set(src, col);
+          return col;
+        } catch (err) { dominantes.set(src, null); return null; }   // imagen de otro sitio sin permiso para leerla
+      }
+      return null;
+    }
+    const aHex = c => "#" + c.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
+    let fondoPendiente = null;
+    function aplicarFondo() {
+      const escena = st.escena, opc = (escena && escena.opciones) || {};
+      let pag = (escena && escena.fondo) || "#ffffff", tablero = opc.colorTablero || "#3d4048";
+      if (escena && opc.fondoAuto !== false) {
+        const c = colorDominante();
+        if (c) { pag = aHex(c); tablero = aHex(c.map(v => v * 0.45 + 12)); }
+      }
+      pagina.fill(pag);
+      contenedor.style.background = tablero;
+      lMapa.batchDraw();
+    }
+    function programarFondo() { clearTimeout(fondoPendiente); fondoPendiente = setTimeout(aplicarFondo, 120); }
     function imagen(src, alListo) {
       if (!src) return null;
       let e = st.imgs.get(src);
@@ -731,7 +776,7 @@
         return g;
       }
       // imagen / ficha
-      const e = imagen(d.src, () => { if (st.nodos.get(o.id) === n) pintarCuerpo(n); });
+      const e = imagen(d.src, () => { if (st.nodos.get(o.id) === n) { pintarCuerpo(n); if (o.capa === "mapa") programarFondo(); } });
       if (!e || !e.listo) {
         return new Konva.Rect({ width: w, height: h, fill: e && e.error ? "#7a3434" : "rgba(120,120,120,.45)", cornerRadius: Math.min(w, h) / 2, stroke: "#888", strokeWidth: 1 });
       }
@@ -898,7 +943,7 @@
     function marcarLocal(id) { movLocal.set(id, performance.now()); }
     function upsert(o, remoto) {
       const n = st.nodos.get(o.id);
-      if (!n) { crearNodo(o); ordenarCapa(o.capa); lObj.batchDraw(); lMapa.batchDraw(); programarLuz(); return; }
+      if (!n) { crearNodo(o); ordenarCapa(o.capa); lObj.batchDraw(); lMapa.batchDraw(); programarLuz(); if (o.capa === "mapa") programarFondo(); return; }
       if (remoto && performance.now() - (movLocal.get(o.id) || -1e9) < 1500 && (o.x !== n.o.x || o.y !== n.o.y)) o = Object.assign({}, o, { x: n.o.x, y: n.o.y });
       if (n.arrastrando || n.transformando || n.animando) {
         // Mientras se arrastra solo se aceptan los datos, no la posición
@@ -928,6 +973,7 @@
       st.seleccion.delete(id);
       n.g.destroy(); n.deco.destroy(); n.aura.destroy();
       st.nodos.delete(id);
+      if (n.o.capa === "mapa") programarFondo();
       actualizarTransformer();
       programarLuz();
       lMapa.batchDraw(); lObj.batchDraw();
@@ -938,6 +984,7 @@
       lista.forEach(o => crearNodo(o));
       CAPAS.forEach(ordenarCapa);
       programarLuz();
+      programarFondo();
       lMapa.batchDraw(); lObj.batchDraw();
     }
 
@@ -1865,6 +1912,7 @@
         pagina.setAttrs({ width: m.w, height: m.h, fill: (escena && escena.fondo) || "#ffffff", visible: !!escena });
         paginaSombra.setAttrs({ width: m.w, height: m.h, visible: !!escena });
         contenedor.style.background = (escena && escena.opciones && escena.opciones.colorTablero) || "#3d4048";
+        programarFondo();
         lMapa.batchDraw();
         st.nodos.forEach(pintarDeco);
         redibujarVista();
@@ -1924,7 +1972,7 @@
         const c = document.createElement("canvas");
         c.width = Math.round(m.w * k); c.height = Math.round(m.h * k);
         const g = c.getContext("2d");
-        g.fillStyle = (st.escena && st.escena.fondo) || "#ffffff"; g.fillRect(0, 0, c.width, c.height);
+        g.fillStyle = pagina.fill() || "#ffffff"; g.fillRect(0, 0, c.width, c.height);
         const vista = { x: stage.x(), y: stage.y(), s: stage.scaleX() };
         stage.setAttrs({ x: 0, y: 0, scaleX: 1, scaleY: 1 });
         try {
