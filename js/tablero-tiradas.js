@@ -24,9 +24,12 @@
     fichas = await cargando;
     return fichas;
   }
-  // Las estadísticas del compendio de una ficha del tablero (por su nombre, sin el número de «Enumerar»)
+  // Las estadísticas de una ficha del tablero: las suyas propias (datos.estadisticas, en el mismo formato que
+  // data/stats.js) o, si no tiene, las del compendio que se llamen como ella (sin el número de «Enumerar»)
   function estadisticasDe(o) {
     if (!o || o.tipo !== "imagen") return null;
+    const propias = o.datos && o.datos.estadisticas;
+    if (propias && propias.stats) return Object.assign({ id: "obj:" + o.id, nombre: o.datos.nombre || "Sin nombre" }, propias);
     const n = norm(o.datos && o.datos.nombre);
     return n ? (window.STATS || []).find(s => norm(s.nombre) === n) || null : null;
   }
@@ -178,17 +181,24 @@
   }
 
   function pintarEnemigos(cuerpo) {
-    const lista = listaEnemigos();
+    // Las fichas de la página con estadísticas propias van como enemigos sueltos, uno por ficha
+    const propias = new Map();
+    TB.L.objetos().forEach(o => {
+      if (o.tipo !== "imagen" || !(o.datos && o.datos.estadisticas && o.datos.estadisticas.stats)) return;
+      try { propias.set(o.id, statsR20Enemigo(estadisticasEfectivas(o))); } catch (e) { /* estadísticas mal formadas: se ignoran */ }
+    });
+    const lista = listaEnemigos().concat([...propias.values()]);
     if (!lista.length) { cuerpo.appendChild(el(`<p class="tb-lista-vacia">No hay estadísticas de enemigos cargadas.</p>`)); return; }
-    // Los de esta página: fichas cuyo nombre coincide con unas estadísticas del compendio (sin el número de «Enumerar»)
-    const porNombre = new Map(lista.map(e => [norm(e.nombre), e]));
+    // Los de esta página: los que tienen estadísticas propias y los que se llaman como unas del compendio (sin el número de «Enumerar»)
+    const porNombre = new Map(listaEnemigos().map(e => [norm(e.nombre), e]));
+    const entradaDe = o => o && o.tipo === "imagen" ? (propias.get(o.id) || porNombre.get(norm(o.datos && o.datos.nombre)) || null) : null;
     const enPagina = [];
-    TB.L.objetos().forEach(o => { if (o.tipo !== "imagen") return; const e = porNombre.get(norm(o.datos && o.datos.nombre)); if (e && !enPagina.includes(e)) enPagina.push(e); });
-    const seleccionado = TB.L.seleccion().map(id => TB.L.objeto(id)).map(o => o && porNombre.get(norm(o.datos && o.datos.nombre))).find(Boolean);
+    TB.L.objetos().forEach(o => { const e = entradaDe(o); if (e && !enPagina.includes(e)) enPagina.push(e); });
+    const seleccionado = TB.L.seleccion().map(id => TB.L.objeto(id)).map(entradaDe).find(Boolean);
     let actual = seleccionado || lista.find(e => e.id === est.enemigo) || enPagina[0] || null;
     if (actual) est.enemigo = actual.id;
     // La ficha seleccionada tiene las estadísticas cambiadas (la Grieta): las tiradas se rehacen con ellas
-    const selObj = TB.L.seleccion().map(id => TB.L.objeto(id)).find(o => o && o.datos && o.datos.grieta && estadisticasDe(o));
+    const selObj = TB.L.seleccion().map(id => TB.L.objeto(id)).find(o => o && o.datos && o.datos.grieta && !o.datos.estadisticas && estadisticasDe(o));
     let alterado = false;
     if (selObj && actual && estadisticasDe(selObj).id === actual.id) {
       try { actual = statsR20Enemigo(estadisticasEfectivas(selObj)); alterado = true; } catch (e) { /* se quedan las del compendio */ }

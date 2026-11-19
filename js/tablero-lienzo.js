@@ -832,19 +832,20 @@
       // Barras
       const compacto = d.barraEstilo === "compacto";
       const hb = altoBarra(o), sb = sepBarra(o), w = Math.max(o.ancho, 30);
-      const barras = disfrazado ? [] : (d.barras || []).map((b, i) => ({ b, i })).filter(({ b }) => b && Number(b.max) > 0 && (st.esGM || controla(o) || b.ver));
+      const barras = disfrazado ? [] : (d.barras || []).map((b, i) => ({ b, i })).filter(({ b }) => b && parseFloat(b.max) > 0 && (st.esGM || controla(o) || b.ver));
       const debajo = d.barraPos === "debajo";
       barras.forEach(({ b, i }, k) => {
         const y = debajo ? o.alto / 2 + 3 + k * (hb + sb) : -o.alto / 2 - 3 - (barras.length - k) * (hb + sb);
-        const frac = Math.max(0, Math.min(1, Number(b.valor) / Number(b.max)));
+        const frac = Math.max(0, Math.min(1, (parseFloat(b.valor) || 0) / parseFloat(b.max)));
         n.deco.add(new Konva.Rect({ x: -w / 2, y, width: w, height: hb, fill: "#d6d6d6", cornerRadius: hb / 2 }));
         if (frac > 0) n.deco.add(new Konva.Rect({ x: -w / 2, y, width: Math.max(hb, w * frac), height: hb, fill: COLORES_BARRA[i], cornerRadius: hb / 2 }));
         const verTexto = !compacto && ((b.texto || "editores") === "todos" || ((b.texto || "editores") === "editores" && (st.esGM || controla(o))));
-        if (verTexto) {
-          const fs = hb * 0.74, comun = { fontSize: fs, fontFamily: "Arial, Helvetica, sans-serif", fontStyle: "bold", fill: "#fff", stroke: "#000", strokeWidth: fs * 0.2, lineJoin: "round", fillAfterStrokeEnabled: true, y: y + (hb - fs) / 2 + fs * 0.06 };
-          n.deco.add(new Konva.Text(Object.assign({ x: -w / 2, width: w, align: "center", text: `${b.valor}/${b.max}` }, comun)));
-          // Por encima del máximo, un «+» al final de la barra
-          if (Number(b.valor) > Number(b.max)) n.deco.add(new Konva.Text(Object.assign({ x: w / 2 - hb * 0.95, text: "+" }, comun)));
+        const fs = hb * 0.74, comun = { fontSize: fs, fontFamily: "Arial, Helvetica, sans-serif", fontStyle: "bold", fill: "#fff", stroke: "#000", strokeWidth: fs * 0.2, lineJoin: "round", fillAfterStrokeEnabled: true, y: y + (hb - fs) / 2 + fs * 0.06 };
+        if (verTexto) n.deco.add(new Konva.Text(Object.assign({ x: -w / 2, width: w, align: "center", text: `${b.valor}/${b.max}` }, comun)));
+        // Por encima del máximo, un «+» al final de la barra; por debajo de cero, un «−». Se ven aunque el número esté oculto.
+        if (!compacto && b.valor !== "" && b.valor != null) {
+          const signo = parseFloat(b.valor) > parseFloat(b.max) ? "+" : parseFloat(b.valor) < 0 ? "−" : "";
+          if (signo) n.deco.add(new Konva.Text(Object.assign({ x: w / 2 - hb * 0.95, text: signo }, comun)));
         }
       });
       if (o.tipo === "pin" && d.titulo) {
@@ -1008,7 +1009,7 @@
       if (!n || st.herr !== "seleccionar" || n.o.tipo !== "imagen" || n.o.capa === "luz" || !(st.esGM || controla(n.o))) { lUI.batchDraw(); return; }
       const o = n.o, z = zoom(), k = 1 / z, d = o.datos || {};
       const barras = [0, 1, 2].map(i => Object.assign({ valor: "", max: "" }, (d.barras || [])[i]));
-      const nb = (d.barras || []).filter(b => b && Number(b.max) > 0 && (st.esGM || controla(o) || b.ver)).length;
+      const nb = (d.barras || []).filter(b => b && parseFloat(b.max) > 0 && (st.esGM || controla(o) || b.ver)).length;
       const hb = altoBarra(o) + sepBarra(o);
       const ocupaArriba = d.barraPos === "debajo" ? 0 : nb * hb;
       const yArriba = o.y - o.alto / 2 - ocupaArriba - 62 * k;
