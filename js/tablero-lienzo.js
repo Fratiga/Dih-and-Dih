@@ -708,7 +708,8 @@
       let pag = (escena && escena.fondo) || "#ffffff", tablero = opc.colorTablero || "#3d4048";
       if (escena && opc.fondoAuto !== false) {
         const c = colorDominante();
-        if (c) { pag = aHex(c); tablero = aHex(c.map(v => v * 0.45 + 12)); }
+        // como Roll20: el tablero lleva el color dominante tal cual, con un degradado muy suave de arriba abajo
+        if (c) { pag = aHex(c); tablero = `linear-gradient(${aHex(c.map(v => v * 1.03 + 1))}, ${aHex(c.map(v => v * 0.94))})`; }
       }
       pagina.fill(pag);
       contenedor.style.background = tablero;
