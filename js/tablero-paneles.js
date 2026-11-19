@@ -807,9 +807,16 @@
         <div class="tb-campo"><span>Color de tinte</span><span class="tb-fila"><input type="color" data-tinte><label class="tb-casilla"><input type="checkbox" data-sintinte> Sin tinte</label></span></div>` : ""}
     </div>`);
     const derecha = el(`<div><h3 style="margin:calc(4px * var(--tb-k)) 0 calc(14px * var(--tb-k));font-size:calc(19px * var(--tb-k))">Barras De Ficha</h3></div>`);
-    // Aviso (solo el DJ): la vida o la CA de las barras no coinciden con la hoja del compendio o con las estadísticas
-    const distintos = gm && !plantilla ? valoresDistintos(o, barras) : [];
-    if (distintos.length) derecha.appendChild(el(`<div class="tb-aviso-valores"><b>No coinciden con ${esc(distintos.origen)}:</b> ${distintos.map(x => esc(x)).join(" · ")}</div>`));
+    // Aviso (el DJ y el jugador de la ficha): la vida o la CA de las barras no coinciden con la hoja del compendio o con las estadísticas
+    const pintarAviso = () => {
+      const viejo = derecha.querySelector(".tb-aviso-valores");
+      if (viejo) viejo.remove();
+      const distintos = plantilla ? [] : valoresDistintos(o, barras);
+      if (distintos.length) derecha.querySelector("h3").after(el(`<div class="tb-aviso-valores"><b>No coinciden con ${esc(distintos.origen)}:</b> ${distintos.map(x => esc(x)).join(" · ")}</div>`));
+    };
+    pintarAviso();
+    // El jugador solo tiene su propia hoja: se vuelve a leer al abrir, por si cambió
+    if (!gm && !plantilla) TB.red.fichas().then(l => { TB.fichas = l || []; if (derecha.isConnected) pintarAviso(); }).catch(() => {});
     barras.forEach((b, i) => {
       const puede = gm || b.editar;
       const fila = el(`<div class="tb-barra-cfg">

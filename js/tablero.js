@@ -96,6 +96,9 @@
       setInterval(() => { if (!document.hidden) refrescarPV(); }, 30000);
       document.addEventListener("visibilitychange", () => { if (!document.hidden) refrescarPV(); });
       TB.on("escena", () => sincronizarPV());
+    } else {
+      // El jugador lee solo sus hojas (lo demás lo filtra el servidor): nombre en la barra enlazada y avisos de valores distintos
+      TB.red.fichas().then(f => { TB.fichas = f || []; }).catch(() => {});
     }
 
     TB.L = TBLienzo.crear(document.getElementById("tbLienzo"), callbacksLienzo());
