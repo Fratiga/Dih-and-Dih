@@ -934,6 +934,13 @@ create table if not exists tablero_perfil (
   avatar text not null default '' check (avatar = '' or (avatar ~ '^https://' and char_length(avatar) <= 1000)),
   actualizado timestamptz not null default now()
 );
+-- Los avisos en tiempo real llevan la fila entera: sin esto, una columna grande que no cambió (las listas de la
+-- gramola, los datos de una ficha, el contenido del diario) llega vacía y el tablero la daba por borrada.
+alter table tablero_estado replica identity full;
+alter table tablero_objetos replica identity full;
+alter table tablero_escenas replica identity full;
+alter table tablero_diario replica identity full;
+
 -- El color con el que se ve a cada uno (pings, reglas, cursor, avatar sin imagen). Vacío: uno sacado de su id.
 alter table tablero_perfil add column if not exists color text not null default '' check (color = '' or color ~ '^#[0-9a-fA-F]{6}$');
 -- El nombre que sale debajo de su avatar en la barra de jugadores. Vacío: «DJ», su personaje o su usuario.

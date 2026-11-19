@@ -268,7 +268,12 @@
   const movRemotos = new Map();
   function escucharRed() {
     const r = TB.red;
-    r.on("objeto", o => {
+    /* Los avisos de cambios del servidor pueden llegar sin las columnas grandes que no cambiaron (las listas de la
+       gramola, los datos de una ficha, el contenido del diario...). Nunca se reemplaza lo que hay: se mezcla, y lo que
+       no viene en el aviso se queda como estaba. Antes, una fila incompleta vació las listas y el orden de turno. */
+    const mezclar = (antes, nuevo) => (antes ? Object.assign({}, antes, nuevo) : nuevo);
+    r.on("objeto", o0 => {
+      const o = mezclar(TB.L.objeto(o0.id), o0);
       // Lo que movió otro (un jugador): cuando el servidor lo confirma, se avisa (la Grieta lo usa)
       const pm = movRemotos.get(o.id);
       if (pm && o.escena === TB.escenaId && Math.abs(o.x - pm.hasta.x) < 0.6 && Math.abs(o.y - pm.hasta.y) < 0.6) {
@@ -281,8 +286,8 @@
     r.on("objetoBorrado", id => TB.L.quitar(id));
     r.on("escena", e => {
       if (!TB.yo.esGM && e.id !== TB.escenaId) return;
-      TB.escenas.set(e.id, e);
-      if (e.id === TB.escenaId) { TB.L.setEscena(e); TB.lanzar("escenaActual", e); }
+      TB.escenas.set(e.id, mezclar(TB.escenas.get(e.id), e));
+      if (e.id === TB.escenaId) { TB.L.setEscena(TB.escenas.get(e.id)); TB.lanzar("escenaActual", TB.escenas.get(e.id)); }
       TB.lanzar("escenas");
     });
     r.on("escenaBorrada", id => {
@@ -290,8 +295,9 @@
       if (id === TB.escenaId && TB.yo.esGM) cargarEscena(TB.estado.escena_jugadores || [...TB.escenas.keys()][0]);
       TB.lanzar("escenas");
     });
-    r.on("estado", s => {
+    r.on("estado", s0 => {
       const antes = TB.estado || {};
+      const s = mezclar(antes, s0);
       TB.estado = s;
       if (!TB.yo.esGM && s.escena_jugadores !== TB.escenaId) { guardarCamara(); cargarEscena(s.escena_jugadores); }
       actualizarTurno();
@@ -310,7 +316,7 @@
       TB.lanzar("mensaje", m);
     });
     r.on("mensajeBorrado", id => { TB.mensajes = TB.mensajes.filter(m => m.id !== id); TB.lanzar("mensajes"); });
-    r.on("diario", e => { TB.diario.set(e.id, e); TB.lanzar("diario"); });
+    r.on("diario", e => { TB.diario.set(e.id, mezclar(TB.diario.get(e.id), e)); TB.lanzar("diario"); });
     r.on("diarioBorrado", id => { TB.diario.delete(id); TB.lanzar("diario"); });
     r.on("mov", d => {
       if (!d || d.escena !== TB.escenaId) return;
