@@ -756,7 +756,7 @@
   TB.pegar = async p => {
     if (!portapapeles.length || !TB.yo.esGM) return;
     const cx = portapapeles.reduce((s, o) => s + o.x, 0) / portapapeles.length, cy = portapapeles.reduce((s, o) => s + o.y, 0) / portapapeles.length;
-    const creadas = await TB.crearObjetos(portapapeles.map(o => { const c = Object.assign({}, o); delete c.id; delete c.actualizado; return Object.assign(c, TB.L.ajustarPos(c, p.x + o.x - cx, p.y + o.y - cy)); }));
+    const creadas = await TB.crearObjetos(portapapeles.map(o => { const c = Object.assign({}, o); delete c.id; delete c.actualizado; delete c.creado; delete c.autor; delete c.escena; /* se pega en la página que se está viendo, no en la de origen */ return Object.assign(c, TB.L.ajustarPos(c, p.x + o.x - cx, p.y + o.y - cy)); }));
     TB.L.seleccionar(creadas.map(o => o.id));
   };
   function enCampo(e) { const t = e.target; return t && t.closest && t.closest("input, textarea, select, [contenteditable=true]"); }
