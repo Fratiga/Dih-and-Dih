@@ -601,6 +601,8 @@
       const t = tam(), d0 = desp();
       return { x: Math.floor((p.x - d0.x) / t) * t + t / 2 + d0.x, y: Math.floor((p.y - d0.y) / t) * t + t / 2 + d0.y };
     }
+    // Fuera la guía de un efecto (también la que ven los demás): el efecto se ve solo, sin las medidas
+    function quitarGuiaFx() { guiaMedida.destroyChildren(); lUI.batchDraw(); if (op.onRegla) op.onRegla(null); }
     function previaFx(a, p) {
       const fp = st.opc.fxPrevia || {};
       if (fp.mostrar === false) return;
@@ -837,7 +839,7 @@
       barras.forEach(({ b, i }, k) => {
         const y = debajo ? o.alto / 2 + 3 + k * (hb + sb) : -o.alto / 2 - 3 - (barras.length - k) * (hb + sb);
         const frac = Math.max(0, Math.min(1, (parseFloat(b.valor) || 0) / parseFloat(b.max)));
-        n.deco.add(new Konva.Rect({ x: -w / 2, y, width: w, height: hb, fill: "#d6d6d6", cornerRadius: hb / 2 }));
+        n.deco.add(new Konva.Rect({ x: -w / 2, y, width: w, height: hb, fill: "rgba(0,0,0,.2)", cornerRadius: hb / 2 }));
         if (frac > 0) n.deco.add(new Konva.Rect({ x: -w / 2, y, width: Math.max(hb, w * frac), height: hb, fill: COLORES_BARRA[i], cornerRadius: hb / 2 }));
         const verTexto = !compacto && ((b.texto || "editores") === "todos" || ((b.texto || "editores") === "editores" && (st.esGM || controla(o))));
         const fs = hb * 0.74, comun = { fontSize: fs, fontFamily: "Arial, Helvetica, sans-serif", fontStyle: "bold", fill: "#fff", stroke: "#000", strokeWidth: fs * 0.2, lineJoin: "round", fillAfterStrokeEnabled: true, y: y + (hb - fs) / 2 + fs * 0.06 };
@@ -1624,7 +1626,7 @@
       if (st.herr === "fx") {
         const a = centroFx(p);
         gesto = { tipo: "fx", inicio: a };
-        if ((st.opc.fxPrevia || {}).modo === "mantener") { gesto.mantener = true; previaFx(a, a); if (op.onFxMantener) op.onFxMantener(a); }
+        if ((st.opc.fxPrevia || {}).modo === "mantener") { gesto.mantener = true; quitarGuiaFx(); if (op.onFxMantener) op.onFxMantener(a); }
         return;
       }
       if (st.herr === "niebla") {
@@ -1688,7 +1690,7 @@
       }
       if (gesto.tipo === "fx") {
         // Mantener: el efecto sigue al ratón mientras el botón está pulsado
-        if (gesto.mantener) { if (op.onFxMover) op.onFxMover(p); if ((st.opc.fxPrevia || {}).mostrar !== false) previaFx(p, p); return; }
+        if (gesto.mantener) { if (op.onFxMover) op.onFxMover(p); return; }
         const fin = (st.opc.fxPrevia || {}).modo === "apuntar" ? centroFx(p) : p;
         if (op.onFxPrevia) op.onFxPrevia(gesto.inicio, fin);
         gesto.fin = fin;
@@ -1777,16 +1779,14 @@
         const fp = st.opc.fxPrevia || {}, fin = g.fin || (fp.modo === "apuntar" ? centroFx(p) : p);
         if (g.mantener) {
           if (op.onFxFin) op.onFxFin();
-          if (!st.opc.persistente) { guiaMedida.destroyChildren(); lUI.batchDraw(); if (op.onRegla) op.onRegla(null); }
+          quitarGuiaFx();
           return;
         }
         const L = Math.hypot(fin.x - g.inicio.x, fin.y - g.inicio.y);
         // En los efectos de área, arrastrar marca el radio; un clic usa el tamaño del panel
         const radio = fp.modo !== "apuntar" && L * zoom() > 8 ? radioArrastrado(L) : null;
-        if (fp.modo !== "apuntar" && !radio) previaFx(g.inicio, g.inicio);
+        quitarGuiaFx();
         if (op.onFx) op.onFx(g.inicio, fin, { radio });
-        // El área se queda un momento mientras dura el efecto (o fija, si la medida es persistente)
-        if (!st.opc.persistente) setTimeout(() => { if (gesto && gesto.tipo === "fx") return; guiaMedida.destroyChildren(); lUI.batchDraw(); if (op.onRegla) op.onRegla(null); }, 1600);
         return;
       }
       if (g.tipo === "niebla") {
