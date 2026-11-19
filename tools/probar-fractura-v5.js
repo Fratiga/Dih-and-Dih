@@ -229,5 +229,29 @@ const rico = jug => Object.keys(jug.recursos).forEach(k => { jug.recursos[k] = 9
   ok(dM >= dV + 2, `el mago no pega más a Osses (${dM} contra ${dV})`);
 }
 
+// --- Levas: dos barcos en el mismo turno ---
+{
+  const est = guerra(["pelgiria", "hijos-del-acero"], { forma: "archipielago" });
+  limpiar(est); est.activo = 0;
+  const jug = est.jugadores[0]; rico(jug);
+  const ci = Object.values(est.ciudades).find(c => FM.aguasLibres(est, c).length >= 2);
+  if (ci) ci.dueno = 0;
+  ok(!!ci, "no hay ciudad con agua para la prueba de barcos");
+  if (ci) {
+    ["muelle", "astillero"].forEach(e => { if (!ci.edificios.includes(e)) ci.edificios.push(e); });
+    ok(FM.aplicar(est, { t: "obra", ciudad: ci.id, id: "levas" }).ok, "no se pueden encargar Levas");
+    const barcos = () => Object.values(est.unidades).filter(u => u.dueno === 0 && FM.esBarco(u)).length, antes = barcos();
+    const a1 = FM.aguasLibres(est, ci)[0];
+    const r1 = FM.aplicar(est, { t: "reclutar", ciudad: ci.id, clase: "brulote", x: a1.x, y: a1.y });
+    const a2 = FM.aguasLibres(est, ci)[0];
+    const r2 = FM.aplicar(est, { t: "reclutar", ciudad: ci.id, clase: "brulote", x: a2.x, y: a2.y });
+    ok(r1.ok && r2.ok, `con Levas no salen dos barcos: ${r1.error || ""} ${r2.error || ""}`);
+    ok(barcos() === antes + 2, "con Levas no hay dos barcos nuevos");
+    ok(a1.x !== a2.x || a1.y !== a2.y, "los dos barcos salen en la misma casilla");
+    const r3 = FM.aplicar(est, { t: "reclutar", ciudad: ci.id, clase: "brulote" });
+    ok(!r3.ok, "con Levas sale un tercer barco");
+  }
+}
+
 console.log(`${hechas} comprobaciones, ${fallos} fallos`);
 process.exit(fallos ? 1 : 0);

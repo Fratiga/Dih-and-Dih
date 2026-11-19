@@ -1788,6 +1788,8 @@
           b.pm = 0; b.atacado = true;
           est.ev.push({ k: "nuevo", uid: b.uid, x: b.x, y: b.y });
           ciudad.reclutado = true;
+          // Levas: la ciudad puede entrenar otra tropa este turno, también si la primera fue un barco
+          if (ciudad.levasT === est.turno && !ciudad.leva2) { ciudad.leva2 = true; ciudad.reclutado = false; }
           reg(est, `${jug.nombre} bota ${nombre}, ${D.CLASES[acc.clase].nombre.toLowerCase()}, en ${ciudad.nombre}.`, "recluta");
           actualizarVision(est, j);
           return { ok: true, ev: est.ev, uid: b.uid };
