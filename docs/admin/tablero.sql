@@ -736,6 +736,15 @@ begin
   if p_datos ? 'verNombre' then d := jsonb_set(d, '{verNombre}', to_jsonb(p_datos -> 'verNombre' = 'true'::jsonb)); end if;
   if p_datos ->> 'barraPos' in ('encima', 'debajo') then d := jsonb_set(d, '{barraPos}', p_datos -> 'barraPos'); end if;
   if p_datos ->> 'barraEstilo' in ('estandar', 'compacto') then d := jsonb_set(d, '{barraEstilo}', p_datos -> 'barraEstilo'); end if;
+  -- Transformación avanzada: giros, ajuste a la cuadrícula, menús de la ficha y grupo
+  if jsonb_typeof(p_datos -> 'voltearH') = 'boolean' then d := jsonb_set(d, '{voltearH}', p_datos -> 'voltearH'); end if;
+  if jsonb_typeof(p_datos -> 'voltearV') = 'boolean' then d := jsonb_set(d, '{voltearV}', p_datos -> 'voltearV'); end if;
+  if jsonb_typeof(p_datos -> 'sinAjuste') = 'boolean' then d := jsonb_set(d, '{sinAjuste}', p_datos -> 'sinAjuste'); end if;
+  if jsonb_typeof(p_datos -> 'sinMenu') = 'boolean' then d := jsonb_set(d, '{sinMenu}', p_datos -> 'sinMenu'); end if;
+  if p_datos ? 'grupo' then
+    if jsonb_typeof(p_datos -> 'grupo') = 'string' and char_length(p_datos ->> 'grupo') between 1 and 40 then d := jsonb_set(d, '{grupo}', p_datos -> 'grupo');
+    else d := d - 'grupo'; end if;
+  end if;
   if jsonb_typeof(p_datos -> 'auras') = 'array' then
     for a in select x from jsonb_array_elements(p_datos -> 'auras') x limit 2 loop
       auras := auras || jsonb_build_array(jsonb_build_object(
@@ -747,7 +756,11 @@ begin
     end loop;
     d := jsonb_set(d, '{auras}', auras);
   end if;
-  update tablero_objetos set datos = d, actualizado = now() where id = p_objeto;
+  -- Dimensiones: entre 10 y 1400 píxeles por lado (20 casillas de 70)
+  update tablero_objetos set datos = d,
+    ancho = case when jsonb_typeof(p_datos -> 'ancho') = 'number' then greatest(10, least(1400, (p_datos ->> 'ancho')::double precision)) else ancho end,
+    alto = case when jsonb_typeof(p_datos -> 'alto') = 'number' then greatest(10, least(1400, (p_datos ->> 'alto')::double precision)) else alto end,
+    actualizado = now() where id = p_objeto;
 end;
 $$;
 revoke all on function tablero_ajustar_propio(uuid, jsonb) from public, anon;
@@ -921,6 +934,8 @@ create table if not exists tablero_perfil (
   avatar text not null default '' check (avatar = '' or (avatar ~ '^https://' and char_length(avatar) <= 1000)),
   actualizado timestamptz not null default now()
 );
+-- El color con el que se ve a cada uno (pings, reglas, cursor, avatar sin imagen). Vacío: uno sacado de su id.
+alter table tablero_perfil add column if not exists color text not null default '' check (color = '' or color ~ '^#[0-9a-fA-F]{6}$');
 create table if not exists tablero_gifs (
   id uuid primary key default gen_random_uuid(),
   owner uuid not null default auth.uid() references auth.users (id) on delete cascade,

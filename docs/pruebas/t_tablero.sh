@@ -56,6 +56,11 @@ echo "== El jugador ajusta su ficha"
 como "$U1" "select tablero_ajustar_propio('$F1', '{\"nombre\": \"Laia la Rápida\", \"verNombre\": true, \"barraPos\": \"debajo\", \"auras\": [{\"radio\": 999, \"color\": \"red\", \"forma\": \"cuadrado\"}], \"cambiaformas\": true, \"vision\": {\"oscuridad\": 999}, \"src\": \"https://malo.com/x.png\"}');" >/dev/null
 comprobar "cambia nombre, barras y auras (con límites) y nada más" "Laia la Rápida|true|debajo|120|#ffff99|cuadrado|||" "$(sql "select (datos ->> 'nombre') || '|' || (datos ->> 'verNombre') || '|' || (datos ->> 'barraPos') || '|' || (datos -> 'auras' -> 0 ->> 'radio') || '|' || (datos -> 'auras' -> 0 ->> 'color') || '|' || (datos -> 'auras' -> 0 ->> 'forma') || '|' || coalesce(datos ->> 'cambiaformas', '') || '|' || coalesce(datos -> 'vision' ->> 'oscuridad', '') || '|' || case when datos ->> 'src' = 'https://malo.com/x.png' then 'malo' else '' end from tablero_objetos where id = '$F1'")"
 contiene "no ajusta la ficha de otro" "$(como "$U2" "select tablero_ajustar_propio('$F1', '{\"nombre\": \"X\"}');")" "no es tuya"
+como "$U1" "select tablero_ajustar_propio('$F1', '{\"voltearH\": true, \"sinAjuste\": true, \"sinMenu\": true, \"grupo\": \"g1\", \"ancho\": 99999, \"alto\": 2}');" >/dev/null
+comprobar "transformación avanzada: giros, ajuste, menús, grupo y dimensiones con tope" "true|true|true|g1|1400|10" "$(sql "select (datos ->> 'voltearH') || '|' || (datos ->> 'sinAjuste') || '|' || (datos ->> 'sinMenu') || '|' || (datos ->> 'grupo') || '|' || ancho || '|' || alto from tablero_objetos where id = '$F1'")"
+como "$U1" "select tablero_ajustar_propio('$F1', '{\"grupo\": null, \"voltearH\": \"sí\", \"ancho\": 70, \"alto\": 70}');" >/dev/null
+comprobar "desagrupa y no acepta un giro que no sea sí o no" "|true|70" "$(sql "select coalesce(datos ->> 'grupo', '') || '|' || (datos ->> 'voltearH') || '|' || ancho from tablero_objetos where id = '$F1'")"
+sql "update tablero_objetos set datos = datos - 'voltearH' - 'sinAjuste' - 'sinMenu' where id = '$F1'" >/dev/null
 sql "update tablero_objetos set datos = (datos || '{\"nombre\": \"Laia\"}') - 'auras' - 'verNombre' - 'barraPos' where id = '$F1'" >/dev/null
 
 echo "== Imágenes propias en el tablero"
@@ -260,6 +265,9 @@ comprobar "cada uno pone su avatar y lo ven los demás" "https://ejemplo.com/yo.
 como "$U2" "update tablero_perfil set avatar = 'https://malo.com/x.png' where uid = '$U1';" >/dev/null
 comprobar "nadie cambia el avatar de otro" "https://ejemplo.com/yo.png" "$(sql "select avatar from tablero_perfil where uid = '$U1'")"
 contiene "el avatar tiene que ser un enlace https" "$(como "$U2" "insert into tablero_perfil (avatar) values ('javascript:alert(1)');")" "check"
+como "$U1" "update tablero_perfil set color = '#12ab34' where uid = '$U1';" >/dev/null
+comprobar "cada uno elige su color y lo ven los demás" "#12ab34" "$(uno "$U2" "select color from tablero_perfil where uid = '$U1';")"
+contiene "el color tiene que ser #rrggbb" "$(como "$U1" "update tablero_perfil set color = 'red; x' where uid = '$U1';")" "check"
 como "$U1" "select tablero_decir('hola', 'todos', null, null);" >/dev/null
 comprobar "el chat usa el avatar de quien escribe" "https://ejemplo.com/yo.png" "$(sql "select avatar from tablero_mensajes order by id desc limit 1")"
 como "$U1" "insert into tablero_gifs (url, nombre) values ('https://media.tenor.com/a.gif', 'gato');" >/dev/null

@@ -171,7 +171,15 @@
         if (error) throw error;
         return `${window.FICHAS_SUPABASE_URL}/storage/v1/object/public/tablero/${ruta}`;
       },
-      async perfil() { const d = ok(await sb.from("tablero_perfil").select("avatar").eq("uid", yo.uid).maybeSingle()); return { avatar: (d && d.avatar) || "" }; },
+      async perfil() {
+        // Con color si tablero.sql ya lo tiene; si no, solo el avatar
+        let r = await sb.from("tablero_perfil").select("avatar, color").eq("uid", yo.uid).maybeSingle();
+        if (r.error) r = await sb.from("tablero_perfil").select("avatar").eq("uid", yo.uid).maybeSingle();
+        const d = ok(r);
+        return { avatar: (d && d.avatar) || "", color: (d && d.color) || "" };
+      },
+      // El color que eligió cada uno (los que no eligieron, no salen)
+      async colores() { const { data, error } = await sb.from("tablero_perfil").select("uid, color").neq("color", ""); return error ? [] : (data || []); },
       async guardarPerfil(c) { ok(await sb.from("tablero_perfil").upsert(Object.assign({ uid: yo.uid, actualizado: ahora() }, c))); },
       async gifs() { return ok(await sb.from("tablero_gifs").select("id, url, nombre").order("creado", { ascending: false })) || []; },
       async agregarGif(g) { return ok(await sb.from("tablero_gifs").insert({ url: g.url, nombre: (g.nombre || "").slice(0, 60) }).select("id, url, nombre").single()); },
@@ -444,7 +452,8 @@
         msg({ nombre: c.nombre, avatar: c.avatar, tirada: t, modo: modo || "todos" });
         return modo === "secreta" && !yo.esGM ? { secreta: true } : t;
       },
-      async perfil() { return { avatar: perfilLocal().avatar || "" }; },
+      async perfil() { return { avatar: perfilLocal().avatar || "", color: perfilLocal().color || "" }; },
+      async colores() { const c = perfilLocal().color; return c ? [{ uid: yo.uid, color: c }] : []; },
       async guardarPerfil(c) { localStorage.setItem("tbPerfilLocal:" + yo.uid, JSON.stringify(Object.assign(perfilLocal(), c))); },
       async gifs() { try { return JSON.parse(localStorage.getItem("tbGifsLocal:" + yo.uid) || "[]"); } catch (e) { return []; } },
       async agregarGif(g) { const l = await this.gifs(); const n = { id: uuid(), url: g.url, nombre: g.nombre || "" }; l.unshift(n); localStorage.setItem("tbGifsLocal:" + yo.uid, JSON.stringify(l.slice(0, 300))); return n; },
@@ -484,9 +493,18 @@
       async ajustarPropio(objeto, datos) {
         const o = d.objetos.find(q => q.id === objeto);
         if (!o || !(yo.esGM || controla(o))) throw new Error("Esa ficha no es tuya.");
-        const limpio = { nombre: String(datos.nombre || "").slice(0, 60), verNombre: !!datos.verNombre, barraPos: datos.barraPos === "debajo" ? "debajo" : "encima",
-          barraEstilo: datos.barraEstilo === "compacto" ? "compacto" : "estandar", auras: (datos.auras || []).slice(0, 2) };
-        o.datos = Object.assign({}, o.datos, limpio); guardar(); publicar("objeto", o);
+        const limpio = {};
+        if ("nombre" in datos) limpio.nombre = String(datos.nombre || "").slice(0, 60);
+        if ("verNombre" in datos) limpio.verNombre = !!datos.verNombre;
+        if ("barraPos" in datos) limpio.barraPos = datos.barraPos === "debajo" ? "debajo" : "encima";
+        if ("barraEstilo" in datos) limpio.barraEstilo = datos.barraEstilo === "compacto" ? "compacto" : "estandar";
+        if ("auras" in datos) limpio.auras = (datos.auras || []).slice(0, 2);
+        ["voltearH", "voltearV", "sinAjuste", "sinMenu"].forEach(k => { if (typeof datos[k] === "boolean") limpio[k] = datos[k]; });
+        o.datos = Object.assign({}, o.datos, limpio);
+        if ("grupo" in datos) { if (typeof datos.grupo === "string" && datos.grupo) o.datos.grupo = datos.grupo.slice(0, 40); else delete o.datos.grupo; }
+        if (typeof datos.ancho === "number") o.ancho = Math.max(10, Math.min(1400, datos.ancho));
+        if (typeof datos.alto === "number") o.alto = Math.max(10, Math.min(1400, datos.alto));
+        guardar(); publicar("objeto", o);
       },
       async darEstado(objeto, estado, poner, n) {
         const o = d.objetos.find(q => q.id === objeto);

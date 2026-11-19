@@ -1135,7 +1135,7 @@
       const items = itemsComunes(p, false);
       if (o.tipo === "imagen" && TB.controla(o)) items.push({ icono: "grupoDef", texto: "Estados", sub: itemsEstados([o]) });
       if (o.tipo === "imagen" && TB.controla(o) && (o.datos || {}).cambiaformas) items.push({ icono: "copiar", texto: "Apariencias", sub: itemsApariencias(o) });
-      if (o.tipo === "imagen" && TB.controla(o)) items.push({ icono: "turno", texto: "Añadir turno", accion: iniciativa }, { icono: "ajustes", texto: "Ajustes de ficha…", accion: () => ajustesFicha(id) });
+      if (o.tipo === "imagen" && TB.controla(o)) items.push({ icono: "turno", texto: "Añadir turno", accion: iniciativa }, { icono: "transformar", texto: "Transformación avanzada", sub: itemsTransformacion(todos.filter(q => q.tipo === "imagen" && q.capa === "fichas" && TB.controla(q)), false) }, { icono: "ajustes", texto: "Ajustes de ficha…", accion: () => ajustesFicha(id) });
       // su hoja de «Mis personajes», si la ficha está enlazada (por una barra o por el personaje del diario)
       const hoja = o.tipo === "imagen" && TB.controla(o) && (((o.datos || {}).barras || []).map(x => x && x.enlace).find(Boolean) || ((TB.diario.get((o.datos || {}).representa) || {}).ficha));
       if (hoja) items.push({ icono: "diario", texto: "Abrir mi hoja de personaje ↗", accion: () => window.open("fichas.html?ficha=" + encodeURIComponent(hoja), "_blank", "noopener") });
@@ -1172,20 +1172,7 @@
       { icono: "frente", texto: "Traer al frente", accion: () => TB.cambiarVarios(todos.map((q, i) => ({ id: q.id, cambios: { z: Math.max(...z) + 1 + i } }))) },
       { icono: "fondo", texto: "Enviar al reverso", accion: () => TB.cambiarVarios(todos.map((q, i) => ({ id: q.id, cambios: { z: Math.min(...z) - todos.length + i } }))) },
       { icono: "candado", texto: o.bloqueado ? "Quitar la cerradura" : "Colocación de la cerradura", accion: () => cambiarTodos(() => ({ bloqueado: !o.bloqueado })) },
-      { icono: "transformar", texto: "Transformación avanzada", sub: [
-        { texto: "Agrupar", apagado: todos.length < 2, accion: () => { const g = "g" + Date.now().toString(36); cambiarTodos(q => datosCon(q, { grupo: g })); } },
-        { texto: "Desagrupar", apagado: !todos.some(q => q.datos && q.datos.grupo), accion: () => cambiarTodos(q => datosCon(q, { grupo: null })) },
-        { texto: algunoSinAjuste ? "Activar el ajuste de cuadrícula" : "Desactivar el ajuste de cuadrícula", accion: () => cambiarTodos(q => datosCon(q, { sinAjuste: !algunoSinAjuste })) },
-        { texto: algunoSinMenu ? "Activar menús de fichas" : "Desactivar menús de fichas", accion: () => cambiarTodos(q => datosCon(q, { sinMenu: !algunoSinMenu })) },
-        { texto: "Enumerar fichas", apagado: todos.length < 2, accion: () => {
-          const orden = todos.slice().sort((a, b) => a.y - b.y || a.x - b.x);
-          TB.cambiarVarios(orden.map((q, i) => ({ id: q.id, cambios: datosCon(q, { nombre: String((q.datos && q.datos.nombre) || "Ficha").replace(/\s+\d+$/, "") + " " + (i + 1), verNombre: true }) })));
-        } },
-        "-",
-        { texto: "Giro horizontal", accion: () => cambiarTodos(q => datosCon(q, { voltearH: !(q.datos && q.datos.voltearH) })) },
-        { texto: "Giro vertical", accion: () => cambiarTodos(q => datosCon(q, { voltearV: !(q.datos && q.datos.voltearV) })) },
-        { texto: "Establecer dimensiones", accion: () => establecerDimensiones(todos) }
-      ] },
+      { icono: "transformar", texto: "Transformación avanzada", sub: itemsTransformacion(todos, true) },
       "-",
       { icono: "ajustes", texto: "Ajustes de ficha…", apagado: todos.length > 1 || o.tipo !== "imagen", accion: () => ajustesFicha(id) },
       { icono: "papeleraR", texto: "Borrar", peligro: true, accion: () => TB.borrarObjetos(sel) }
@@ -1280,7 +1267,36 @@
     tipEst.style.left = Math.max(6, Math.min(x + 14, window.innerWidth - w - 6)) + "px";
     tipEst.style.top = Math.max(6, Math.min(y + 16, window.innerHeight - h - 6)) + "px";
   }
-  function establecerDimensiones(todos) {
+  /* Transformación avanzada. El DJ cambia los objetos directamente; el jugador, solo sus fichas y por la función
+     del servidor (tablero_ajustar_propio), que pone los límites (dimensiones entre 10 y 1400 píxeles). */
+  function itemsTransformacion(todos, gm) {
+    if (!todos.length) return [{ texto: "Nada que transformar", apagado: true }];
+    const datosCon = (q, extra) => ({ datos: Object.assign({}, q.datos, extra) });
+    const aplicar = async f => {
+      if (gm) { TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: datosCon(q, f(q)) }))); return; }
+      for (const q of todos) { try { await TB.red.ajustarPropio(q.id, f(q)); } catch (e) { aviso(mensajeError(e), true); return; } }
+    };
+    const algunoSinAjuste = todos.some(q => q.datos && q.datos.sinAjuste);
+    const algunoSinMenu = todos.some(q => q.datos && q.datos.sinMenu);
+    return [
+      { texto: "Agrupar", apagado: todos.length < 2, accion: () => { const g = "g" + Date.now().toString(36); aplicar(() => ({ grupo: g })); } },
+      { texto: "Desagrupar", apagado: !todos.some(q => q.datos && q.datos.grupo), accion: () => aplicar(() => ({ grupo: null })) },
+      { texto: algunoSinAjuste ? "Activar el ajuste de cuadrícula" : "Desactivar el ajuste de cuadrícula", accion: () => aplicar(() => ({ sinAjuste: !algunoSinAjuste })) },
+      { texto: algunoSinMenu ? "Activar menús de fichas" : "Desactivar menús de fichas", accion: () => aplicar(() => ({ sinMenu: !algunoSinMenu })) },
+      { texto: "Enumerar fichas", apagado: todos.length < 2, accion: () => {
+        const orden = todos.slice().sort((a, b) => a.y - b.y || a.x - b.x);
+        const nombre = q => String((q.datos && q.datos.nombre) || "Ficha").replace(/\s+\d+$/, "") + " " + (orden.indexOf(q) + 1);
+        aplicar(q => ({ nombre: nombre(q), verNombre: true }));
+      } },
+      "-",
+      { texto: "Giro horizontal", accion: () => aplicar(q => ({ voltearH: !(q.datos && q.datos.voltearH) })) },
+      { texto: "Giro vertical", accion: () => aplicar(q => ({ voltearV: !(q.datos && q.datos.voltearV) })) },
+      { texto: "Establecer dimensiones", accion: () => establecerDimensiones(todos, gm ? null : async (ancho, alto) => {
+        for (const q of todos) { try { await TB.red.ajustarPropio(q.id, { ancho, alto }); } catch (e) { aviso(mensajeError(e), true); return; } }
+      }) }
+    ];
+  }
+  function establecerDimensiones(todos, alAplicar) {
     const t = TB.L.tamCelda(), o = todos[0];
     const c = el(`<div><div class="tb-fila"><label class="tb-campo" style="flex:1"><span>Ancho</span><input type="number" step="0.5" min="0.1" data-w></label>
       <label class="tb-campo" style="flex:1"><span>Alto</span><input type="number" step="0.5" min="0.1" data-h></label>
@@ -1291,7 +1307,7 @@
     modal({ titulo: "Establecer dimensiones", cuerpo: c, ancho: 460, aceptar: "Aplicar", alAceptar: () => {
       const k = u.value === "c" ? t : 1;
       const ancho = Math.max(1, (parseFloat(w.value) || 1) * k), alto = Math.max(1, (parseFloat(h.value) || 1) * k);
-      TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: { ancho, alto } })));
+      if (alAplicar) alAplicar(ancho, alto); else TB.cambiarVarios(todos.map(q => ({ id: q.id, cambios: { ancho, alto } })));
     } });
   }
   /* Pines del mapa: el DJ los edita; todos los abren (si llevan nota del diario, se abre la nota) */

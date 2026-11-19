@@ -50,7 +50,10 @@
     aplicarEscala() { document.documentElement.style.setProperty("--tb-k", String(Math.round(TB.escalaUI() * 1000) / 1000)); },
     escena: () => TB.escenas.get(TB.escenaId) || null,
     controla: o => !!o && !!TB.yo && (o.controlan_todos || (o.controladores || []).includes(TB.yo.uid)),
+    colores: new Map(),   // el color que eligió cada uno (perfil y presencia)
     colorJugador(uid) {
+      const elegido = TB.colores.get(uid);
+      if (elegido) return elegido;
       let h = 0; String(uid || "").split("").forEach(c => { h = (h * 31 + c.charCodeAt(0)) >>> 0; });
       return `hsl(${h % 360}, 62%, 48%)`;
     },
@@ -114,6 +117,8 @@
     TB.L.setPausa(!!TB.estado.pausa);
     TB.lanzar("estado", TB.estado);
     TB.miPerfil = await TB.red.perfil().catch(() => ({ avatar: "" }));
+    if (TB.miPerfil.color) TB.colores.set(TB.yo.uid, TB.miPerfil.color);
+    TB.red.colores().then(l => { l.forEach(c => { if (c.uid !== TB.yo.uid) TB.colores.set(c.uid, c.color); }); TB.lanzar("presencia"); }).catch(() => {});
     anunciarAvatar();
     TB.on("diario", anunciarAvatar);
     carga.remove();
@@ -126,9 +131,10 @@
     const mio = [...TB.diario.values()].filter(e => e.tipo === "personaje" && !e.archivado && (e.controladores || []).includes(TB.yo.uid) && e.imagen)
       .sort((a, b) => (b.grupo ? 1 : 0) - (a.grupo ? 1 : 0))[0];
     const avatar = (TB.miPerfil && TB.miPerfil.avatar) || (mio ? mio.imagen : "");
-    if (avatar === avatarAnunciado) return;
-    avatarAnunciado = avatar;
-    TB.red.presencia({ avatar, personaje: mio ? mio.nombre : "" });
+    const color = (TB.miPerfil && TB.miPerfil.color) || "";
+    if (avatar + "|" + color === avatarAnunciado) return;
+    avatarAnunciado = avatar + "|" + color;
+    TB.red.presencia({ avatar, personaje: mio ? mio.nombre : "", color });
   }
 
   async function cargarEscena(id) {
@@ -329,7 +335,12 @@
     r.on("fxMov", d => { if (d && d.id) TB.fx.mover(d.id, d.x, d.y); });
     // Un jugador cambió su hoja (PV o salvaciones): el DJ la vuelve a leer para copiarla a las fichas del tablero
     r.on("ficha", () => { if (TB.yo.esGM) refrescarPV(); });
-    r.on("presencia", lista => { TB.presencia = lista || []; TB.lanzar("presencia"); });
+    r.on("presencia", lista => {
+      TB.presencia = lista || [];
+      // El color elegido llega con la presencia: se ve al momento, sin recargar
+      TB.presencia.forEach(p => { if (p.uid && p.uid !== TB.yo.uid && /^#[0-9a-f]{6}$/i.test(p.color || "")) TB.colores.set(p.uid, p.color); });
+      TB.lanzar("presencia");
+    });
     r.on("cursor", d => { if (d && d.escena === TB.escenaId) TB.L.cursorRemoto(d); });
     r.on("sonido", d => { if (d && window.TBLado) TBLado.sonar(d); });
     r.on("explorado", d => { if (d && d.escena === TB.escenaId && !TB.yo.esGM) TB.L.reiniciarExplorado(); });

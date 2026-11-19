@@ -1783,7 +1783,7 @@
       caja.appendChild(f);
     };
 
-    const perfil = seccion("Mi avatar", true);
+    const perfil = seccion("Mi avatar y mi color", true);
     pintarPerfil(perfil);
     const sonido = seccion("Sonido", false);
     deslizador(sonido, "volumen", "Mi volumen de la música", 0, 1, 0.05, aplicarVolumen);
@@ -1905,6 +1905,16 @@
     pintarAvatares();
   }
 
+  // hsl(...) o #rrggbb → #rrggbb (para el selector de color)
+  function aHex(c) {
+    if (/^#[0-9a-f]{6}$/i.test(c)) return c;
+    const m = String(c).match(/hsl\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%/i);
+    if (!m) return "#888888";
+    const h = +m[1] / 360, s = +m[2] / 100, l = +m[3] / 100;
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    const f = t => { t = (t + 1) % 1; const v = t < 1 / 6 ? p + (q - p) * 6 * t : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; return Math.round(v * 255).toString(16).padStart(2, "0"); };
+    return "#" + f(h + 1 / 3) + f(h) + f(h - 1 / 3);
+  }
   /* ============================================================ mi avatar */
   function pintarPerfil(caja) {
     const actual = (TB.miPerfil && TB.miPerfil.avatar) || "";
@@ -1919,6 +1929,26 @@
         ${actual ? `<button type="button" class="tb-btn tb-btn-mini" data-quitar>Quitar</button>` : ""}</div></div>`);
     caja.appendChild(c);
     caja.appendChild(el(`<p class="tb-nota">Sale en el chat y en la barra de quién está en el tablero. Sin avatar propio se usa la imagen de tu personaje.</p>`));
+    // Tu color: el de tus pings, tus reglas y tu cursor, igual para todos
+    const elegido = (TB.miPerfil && TB.miPerfil.color) || "";
+    const filaColor = el(`<div class="tb-fila-toggle" style="border:0"><span>Tu color<small class="tb-nota" style="display:block;font-weight:400">El de tus pings, tus medidas y tu cursor. Lo ven todos.</small></span>
+      <span class="tb-fila" style="align-items:center"><input type="color" data-color>${elegido ? `<button type="button" class="tb-btn tb-btn-mini" data-color-auto>Automático</button>` : ""}</span></div>`);
+    caja.appendChild(filaColor);
+    const inColor = filaColor.querySelector("[data-color]");
+    inColor.value = elegido || aHex(TB.colorJugador(TB.yo.uid));
+    const guardarColor = async color => {
+      try {
+        await TB.red.guardarPerfil({ color });
+        TB.miPerfil = Object.assign({}, TB.miPerfil, { color });
+        if (color) TB.colores.set(TB.yo.uid, color); else TB.colores.delete(TB.yo.uid);
+        TB.anunciarAvatar();
+        TB.lanzar("presencia");
+        pintarPerfil(caja);
+      } catch (e) { aviso(/color/.test(String(e && e.message)) ? "Falta volver a correr tablero.sql para guardar el color." : mensajeError(e), true); }
+    };
+    inColor.addEventListener("change", () => guardarColor(inColor.value.toLowerCase()));
+    const auto = filaColor.querySelector("[data-color-auto]");
+    if (auto) auto.addEventListener("click", () => guardarColor(""));
     const guardar = async avatar => {
       try {
         await TB.red.guardarPerfil({ avatar });
