@@ -645,9 +645,11 @@
     const lista = (ini.lista || []).slice().sort((a, b) => desc ? (Number(b.valor) || 0) - (Number(a.valor) || 0) : (Number(a.valor) || 0) - (Number(b.valor) || 0));
     TB.guardarIniciativa(Object.assign({}, ini, { lista, turno: 0 }));
   }
+  let editandoTurno = false, turnoPendiente = false;
   function pintarTurno() {
     const v = ventanas.get("turno");
     if (!v) return;
+    if (editandoTurno) { turnoPendiente = true; return; }
     const ini = Object.assign({ lista: [], turno: 0, ronda: 1 }, TB.estado.iniciativa);
     const gm = TB.esGM();
     const lista = ini.lista || [];
@@ -738,15 +740,21 @@
     const celda = fila.querySelector("[data-valor]");
     const inp = el(`<input type="number" value="${esc(ini.lista[i].valor)}">`);
     celda.innerHTML = ""; celda.appendChild(inp); inp.focus(); inp.select();
+    editandoTurno = true; turnoPendiente = false;
+    // El clic dentro del campo no debe empezar el arrastre de la fila ni centrar la ficha
+    ["mousedown", "click", "dragstart"].forEach(t => inp.addEventListener(t, e => e.stopPropagation()));
+    fila.draggable = false;
+    const terminar = () => { editandoTurno = false; if (turnoPendiente) { turnoPendiente = false; pintarTurno(); } };
     let hecho = false;
     const guardar = () => {
       if (hecho) return; hecho = true;
+      terminar();
       const v = parseFloat(inp.value) || 0;
       if (comoJugador) { TB.red.iniciativaValor ? TB.red.iniciativaValor(ini.lista[i].id, v).catch(e => aviso(mensajeError(e), true)) : null; return; }
       const l = ini.lista.slice(); l[i] = Object.assign({}, l[i], { valor: v });
       TB.guardarIniciativa(Object.assign({}, ini, { lista: l }));
     };
-    inp.addEventListener("keydown", e => { if (e.key === "Enter") inp.blur(); if (e.key === "Escape") { hecho = true; pintarTurno(); } });
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") inp.blur(); if (e.key === "Escape") { hecho = true; editandoTurno = false; turnoPendiente = false; pintarTurno(); } });
     inp.addEventListener("blur", guardar);
   }
 
