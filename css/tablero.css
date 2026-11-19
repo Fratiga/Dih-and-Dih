@@ -764,3 +764,5 @@ body.tb.tb-oscuro .tb-estado-sil, body.tb.tb-oscuro .tb-estados-rejilla button {
 .tb-grieta-clase.tb-grieta-combinada { background: #111; }
 body.tb.tb-oscuro .tb-grieta-entrada { background: #2a2c31; border-color: #3a3d44; }
 body.tb.tb-oscuro .tb-grieta-nivel button { background: #2a2c31; color: #dedede; border-color: #4a4d55; }
+.tb-aviso-valores { margin: 0 0 calc(10px * var(--tb-k)); padding: calc(7px * var(--tb-k)) calc(9px * var(--tb-k)); border: 1px solid #e6c36a; border-left-width: calc(3px * var(--tb-k)); background: #fff8e1; color: #6b5200; font-size: calc(12.5px * var(--tb-k)); line-height: 1.4; border-radius: calc(3px * var(--tb-k)); }
+body.tb.tb-oscuro .tb-aviso-valores { background: #3a3220; border-color: #8a7330; color: #f0dca0; }

@@ -194,6 +194,7 @@
         const { data, error } = await sb.from("fichas_personajes").select("id, owner_id, data").eq("archivado", false);
         if (error) return [];
         return (data || []).map(f => { const id = (f.data && f.data.identidad) || {}; return { id: f.id, owner: f.owner_id, nombre: id.nombre || "Sin nombre", combate: f.data && f.data.combate,
+          atributos: (f.data && f.data.atributos) || {}, ajustesAtributos: (f.data && f.data.ajustesAtributos) || {},
           retrato: id.retrato || "", raza: id.raza || "", clase: id.clase || "", nivel: id.nivelTotal || null }; });
       },
       emitir(evento, datos) { if (canal && conectado) canal.send({ type: "broadcast", event: evento, payload: datos }).catch(() => {}); },

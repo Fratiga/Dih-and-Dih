@@ -751,6 +751,30 @@
   }
 
   /* ============================================================ ajustes de ficha */
+  /* Barras contra la hoja del compendio (si la ficha la representa) o contra sus estadísticas de enemigo.
+     Verde = vida (se compara el máximo), roja = CA (se compara el máximo: el valor puede llevar un bono pasajero). */
+  function valoresDistintos(o, barras) {
+    const fila = [], verde = barras[0] || {}, roja = barras[2] || {};
+    const num = v => (v === "" || v == null || !Number.isFinite(parseFloat(v)) ? null : parseFloat(v));
+    const fid = TB.fichaDeObjeto && TB.fichaDeObjeto(o);
+    const hoja = fid && (TB.fichas || []).find(f => f.id === fid);
+    if (hoja && hoja.combate) {
+      const c = hoja.combate;
+      let ca = null;
+      try { if (typeof fichasCATotal === "function" && c.ca) ca = fichasCATotal({ combate: c, atributos: hoja.atributos || {}, ajustesAtributos: hoja.ajustesAtributos || {} }); } catch (e) { /* sin CA */ }
+      if (!verde.enlace && num(verde.max) != null && num(c.pvMax) != null && num(verde.max) !== num(c.pvMax)) fila.push(`vida máxima ${verde.max} en la barra, ${c.pvMax} en la hoja`);
+      if (ca != null && num(roja.max) != null && num(roja.max) !== ca) fila.push(`CA ${roja.max} en la barra, ${ca} en la hoja`);
+      fila.origen = "la hoja de " + (hoja.nombre || "su personaje");
+      return fila;
+    }
+    const s = window.TBTiradas && TBTiradas.estadisticasEfectivas(o);
+    if (s) {
+      if (num(verde.max) != null && num(s.pv) != null && num(verde.max) !== num(s.pv)) fila.push(`vida máxima ${verde.max} en la barra, ${s.pv} en las estadísticas`);
+      if (num(roja.max) != null && num(s.ca) != null && num(roja.max) !== num(s.ca)) fila.push(`CA ${roja.max} en la barra, ${s.ca} en las estadísticas`);
+      fila.origen = "las estadísticas de " + s.nombre;
+    }
+    return fila;
+  }
   function ajustesFicha(id, plantilla) {
     // plantilla: { diario } para editar el token predeterminado de un personaje del diario
     const entrada = plantilla && TB.diario.get(plantilla.diario);
@@ -783,6 +807,9 @@
         <div class="tb-campo"><span>Color de tinte</span><span class="tb-fila"><input type="color" data-tinte><label class="tb-casilla"><input type="checkbox" data-sintinte> Sin tinte</label></span></div>` : ""}
     </div>`);
     const derecha = el(`<div><h3 style="margin:calc(4px * var(--tb-k)) 0 calc(14px * var(--tb-k));font-size:calc(19px * var(--tb-k))">Barras De Ficha</h3></div>`);
+    // Aviso (solo el DJ): la vida o la CA de las barras no coinciden con la hoja del compendio o con las estadísticas
+    const distintos = gm && !plantilla ? valoresDistintos(o, barras) : [];
+    if (distintos.length) derecha.appendChild(el(`<div class="tb-aviso-valores"><b>No coinciden con ${esc(distintos.origen)}:</b> ${distintos.map(x => esc(x)).join(" · ")}</div>`));
     barras.forEach((b, i) => {
       const puede = gm || b.editar;
       const fila = el(`<div class="tb-barra-cfg">
