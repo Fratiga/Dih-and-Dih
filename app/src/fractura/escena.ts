@@ -110,18 +110,8 @@ export class EscenaGuerra extends Phaser.Scene {
     this.input.addPointer(1);
     const casillaEn = (sx: number, sy: number): { x: number; y: number; dentro: boolean } => {
       const m = this.aMundo(sx, sy);
-      let x = Math.floor(m.x / T), y = Math.floor(m.y / T);
-      // Un gigante sobresale mucho de sus 2×2 casillas: si se toca su figura donde no hay otra tropa, cuenta como tocarle a él
-      if (this.est && !this.lejos && !W.FracturaMotor.unidadEn(this.est, x, y) && !W.FracturaMotor.ciudadEn(this.est, x, y)) {
-        let mejor: any = null;
-        this.unidades.forEach((o, uid) => {
-          const lg = this.est.unidades[uid];
-          if (!lg || lg.tam !== 2 || !o.spr.visible) return;
-          const b = o.spr.getBounds();
-          if (b.contains(m.x, m.y) && (!mejor || lg.y > mejor.y)) mejor = lg;
-        });
-        if (mejor) { x = mejor.x; y = mejor.y; }
-      }
+      const x = Math.floor(m.x / T), y = Math.floor(m.y / T);
+      // Un gigante se toca en sus 4 casillas (las que pisa), no en toda su figura: así se puede mover y atacar a su alrededor
       return { x, y, dentro: !!this.est && x >= 0 && y >= 0 && x < this.est.ancho && y < this.est.alto };
     };
     const umbral = 8 * this.dpr;
