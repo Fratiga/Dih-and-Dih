@@ -24,6 +24,20 @@
     fichas = await cargando;
     return fichas;
   }
+  // Las estadísticas del compendio de una ficha del tablero (por su nombre, sin el número de «Enumerar»)
+  function estadisticasDe(o) {
+    if (!o || o.tipo !== "imagen") return null;
+    const n = norm(o.datos && o.datos.nombre);
+    return n ? (window.STATS || []).find(s => norm(s.nombre) === n) || null : null;
+  }
+  // Con los cambios de la Grieta (datos.grieta: stats, ca, velocidad, iniciativa) por encima de las del compendio
+  function estadisticasEfectivas(o) {
+    const s = estadisticasDe(o);
+    const g = o && o.datos && o.datos.grieta;
+    if (!s || !g) return s;
+    return Object.assign({}, s, g.stats ? { stats: Object.assign({}, s.stats, g.stats) } : {},
+      g.ca != null ? { ca: g.ca } : {}, g.velocidad != null ? { velocidad: g.velocidad } : {}, g.iniciativa != null ? { iniciativa: g.iniciativa } : {});
+  }
   function listaEnemigos() {
     if (enemigos) return enemigos;
     enemigos = (typeof statsR20Enemigo === "function" ? (window.STATS || []) : []).map(s => { try { return statsR20Enemigo(s); } catch (e) { return null; } }).filter(Boolean);
@@ -173,6 +187,12 @@
     const seleccionado = TB.L.seleccion().map(id => TB.L.objeto(id)).map(o => o && porNombre.get(norm(o.datos && o.datos.nombre))).find(Boolean);
     let actual = seleccionado || lista.find(e => e.id === est.enemigo) || enPagina[0] || null;
     if (actual) est.enemigo = actual.id;
+    // La ficha seleccionada tiene las estadísticas cambiadas (la Grieta): las tiradas se rehacen con ellas
+    const selObj = TB.L.seleccion().map(id => TB.L.objeto(id)).find(o => o && o.datos && o.datos.grieta && estadisticasDe(o));
+    let alterado = false;
+    if (selObj && actual && estadisticasDe(selObj).id === actual.id) {
+      try { actual = statsR20Enemigo(estadisticasEfectivas(selObj)); alterado = true; } catch (e) { /* se quedan las del compendio */ }
+    }
     const buscar = el(`<input type="search" placeholder="Buscar enemigo…" style="margin:calc(6px * var(--tb-k)) 0">`);
     buscar.value = est.busqueda;
     const chipsCaja = el(`<div></div>`), detalle = el(`<div></div>`);
@@ -198,6 +218,7 @@
       if (!cats.includes(est.filtroEnemigo)) est.filtroEnemigo = cats[0];
       detalle.appendChild(el(`<div class="tb-tiradas-resumen"><b>${esc(actual.nombre)}</b>${actual.ca !== null ? `<span>CA ${esc(actual.ca)}</span>` : ""}${actual.pv !== null ? `<span>PV ${esc(actual.pv)}</span>` : ""}</div>`));
       if (actual.rol) detalle.appendChild(el(`<p class="tb-nota" style="margin:0 0 calc(6px * var(--tb-k))">${esc(actual.rol)}</p>`));
+      if (alterado) detalle.appendChild(el(`<p class="tb-nota" style="margin:0 0 calc(6px * var(--tb-k))">Esta ficha tiene las estadísticas cambiadas: las tiradas usan las nuevas.</p>`));
       const cchips = el(`<div class="tb-tiradas-chips">${cats.map(c => `<button type="button" data-c="${c}" class="${est.filtroEnemigo === c ? "activo" : ""}">${c}</button>`).join("")}</div>`);
       cchips.addEventListener("click", ev => { const b = ev.target.closest("[data-c]"); if (!b) return; est.filtroEnemigo = b.dataset.c; guardar(); pintar(); });
       const items = el(`<div class="tb-tiradas-lista"></div>`);
@@ -212,5 +233,5 @@
     pintarChips();
   }
 
-  window.TBTiradas = { iniciar, pintar, recargar: () => cargar(true) };
+  window.TBTiradas = { iniciar, pintar, recargar: () => cargar(true), refrescar: async () => { await cargar(true); pintar(); }, estadisticasDe, estadisticasEfectivas };
 })();

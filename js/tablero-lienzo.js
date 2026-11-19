@@ -783,7 +783,13 @@
       }
       // En el mapa la imagen va entera; en el resto, a una resolución que aguanta acercarse hasta el doble
       const lado = Math.min(1024, Math.pow(2, Math.ceil(Math.log2(Math.max(64, Math.max(w, h) * Konva.pixelRatio * 2)))));
-      const k = new Konva.Image({ image: o.capa === "mapa" ? e.img : reducida(e, lado), width: w, height: h, perfectDrawEnabled: false });
+      const fuente = o.capa === "mapa" ? e.img : reducida(e, lado);
+      const k = new Konva.Image({ image: fuente, width: w, height: h, perfectDrawEnabled: false });
+      // Recorte (fracciones de la imagen): un trozo de un mapa partido sigue usando la imagen entera
+      if (d.recorte) {
+        const nw = fuente.naturalWidth || fuente.width, nh = fuente.naturalHeight || fuente.height, r = d.recorte;
+        k.crop({ x: r.x * nw, y: r.y * nh, width: Math.max(1, r.w * nw), height: Math.max(1, r.h * nh) });
+      }
       if (d.voltearH) { k.scaleX(-1); k.x(w); }
       if (d.voltearV) { k.scaleY(-1); k.y(h); }
       if (d.tinte) {
@@ -1223,7 +1229,7 @@
       lObj.batchDraw(); lMapa.batchDraw(); lUI.batchDraw();
       movidos.forEach(({ o, ruta }) => {
         if (op.onMovEnCurso && o.capa !== "gm") op.onMovEnCurso(o.id, o.x, o.y, ruta);
-        if (op.onMovido) op.onMovido(o);
+        if (op.onMovido) op.onMovido(o, ruta);
       });
     }
     // En las pantallas de los demás la ficha recorre la ruta (con sus paradas) en el mismo tiempo sea cual sea la distancia,
@@ -1946,6 +1952,23 @@
         if (st.seleccion.has(id)) setTimeout(() => { tr.forceUpdate(); actualizarTransformer(); }, 100);
       },
       reglaRemota, ping, marcarLocal,
+      // Poner una ficha en un sitio al instante, sin animación y aunque se acabe de mover aquí (la Grieta)
+      forzarPos(id, x, y) {
+        const n = st.nodos.get(id);
+        if (!n || n.arrastrando) return false;
+        if (n.anim) { n.anim.stop(); n.anim = null; }
+        n.animando = false;
+        movLocal.delete(id);
+        n.o.x = x; n.o.y = y;
+        n.g.position({ x, y }); n.deco.position({ x, y }); n.aura.position({ x, y });
+        n.ultimaRuta = null;
+        programarLuz();
+        if (st.seleccion.has(id)) { tr.forceUpdate(); pintarSeleccionUI(); }
+        lObj.batchDraw(); lMapa.batchDraw(); lUI.batchDraw();
+        return true;
+      },
+      aPantalla: p => stage.getAbsoluteTransform().point(p),
+      contenedor,
       // Tecla X: la última ruta de las fichas seleccionadas, unos segundos
       ultimaRuta() {
         const rutas = [...st.seleccion].map(id => st.nodos.get(id)).filter(n => n && n.ultimaRuta && n.ultimaRuta.length > 1);

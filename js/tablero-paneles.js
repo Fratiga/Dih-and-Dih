@@ -1440,6 +1440,9 @@
       <div class="tb-fila-toggle" style="border:0"><span>Desplazamiento de la cuadrícula</span><span class="tb-fila"><span class="tb-ud"><input type="number" data-dx style="width:calc(70px * var(--tb-k))"><i>px</i></span><span class="tb-ud"><input type="number" data-dy style="width:calc(70px * var(--tb-k))"><i>px</i></span></span></div>
       <div class="tb-fila-toggle" style="border:0"><span>Color de cuadrícula</span><input type="color" data-color></div>
       <label class="tb-campo"><span>Opacidad de la línea de la cuadrícula</span><span class="tb-fila"><input type="range" min="0" max="100" data-op><span class="tb-ud"><input type="number" min="0" max="100" data-opn style="width:calc(70px * var(--tb-k))"><i>%</i></span></span></label>
+      <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Particularidades</h4>
+      <p class="tb-nota" style="margin-top:0">Reglas especiales que solo valen en esta página. Al salir de ella todo vuelve a ser normal.</p>
+      <div data-particularidades></div>
       <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Gestionar audio</h4>
       <label class="tb-campo"><span>Reproducir en carga (empieza cuando el marcalibros llega a esta página)</span><select data-audio><option value="">Ninguno</option>${pistas.map(p => `<option value="${esc(p.src)}">${esc(p.nombre)}</option>`).join("")}</select></label>
       <hr class="tb-sep"><h4 class="tb-cfgpag-sec">Gestionar la zona</h4>
@@ -1466,6 +1469,16 @@
     q("[data-tablero]").value = opc.colorTablero; q("[data-fondo]").value = e.fondo || "#ffffff";
     const tFondoAuto = interruptor(opc.fondoAuto !== false);
     q("[data-t-fondoauto]").appendChild(tFondoAuto.el);
+    // Particularidades de la página (la Grieta de Dexter...): cada una con su interruptor
+    const partes = window.TBParticularidades ? TBParticularidades.lista() : [], asignadas = Array.isArray(opc.particularidades) ? opc.particularidades : [];
+    const tPartes = partes.map(pt => {
+      const t = interruptor(asignadas.includes(pt.id));
+      const filaP = el(`<div class="tb-fila-toggle" style="border:0"><span>${esc(pt.nombre)}<small class="tb-nota" style="display:block;font-weight:400">${esc(pt.descripcion)}</small></span><span></span></div>`);
+      filaP.lastElementChild.appendChild(t.el);
+      q("[data-particularidades]").appendChild(filaP);
+      return { id: pt.id, t };
+    });
+    if (!partes.length) q("[data-particularidades]").appendChild(el(`<p class="tb-nota">No hay ninguna disponible.</p>`));
     q("[data-mini]").appendChild(mini.el);
     q("[data-pies]").value = c.pies; q("[data-unidad]").value = c.unidad || "pies";
     const tVis = interruptor(c.visible !== false), tAj = interruptor(c.ajustar !== false), tPre = interruptor(c.preciso !== false);
@@ -1488,7 +1501,8 @@
         nombre: q("[data-nombre]").value.trim().slice(0, 80) || "Página", carpeta: q("[data-carpeta]").value.trim().slice(0, 60),
         ancho: Math.max(1, Math.min(500, parseInt(q("[data-ancho]").value, 10) || 40)), alto: Math.max(1, Math.min(500, parseInt(q("[data-alto]").value, 10) || 40)),
         fondo: q("[data-fondo]").value, miniatura,
-        opciones: Object.assign({}, opc, { fondoAuto: tFondoAuto.valor(), colorTablero: q("[data-tablero]").value, audio: pista ? { src: pista.src, nombre: pista.nombre } : null, miniaturaManual: !!miniatura && miniatura !== e.miniatura ? true : !!opc.miniaturaManual && !!miniatura }),
+        // sobre las opciones de ahora (la Grieta puede haber cambiado las suyas con la ventana abierta)
+        opciones: Object.assign({}, opc, (TB.escenas.get(id) || {}).opciones, { particularidades: asignadas.filter(x => !partes.some(pt => pt.id === x)).concat(tPartes.filter(x => x.t.valor()).map(x => x.id)), fondoAuto: tFondoAuto.valor(), colorTablero: q("[data-tablero]").value, audio: pista ? { src: pista.src, nombre: pista.nombre } : null, miniaturaManual: !!miniatura && miniatura !== e.miniatura ? true : !!opc.miniaturaManual && !!miniatura }),
         cuadricula: { tam: Math.max(10, Math.min(400, parseInt(q("[data-tam]").value, 10) || 70)), pies: Math.max(0.1, parseFloat(q("[data-pies]").value) || 5), unidad: q("[data-unidad]").value,
           visible: tVis.valor(), ajustar: tAj.valor(), preciso: tPre.valor(), diagonal: q("[data-diag]").value,
           dx: parseInt(q("[data-dx]").value, 10) || 0, dy: parseInt(q("[data-dy]").value, 10) || 0,

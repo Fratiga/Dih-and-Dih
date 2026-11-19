@@ -733,3 +733,34 @@ body.tb.tb-oscuro .tb-estado-sil, body.tb.tb-oscuro .tb-estados-rejilla button {
 /* Los mensajes fuera de la vista no se pintan: los GIF de más arriba dejan de gastar CPU */
 .tb-chat-lista .tb-msg { content-visibility: auto; contain-intrinsic-size: auto 48px; }
 .tb-lista-hijos.soltando { background: rgba(214,18,126,.08); box-shadow: inset 2px 0 0 #d6127e; }
+
+/* ---------------------------------------------------------------- la Grieta de Dexter */
+.tb-grieta-velo { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 6; }
+.tb-grieta-btn.en-pausa { opacity: .45; }
+.tb-grieta-panel { padding: calc(10px * var(--tb-k)) calc(12px * var(--tb-k)); }
+.tb-grieta-panel .tb-fila-toggle { border: 0; }
+.tb-grieta-nivel { display: flex; gap: calc(4px * var(--tb-k)); }
+.tb-grieta-nivel button { flex: 1; min-height: calc(30px * var(--tb-k)); border: 1px solid var(--tb-borde-fuerte); background: var(--tb-campo); border-radius: calc(4px * var(--tb-k)); cursor: pointer; font-weight: 700; color: var(--tb-texto); }
+.tb-grieta-nivel button.activo { background: var(--tb-acento); border-color: var(--tb-acento); color: #fff; }
+.tb-grieta-tipos { display: flex; flex-wrap: wrap; gap: calc(4px * var(--tb-k)) calc(14px * var(--tb-k)); margin: calc(8px * var(--tb-k)) 0; }
+.tb-grieta-grupo { margin-top: calc(10px * var(--tb-k)); }
+.tb-grieta-grupo-tit { font-weight: 700; font-size: calc(13px * var(--tb-k)); }
+.tb-grieta-grupo .tb-nota { margin: calc(2px * var(--tb-k)) 0 calc(5px * var(--tb-k)); }
+.tb-grieta-botones { display: flex; flex-wrap: wrap; gap: calc(4px * var(--tb-k)); }
+.tb-grieta-aviso { color: var(--tb-rojo); }
+.tb-grieta-activa { display: flex; align-items: center; justify-content: space-between; gap: calc(8px * var(--tb-k)); padding: calc(5px * var(--tb-k)) 0; border-bottom: 1px solid var(--tb-gris-2); font-size: calc(13px * var(--tb-k)); }
+.tb-grieta-registro { display: flex; flex-direction: column; gap: calc(6px * var(--tb-k)); padding-bottom: calc(8px * var(--tb-k)); }
+.tb-grieta-entrada { border: 1px solid var(--tb-borde); border-radius: calc(4px * var(--tb-k)); padding: calc(6px * var(--tb-k)) calc(8px * var(--tb-k)); background: var(--tb-gris-suave); }
+.tb-grieta-entrada.deshecho { opacity: .55; }
+.tb-grieta-entrada-cab { display: flex; align-items: center; gap: calc(6px * var(--tb-k)); }
+.tb-grieta-entrada-cab b { flex: 1; font-size: calc(13px * var(--tb-k)); }
+.tb-grieta-entrada-cab small { color: var(--tb-suave); }
+.tb-grieta-entrada-det { white-space: pre-wrap; font-size: calc(12px * var(--tb-k)); color: var(--tb-suave); margin-top: calc(3px * var(--tb-k)); line-height: 1.4; }
+.tb-grieta-clase { width: calc(8px * var(--tb-k)); height: calc(8px * var(--tb-k)); border-radius: 50%; background: var(--tb-borde-fuerte); flex: none; }
+.tb-grieta-clase.tb-grieta-mov { background: #3f8dff; }
+.tb-grieta-clase.tb-grieta-visual { background: #9b9b9b; }
+.tb-grieta-clase.tb-grieta-real { background: #d6127e; }
+.tb-grieta-clase.tb-grieta-stats { background: #e0a100; }
+.tb-grieta-clase.tb-grieta-combinada { background: #111; }
+body.tb.tb-oscuro .tb-grieta-entrada { background: #2a2c31; border-color: #3a3d44; }
+body.tb.tb-oscuro .tb-grieta-nivel button { background: #2a2c31; color: #dedede; border-color: #4a4d55; }

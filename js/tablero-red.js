@@ -18,7 +18,7 @@
   const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "x" + Date.now().toString(36) + Math.random().toString(36).slice(2));
   const ahora = () => new Date().toISOString();
   const ESTADO_VACIO = () => ({ id: 1, escena_jugadores: null, iniciativa: { lista: [], turno: 0, ronda: 1, visible: false }, musica: {}, gramola: {} });
-  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "fxFin", "fxMov", "camara", "cursor", "sonido", "explorado", "ficha"];
+  const BROADCAST = ["mov", "quitar", "ping", "regla", "fx", "fxFin", "fxMov", "camara", "cursor", "sonido", "explorado", "ficha", "grieta"];
 
   /* ============================================================ Supabase */
   function redSupabase() {
@@ -111,6 +111,10 @@
       async actualizarEstado(c) { ok(await sb.from("tablero_estado").update(Object.assign({ actualizado: ahora() }, c)).eq("id", 1)); },
       async crearObjetos(filas) { return filas.length ? ok(await sb.from("tablero_objetos").insert(filas).select()) : []; },
       async actualizarObjeto(id, c) { ok(await sb.from("tablero_objetos").update(Object.assign({ actualizado: ahora() }, c)).eq("id", id)); },
+      // Muchos a la vez (filas completas): la Grieta gira, voltea o escala toda la página de una vez
+      async actualizarObjetos(filas) {
+        for (let i = 0; i < filas.length; i += 150) ok(await sb.from("tablero_objetos").upsert(filas.slice(i, i + 150).map(f => Object.assign({}, f, { actualizado: ahora() }))));
+      },
       async borrarObjetos(ids) { if (ids.length) ok(await sb.from("tablero_objetos").delete().in("id", ids)); },
       async notaGM(objeto) { const d = ok(await sb.from("tablero_notas_gm").select("texto").eq("objeto", objeto).maybeSingle()); return d ? d.texto : ""; },
       async guardarNotaGM(objeto, texto) { ok(await sb.from("tablero_notas_gm").upsert({ objeto, texto })); },
@@ -195,6 +199,8 @@
       emitir(evento, datos) { if (canal && conectado) canal.send({ type: "broadcast", event: evento, payload: datos }).catch(() => {}); },
       presencia(extra) { extraPresencia = Object.assign({}, extraPresencia, extra); if (canal && conectado) canal.track(Object.assign({ uid: yo.uid, nombre: yo.nombre, gm: yo.esGM }, extraPresencia)).catch(() => {}); },
       async fichaCompleta(id) { const d = ok(await sb.from("fichas_personajes").select("id, owner_id, data, roll20").eq("id", id).maybeSingle()); return d; },
+      // El DJ reescribe las estadísticas de una ficha y sus tiradas (la Grieta de Dexter)
+      async guardarFichaGrieta(id, data, roll20) { ok(await sb.from("fichas_personajes").update({ data, roll20, updated_at: ahora() }).eq("id", id)); },
       async fichasRoll20() {
         const { data, error } = await sb.from("fichas_personajes").select("id, owner_id, roll20, data").eq("archivado", false).not("roll20", "is", null);
         if (error) return [];
@@ -287,6 +293,7 @@
         return nuevas;
       },
       async actualizarObjeto(id, c) { const o = d.objetos.find(x => x.id === id); if (o) { Object.assign(o, c); publicar("objeto", o); } },
+      async actualizarObjetos(filas) { filas.forEach(f => { const o = d.objetos.find(x => x.id === f.id); if (o) { Object.assign(o, f); publicar("objeto", o); } }); },
       async borrarObjetos(ids) { d.objetos = d.objetos.filter(o => !ids.includes(o.id)); ids.forEach(id => publicar("objetoBorrado", id)); },
       async notaGM(objeto) { leer(); return d.notasGM[objeto] || ""; },
       async guardarNotaGM(objeto, texto) { d.notasGM[objeto] = texto; guardar(); },
@@ -447,8 +454,25 @@
       async fichas() { leer(); return JSON.parse(JSON.stringify(d.fichas)); },
       emitir(evento, x) { if (bc) bc.postMessage({ evento, x }); },
       presencia(extra) { setTimeout(() => ev.lanzar("presencia", [Object.assign({ uid: yo.uid, nombre: yo.nombre, gm: yo.esGM }, extra)]), 0); },
-      async fichaCompleta() { return null; },
+      // En local la ficha completa se arma la primera vez con el modelo de la hoja y se guarda junto al resto
+      async fichaCompleta(id) {
+        leer();
+        const f = d.fichas.find(x => x.id === id);
+        if (!f) return null;
+        if (!f.data && typeof fichasPersonajeVacio === "function") {
+          const p = fichasPersonajeVacio();
+          p.identidad.nombre = f.nombre; p.identidad.nivelTotal = f.nivel || 1;
+          p.atributos = { fue: 10, des: 14, con: 12, int: 13, sab: 11, car: 15 };
+          Object.assign(p.combate, f.combate || {});
+          f.data = p; guardar();
+        }
+        return f.data ? { id: f.id, owner_id: f.owner, data: JSON.parse(JSON.stringify(f.data)), roll20: f.roll20 || null } : null;
+      },
+      async guardarFichaGrieta(id, data, roll20) { leer(); const f = d.fichas.find(x => x.id === id); if (!f) return; f.data = data; f.roll20 = roll20; f.combate = data.combate; guardar(); },
       async fichasRoll20() {
+        leer();
+        const fl = d.fichas.find(x => x.roll20);
+        if (fl) return [{ id: fl.id, owner: fl.owner, nombre: fl.nombre, velocidad: fl.roll20.velocidad, items: fl.roll20.items || [], combate: fl.combate }];
         return [{ id: "local-ficha", owner: JUG, nombre: "Jugador de prueba", velocidad: 30, combate: { pvActual: 18, pvMax: 24, pvTemp: 0 },
           items: [{ id: "a1", categoria: "Ataques", texto: "Espada larga: +5", cmd: { normal: "/em ataca con la espada larga\nAtaque: [[1d20+5]]\nDaño: [[1d8+3]] cortante", ventaja: "Ataque: [[2d20kh1+5]]\nDaño: [[1d8+3]]", desventaja: "Ataque: [[2d20kl1+5]]\nDaño: [[1d8+3]]" }, favorita: true },
             { id: "s1", categoria: "Habilidades", texto: "Sigilo: +4", cmd: { normal: "Sigilo: [[1d20+4]]", ventaja: "Sigilo: [[2d20kh1+4]]", desventaja: "Sigilo: [[2d20kl1+4]]" } },

@@ -104,6 +104,7 @@
     aplicarOpcionesLienzo();
     escucharRed();
     TBPaneles.iniciar(TB);
+    if (window.TBParticularidades) TBParticularidades.iniciar(TB);
     const guardada = TB.yo.esGM && localStorage.getItem("tbEscenaGM");
     await cargarEscena(TB.yo.esGM && guardada && TB.escenas.has(guardada) ? guardada : TB.estado.escena_jugadores);
     actualizarTurno();
@@ -224,6 +225,13 @@
     if (TB.yo.esGM) refrescarPV(); else TB.red.emitir("ficha", { id: enlace });
   };
   TB.sincronizarPV = sincronizarPV;
+  TB.refrescarPV = () => refrescarPV();
+  // La ficha del compendio que representa una ficha del tablero: la de una barra enlazada o la del diario
+  TB.fichaDeObjeto = o => {
+    if (!o) return null;
+    const d = o.datos || {};
+    return (d.barras || []).map(b => b && b.enlace).find(Boolean) || ((TB.diario.get(d.representa) || {}).ficha) || null;
+  };
   function leerCamara(id) { try { return JSON.parse(sessionStorage.getItem("tbCam:" + id) || "null"); } catch (e) { return null; } }
   function guardarCamara() {
     if (!TB.escenaId || !TB.L) return;
@@ -248,9 +256,16 @@
   TB.aplicarOpcionesLienzo = aplicarOpcionesLienzo;
 
   /* ------------------------------------------------------------ red */
+  const movRemotos = new Map();
   function escucharRed() {
     const r = TB.red;
     r.on("objeto", o => {
+      // Lo que movió otro (un jugador): cuando el servidor lo confirma, se avisa (la Grieta lo usa)
+      const pm = movRemotos.get(o.id);
+      if (pm && o.escena === TB.escenaId && Math.abs(o.x - pm.hasta.x) < 0.6 && Math.abs(o.y - pm.hasta.y) < 0.6) {
+        movRemotos.delete(o.id);
+        setTimeout(() => TB.lanzar("movido", { id: o.id, desde: pm.desde, hasta: pm.hasta, local: false }), 0);
+      }
       if (o.escena === TB.escenaId) TB.L.upsert(o, true);
       else if (TB.L.objeto(o.id)) TB.L.quitar(o.id);
     });
@@ -258,7 +273,7 @@
     r.on("escena", e => {
       if (!TB.yo.esGM && e.id !== TB.escenaId) return;
       TB.escenas.set(e.id, e);
-      if (e.id === TB.escenaId) TB.L.setEscena(e);
+      if (e.id === TB.escenaId) { TB.L.setEscena(e); TB.lanzar("escenaActual", e); }
       TB.lanzar("escenas");
     });
     r.on("escenaBorrada", id => {
@@ -288,7 +303,15 @@
     r.on("mensajeBorrado", id => { TB.mensajes = TB.mensajes.filter(m => m.id !== id); TB.lanzar("mensajes"); });
     r.on("diario", e => { TB.diario.set(e.id, e); TB.lanzar("diario"); });
     r.on("diarioBorrado", id => { TB.diario.delete(id); TB.lanzar("diario"); });
-    r.on("mov", d => { if (d && d.escena === TB.escenaId) TB.L.moverRemoto(d.id, d.x, d.y, d.ruta); });
+    r.on("mov", d => {
+      if (!d || d.escena !== TB.escenaId) return;
+      if (TB.yo.esGM) {
+        const o = TB.L.objeto(d.id), ahora = Date.now(), previo = movRemotos.get(d.id);
+        if (o) movRemotos.set(d.id, { desde: previo && ahora - previo.t < 4000 ? previo.desde : { x: o.x, y: o.y }, hasta: { x: d.x, y: d.y }, t: ahora });
+      }
+      TB.L.moverRemoto(d.id, d.x, d.y, d.ruta);
+    });
+    r.on("grieta", d => { if (d && d.escena === TB.escenaId) TB.lanzar("grieta", d); });
     r.on("quitar", d => { if (d && !TB.yo.esGM) (d.ids || []).forEach(id => TB.L.quitar(id)); });
     r.on("ping", d => {
       if (!d || d.escena !== TB.escenaId) return;
@@ -536,7 +559,7 @@
     if (!e) return;
     const nueva = Object.assign({}, e, cambios);
     TB.escenas.set(id, nueva);
-    if (id === TB.escenaId) TB.L.setEscena(nueva);
+    if (id === TB.escenaId) { TB.L.setEscena(nueva); TB.lanzar("escenaActual", nueva); }
     TB.lanzar("escenas");
     try { await TB.red.actualizarEscena(id, cambios); } catch (err) { aviso(mensajeError(err), true); }
   };
@@ -679,7 +702,7 @@
   function callbacksLienzo() {
     return {
       onCambiar: (id, cambios) => TB.cambiarObjeto(id, cambios),
-      onMovido: o => TB.guardarPosicion(o.id, o.x, o.y),
+      onMovido: (o, ruta) => { TB.guardarPosicion(o.id, o.x, o.y); TB.lanzar("movido", { id: o.id, desde: ruta && ruta[0], hasta: { x: o.x, y: o.y }, local: true }); },
       onMovEnCurso: (id, x, y, ruta) => TB.red.emitir("mov", { id, x, y, escena: TB.escenaId, ruta: Array.isArray(ruta) ? ruta.slice(0, 25).map(p => ({ x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 })) : undefined }),
       // En la capa Iluminación, lo que se dibuja son muros (del tipo elegido en el panel de iluminación)
       onCrear: filas => TB.crearObjetos(filas.map(f => f.capa === "luz" && f.tipo === "dibujo"
@@ -812,6 +835,7 @@
         TB.L.upsert(Object.assign({}, o, { x, y }));
         if (o.capa !== "gm") TB.red.emitir("mov", { id, x, y, escena: TB.escenaId });
         TB.guardarPosicion(id, x, y);
+        TB.lanzar("movido", { id, desde: { x: o.x, y: o.y }, hasta: { x, y }, local: true, teclas: true });
       }
     }
   });
