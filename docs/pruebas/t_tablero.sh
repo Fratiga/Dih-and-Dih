@@ -268,6 +268,11 @@ contiene "el avatar tiene que ser un enlace https" "$(como "$U2" "insert into ta
 como "$U1" "update tablero_perfil set color = '#12ab34' where uid = '$U1';" >/dev/null
 comprobar "cada uno elige su color y lo ven los demás" "#12ab34" "$(uno "$U2" "select color from tablero_perfil where uid = '$U1';")"
 contiene "el color tiene que ser #rrggbb" "$(como "$U1" "update tablero_perfil set color = 'red; x' where uid = '$U1';")" "check"
+como "$U1" "update tablero_perfil set apodo = 'La Rápida' where uid = '$U1';" >/dev/null
+comprobar "cada uno elige su nombre de la barra y lo ven los demás" "La Rápida" "$(uno "$U2" "select apodo from tablero_perfil where uid = '$U1';")"
+como "$U2" "update tablero_perfil set apodo = 'X' where uid = '$U1';" >/dev/null
+comprobar "nadie cambia el nombre de otro" "La Rápida" "$(sql "select apodo from tablero_perfil where uid = '$U1'")"
+contiene "el nombre tiene un máximo de 40 letras" "$(como "$U1" "update tablero_perfil set apodo = repeat('a', 41) where uid = '$U1';")" "check"
 como "$U1" "select tablero_decir('hola', 'todos', null, null);" >/dev/null
 comprobar "el chat usa el avatar de quien escribe" "https://ejemplo.com/yo.png" "$(sql "select avatar from tablero_mensajes order by id desc limit 1")"
 como "$U1" "insert into tablero_gifs (url, nombre) values ('https://media.tenor.com/a.gif', 'gato');" >/dev/null

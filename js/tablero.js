@@ -131,10 +131,10 @@
     const mio = [...TB.diario.values()].filter(e => e.tipo === "personaje" && !e.archivado && (e.controladores || []).includes(TB.yo.uid) && e.imagen)
       .sort((a, b) => (b.grupo ? 1 : 0) - (a.grupo ? 1 : 0))[0];
     const avatar = (TB.miPerfil && TB.miPerfil.avatar) || (mio ? mio.imagen : "");
-    const color = (TB.miPerfil && TB.miPerfil.color) || "";
-    if (avatar + "|" + color === avatarAnunciado) return;
-    avatarAnunciado = avatar + "|" + color;
-    TB.red.presencia({ avatar, personaje: mio ? mio.nombre : "", color });
+    const color = (TB.miPerfil && TB.miPerfil.color) || "", apodo = (TB.miPerfil && TB.miPerfil.apodo) || "";
+    if ([avatar, color, apodo].join("|") === avatarAnunciado) return;
+    avatarAnunciado = [avatar, color, apodo].join("|");
+    TB.red.presencia({ avatar, personaje: mio ? mio.nombre : "", color, apodo });
   }
 
   async function cargarEscena(id) {

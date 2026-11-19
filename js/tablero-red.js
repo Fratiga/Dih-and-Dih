@@ -173,10 +173,10 @@
       },
       async perfil() {
         // Con color si tablero.sql ya lo tiene; si no, solo el avatar
-        let r = await sb.from("tablero_perfil").select("avatar, color").eq("uid", yo.uid).maybeSingle();
+        let r = await sb.from("tablero_perfil").select("avatar, color, apodo").eq("uid", yo.uid).maybeSingle();
         if (r.error) r = await sb.from("tablero_perfil").select("avatar").eq("uid", yo.uid).maybeSingle();
         const d = ok(r);
-        return { avatar: (d && d.avatar) || "", color: (d && d.color) || "" };
+        return { avatar: (d && d.avatar) || "", color: (d && d.color) || "", apodo: (d && d.apodo) || "" };
       },
       // El color que eligió cada uno (los que no eligieron, no salen)
       async colores() { const { data, error } = await sb.from("tablero_perfil").select("uid, color").neq("color", ""); return error ? [] : (data || []); },
@@ -452,7 +452,7 @@
         msg({ nombre: c.nombre, avatar: c.avatar, tirada: t, modo: modo || "todos" });
         return modo === "secreta" && !yo.esGM ? { secreta: true } : t;
       },
-      async perfil() { return { avatar: perfilLocal().avatar || "", color: perfilLocal().color || "" }; },
+      async perfil() { return { avatar: perfilLocal().avatar || "", color: perfilLocal().color || "", apodo: perfilLocal().apodo || "" }; },
       async colores() { const c = perfilLocal().color; return c ? [{ uid: yo.uid, color: c }] : []; },
       async guardarPerfil(c) { localStorage.setItem("tbPerfilLocal:" + yo.uid, JSON.stringify(Object.assign(perfilLocal(), c))); },
       async gifs() { try { return JSON.parse(localStorage.getItem("tbGifsLocal:" + yo.uid) || "[]"); } catch (e) { return []; } },

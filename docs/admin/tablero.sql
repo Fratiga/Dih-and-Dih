@@ -936,6 +936,8 @@ create table if not exists tablero_perfil (
 );
 -- El color con el que se ve a cada uno (pings, reglas, cursor, avatar sin imagen). Vacío: uno sacado de su id.
 alter table tablero_perfil add column if not exists color text not null default '' check (color = '' or color ~ '^#[0-9a-fA-F]{6}$');
+-- El nombre que sale debajo de su avatar en la barra de jugadores. Vacío: «DJ», su personaje o su usuario.
+alter table tablero_perfil add column if not exists apodo text not null default '' check (char_length(apodo) <= 40);
 create table if not exists tablero_gifs (
   id uuid primary key default gen_random_uuid(),
   owner uuid not null default auth.uid() references auth.users (id) on delete cascade,

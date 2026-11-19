@@ -1783,7 +1783,7 @@
       caja.appendChild(f);
     };
 
-    const perfil = seccion("Mi avatar y mi color", true);
+    const perfil = seccion("Mi avatar, nombre y color", true);
     pintarPerfil(perfil);
     const sonido = seccion("Sonido", false);
     deslizador(sonido, "volumen", "Mi volumen de la música", 0, 1, 0.05, aplicarVolumen);
@@ -1929,6 +1929,26 @@
         ${actual ? `<button type="button" class="tb-btn tb-btn-mini" data-quitar>Quitar</button>` : ""}</div></div>`);
     caja.appendChild(c);
     caja.appendChild(el(`<p class="tb-nota">Sale en el chat y en la barra de quién está en el tablero. Sin avatar propio se usa la imagen de tu personaje.</p>`));
+    // Tu nombre en la barra de jugadores (vacío: el de siempre)
+    const apodo = (TB.miPerfil && TB.miPerfil.apodo) || "";
+    const porDefecto = TB.esGM() ? "DJ" : ((TB.presencia.find(p => p.uid === TB.yo.uid) || {}).personaje || TB.yo.nombre || "");
+    const filaNombre = el(`<label class="tb-campo" style="margin-top:calc(8px * var(--tb-k))"><span>Tu nombre en la barra de jugadores</span>
+      <input type="text" maxlength="40" data-apodo placeholder="${esc(porDefecto)}"></label>`);
+    caja.appendChild(filaNombre);
+    const inApodo = filaNombre.querySelector("[data-apodo]");
+    inApodo.value = apodo;
+    const guardarApodo = async () => {
+      const nuevo = inApodo.value.trim().slice(0, 40);
+      if (nuevo === apodo) return;
+      try {
+        await TB.red.guardarPerfil({ apodo: nuevo });
+        TB.miPerfil = Object.assign({}, TB.miPerfil, { apodo: nuevo });
+        TB.anunciarAvatar();
+        aviso(nuevo ? "Nombre cambiado." : "Vuelves a salir con el nombre de siempre.");
+      } catch (e) { aviso(/apodo/.test(String(e && e.message)) ? "Falta volver a correr tablero.sql para guardar el nombre." : mensajeError(e), true); }
+    };
+    inApodo.addEventListener("change", guardarApodo);
+    inApodo.addEventListener("keydown", e => { if (e.key === "Enter") inApodo.blur(); });
     // Tu color: el de tus pings, tus reglas y tu cursor, igual para todos
     const elegido = (TB.miPerfil && TB.miPerfil.color) || "";
     const filaColor = el(`<div class="tb-fila-toggle" style="border:0"><span>Tu color<small class="tb-nota" style="display:block;font-weight:400">El de tus pings, tus medidas y tu cursor. Lo ven todos.</small></span>
@@ -1985,11 +2005,11 @@
     const lista = (TB.presencia || []).slice().sort((x, y) => (y.gm ? 1 : 0) - (x.gm ? 1 : 0) || String(x.nombre).localeCompare(String(y.nombre)));
     b.style.setProperty("--tb-av", `calc(${A.tam}px * var(--tb-k))`);
     b.innerHTML = lista.map(p => {
-      const nombre = p.personaje ? `${p.personaje} (${p.nombre})` : p.nombre || "?";
+      const nombre = (p.apodo ? p.apodo + " · " : "") + (p.personaje ? `${p.personaje} (${p.nombre})` : p.nombre || "?");
       const fondo = p.avatar ? `background-image:url('${esc(p.avatar)}')` : `background-color:${TB.colorJugador(p.uid)}`;
       return `<div class="tb-av${p.gm ? " gm" : ""}${p.uid === TB.yo.uid ? " yo" : ""}" title="${esc(nombre)}${p.gm ? " · DJ" : ""}${p.uid === TB.yo.uid ? " · clic para cambiar tu avatar" : ""}">
         <span class="tb-av-img" style="${fondo};border-color:${TB.colorJugador(p.uid)}">${p.avatar ? "" : esc(String(p.nombre || "?")[0].toUpperCase())}</span>
-        ${A.nombres ? `<span class="tb-av-nombre">${esc(p.gm ? "DJ" : (p.personaje || p.nombre || ""))}</span>` : ""}</div>`;
+        ${A.nombres ? `<span class="tb-av-nombre">${esc(p.apodo || (p.gm ? "DJ" : (p.personaje || p.nombre || "")))}</span>` : ""}</div>`;
     }).join("");
     const yo = b.querySelector(".tb-av.yo");
     if (yo) yo.addEventListener("click", () => { if (TB.prefs.ladoPlegado) document.getElementById("tbLadoPlegar").click(); abrirPestana("ajustes"); });
