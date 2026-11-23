@@ -50,6 +50,11 @@
     const lAnim = new Konva.Layer({ listening: false });
     stage.add(lAnim);
     lAnim.zIndex(3);
+    // Los efectos que van detrás de la ficha (el humo, las esquirlas y el remolino del Elemental): debajo de las fichas y de
+    // sus barras, para no taparlas ni tener que recortarlas
+    const lAnimFondo = new Konva.Layer({ listening: false });
+    stage.add(lAnimFondo);
+    lAnimFondo.zIndex(2);
     // La página: el lienzo donde van los mapas; fuera de ella se ve el color del tablero
     const paginaSombra = new Konva.Rect({ x: 5, y: 7, width: 2800, height: 2800, fill: "rgba(0,0,0,.28)", listening: false, perfectDrawEnabled: false });
     const pagina = new Konva.Rect({ x: 0, y: 0, width: 2800, height: 2800, fill: "#ffffff", listening: false, perfectDrawEnabled: false });
@@ -192,16 +197,10 @@
     let luzPendiente = false;
     const ANIMADOS = { casteo_notas: 1, casteo_cartas: 1, fumando: 1, raudo: 1, furia_salvaje: 1, marca_cazador: 1, inspiracion_bardica: 1, heroismo: 1, manto_inspiracion: 1, magia_reforzante: 1, zorro: 1, zorro_defensa: 1, zorro_ataque: 1, zorro_inmolar: 1,
       jefe_fase1: 1, jefe_fase2: 1, jefe_fase3: 1, forma_intangible: 1, forma_densa: 1, forma_extensa: 1, jefe_carga: 1, jefe_expuesto: 1 };
+    // Los que se dibujan detrás de la ficha y de sus barras
+    const FONDO = { jefe_fase1: 1, jefe_fase2: 1, jefe_fase3: 1, forma_extensa: 1 };
     // El remolino de la fase 3 del Elemental: su propia imagen, girando detrás de la ficha
-    let animBarras = false;   // la ficha que se está dibujando lleva barras encima (los efectos del Elemental les dejan hueco)
     const IMG_FASE3 = "assets/enemigos/elemental-oscuridad-fase3.png?v=2";
-    // Recorta un anillo alrededor de la ficha: lo de dentro (la ficha) queda limpio
-    // y deja libre el hueco de las barras, encima de la ficha
-    function anillo(c, x, y, r0, r1) {
-      c.beginPath(); c.arc(x, y, r1, 0, Math.PI * 2); c.moveTo(x + r0, y); c.arc(x, y, r0, 0, Math.PI * 2);
-      if (animBarras) c.rect(x - r0 * 1.15, y - r0 * 2.5, r0 * 2.3, r0 * 1.38);
-      c.clip("evenodd");
-    }
     // El zorro de los destinos de Eledar (según los dibujos de Gabriel): cuerpo, oscuro, claro, marcas y nariz
     const ZORROS = {
       zorro: ["#e22bd9", "#8e1189", "#ff8af6", "#3f8dff"],
@@ -272,7 +271,7 @@
       c.moveTo(x, y - r); c.quadraticCurveTo(x, y, x + r, y); c.quadraticCurveTo(x, y, x, y + r);
       c.quadraticCurveTo(x, y, x - r, y); c.quadraticCurveTo(x, y, x, y - r); c.fill();
     }
-    const animForma = new Konva.Shape({
+    const formaAnim = fondo => new Konva.Shape({
       listening: false,
       sceneFunc(ctx) {
         const raw = ctx._context, t = performance.now() / 1000;
@@ -280,20 +279,19 @@
           const est = (n.o.datos || {}).estados;
           if (!est || !est.length || !n.g.visible()) return;
           const R = Math.max(n.o.ancho, n.o.alto) / 2, x = n.g.x(), y = n.g.y();
-          const d = n.o.datos || {};
-          animBarras = d.barraPos !== "debajo" && (d.barras || []).some(b => b && parseFloat(b.max) > 0);
-          est.forEach(e => { if (e && ANIMADOS[e.id]) dibujarAnimado(raw, e.id, x, y, R, t); });
+          est.forEach(e => { if (e && ANIMADOS[e.id] && !!FONDO[e.id] === fondo) dibujarAnimado(raw, e.id, x, y, R, t); });
         });
       }
     });
-    lAnim.add(animForma);
+    lAnim.add(formaAnim(false));
+    lAnimFondo.add(formaAnim(true));
     let bucleAnim = null, ultimoCuadro = 0;
     function actualizarAnim() {
       const hay = [...st.nodos.values()].some(n => ((n.o.datos || {}).estados || []).some(e => e && ANIMADOS[e.id]));
       if (hay && !bucleAnim) {
-        bucleAnim = new Konva.Animation(f => { if (document.hidden || f.time - ultimoCuadro < 50) return false; ultimoCuadro = f.time; }, lAnim);
+        bucleAnim = new Konva.Animation(f => { if (document.hidden || f.time - ultimoCuadro < 50) return false; ultimoCuadro = f.time; }, [lAnim, lAnimFondo]);
         bucleAnim.start();
-      } else if (!hay && bucleAnim) { bucleAnim.stop(); bucleAnim = null; lAnim.batchDraw(); }
+      } else if (!hay && bucleAnim) { bucleAnim.stop(); bucleAnim = null; lAnim.batchDraw(); lAnimFondo.batchDraw(); }
     }
     // Figuras dibujadas (24 × 24) para las notas y los palos de las cartas; sin caracteres que el sistema pinte como emoji
     let FIG = null;
@@ -353,8 +351,7 @@
           c.restore();
         }
       } else if (id === "jefe_fase1") {
-        // Fase 1: humo negro que gira despacio alrededor, con un filo violeta apagado
-        anillo(c, x, y, R * 0.92, R * 1.9);
+        // Fase 1: humo negro que gira despacio alrededor, con un filo violeta apagado (detrás de la ficha)
         for (let k = 0; k < 9; k++) {
           const a = t * 0.35 + k * Math.PI * 2 / 9 + 0.35 * Math.sin(t * 0.6 + k), r = R * (1.2 + 0.14 * Math.sin(t * 1.1 + k * 1.7));
           const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r, tam = R * (0.42 + 0.1 * Math.sin(t * 1.4 + k));
@@ -386,7 +383,6 @@
         // Fase 3: el remolino del agujero (su imagen) girando detrás de la ficha, y motas que caen hacia dentro
         const e = imagen(IMG_FASE3, () => {});
         c.save();
-        anillo(c, x, y, R * 0.94, R * 2.1);
         if (e && e.listo) {
           c.translate(x, y); c.rotate(t * 0.18);
           c.globalAlpha = 0.9; c.drawImage(e.img, -R * 2.1, -R * 2.1, R * 4.2, R * 4.2);
@@ -425,8 +421,7 @@
           c.lineTo(x + Math.cos(a - 0.04) * R * 1.18 * p, y + Math.sin(a - 0.04) * R * 1.18 * p); c.stroke();
         }
       } else if (id === "forma_extensa") {
-        // Extensa: zarcillos de oscuridad que salen de la ficha y se mecen hasta el doble de su alcance
-        anillo(c, x, y, R * 0.9, R * 3);
+        // Extensa: zarcillos de oscuridad que salen de detrás de la ficha y se mecen hasta el doble de su alcance
         c.lineCap = "round";
         for (let k = 0; k < 6; k++) {
           const a = k * Math.PI / 3 + 0.3 * Math.sin(t * 0.8 + k), largo = R * (2.1 + 0.25 * Math.sin(t * 1.3 + k * 2));
