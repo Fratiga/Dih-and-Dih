@@ -27,6 +27,7 @@ El CDN de Supabase no ayuda: una respuesta servida desde su caché (HIT) cuenta 
 
 Se pasaron a MP3 de 128 kbps 56 canciones: 45 de la Rocola de fondos (`musica_fondos`, incluidos los 8 FLAC) y las 11 del tablero que usa la gramola. Bajaron de 615 MB a 186 MB. Cada archivo nuevo lleva el sufijo `-128k.mp3` junto al original, y los enlaces de `musica_fondos`, `musica_paginas.config` y `tablero_estado` (gramola y música) apuntan a los nuevos. Se saltaron las 3 canciones que ya estaban cerca de 128 kbps. La Rocola pública (`rocola`) no se tocó, porque sus canciones sirven a juegos de ritmo y un cambio de codificación puede correr el compás unos milisegundos.
 
+- Los originales se borraron de Supabase el mismo día, junto con 11 copias repetidas del tablero que no usaba nadie (de *Libra Creature Of Night* y *Valley Of Fools* se dejó una copia sin usar de cada una). El almacenamiento bajó a unos 360 MB.
 - Los originales están respaldados en `%USERPROFILE%\respaldo-audio-supabase` (616 MB), fuera de OneDrive.
 - Scripts en `tools/recomprimir-audio/`. `convertir.mjs` baja, respalda y codifica. `subir.mjs` sube o borra. Necesitan `npm install @breezystack/lamejs audio-decode` en esa carpeta y un `plan.json` con `[bucket, nombre, bytes]`. Para subir o borrar sin clave de servicio se crea una regla temporal de Storage para `anon` limitada a los nombres exactos, y se quita al terminar.
 - Una petición HEAD a Storage responde `private, no-cache`. Es normal: la descarga (GET) sí responde `public, max-age=31536000`.
