@@ -253,5 +253,19 @@ const rico = jug => Object.keys(jug.recursos).forEach(k => { jug.recursos[k] = 9
   }
 }
 
+// --- Levas encargadas después de entrenar: deja entrenar otra ---
+{
+  const est = guerra(["caballeros-del-reino", "hijos-del-acero"]);
+  limpiar(est); est.activo = 0;
+  const jug = est.jugadores[0]; rico(jug);
+  const cap = FM.ciudadesDe(est, 0).find(c => c.capital);
+  const r1 = FM.aplicar(est, { t: "reclutar", ciudad: cap.id, clase: "guerrero" });
+  ok(r1.ok && !FM.aplicar(est, { t: "reclutar", ciudad: cap.id, clase: "guerrero" }).ok, "sin Levas se entrenan dos tropas");
+  ok(FM.aplicar(est, { t: "obra", ciudad: cap.id, id: "levas" }).ok, "no se pueden encargar Levas después de entrenar");
+  const r2 = FM.aplicar(est, { t: "reclutar", ciudad: cap.id, clase: "guerrero" });
+  ok(r2.ok, `Levas encargadas después de entrenar no dejan entrenar otra: ${r2.error || ""}`);
+  ok(!FM.aplicar(est, { t: "reclutar", ciudad: cap.id, clase: "guerrero" }).ok, "con Levas se entrenan tres tropas");
+}
+
 console.log(`${hechas} comprobaciones, ${fallos} fallos`);
 process.exit(fallos ? 1 : 0);

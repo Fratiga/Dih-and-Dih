@@ -1857,7 +1857,11 @@
         if (acc.id === "levas" ? ciudad.levasT === est.turno : ciudad.obras[acc.id] >= est.turno) return error("Esa obra ya está en marcha.");
         if (!puedePagar(jug, ob.coste)) return error("No te alcanzan los recursos.");
         pagar(jug, ob.coste);
-        if (acc.id === "levas") ciudad.levasT = est.turno;
+        if (acc.id === "levas") {
+          ciudad.levasT = est.turno;
+          // Si la ciudad ya entrenó este turno, las Levas le dejan entrenar otra ahora mismo
+          if (ciudad.reclutado && !ciudad.leva2) { ciudad.leva2 = true; ciudad.reclutado = false; }
+        }
         else ciudad.obras[acc.id] = est.turno + ob.turnos - 1;
         if (acc.id === "vigias") actualizarVision(est, j);
         reg(est, `${ciudad.nombre}: ${ob.nombre.toLowerCase()}.`, "obra");
