@@ -23,6 +23,14 @@ El CDN de Supabase no ayuda: una respuesta servida desde su caché (HIT) cuenta 
 6. **Consultas periódicas: lo más espaciadas posible**, y en pausa con la pestaña oculta (`document.hidden`).
 7. **Nada de archivos fijos del sitio en Supabase.** Logos, fondos y música fija van en `assets/` del repo (GitHub Pages no cuenta para Supabase).
 
+## Recompresión del audio (23 de noviembre de 2026)
+
+Se pasaron a MP3 de 128 kbps 56 canciones: 45 de la Rocola de fondos (`musica_fondos`, incluidos los 8 FLAC) y las 11 del tablero que usa la gramola. Bajaron de 615 MB a 186 MB. Cada archivo nuevo lleva el sufijo `-128k.mp3` junto al original, y los enlaces de `musica_fondos`, `musica_paginas.config` y `tablero_estado` (gramola y música) apuntan a los nuevos. Se saltaron las 3 canciones que ya estaban cerca de 128 kbps. La Rocola pública (`rocola`) no se tocó, porque sus canciones sirven a juegos de ritmo y un cambio de codificación puede correr el compás unos milisegundos.
+
+- Los originales están respaldados en `%USERPROFILE%\respaldo-audio-supabase` (616 MB), fuera de OneDrive.
+- Scripts en `tools/recomprimir-audio/`. `convertir.mjs` baja, respalda y codifica. `subir.mjs` sube o borra. Necesitan `npm install @breezystack/lamejs audio-decode` en esa carpeta y un `plan.json` con `[bucket, nombre, bytes]`. Para subir o borrar sin clave de servicio se crea una regla temporal de Storage para `anon` limitada a los nombres exactos, y se quita al terminar.
+- Una petición HEAD a Storage responde `private, no-cache`. Es normal: la descarga (GET) sí responde `public, max-age=31536000`.
+
 ## Cómo medir
 
 Con el MCP de Supabase, `query_logs` sobre `edge_logs`, agrupando por `log_attributes['request.path']` y sumando `log_attributes['response.headers.content_length']`. Ventanas de 24 horas como máximo. En el panel: Reports, luego Usage.
