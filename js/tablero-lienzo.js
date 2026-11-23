@@ -194,7 +194,7 @@
       jefe_fase1: 1, jefe_fase2: 1, jefe_fase3: 1, forma_intangible: 1, forma_densa: 1, forma_extensa: 1, jefe_carga: 1, jefe_expuesto: 1 };
     // El remolino de la fase 3 del Elemental: su propia imagen, girando detrás de la ficha
     let animBarras = false;   // la ficha que se está dibujando lleva barras encima (los efectos del Elemental les dejan hueco)
-    const IMG_FASE3 = "assets/enemigos/elemental-oscuridad-fase3.png";
+    const IMG_FASE3 = "assets/enemigos/elemental-oscuridad-fase3.png?v=2";
     // Recorta un anillo alrededor de la ficha: lo de dentro (la ficha) queda limpio
     // y deja libre el hueco de las barras, encima de la ficha
     function anillo(c, x, y, r0, r1) {
