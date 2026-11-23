@@ -701,7 +701,8 @@ begin
         or (nuevo = 'fumando' and nombre !~ '\m(torvrena|cassius)\M')
         or (nuevo in ('raudo', 'marca_cazador') and nombre !~ '\mcassius\M')
         or (nuevo in ('inspiracion_bardica', 'heroismo', 'manto_inspiracion') and nombre !~ '\mryn\M')
-        or (nuevo in ('furia_salvaje', 'magia_reforzante') and nombre !~ '\mhooey\M') then
+        or (nuevo in ('furia_salvaje', 'magia_reforzante') and nombre !~ '\mhooey\M')
+        or ((nuevo like 'jefe\_%' or nuevo like 'forma\_%') and nombre !~ '\melemental\M') then
         raise exception 'Ese estado es de otro personaje.';
       end if;
     end loop;

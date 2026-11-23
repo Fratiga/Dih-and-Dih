@@ -42,7 +42,7 @@
     const s = estadisticasDe(o);
     const g = o && o.datos && o.datos.grieta;
     if (!s || !g) return s;
-    return Object.assign({}, s, g.stats ? { stats: Object.assign({}, s.stats, g.stats) } : {},
+    return Object.assign({}, s, g.stats ? { stats: Object.assign({}, s.stats, g.stats), statsOriginales: s.stats } : {},
       g.ca != null ? { ca: g.ca } : {}, g.velocidad != null ? { velocidad: g.velocidad } : {}, g.iniciativa != null ? { iniciativa: g.iniciativa } : {});
   }
   function listaEnemigos() {

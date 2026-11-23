@@ -235,6 +235,7 @@ como "$U1" "select tablero_estados('$F1', '[{\"id\": \"casteo_notas\"}]');" >/de
 comprobar "el de su personaje sí" "casteo_notas" "$(sql "select datos -> 'estados' -> 0 ->> 'id' from tablero_objetos where id = '$F1'")"
 contiene "y el de otro no aunque tenga el suyo" "$(como "$U1" "select tablero_estados('$F1', '[{\"id\": \"casteo_notas\"}, {\"id\": \"furia_salvaje\"}]');")" "de otro personaje"
 contiene "el estado de dar de Cassius no se lo pone Ryn a sí misma" "$(como "$U1" "select tablero_estados('$F1', '[{\"id\": \"casteo_notas\"}, {\"id\": \"raudo\"}]');")" "de otro personaje"
+contiene "los indicadores del Elemental no se los pone un jugador" "$(como "$U1" "select tablero_estados('$F1', '[{\"id\": \"casteo_notas\"}, {\"id\": \"jefe_fase3\"}]');")" "de otro personaje"
 como "$U1" "select tablero_dar_estado('$F2', 'inspiracion_bardica', true, 6);" >/dev/null
 comprobar "Ryn da Inspiración bárdica a la ficha de otro jugador" "inspiracion_bardica|6" "$(sql "select (datos -> 'estados' -> 0 ->> 'id') || '|' || (datos -> 'estados' -> 0 ->> 'n') from tablero_objetos where id = '$F2'")"
 contiene "pero no da los de otro personaje" "$(como "$U1" "select tablero_dar_estado('$F2', 'raudo', true);")" "de otro personaje"

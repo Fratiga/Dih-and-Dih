@@ -120,6 +120,18 @@ function statsR20ComandoHabilidad(s, hab, modo) {
   return { texto: lineas.join("\n"), automatizada, tieneAtaque: l.ataque !== null };
 }
 
+/* Las salvaciones con competencia que traen las notas ("Salvaciones: FUE +9, CON +8."); las demás, el modificador. */
+function statsR20Salvaciones(s) {
+  const r = {}, abrev = { FUE: "fue", DES: "des", CON: "con", INT: "int", SAB: "sab", CAR: "car" };
+  const m = (s.notas || []).join(" ").match(/Salvaciones\s*:\s*([^.]*)/i);
+  if (m) {
+    const re = /\b(FUE|DES|CON|INT|SAB|CAR)\s*([+-]\s*\d+)/gi;
+    let x;
+    while ((x = re.exec(m[1]))) r[abrev[x[1].toUpperCase()]] = parseInt(x[2].replace(/\s+/g, ""), 10);
+  }
+  return r;
+}
+
 /* Todo lo que se publica de un enemigo: tiradas básicas + sus habilidades. */
 function statsR20Enemigo(s) {
   const items = [];
@@ -127,8 +139,12 @@ function statsR20Enemigo(s) {
   const iniciativa = s.iniciativa !== undefined && Number.isFinite(parseInt(s.iniciativa, 10))
     ? parseInt(s.iniciativa, 10) : statsR20Mod(s, "des");
   const basicas = [{ id: "ini", texto: "Iniciativa", bonus: iniciativa, etiqueta: `${s.nombre}: Iniciativa` }];
+  const competentes = statsR20Salvaciones(s);
   Object.entries(STATS_R20_NOMBRE_ATRIBUTO).forEach(([id, nombre]) => {
-    basicas.push({ id: `sv-${id}`, texto: `Salvación de ${nombre} (${statsR20Signo(statsR20Mod(s, id))})`, bonus: statsR20Mod(s, id), etiqueta: `${s.nombre}: Salvación de ${nombre}` });
+    // Con competencia: el bono de las notas, más lo que haya cambiado el modificador (la Grieta puede cambiar la puntuación)
+    const base = statsR20Mod(s, id);
+    const bonus = competentes[id] != null ? competentes[id] + (s.statsOriginales ? base - statsR20Mod({ stats: s.statsOriginales }, id) : 0) : base;
+    basicas.push({ id: `sv-${id}`, texto: `Salvación de ${nombre} (${statsR20Signo(bonus)})`, bonus, etiqueta: `${s.nombre}: Salvación de ${nombre}` });
   });
   basicas.forEach(b => {
     items.push({

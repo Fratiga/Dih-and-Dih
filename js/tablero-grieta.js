@@ -34,7 +34,7 @@
 
   /* ============================================================ utilidades */
   const CFG_DEF = { activa: true, pausada: false, frecuencia: "media", intensidad: 2, mov: true, visual: true, real: true, stats: true,
-    combinadas: true, modoReal: "azar", pvNivel3: "no", barraPV: 0 };
+    combinadas: true, modoReal: "azar", pvNivel3: "no", barraPV: 0, atributoN1: "azar" };
   // prob: de que un movimiento dispare una anomalía; cada: segundos (de media) entre eventos sueltos
   const FREC = { baja: { prob: 0.12, cada: 240, nombre: "Baja" }, media: { prob: 0.25, cada: 120, nombre: "Media" }, alta: { prob: 0.45, cada: 60, nombre: "Alta" }, caotica: { prob: 0.7, cada: 25, nombre: "Caótica" } };
   const ATR = ["fue", "des", "con", "int", "sab", "car"];
@@ -503,6 +503,15 @@
   }
   async function anomaliaMovimiento(ids, tipo, motivo) {
     const cx = contexto();
+    if (tipo === "intercambio" && !motivo && ids && ids.length === 2) {
+      const a = TB.L.objeto(ids[0]), b = TB.L.objeto(ids[1]);
+      if (a && b && esToken(a) && esToken(b)) {
+        const pa = buscarValido(a, b.x, b.y, Object.assign({}, cx, { ignorar: new Set([b.id]) }), 3) || encajar(a, b.x, b.y, cx.pag);
+        const pb = buscarValido(b, a.x, a.y, Object.assign({}, cx, { ignorar: new Set([a.id]) }), 3) || encajar(b, a.x, a.y, cx.pag);
+        const ops = await saltar([{ id: a.id, x: pa.x, y: pa.y }, { id: b.id, x: pb.x, y: pb.y }]);
+        return ops ? { clase: "mov", titulo: "Intercambio", detalle: `${nombreDe(a)} y ${nombreDe(b)} cambian de sitio`, ops } : null;
+      }
+    }
     const todos = [], lineas = [];
     let titulo = null;
     for (const id of ids) {
@@ -886,20 +895,30 @@
     const todos = await participantes();
     if (todos.length < 2) return null;
     const I = cfg().intensidad, ops = [], lineas = [];
-    const elegidos = barajar(todos.slice());
+    let elegidos = barajar(todos.slice()), dirigido = false;
+    if (opciones.ids && opciones.ids.length >= 2) {
+      const sel = [];
+      opciones.ids.forEach(id => {
+        const o = TB.L.objeto(id), fid = o && TB.fichaDeObjeto(o);
+        const p = todos.find(q => q.objeto === id || (fid && q.tipo === "ficha" && q.id === fid));
+        if (p && !sel.includes(p)) sel.push(p);
+      });
+      if (sel.length >= 2) { elegidos = sel; dirigido = true; }
+    }
+    const fija = opciones.atributo || (cfg().atributoN1 !== "azar" ? cfg().atributoN1 : null);
     if (nivel === 1) {
       // una pareja y un atributo en el que de verdad sean distintos
       const cand = [];
       for (let i = 0; i < elegidos.length; i++) for (let j = i + 1; j < elegidos.length; j++) {
         const ai = leer(elegidos[i]).atr, aj = leer(elegidos[j]).atr;
-        ATR.forEach(k => { if (Number(ai[k]) !== Number(aj[k])) cand.push([elegidos[i], elegidos[j], k, ai[k], aj[k]]); });
+        ATR.forEach(k => { if ((!fija || k === fija) && Number(ai[k]) !== Number(aj[k])) cand.push([elegidos[i], elegidos[j], k, ai[k], aj[k]]); });
       }
       if (!cand.length) return null;
       const [a, b, k, va, vb] = elegir(cand);
       await escribir(a, { atr: { [k]: vb } }, ops); await escribir(b, { atr: { [k]: va } }, ops);
       lineas.push(`${NOMBRE_ATR[k]}: ${a.nombre} ${texto(va)} ⇄ ${b.nombre} ${texto(vb)}`);
     } else if (nivel === 2) {
-      const n = Math.min(elegidos.length, 2 + entero(3)), grupo = elegidos.slice(0, n);
+      const n = dirigido ? elegidos.length : Math.min(elegidos.length, 2 + entero(3)), grupo = elegidos.slice(0, n);
       const valores = grupo.map(p => leer(p).atr);
       // solo atributos en los que el grupo no es igual
       const claves = barajar(ATR.filter(k => new Set(valores.map(v => Number(v[k]))).size > 1)).slice(0, 2 + entero(2));
@@ -915,7 +934,7 @@
       for (let i = 0; i < grupo.length; i++) await escribir(grupo[i], { atr: nuevos[i] }, ops);
     } else {
       // dos (o tres) que no tengan las mismas estadísticas (dos copias del mismo enemigo no cuentan)
-      const quiero = I >= 3 && elegidos.length >= 3 && Math.random() < 0.4 ? 3 : 2;
+      const quiero = dirigido ? Math.min(3, elegidos.length) : I >= 3 && elegidos.length >= 3 && Math.random() < 0.4 ? 3 : 2;
       const huella = p => { const v = leer(p); return JSON.stringify(ATR.map(k => Number(v.atr[k]))) + "|" + v.ca; };
       const grupo = [];
       elegidos.forEach(p => { if (grupo.length < quiero && !grupo.some(q => huella(q) === huella(p))) grupo.push(p); });
@@ -1026,9 +1045,9 @@
     r_desplazar: { grupo: "real", nombre: "Mover secciones", hacer: real(m => REAL.desplazar(cfg().intensidad, m), "Secciones del mapa desplazadas") },
     r_recomponer: { grupo: "real", nombre: "Recomponer", hacer: () => conTitulo(REAL.recomponer(), "El mapa se recompone") },
     // estadísticas
-    s_1: { grupo: "stats", nombre: "Nivel 1", hacer: () => anomaliaStats(1) },
-    s_2: { grupo: "stats", nombre: "Nivel 2", hacer: () => anomaliaStats(2) },
-    s_3: { grupo: "stats", nombre: "Nivel 3", hacer: () => anomaliaStats(3) },
+    s_1: { grupo: "stats", nombre: "Nivel 1", hacer: ids => anomaliaStats(1, { ids }) },
+    s_2: { grupo: "stats", nombre: "Nivel 2", hacer: ids => anomaliaStats(2, { ids }) },
+    s_3: { grupo: "stats", nombre: "Nivel 3", hacer: ids => anomaliaStats(3, { ids }) },
     s_pv: { grupo: "stats", nombre: "Vida (PV)", hacer: () => anomaliaPV(cfg().pvNivel3 === "proporcion" ? "proporcion" : "intercambiar") },
     s_restaurar: { grupo: "stats", nombre: "Restaurar originales", hacer: () => restaurarStats(), sinAzar: true }
   };
@@ -1157,8 +1176,8 @@
   /* ============================================================ panel del DJ */
   let avisoTexto = "", avisoReloj = null;
   function avisoPanel(t) { avisoTexto = t; clearTimeout(avisoReloj); avisoReloj = setTimeout(() => { avisoTexto = ""; pintarPanel(); }, 5000); pintarPanel(); }
-  const GRUPOS = [["mov", "Movimiento", "A las fichas seleccionadas; si no hay ninguna, a unas al azar."], ["visual", "Mapa · solo visual", "Un instante en todas las pantallas. No cambia nada."],
-    ["real", "Mapa · real", "Cambia coordenadas de verdad. Recomponer lo devuelve a como estaba."], ["stats", "Estadísticas", "Con los datos reales de las fichas y de los enemigos de la página."]];
+  const GRUPOS = [["mov", "Movimiento", "A las fichas seleccionadas; si no hay ninguna, a unas al azar. Intercambio con dos fichas seleccionadas las cambia de sitio entre ellas."], ["visual", "Mapa · solo visual", "Un instante en todas las pantallas. No cambia nada."],
+    ["real", "Mapa · real", "Cambia coordenadas de verdad. Recomponer lo devuelve a como estaba."], ["stats", "Estadísticas", "Con los datos reales de las fichas y de los enemigos de la página. Con dos o más fichas seleccionadas, el intercambio es entre ellas."]];
   function abrirPanel() {
     if (!TB.esGM()) return;
     if (ventanas.has("grieta")) { pintarPanel(); return; }
@@ -1188,7 +1207,8 @@
         <label class="tb-casilla"><input type="checkbox" data-c="combinadas"> Combinarlas</label></div>
       <div class="tb-fila"><label class="tb-campo" style="flex:1"><span>Cambios reales del mapa</span><select data-modo><option value="azar">Al azar</option><option value="todo">Con las fichas encima</option><option value="terreno">Solo el terreno</option></select></label>
         <label class="tb-campo" style="flex:1"><span>Vida en el nivel 3</span><select data-pv><option value="no">No se toca</option><option value="intercambiar">Se intercambia</option><option value="proporcion">Se cambia la proporción</option></select></label></div>
-      <label class="tb-campo"><span>Barra de PV de los enemigos</span><select data-barra><option value="0">Barra 1 (verde)</option><option value="1">Barra 2 (azul)</option><option value="2">Barra 3 (roja)</option></select></label>
+      <div class="tb-fila"><label class="tb-campo" style="flex:1"><span>Barra de PV de los enemigos</span><select data-barra><option value="0">Barra 1 (verde)</option><option value="1">Barra 2 (azul)</option><option value="2">Barra 3 (roja)</option></select></label>
+        <label class="tb-campo" style="flex:1"><span>Característica del nivel 1</span><select data-atr1><option value="azar">Al azar</option>${ATR.map(k => `<option value="${k}">${NOMBRE_ATR[k]}</option>`).join("")}</select></label></div>
       <hr class="tb-sep">
       <div class="tb-fila" style="justify-content:space-between;align-items:center"><h4 class="tb-cfgpag-sec" style="margin:0">Forzar</h4><button type="button" class="tb-btn tb-btn-acento" data-azar>Evento al azar</button></div>
       ${avisoTexto ? `<p class="tb-nota tb-grieta-aviso">${esc(avisoTexto)}</p>` : ""}
@@ -1210,6 +1230,7 @@
     q("[data-modo]").value = c.modoReal; q("[data-modo]").addEventListener("change", ev => guardarCfg({ modoReal: ev.target.value }));
     q("[data-pv]").value = c.pvNivel3; q("[data-pv]").addEventListener("change", ev => guardarCfg({ pvNivel3: ev.target.value }));
     q("[data-barra]").value = String(c.barraPV | 0); q("[data-barra]").addEventListener("change", ev => guardarCfg({ barraPV: Number(ev.target.value) }));
+    q("[data-atr1]").value = c.atributoN1 || "azar"; q("[data-atr1]").addEventListener("change", ev => guardarCfg({ atributoN1: ev.target.value }));
     q("[data-azar]").addEventListener("click", () => eventoAleatorio());
     caja.querySelectorAll("[data-forzar]").forEach(b => b.addEventListener("click", async () => {
       const k = b.dataset.forzar;

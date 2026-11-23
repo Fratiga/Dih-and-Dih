@@ -1267,7 +1267,7 @@
     if (!b) { if (tipEst) { tipEst.remove(); tipEst = null; } return; }
     const c = (window.TBEstados || []).find(q => q.id === b.id);
     if (!c) return;
-    const regla = window.TBReglaEstado(c), muriendo = b.id === "inconsciente" && b.muriendo ? window.TBReglaEstado(null, "Muriendo") : "";
+    const regla = window.TBReglaEstado(c) || c.desc || "", muriendo = b.id === "inconsciente" && b.muriendo ? window.TBReglaEstado(null, "Muriendo") : "";
     if (!tipEst) { tipEst = el(`<div class="tb-tip-estado" role="tooltip"></div>`); document.body.appendChild(tipEst); }
     tipEst.innerHTML = `<div class="tb-tip-cab"><span>${window.TBMarcaSVG(c) || `<i class="tb-estado-punto" style="background:${c.color}"></i>`}</span><b>${esc(c.nombre)}${b.n != null && b.n !== "" ? " " + esc(String(b.n)) : ""}</b></div>
       ${regla ? `<p>${esc(regla)}</p>` : ""}${muriendo ? `<p><b>Muriendo.</b> ${esc(muriendo)}</p>` : ""}${!regla && !muriendo ? `<p class="tb-nota">Marcador sin regla propia.</p>` : ""}`;

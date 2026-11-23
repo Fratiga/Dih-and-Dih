@@ -190,7 +190,18 @@
     const opcLuz = () => (st.escena && st.escena.opciones && st.escena.opciones.luz) || {};
     function bloqueaMovimiento() { const L = opcLuz(), b = L.bloquear || "luz"; return !!window.TBLuz && (b === "siempre" || (b === "luz" && !!L.activa)); }
     let luzPendiente = false;
-    const ANIMADOS = { casteo_notas: 1, casteo_cartas: 1, fumando: 1, raudo: 1, furia_salvaje: 1, marca_cazador: 1, inspiracion_bardica: 1, heroismo: 1, manto_inspiracion: 1, magia_reforzante: 1, zorro: 1, zorro_defensa: 1, zorro_ataque: 1, zorro_inmolar: 1 };
+    const ANIMADOS = { casteo_notas: 1, casteo_cartas: 1, fumando: 1, raudo: 1, furia_salvaje: 1, marca_cazador: 1, inspiracion_bardica: 1, heroismo: 1, manto_inspiracion: 1, magia_reforzante: 1, zorro: 1, zorro_defensa: 1, zorro_ataque: 1, zorro_inmolar: 1,
+      jefe_fase1: 1, jefe_fase2: 1, jefe_fase3: 1, forma_intangible: 1, forma_densa: 1, forma_extensa: 1, jefe_carga: 1, jefe_expuesto: 1 };
+    // El remolino de la fase 3 del Elemental: su propia imagen, girando detrás de la ficha
+    let animBarras = false;   // la ficha que se está dibujando lleva barras encima (los efectos del Elemental les dejan hueco)
+    const IMG_FASE3 = "assets/enemigos/elemental-oscuridad-fase3.png";
+    // Recorta un anillo alrededor de la ficha: lo de dentro (la ficha) queda limpio
+    // y deja libre el hueco de las barras, encima de la ficha
+    function anillo(c, x, y, r0, r1) {
+      c.beginPath(); c.arc(x, y, r1, 0, Math.PI * 2); c.moveTo(x + r0, y); c.arc(x, y, r0, 0, Math.PI * 2);
+      if (animBarras) c.rect(x - r0 * 1.15, y - r0 * 2.5, r0 * 2.3, r0 * 1.38);
+      c.clip("evenodd");
+    }
     // El zorro de los destinos de Eledar (según los dibujos de Gabriel): cuerpo, oscuro, claro, marcas y nariz
     const ZORROS = {
       zorro: ["#e22bd9", "#8e1189", "#ff8af6", "#3f8dff"],
@@ -269,6 +280,8 @@
           const est = (n.o.datos || {}).estados;
           if (!est || !est.length || !n.g.visible()) return;
           const R = Math.max(n.o.ancho, n.o.alto) / 2, x = n.g.x(), y = n.g.y();
+          const d = n.o.datos || {};
+          animBarras = d.barraPos !== "debajo" && (d.barras || []).some(b => b && parseFloat(b.max) > 0);
           est.forEach(e => { if (e && ANIMADOS[e.id]) dibujarAnimado(raw, e.id, x, y, R, t); });
         });
       }
@@ -338,6 +351,121 @@
           c.translate(px, py); c.rotate(Math.sin(t * 1.5 + i * 1.1) * 0.28);
           figura(c, notas[i % 4], 0, 0, R * (0.36 + 0.05 * Math.sin(t * 2 + i)), tonos[i % 4], "rgba(110,40,0,.75)");
           c.restore();
+        }
+      } else if (id === "jefe_fase1") {
+        // Fase 1: humo negro que gira despacio alrededor, con un filo violeta apagado
+        anillo(c, x, y, R * 0.92, R * 1.9);
+        for (let k = 0; k < 9; k++) {
+          const a = t * 0.35 + k * Math.PI * 2 / 9 + 0.35 * Math.sin(t * 0.6 + k), r = R * (1.2 + 0.14 * Math.sin(t * 1.1 + k * 1.7));
+          const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r, tam = R * (0.42 + 0.1 * Math.sin(t * 1.4 + k));
+          const g = c.createRadialGradient(px, py, 0, px, py, tam);
+          g.addColorStop(0, "rgba(8,5,14,.72)"); g.addColorStop(0.6, "rgba(30,16,52,.35)"); g.addColorStop(1, "rgba(30,16,52,0)");
+          c.fillStyle = g; c.beginPath(); c.arc(px, py, tam, 0, Math.PI * 2); c.fill();
+        }
+        c.globalAlpha = 0.5 + 0.15 * Math.sin(t * 1.6); c.strokeStyle = "rgba(110,80,170,.8)"; c.lineWidth = R * 0.025;
+        c.beginPath(); c.arc(x, y, R * 1.02, 0, Math.PI * 2); c.stroke();
+      } else if (id === "jefe_fase2") {
+        // Fase 2: la silueta se descompone; aros fantasma rojo y cian que saltan de sitio y esquirlas que orbitan
+        const sem = Math.floor(t * 9), az = n => { const v = Math.sin(sem * 12.9898 + n * 78.233) * 43758.5453; return v - Math.floor(v); };
+        c.globalCompositeOperation = "lighter";
+        [["rgba(255,40,90,.5)", 1], ["rgba(40,230,255,.45)", -1]].forEach(([col, s], i) => {
+          const dx = (az(i * 3) - 0.5) * R * 0.22 * s, dy = (az(i * 3 + 1) - 0.5) * R * 0.12;
+          c.strokeStyle = col; c.lineWidth = R * 0.04;
+          c.beginPath(); c.arc(x + dx, y + dy, R * (1.04 + az(i * 3 + 2) * 0.06), 0, Math.PI * 2); c.stroke();
+        });
+        c.globalCompositeOperation = "source-over";
+        for (let k = 0; k < 7; k++) {
+          const a = -t * 0.9 + k * Math.PI * 2 / 7 + (az(k + 9) - 0.5) * 0.3, r = R * (1.32 + 0.1 * Math.sin(t * 2 + k));
+          const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r, l = R * (0.16 + 0.06 * az(k + 20));
+          c.save(); c.translate(px, py); c.rotate(a + t * 2);
+          c.globalAlpha = 0.85; c.fillStyle = k % 2 ? "#3b2a63" : "#16101f"; c.strokeStyle = "rgba(170,140,255,.7)"; c.lineWidth = R * 0.012;
+          c.beginPath(); c.moveTo(0, -l); c.lineTo(l * 0.45, l * 0.6); c.lineTo(-l * 0.5, l * 0.4); c.closePath(); c.fill(); c.stroke();
+          c.restore();
+        }
+      } else if (id === "jefe_fase3") {
+        // Fase 3: el remolino del agujero (su imagen) girando detrás de la ficha, y motas que caen hacia dentro
+        const e = imagen(IMG_FASE3, () => {});
+        c.save();
+        anillo(c, x, y, R * 0.94, R * 2.1);
+        if (e && e.listo) {
+          c.translate(x, y); c.rotate(t * 0.18);
+          c.globalAlpha = 0.9; c.drawImage(e.img, -R * 2.1, -R * 2.1, R * 4.2, R * 4.2);
+        } else {
+          const g = c.createRadialGradient(x, y, R, x, y, R * 2);
+          g.addColorStop(0, "rgba(60,30,120,.6)"); g.addColorStop(1, "rgba(10,5,25,0)");
+          c.fillStyle = g; c.beginPath(); c.arc(x, y, R * 2, 0, Math.PI * 2); c.fill();
+        }
+        c.restore();
+        c.globalCompositeOperation = "lighter";
+        for (let k = 0; k < 14; k++) {
+          const f = (t * 0.35 + k / 14) % 1, a = k * 2.4 + f * 3.2, r = R * (2 - f * 1.05);
+          c.globalAlpha = Math.sin(f * Math.PI) * 0.8; c.fillStyle = k % 3 ? "#9d7bff" : "#5ff0d8";
+          c.beginPath(); c.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, R * 0.035, 0, Math.PI * 2); c.fill();
+        }
+      } else if (id === "forma_intangible") {
+        // Intangible: un velo que vuelve la ficha medio transparente y aros discontinuos que se deshacen
+        c.globalAlpha = 0.28 + 0.12 * Math.sin(t * 5); c.fillStyle = "#0c0a14";
+        c.beginPath(); c.arc(x, y, R * 0.98, 0, Math.PI * 2); c.fill();
+        c.globalAlpha = 0.7; c.strokeStyle = "rgba(190,175,255,.7)"; c.lineWidth = R * 0.03;
+        for (let k = 0; k < 2; k++) {
+          c.setLineDash([R * 0.18, R * 0.14]); c.lineDashOffset = (k ? -1 : 1) * t * R * 0.6;
+          c.beginPath(); c.arc(x, y, R * (1.08 + k * 0.14), 0, Math.PI * 2); c.stroke();
+        }
+        c.setLineDash([]);
+      } else if (id === "forma_densa") {
+        // Densa: un anillo negro grueso y pesado que late despacio, con grietas violeta
+        const p = 1 + 0.03 * Math.sin(t * 2.2);
+        c.strokeStyle = "rgba(6,4,10,.9)"; c.lineWidth = R * 0.16;
+        c.beginPath(); c.arc(x, y, R * 1.1 * p, 0, Math.PI * 2); c.stroke();
+        c.strokeStyle = "rgba(150,110,240,.75)"; c.lineWidth = R * 0.02;
+        for (let k = 0; k < 6; k++) {
+          const a = k * Math.PI / 3 + 0.2;
+          c.beginPath(); c.moveTo(x + Math.cos(a) * R * 1.03 * p, y + Math.sin(a) * R * 1.03 * p);
+          c.lineTo(x + Math.cos(a + 0.08) * R * 1.12 * p, y + Math.sin(a + 0.08) * R * 1.12 * p);
+          c.lineTo(x + Math.cos(a - 0.04) * R * 1.18 * p, y + Math.sin(a - 0.04) * R * 1.18 * p); c.stroke();
+        }
+      } else if (id === "forma_extensa") {
+        // Extensa: zarcillos de oscuridad que salen de la ficha y se mecen hasta el doble de su alcance
+        anillo(c, x, y, R * 0.9, R * 3);
+        c.lineCap = "round";
+        for (let k = 0; k < 6; k++) {
+          const a = k * Math.PI / 3 + 0.3 * Math.sin(t * 0.8 + k), largo = R * (2.1 + 0.25 * Math.sin(t * 1.3 + k * 2));
+          const ox = x + Math.cos(a) * R * 0.95, oy = y + Math.sin(a) * R * 0.95;
+          const fx = x + Math.cos(a + 0.25 * Math.sin(t * 1.7 + k)) * largo, fy = y + Math.sin(a + 0.25 * Math.sin(t * 1.7 + k)) * largo;
+          const cx1 = x + Math.cos(a + 0.5 * Math.sin(t + k)) * R * 1.6, cy1 = y + Math.sin(a + 0.5 * Math.sin(t + k)) * R * 1.6;
+          c.strokeStyle = "rgba(8,6,14,.85)"; c.lineWidth = R * 0.13;
+          c.beginPath(); c.moveTo(ox, oy); c.quadraticCurveTo(cx1, cy1, fx, fy); c.stroke();
+          c.strokeStyle = "rgba(140,100,230,.55)"; c.lineWidth = R * 0.03;
+          c.beginPath(); c.moveTo(ox, oy); c.quadraticCurveTo(cx1, cy1, fx, fy); c.stroke();
+        }
+      } else if (id === "jefe_carga") {
+        // Cargando: la oscuridad se recoge hacia la ficha y un anillo se cierra; cada segundo y medio vuelve a empezar
+        const f = (t / 1.5) % 1;
+        c.globalCompositeOperation = "lighter";
+        for (let k = 0; k < 16; k++) {
+          const g = (f + k / 16) % 1, a = k * 2.399 + t * 0.6, r = R * (2.2 - g * 1.2);
+          c.globalAlpha = g * 0.9; c.fillStyle = k % 2 ? "#a58cff" : "#e8e2ff";
+          c.beginPath(); c.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, R * (0.03 + 0.03 * g), 0, Math.PI * 2); c.fill();
+        }
+        c.globalCompositeOperation = "source-over";
+        c.globalAlpha = 0.35 + 0.5 * f; c.strokeStyle = "#b9a6ff"; c.lineWidth = R * (0.02 + 0.05 * f);
+        c.beginPath(); c.arc(x, y, R * (1.9 - 0.85 * f), 0, Math.PI * 2); c.stroke();
+      } else if (id === "jefe_expuesto") {
+        // Expuesto: grietas de luz blanca sobre el borde y un brillo pálido que late
+        const p = 0.5 + 0.5 * Math.sin(t * 4);
+        const g = c.createRadialGradient(x, y, R * 0.9, x, y, R * 1.4);
+        g.addColorStop(0, `rgba(255,250,230,${0.25 + 0.2 * p})`); g.addColorStop(1, "rgba(255,250,230,0)");
+        c.fillStyle = g; c.beginPath(); c.arc(x, y, R * 1.4, 0, Math.PI * 2); c.fill();
+        c.strokeStyle = `rgba(255,255,245,${0.6 + 0.35 * p})`; c.lineWidth = R * 0.03; c.lineJoin = "round";
+        for (let k = 0; k < 5; k++) {
+          const a = k * 1.257 + 0.4;
+          c.beginPath();
+          for (let j = 0; j <= 4; j++) {
+            const r = R * (0.82 + j * 0.1), d = (j % 2 ? 0.07 : -0.05);
+            const px = x + Math.cos(a + d) * r, py = y + Math.sin(a + d) * r;
+            if (j) c.lineTo(px, py); else c.moveTo(px, py);
+          }
+          c.stroke();
         }
       } else if (ZORROS[id]) {
         // flota junto a Eledar, arriba a la derecha

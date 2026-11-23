@@ -1527,5 +1527,51 @@ window.STATS = [
       { nombre: "Cartucho de reserva (Acción legendaria, cuesta 2)", descripcion: "Gasta un cartucho de Nigredo sin esperar a caer y recupera 40 PV. Solo puede hacerlo si le queda al menos uno, y entonces se pierde ese cartucho." }
     ],
     estrategia: "«Pasen. No toquen nada. Cada cosa aquí tiene su lugar.» Empieza en el centro de la sala sin moverse y deja que los jugadores se acerquen. Abre con el rayo si tres o más están en línea. Usa las Manos para agarrar a los que más daño hacen y los pone delante como cobertura. Concentra las Manos en un blanco y las demás en otro, así nadie escapa de todo. Tarda en gastar un cartucho, porque confía en poder terminar el combate antes. Con el primer cartucho consumido deja de hablar. Contra él funciona el fuego, el ácido y la luz, que le cortan la regeneración. Darian con Golpe Cauterizante le impide curarse. Torvrena puede sujetarlo con arpones y trampas, y entonces cualquiera puede arrancarle un cartucho con ventaja. Destruir las Manos no le hace daño, pero libera a los agarrados y le obliga a perder tiempo. Con 4 jugadores de nivel 6 más Darian y Torvrena empieza con estos PV. Si el grupo es menor, quítale 40 PV por cada miembro que falte."
+  },
+  {
+    id: "elemental-oscuridad",
+    imagen: "assets/enemigos/elemental-oscuridad.png",
+    nombre: "Elemental menor de oscuridad",
+    rol: "Jefe final de la Grieta · Control · Tres fases",
+    tipo: "Elemental",
+    raza: "Elemental menor de oscuridad",
+    nivel: 12,
+    pv: 650,
+    ca: 19,
+    iniciativa: "+8",
+    velocidad: "40 pies, levita 40 pies",
+    stats: { fue: 22, des: 20, con: 24, int: 18, sab: 22, car: 24 },
+    notas: [
+      "Salvaciones: DES +11, CON +13, SAB +12, CAR +13. Percepción +12, pasiva 22. Competencia +6. +12 al impacto y CD 19 en sus habilidades.",
+      "Resistencia al daño necrótico, al frío y al daño contundente, cortante y perforante de ataques no mágicos. Inmunidad al veneno y a los estados asustado, hechizado, envenenado y derribado. Vulnerabilidad al daño radiante.",
+      "Resistencia legendaria (3/combate): cuando falla una salvación, puede elegir superarla.",
+      "Cada turno tiene una acción, una acción adicional y una reacción. Tiene 3 acciones legendarias por ronda, que usa al final del turno de otra criatura. Desde la fase 2 actúa también en la cuenta 20 de iniciativa con Grieta.",
+      "Fases: la fase 1 va de 650 a 431 PV, la fase 2 de 430 a 216 y la fase 3 de 215 a 0. Cambia de fase en cuanto cruza el umbral, aunque sea en mitad de un turno. Al cambiar recupera la recarga de Rayo.",
+      "Anclas: en el escenario hay tres anclas. Una criatura a 5 pies de una puede usar su acción y hacer una prueba CD 17 de Arcanos, Atletismo o Religión para activarla. La primera que se active le quita Forma, la segunda Paso y la tercera Cambio y Trueque, hasta el final del combate. Cada vez que se activa una, recibe 30 de daño de fuerza y queda Expuesto hasta el final de su siguiente turno: pierde sus resistencias.",
+      "En el tablero: la Grieta de la página hace sus alteraciones (Giro, Volteo, Contracción, Fractura e Intercambio con dos fichas seleccionadas) y los intercambios de estadísticas (Cambio es el nivel 1, Trueque el nivel 3, con las dos fichas seleccionadas). Los indicadores de fase, forma, carga y expuesto se ponen desde Estados.",
+      "Al llegar a 0 PV se deshace. Lo que la Grieta alteró con él se deshace también: el DJ recompone el mapa y restaura las estadísticas desde el panel de la Grieta."
+    ],
+    habilidades: [
+      { nombre: "Oscuridad (Pasiva)", descripcion: "Emite oscuridad mágica en un radio de 30 pies que se mueve con él. Dentro, la luz no mágica se apaga y las criaturas sin visión verdadera no ven más allá de 5 pies. Él ve con normalidad. Un conjuro de luz de nivel 3 o superior disipa la oscuridad hasta el inicio de su siguiente turno." },
+      { nombre: "Hambre (Pasiva)", descripcion: "Cuando una criatura cae a 0 PV dentro de su oscuridad, recupera 20 PV. Como mucho dos veces por ronda." },
+      { nombre: "Multiataque (Acción)", descripcion: "Hace tres ataques de Garra. Puede cambiar uno de ellos por Sombras." },
+      { nombre: "Garra (Acción)", descripcion: "+12 al impacto, alcance 15 pies, un objetivo. Daño: 2d10+6 contundente. Además inflige 2d6 de daño necrótico adicional. Puede empujar al objetivo hasta 10 pies." },
+      { nombre: "Sombras (Acción)", descripcion: "Hasta cuatro criaturas que vea a 60 pies o menos hacen una salvación de Fuerza CD 19. Daño: 3d8 necrótico, la mitad si la superan. Las que fallan quedan Apresadas por su propia sombra hasta el final del siguiente turno del elemental (escapan con una prueba de Fuerza o Acrobacias CD 19)." },
+      { nombre: "Rayo (Acción, Recarga 5-6)", descripcion: "Línea de 90 pies de largo y 10 de ancho. Cada criatura en ella hace una salvación de Destreza CD 19. Daño: 10d8 fuerza, la mitad si la supera." },
+      { nombre: "Forma (Bonus)", descripcion: "Elige una forma que le dura hasta el inicio de su siguiente turno. Intangible: atraviesa criaturas y objetos, y tiene resistencia a todo el daño salvo el radiante y el de fuerza. Densa: su Garra hace 2d10 de daño más y nada puede moverlo. Extensa: el alcance de su Garra pasa a 30 pies. Solo tiene una a la vez." },
+      { nombre: "Paso (Bonus)", descripcion: "Se teletransporta hasta 60 pies a un espacio que vea dentro de oscuridad o penumbra. No provoca ataques de oportunidad." },
+      { nombre: "Represalia (Reacción)", descripcion: "Cuando una criatura falla un ataque cuerpo a cuerpo contra él, hace un ataque de Garra contra ella." },
+      { nombre: "Desvío (Reacción)", descripcion: "Cuando una criatura a 60 pies o menos se teletransporta, el elemental elige dónde aparece, a 30 pies o menos del punto que ella había elegido." },
+      { nombre: "Acciones legendarias (3 por ronda)", descripcion: "Garra (cuesta 1). Paso (cuesta 1). Intercambio (cuesta 2): dos criaturas que vea a 120 pies o menos cambian de sitio; cada una puede hacer una salvación de Carisma CD 19 y, si alguna la supera, no pasa nada. Empuje (cuesta 2): mueve a una criatura que vea a 60 pies o menos hasta 30 pies, a un espacio libre que él elija; una salvación de Fuerza CD 19 lo evita." },
+      { nombre: "Aislar (Fase 1, Acción, 1/combate)", descripcion: "Tres criaturas que vea hacen una salvación de Sabiduría CD 19. Las que fallan desaparecen de la vista de sus aliados hasta el inicio del siguiente turno del elemental: nadie puede verlas, curarlas ni ayudarlas. Él sí las ve y puede atacarlas." },
+      { nombre: "Grieta (Fase 2, cuenta 20 de iniciativa)", descripcion: "Elige una alteración del escenario, distinta de la de la ronda anterior. Giro: todo el escenario gira 90 grados alrededor de su centro, con las criaturas encima. Volteo: el escenario se voltea de un lado a otro. Contracción: el escenario se encoge y todas las criaturas quedan más cerca de él. Pliegue: dos puntos que elija a 120 pies o menos quedan conectados hasta la siguiente ronda, y entrar en uno lleva al otro." },
+      { nombre: "Cambio (Fase 2, Acción)", descripcion: "Dos criaturas que vea a 60 pies o menos hacen una salvación de Carisma CD 19. Si las dos fallan, intercambian su Fuerza, su Destreza o su Constitución, la que él elija. Todo lo que sale de esa característica cambia con ella. Dura hasta que él use Cambio otra vez o muera." },
+      { nombre: "Colapso (Fase 2, Acción, Recarga 6)", descripcion: "Esfera de 25 pies centrada en un punto a 90 pies o menos. Cada criatura dentro hace una salvación de Fuerza CD 19. Daño: 6d10 fuerza, la mitad si la supera. Las que fallan son arrastradas al centro y quedan Derribadas." },
+      { nombre: "Grieta doble (Fase 3, cuenta 20 de iniciativa)", descripcion: "Hace dos alteraciones de Grieta por ronda en vez de una, y suma Fractura: el escenario se parte en secciones que cambian de sitio, con las criaturas que estén encima de cada una." },
+      { nombre: "Trueque (Fase 3, Acción, Recarga 5-6)", descripcion: "Dos criaturas que vea a 60 pies o menos hacen una salvación de Carisma CD 19. Si las dos fallan, intercambian todas sus características, su CA, su velocidad y su iniciativa. Dura hasta que él muera." },
+      { nombre: "Eclipse (Fase 3, Acción, Recarga 5-6)", descripcion: "Cada criatura a 60 pies o menos de él hace una salvación de Constitución CD 19. Daño: 8d10 necrótico, la mitad si la supera. Las que fallan quedan Cegadas hasta el final de su siguiente turno." },
+      { nombre: "Gravedad (Fase 3, acción legendaria, cuesta 3)", descripcion: "Todas las criaturas a 60 pies o menos son empujadas 20 pies en la dirección que elija. Una salvación de Fuerza CD 19 las deja en su sitio, con ventaja si están sujetas a algo." }
+    ],
+    estrategia: "En la fase 1 tantea al grupo. Reparte los golpes, usa Sombras contra los que van juntos y Paso para no quedar rodeado. Guarda Aislar para cuando el grupo se cure entre sí. En la fase 2 rompe las formaciones con Intercambio, Empuje y Grieta, y usa Cambio contra quien depende de una sola característica. En la fase 3 lo usa todo. Lanza Eclipse cuando tenga a tres o más a 60 pies. No remata a un caído si hay otro objetivo en pie, salvo para alimentar Hambre. Va primero a por quien intenta activar un ancla. Con los cinco protagonistas de nivel 6 más Dexter, Darian, Gruvok y Torvrena empieza con estos PV. Si el grupo es menor, quítale 50 PV por cada miembro que falte."
   }
 ];

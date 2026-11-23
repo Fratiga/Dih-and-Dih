@@ -44,7 +44,16 @@
     m("zorro", "Zorro de los destinos", "fox-head", { anim: true, solo: "eledar" }),
     m("zorro_defensa", "Zorro: defiende", "fox-head", { anim: true, solo: "eledar" }),
     m("zorro_ataque", "Zorro: mejora ataques", "fox-head", { anim: true, solo: "eledar" }),
-    m("zorro_inmolar", "Zorro: se inmola", "fox-head", { anim: true, solo: "eledar" })
+    m("zorro_inmolar", "Zorro: se inmola", "fox-head", { anim: true, solo: "eledar" }),
+    // El Elemental menor de oscuridad, jefe de la Grieta: en qué fase está y qué está usando
+    m("jefe_fase1", "Elemental: fase 1", "death-zone", { anim: true, solo: "elemental", desc: "De 650 a 431 PV. Tantea al grupo con Garra, Sombras y Paso. Puede usar Aislar una vez." }),
+    m("jefe_fase2", "Elemental: fase 2", "edge-crack", { anim: true, solo: "elemental", desc: "De 430 a 216 PV. Suma Grieta en la cuenta 20 de iniciativa, Cambio y Colapso." }),
+    m("jefe_fase3", "Elemental: fase 3", "magic-swirl", { anim: true, solo: "elemental", desc: "De 215 a 0 PV. Dos alteraciones de Grieta por ronda, Fractura, Trueque, Eclipse y Gravedad." }),
+    m("forma_intangible", "Forma: intangible", "ninja-mask", { anim: true, solo: "elemental", desc: "Atraviesa criaturas y objetos. Resistencia a todo el daño salvo el radiante y el de fuerza." }),
+    m("forma_densa", "Forma: densa", "strong", { anim: true, solo: "elemental", desc: "Su Garra hace 2d10 de daño más y nada puede moverlo." }),
+    m("forma_extensa", "Forma: extensa", "grab", { anim: true, solo: "elemental", desc: "El alcance de su Garra pasa a 30 pies." }),
+    m("jefe_carga", "Elemental: cargando", "aura", { anim: true, solo: "elemental", desc: "Está preparando Rayo, Colapso o Eclipse." }),
+    m("jefe_expuesto", "Elemental: expuesto", "broken-shield", { anim: true, solo: "elemental", desc: "Se activó un ancla: pierde sus resistencias hasta el final de su siguiente turno." })
   ];
   // Los estados de un personaje solo los pone su jugador en su ficha (el servidor lo comprueba igual). Se mira el nombre
   // original de la ficha, no el de una apariencia copiada.
