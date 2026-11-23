@@ -1401,7 +1401,7 @@
         const id = n.o.id;
         if (!puedeSeleccionar(n.o)) return;
         n.pulsado = punteroMundo();
-        if (e.evt.shiftKey) { if (st.seleccion.has(id)) deseleccionar(id); else seleccionar([id], true); }
+        if (sumar(e.evt)) { if (st.seleccion.has(id)) deseleccionar(id); else seleccionar([id], true); }
         else if (!st.seleccion.has(id)) seleccionar([id]);
         e.cancelBubble = true;
       });
@@ -1690,14 +1690,22 @@
     // Lo seleccionado se puede coger desde cualquier punto de su recuadro, no solo por el trazo (como en Roll20)
     function seleccionadoBajo(p) {
       const m = 3 / zoom();
+      let caja = null, primero = null;
       for (const id of st.seleccion) {
         const n = st.nodos.get(id);
         if (!n || !n.g.visible()) continue;
         const r = n.g.getClientRect({ relativeTo: stage });
         if (p.x >= r.x - m && p.x <= r.x + r.width + m && p.y >= r.y - m && p.y <= r.y + r.height + m) return n;
+        primero = primero || n;
+        caja = caja ? { x0: Math.min(caja.x0, r.x), y0: Math.min(caja.y0, r.y), x1: Math.max(caja.x1, r.x + r.width), y1: Math.max(caja.y1, r.y + r.height) }
+          : { x0: r.x, y0: r.y, x1: r.x + r.width, y1: r.y + r.height };
       }
+      // Con varias seleccionadas, el recuadro que las envuelve
+      if (caja && st.seleccion.size > 1 && p.x >= caja.x0 - m && p.x <= caja.x1 + m && p.y >= caja.y0 - m && p.y <= caja.y1 + m) return primero;
       return null;
     }
+    // Ctrl (o Cmd) con clic suma o quita de la selección, igual que Mayús
+    const sumar = ev => !!(ev && (ev.shiftKey || ev.ctrlKey || ev.metaKey));
     stage.on("mousedown touchstart", e => {
       const boton = e.evt.button;
       contenedor.focus({ preventScroll: true });
@@ -1720,7 +1728,7 @@
       if (e.target.getParent && e.target.getParent() === tr) return;
       if (e.target.findAncestor && e.target.findAncestor(".selui-b", true)) return;
       const vacio = e.target === stage || !e.target.findAncestor || !e.target.findAncestor(".obj", true);
-      if (st.herr === "seleccionar" && vacio && !e.evt.shiftKey) {
+      if (st.herr === "seleccionar" && vacio && !sumar(e.evt)) {
         const dentro = seleccionadoBajo(p);
         if (dentro) {
           // pulsar dentro del recuadro coge lo seleccionado (y lo arrastra si se puede)
@@ -1732,7 +1740,7 @@
         const sp = stage.getPointerPosition();
         pulsacion = { sp, t: setTimeout(() => { pulsacion = null; gesto = null; marco.visible(false); hacerPing(p, e.evt.shiftKey); }, 650) };
         if (vacio) {
-          if (!e.evt.shiftKey) deseleccionar();
+          if (!sumar(e.evt)) deseleccionar();
           gesto = { tipo: "marco", inicio: p };
         }
         return;
@@ -1887,7 +1895,7 @@
           const ev = (e && e.evt) || {};
           const ids = [...st.nodos.values()].filter(n => puedeSeleccionar(n.o) && n.g.visible() && Konva.Util.haveIntersection(caja, n.g.getClientRect())
             && (!ev.ctrlKey || n.o.tipo === "imagen") && (!ev.altKey || n.o.tipo === "texto" || n.o.tipo === "dibujo")).map(n => n.o.id);
-          seleccionar(ids, e && e.evt && e.evt.shiftKey);
+          seleccionar(ids, sumar(e && e.evt));
           marco.visible(false); lUI.batchDraw();
         }
         return;
