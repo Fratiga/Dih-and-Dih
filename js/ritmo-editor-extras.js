@@ -100,6 +100,7 @@
       xhr.setRequestHeader("apikey", window.FICHAS_SUPABASE_KEY);
       xhr.setRequestHeader("Authorization", "Bearer " + sesion.access_token);
       xhr.setRequestHeader("x-upsert", "false");
+      xhr.setRequestHeader("cache-control", "max-age=31536000");   // ancho de banda: el navegador la guarda un año (docs/ancho-de-banda.md)
       xhr.setRequestHeader("Content-Type", "audio/mpeg");
       xhr.upload.onprogress = e => { if (e.lengthComputable) alProgreso(e.loaded / e.total); };
       xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(xhr.responseText || `Error ${xhr.status}`)));

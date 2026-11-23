@@ -1194,16 +1194,28 @@
   }
 
   // Archivos de audio
-  let audioPreparado = false;
-  function pararAudio() { const a = document.getElementById("tbAudio"); a.pause(); a.removeAttribute("src"); }
+  // Ancho de banda: la pista pasa por AudioCache (js/audio-cache.js), que la baja una vez y la guarda en el navegador.
+  // a.dataset.orig es la url de Supabase que suena; a.src puede ser un blob: con esa misma canción.
+  let audioPreparado = false, audioPedido = "", musUltima = null;
+  function pararAudio() { const a = document.getElementById("tbAudio"); a.pause(); a.removeAttribute("src"); delete a.dataset.orig; audioPedido = ""; }
   function syncAudio(mus) {
     const a = document.getElementById("tbAudio");
     if (!audioPreparado) { audioPreparado = true; a.addEventListener("ended", alTerminar); }
     a.volume = volumenDe(mus);
     a.loop = !!mus.bucle;
-    if (a.getAttribute("src") !== mus.src) { a.preload = "auto"; a.src = mus.src; a.load(); }
+    musUltima = mus;
+    if (a.dataset.orig !== mus.src) {
+      if (audioPedido === mus.src) return;           // ya se está bajando
+      const pedido = audioPedido = mus.src;
+      (window.AudioCache ? window.AudioCache.obtener(pedido) : Promise.resolve(pedido)).then(src => {
+        if (audioPedido !== pedido) return;          // mientras tanto cambió la pista o se paró
+        a.preload = "auto"; a.dataset.orig = pedido; a.src = src; a.load();
+        if (musUltima && musUltima.src === pedido) syncAudio(musUltima);
+      });
+      return;
+    }
     const colocar = () => {
-      if (a.getAttribute("src") !== mus.src) return;
+      if (a.dataset.orig !== mus.src) return;
       let p = posicionDe(mus);
       if (a.duration && isFinite(a.duration)) { if (mus.bucle) p = p % a.duration; else if (p >= a.duration) { a.pause(); return; } }
       if (Math.abs(a.currentTime - p) > 1.5) a.currentTime = p;

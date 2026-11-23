@@ -10,6 +10,8 @@ Wiki pública para jugadores.
 4. Mantén fuera de esta versión cualquier secreto de GM. En particular: nunca pongas estadísticas de combate (PV, CA, tiradas, daño) de monstruos/NPCs — el Bestiario solo describe comportamiento y un nivel de amenaza cualitativo, nunca los números crudos.
 5. Si una entrada viene de un documento fuente que inventa países/regiones ficticias (como el libro de Bestiario), no menciones esos nombres de lugar en el sitio — conserva solo el tipo de hábitat (bosque, desierto, zona volcánica, etc.).
 
+6. Antes de tocar audio, subidas a Supabase Storage o consultas periódicas, lee `docs/ancho-de-banda.md`. El plan gratuito de Supabase ya pasó su cuota de salida una vez: el audio de Storage va siempre por `AudioCache` y las imágenes por `ImagenCompacta`.
+
 ## Estructura del sitio
 
 El sitio es multi-página: cada ítem de la barra de navegación superior es un archivo `.html` propio, no una sección dentro de una sola página.

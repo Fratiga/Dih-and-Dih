@@ -165,6 +165,8 @@
       async borrarTabla(id) { ok(await sb.from("tablero_tablas").delete().eq("id", id)); },
       async tirarTabla(id, modo, como) { return ok(await sb.rpc("tablero_tirar_tabla", { p_tabla: id, p_modo: modo || "todos", p_como: como || null })); },
       async subirImagen(archivo) {
+        // Ancho de banda: las imágenes se suben en WebP (js/imagen-compacta.js); los mapas grandes conservan hasta 5000 px
+        if (window.ImagenCompacta) archivo = await window.ImagenCompacta.reducir(archivo, { max: 5000, calidad: 0.9 });
         const limpio = archivo.name.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9._-]+/g, "_").replace(/^_+|_+$/g, "") || "imagen.png";
         const ruta = `${uuid()}/${limpio}`;
         const { error } = await sb.storage.from("tablero").upload(ruta, archivo, { contentType: archivo.type, upsert: false, cacheControl: "31536000" });
@@ -186,6 +188,7 @@
       async borrarGif(id) { ok(await sb.from("tablero_gifs").delete().eq("id", id)); },
       // Cualquiera sube lo suyo (avatar, GIFs) a su carpeta u/<su id>/ del bucket del tablero
       async subirPropio(archivo) {
+        if (window.ImagenCompacta) archivo = await window.ImagenCompacta.reducir(archivo, { max: 2560, calidad: 0.9 });
         const limpio = archivo.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9._-]+/g, "_").replace(/^_+|_+$/g, "") || "archivo";
         const ruta = `u/${yo.uid}/${uuid()}-${limpio}`;
         const { error } = await sb.storage.from("tablero").upload(ruta, archivo, { contentType: archivo.type, upsert: false, cacheControl: "31536000" });

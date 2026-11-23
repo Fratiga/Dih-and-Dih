@@ -66,14 +66,20 @@ window.FracturaMusicaHeroes = (function () {
     const c = heroes[heroeId];
     if (!activa || !c || !c.ruta || silenciada()) return;
     if (sonando) { const s = sonando; sonando = null; s.audio.pause(); s.audio.src = ""; }
-    const a = new Audio(urlDe(c.ruta));
+    // Ancho de banda: el tema pasa por AudioCache (js/audio-cache.js) y se baja una sola vez por navegador
+    const a = new Audio();
+    const ruta = urlDe(c.ruta);
+    (window.AudioCache ? window.AudioCache.obtener(ruta) : Promise.resolve(ruta)).then(src => {
+      if (!sonando || sonando.audio !== a) return;
+      a.src = src;
+      a.play().catch(() => { if (sonando && sonando.audio === a) soltar(true); });
+    });
     a.volume = Math.max(0, Math.min(1, Number(c.volumen ?? 0.6)));
     a.loop = c.modo !== "una";
     sonando = { heroe: heroeId, audio: a, modo: c.modo || "vive" };
     apartarPagina(true);
     a.addEventListener("ended", () => { if (sonando && sonando.audio === a) soltar(true); });
     a.addEventListener("error", () => { if (sonando && sonando.audio === a) soltar(true); });
-    a.play().catch(() => { if (sonando && sonando.audio === a) soltar(true); });
   }
   function alCaer(heroeId) { if (sonando && sonando.heroe === heroeId && sonando.modo === "vive") soltar(false); }
   function alTerminar() { soltar(true); }

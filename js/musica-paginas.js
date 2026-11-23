@@ -54,7 +54,7 @@
   let lista = [], orden = [], pos = 0, silencio = false, pendienteGesto = false, fallos = 0;
   let firma = "";             // qué lista suena ahora (para no reiniciarla si no cambió)
   const audio = new Audio();
-  audio.preload = "auto";
+  audio.preload = "none";
   try { silencio = localStorage.getItem(CLAVE_SILENCIO) === "1"; } catch (e) { silencio = false; }
 
   /* --- Música propia de la página y Rocola: se apartan cuando esta página tiene su playlist --- */
@@ -98,24 +98,49 @@
     return a;
   }
 
+  /* Ancho de banda: la pista solo se pide cuando de verdad va a sonar (no en silencio, con la pestaña oculta ni con la
+     música apagada) y pasa por AudioCache, que la guarda en el navegador para no volver a bajarla de Supabase.
+     docs/ancho-de-banda.md */
+  let pistaN = 0, cargadaN = 0, pistaQuiere = null, tiempoPendiente = null, cacheLista = null;
+  const puedeSonar = () => !(apagada || silencio || document.hidden || !lista.length);
+  const prepararCache = () => cacheLista || (cacheLista = (window.AudioCache ? Promise.resolve() : cargarScript("js/audio-cache.js")).catch(() => {}));
+
   function cargarPista(tiempo) {
     if (!lista.length) { audio.pause(); return; }
     pos = ((pos % orden.length) + orden.length) % orden.length;
-    audio.src = urlDe(lista[orden[pos]]);
+    pistaQuiere = { ruta: urlDe(lista[orden[pos]]), tiempo: tiempo > 0 ? tiempo : 0, n: ++pistaN };
     audio.volume = Math.max(0, Math.min(1, Number(sub().volumen ?? 0.5)));
-    if (tiempo > 0) audio.addEventListener("loadedmetadata", () => { if (tiempo < audio.duration) audio.currentTime = tiempo; }, { once: true });
     sonar();
   }
 
-  function sonar() {
-    if (apagada || silencio || document.hidden || !lista.length) return;
+  async function sonar() {
+    if (!puedeSonar()) return;
     apartarOtrasMusicas();
+    const q = pistaQuiere;
+    if (q && q.n !== cargadaN) {
+      await prepararCache();
+      const src = window.AudioCache ? await window.AudioCache.obtener(q.ruta) : q.ruta;
+      if (pistaQuiere !== q) return;                 // mientras se bajaba se pidió otra pista
+      if (q.n !== cargadaN) {
+        cargadaN = q.n;
+        tiempoPendiente = q.tiempo > 0 ? q.tiempo : null;
+        audio.src = src;
+        if (tiempoPendiente != null) audio.addEventListener("loadedmetadata", () => {
+          if (tiempoPendiente != null && tiempoPendiente < audio.duration) audio.currentTime = tiempoPendiente;
+          tiempoPendiente = null;
+        }, { once: true });
+      }
+      if (!puedeSonar()) return;
+    }
+    if (!audio.src) return;
     audio.play().then(() => { pendienteGesto = false; }).catch(() => { pendienteGesto = true; });
   }
 
   function guardarEstado() {
     if (!lista.length || !firma) return;
-    escribirJson(localStorage, claveEstado(), { f: firma, orden, pos, t: audio.currentTime || 0 });
+    const sinCargar = pistaQuiere && pistaQuiere.n !== cargadaN;
+    const t = sinCargar ? pistaQuiere.tiempo : (tiempoPendiente != null ? tiempoPendiente : (audio.currentTime || 0));
+    escribirJson(localStorage, claveEstado(), { f: firma, orden, pos, t });
   }
 
   /* Arranca la lista del modo actual. continuar: sigue por donde iba (si la lista no cambió) */
@@ -182,7 +207,7 @@
     botonSonido.addEventListener("click", () => {
       silencio = !silencio;
       try { localStorage.setItem(CLAVE_SILENCIO, silencio ? "1" : "0"); } catch (e) { /* sin almacenamiento */ }
-      if (silencio) audio.pause(); else if (audio.src) sonar(); else iniciarLista(true);
+      if (silencio) audio.pause(); else if (pistaQuiere) sonar(); else iniciarLista(true);
       pintarBoton();
     });
     if (esAdminLocal()) {

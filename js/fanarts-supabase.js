@@ -75,6 +75,9 @@ async function fanartsAdminSetNombre(src, nombre) {
    side: "A", "B" o null (compartido). Devuelve la URL pública. */
 async function fanartsAdminSubir(archivo, side) {
   const supabase = await fichasCliente();
+  // Ancho de banda: se sube en WebP (js/imagen-compacta.js). El nombre visible sale del archivo original.
+  const original = archivo;
+  if (window.ImagenCompacta) archivo = await window.ImagenCompacta.reducir(archivo, { max: 2560, calidad: 0.9 });
   const limpio = archivo.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^A-Za-z0-9._-]+/g, "_").replace(/^_+|_+$/g, "") || "fanart.png";
   const ruta = `${crypto.randomUUID()}/${limpio}`;
@@ -82,7 +85,7 @@ async function fanartsAdminSubir(archivo, side) {
     .upload(ruta, archivo, { contentType: archivo.type, upsert: false, cacheControl: "31536000" });
   if (errSubida) throw errSubida;
   const src = `${window.FICHAS_SUPABASE_URL}/storage/v1/object/public/fanarts/${ruta}`;
-  const nombre = archivo.name.replace(/\.[^.]+$/, "").replace(/_+/g, " ").trim().slice(0, 140) || "Fanart";
+  const nombre = original.name.replace(/\.[^.]+$/, "").replace(/_+/g, " ").trim().slice(0, 140) || "Fanart";
   const { error: errFila } = await supabase.from("fanarts_subidos").insert({ src, nombre, ruta });
   if (errFila) {
     await supabase.storage.from("fanarts").remove([ruta]);
