@@ -57,7 +57,7 @@ como "$U1" "select tablero_ajustar_propio('$F1', '{\"nombre\": \"Laia la Rápida
 comprobar "cambia nombre, barras y auras (con límites) y nada más" "Laia la Rápida|true|debajo|120|#ffff99|cuadrado|||" "$(sql "select (datos ->> 'nombre') || '|' || (datos ->> 'verNombre') || '|' || (datos ->> 'barraPos') || '|' || (datos -> 'auras' -> 0 ->> 'radio') || '|' || (datos -> 'auras' -> 0 ->> 'color') || '|' || (datos -> 'auras' -> 0 ->> 'forma') || '|' || coalesce(datos ->> 'cambiaformas', '') || '|' || coalesce(datos -> 'vision' ->> 'oscuridad', '') || '|' || case when datos ->> 'src' = 'https://malo.com/x.png' then 'malo' else '' end from tablero_objetos where id = '$F1'")"
 contiene "no ajusta la ficha de otro" "$(como "$U2" "select tablero_ajustar_propio('$F1', '{\"nombre\": \"X\"}');")" "no es tuya"
 como "$U1" "select tablero_ajustar_propio('$F1', '{\"voltearH\": true, \"sinAjuste\": true, \"sinMenu\": true, \"grupo\": \"g1\", \"ancho\": 99999, \"alto\": 2}');" >/dev/null
-comprobar "transformación avanzada: giros, ajuste, menús, grupo y dimensiones con tope" "true|true|true|g1|1400|10" "$(sql "select (datos ->> 'voltearH') || '|' || (datos ->> 'sinAjuste') || '|' || (datos ->> 'sinMenu') || '|' || (datos ->> 'grupo') || '|' || ancho || '|' || alto from tablero_objetos where id = '$F1'")"
+comprobar "transformación avanzada: giros, ajuste, grupo y dimensiones con tope; los menús no (son del DJ)" "true|true||g1|1400|10" "$(sql "select (datos ->> 'voltearH') || '|' || (datos ->> 'sinAjuste') || '|' || coalesce(datos ->> 'sinMenu', '') || '|' || (datos ->> 'grupo') || '|' || ancho || '|' || alto from tablero_objetos where id = '$F1'")"
 como "$U1" "select tablero_ajustar_propio('$F1', '{\"grupo\": null, \"voltearH\": \"sí\", \"ancho\": 70, \"alto\": 70}');" >/dev/null
 comprobar "desagrupa y no acepta un giro que no sea sí o no" "|true|70" "$(sql "select coalesce(datos ->> 'grupo', '') || '|' || (datos ->> 'voltearH') || '|' || ancho from tablero_objetos where id = '$F1'")"
 sql "update tablero_objetos set datos = datos - 'voltearH' - 'sinAjuste' - 'sinMenu' where id = '$F1'" >/dev/null
@@ -98,6 +98,12 @@ echo "== Barras"
 como "$U1" "select tablero_barra('$F1', 1, 7, 20);" >/dev/null
 comprobar "el jugador cambia una barra editable de su ficha" "7" "$(sql "select datos->'barras'->0->>'valor' from tablero_objetos where id = '$F1'")"
 contiene "no cambia una barra que el GM no deja editar" "$(como "$U1" "select tablero_barra('$F1', 2, 0, 2);")" "No puedes cambiar esa barra"
+como "$U1" "select tablero_barra_texto('$F1', 1, '3 - 0', '4 - 2');" >/dev/null
+comprobar "una barra con texto se guarda tal cual" "string|3 - 0|4 - 2" "$(sql "select jsonb_typeof(datos -> 'barras' -> 0 -> 'valor') || '|' || (datos -> 'barras' -> 0 ->> 'valor') || '|' || (datos -> 'barras' -> 0 ->> 'max') from tablero_objetos where id = '$F1'")"
+como "$U1" "select tablero_barra_texto('$F1', 1, ' 7 ', '20');" >/dev/null
+comprobar "y lo que parece número, como número" "number|7|20" "$(sql "select jsonb_typeof(datos -> 'barras' -> 0 -> 'valor') || '|' || (datos -> 'barras' -> 0 ->> 'valor') || '|' || (datos -> 'barras' -> 0 ->> 'max') from tablero_objetos where id = '$F1'")"
+contiene "el texto de una barra tiene un máximo" "$(como "$U1" "select tablero_barra_texto('$F1', 1, repeat('a', 21), '1');")" "Valor no válido"
+contiene "con texto tampoco cambia una barra que el GM no deja editar" "$(como "$U1" "select tablero_barra_texto('$F1', 2, '1', '2');")" "No puedes cambiar esa barra"
 contiene "no cambia barras de fichas ajenas" "$(como "$U2" "select tablero_barra('$F1', 1, 0, 20);")" "No puedes cambiar esa barra"
 contiene "barra 4 no existe" "$(como "$ADMIN" "select tablero_barra('$F1', 4, 0, 1);")" "Valor no válido"
 como "$ADMIN" "select tablero_barra('$GM', 3, 50, 60);" >/dev/null

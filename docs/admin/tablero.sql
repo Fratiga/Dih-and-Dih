@@ -313,6 +313,41 @@ end;
 $$;
 
 -- Cambiar una barra (1, 2 o 3) de una ficha: el GM siempre; un jugador si controla la ficha y la barra se puede editar.
+-- Una barra puede llevar un número o un texto corto («3 - 0» de «4 - 2»): lo que parece número se guarda como número
+create or replace function tablero_barra_texto(p_id uuid, p_n int, p_valor text, p_max text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  o tablero_objetos;
+  b jsonb;
+  v jsonb;
+  m jsonb;
+begin
+  if auth.uid() is null then raise exception 'Inicia sesión.'; end if;
+  if p_n not between 1 and 3 or char_length(coalesce(p_valor, '')) > 20 or char_length(coalesce(p_max, '')) > 20 then raise exception 'Valor no válido.'; end if;
+  v := case when p_valor is null then 'null'::jsonb when btrim(p_valor) ~ '^-?\d+(\.\d+)?$' then to_jsonb(btrim(p_valor)::numeric) else to_jsonb(btrim(p_valor)) end;
+  m := case when p_max is null then 'null'::jsonb when btrim(p_max) ~ '^-?\d+(\.\d+)?$' then to_jsonb(btrim(p_max)::numeric) else to_jsonb(btrim(p_max)) end;
+  if (jsonb_typeof(v) = 'number' and abs(v::text::numeric) > 1000000) or (jsonb_typeof(m) = 'number' and abs(m::text::numeric) > 1000000) then raise exception 'Valor no válido.'; end if;
+  select * into o from tablero_objetos where id = p_id for update;
+  if not found then raise exception 'Esa ficha no existe.'; end if;
+  b := coalesce(o.datos -> 'barras' -> (p_n - 1), '{}'::jsonb);
+  if not (fichas_es_admin() or ((o.controlan_todos or auth.uid() = any(o.controladores)) and o.capa = 'fichas'
+          and tablero_escena_visible(o.escena) and coalesce((b ->> 'editar')::boolean, false))) then
+    raise exception 'No puedes cambiar esa barra.';
+  end if;
+  b := b || jsonb_build_object('valor', v, 'max', m);
+  update tablero_objetos set
+    datos = jsonb_set(case when jsonb_typeof(datos -> 'barras') = 'array' then datos
+                           else jsonb_set(datos, '{barras}', '[{}, {}, {}]'::jsonb) end,
+                      array['barras', (p_n - 1)::text], b),
+    actualizado = now()
+  where id = p_id;
+end;
+$$;
+
 create or replace function tablero_barra(p_id uuid, p_n int, p_valor numeric, p_max numeric)
 returns void
 language plpgsql
@@ -737,11 +772,10 @@ begin
   if p_datos ? 'verNombre' then d := jsonb_set(d, '{verNombre}', to_jsonb(p_datos -> 'verNombre' = 'true'::jsonb)); end if;
   if p_datos ->> 'barraPos' in ('encima', 'debajo') then d := jsonb_set(d, '{barraPos}', p_datos -> 'barraPos'); end if;
   if p_datos ->> 'barraEstilo' in ('estandar', 'compacto') then d := jsonb_set(d, '{barraEstilo}', p_datos -> 'barraEstilo'); end if;
-  -- Transformación avanzada: giros, ajuste a la cuadrícula, menús de la ficha y grupo
+  -- Transformación avanzada: giros, ajuste a la cuadrícula y grupo (los menús de la ficha son cosa del DJ)
   if jsonb_typeof(p_datos -> 'voltearH') = 'boolean' then d := jsonb_set(d, '{voltearH}', p_datos -> 'voltearH'); end if;
   if jsonb_typeof(p_datos -> 'voltearV') = 'boolean' then d := jsonb_set(d, '{voltearV}', p_datos -> 'voltearV'); end if;
   if jsonb_typeof(p_datos -> 'sinAjuste') = 'boolean' then d := jsonb_set(d, '{sinAjuste}', p_datos -> 'sinAjuste'); end if;
-  if jsonb_typeof(p_datos -> 'sinMenu') = 'boolean' then d := jsonb_set(d, '{sinMenu}', p_datos -> 'sinMenu'); end if;
   if p_datos ? 'grupo' then
     if jsonb_typeof(p_datos -> 'grupo') = 'string' and char_length(p_datos ->> 'grupo') between 1 and 40 then d := jsonb_set(d, '{grupo}', p_datos -> 'grupo');
     else d := d - 'grupo'; end if;
@@ -888,6 +922,7 @@ revoke all on function tablero_i_nombre() from public, anon, authenticated;
 revoke all on function tablero_i_como(uuid) from public, anon, authenticated;
 revoke all on function tablero_mover(uuid, double precision, double precision) from public, anon;
 revoke all on function tablero_barra(uuid, int, numeric, numeric) from public, anon;
+revoke all on function tablero_barra_texto(uuid, int, text, text) from public, anon;
 revoke all on function tablero_crear_propio(uuid, text, double precision, double precision, double precision, double precision, jsonb) from public, anon;
 revoke all on function tablero_borrar_propio(uuid[]) from public, anon;
 revoke all on function tablero_tirar(text, text, text, uuid) from public, anon;
@@ -903,6 +938,7 @@ grant execute on function tablero_escena_jugadores() to authenticated;
 grant execute on function tablero_escena_visible(uuid) to authenticated;
 grant execute on function tablero_mover(uuid, double precision, double precision) to authenticated;
 grant execute on function tablero_barra(uuid, int, numeric, numeric) to authenticated;
+grant execute on function tablero_barra_texto(uuid, int, text, text) to authenticated;
 grant execute on function tablero_crear_propio(uuid, text, double precision, double precision, double precision, double precision, jsonb) to authenticated;
 grant execute on function tablero_borrar_propio(uuid[]) to authenticated;
 grant execute on function tablero_tirar(text, text, text, uuid) to authenticated;

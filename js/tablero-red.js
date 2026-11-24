@@ -127,7 +127,15 @@
       async apariencias() { return ok(await sb.from("tablero_apariencias").select("id, nombre, datos").order("creado", { ascending: false })) || []; },
       async guardarApariencia(a) { return ok(await sb.from("tablero_apariencias").insert({ nombre: (a.nombre || "").slice(0, 80), datos: a.datos }).select("id, nombre, datos").single()); },
       async borrarApariencia(id) { ok(await sb.from("tablero_apariencias").delete().eq("id", id)); },
-      async barra(id, n, valor, max) { ok(await sb.rpc("tablero_barra", { p_id: id, p_n: n, p_valor: valor, p_max: max })); },
+      async barra(id, n, valor, max) {
+        const txt = v => (v === "" || v == null ? null : String(v));
+        const r = await sb.rpc("tablero_barra_texto", { p_id: id, p_n: n, p_valor: txt(valor), p_max: txt(max) });
+        if (r.error && /tablero_barra_texto|PGRST202|function/i.test(String(r.error.message) + (r.error.code || ""))) {
+          ok(await sb.rpc("tablero_barra", { p_id: id, p_n: n, p_valor: Number(valor) || 0, p_max: Number(max) || 0 }));
+          return;
+        }
+        ok(r);
+      },
       async crearPropio(escena, tipo, x, y, ancho, alto, datos) {
         return ok(await sb.rpc("tablero_crear_propio", { p_escena: escena, p_tipo: tipo, p_x: x, p_y: y, p_ancho: ancho, p_alto: alto, p_datos: datos }));
       },
@@ -502,7 +510,7 @@
         if ("barraPos" in datos) limpio.barraPos = datos.barraPos === "debajo" ? "debajo" : "encima";
         if ("barraEstilo" in datos) limpio.barraEstilo = datos.barraEstilo === "compacto" ? "compacto" : "estandar";
         if ("auras" in datos) limpio.auras = (datos.auras || []).slice(0, 2);
-        ["voltearH", "voltearV", "sinAjuste", "sinMenu"].forEach(k => { if (typeof datos[k] === "boolean") limpio[k] = datos[k]; });
+        ["voltearH", "voltearV", "sinAjuste"].forEach(k => { if (typeof datos[k] === "boolean") limpio[k] = datos[k]; });
         o.datos = Object.assign({}, o.datos, limpio);
         if ("grupo" in datos) { if (typeof datos.grupo === "string" && datos.grupo) o.datos.grupo = datos.grupo.slice(0, 40); else delete o.datos.grupo; }
         if (typeof datos.ancho === "number") o.ancho = Math.max(10, Math.min(1400, datos.ancho));

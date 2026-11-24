@@ -524,7 +524,7 @@
     if (TB.yo.esGM) await TB.cambiarObjeto(id, { datos: Object.assign({}, o.datos, { barras }) });
     else {
       if (!b.editar) { aviso("El DJ no te deja cambiar esa barra."); return; }
-      try { await TB.red.barra(id, i + 1, Number(valor) || 0, Number(b.max) || 0); } catch (e) { aviso(mensajeError(e), true); return; }
+      try { await TB.red.barra(id, i + 1, valor, b.max); } catch (e) { aviso(mensajeError(e), true); return; }
     }
     if (b.enlace) TB.red.fichaPV(b.enlace, { actual: Number(valor) || 0, max: null, temp: null })
       .then(() => { if (TB.yo.esGM) refrescarPV(); else TB.red.emitir("ficha", { id: b.enlace }); }).catch(() => {});

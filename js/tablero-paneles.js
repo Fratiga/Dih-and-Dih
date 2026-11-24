@@ -828,8 +828,8 @@
     barras.forEach((b, i) => {
       const puede = gm || b.editar;
       const fila = el(`<div class="tb-barra-cfg">
-        <span class="tb-bola" style="background:${["#5cb85c", "#4f8fd6", "#d9534f"][i]}"></span><input type="number" data-v ${puede ? "" : "disabled"}>
-        <span>/</span><input type="number" data-m ${puede ? "" : "disabled"}>
+        <span class="tb-bola" style="background:${["#5cb85c", "#4f8fd6", "#d9534f"][i]}"></span><input type="text" maxlength="20" inputmode="text" data-v ${puede ? "" : "disabled"}>
+        <span>/</span><input type="text" maxlength="20" inputmode="text" data-m ${puede ? "" : "disabled"}>
         <select data-enlace ${gm ? "" : "disabled"} title="Atributo: la barra sigue los PV de esa ficha del compendio"><option value="">Ninguno</option>${(TB.fichas || []).map(fc => `<option value="${esc(fc.id)}">PV de ${esc(fc.nombre)}</option>`).join("")}${b.enlace && !(TB.fichas || []).some(fc => fc.id === b.enlace) ? `<option value="${esc(b.enlace)}">PV de una ficha</option>` : ""}</select>
         ${gm ? `<span style="position:relative"><button type="button" class="tb-kebab" data-k>⋮</button>
           <div class="tb-kebab-menu" hidden><b style="display:block;margin-bottom:calc(6px * var(--tb-k))">Permisos de jugadores</b>
@@ -947,7 +947,9 @@
       nd.verNombre = q("[data-vernombre]").checked;
       nd.barras = [...cuerpo.querySelectorAll(".tb-barra-cfg")].map((f, i) => {
         const v = f.querySelector("[data-v]").value, m = f.querySelector("[data-m]").value;
-        const b = Object.assign({}, barras[i], { valor: v === "" ? "" : Number(v), max: m === "" ? "" : Number(m) });
+        // Un número se guarda como número; otra cosa («3 - 0»), como texto
+        const leer = s => { const t = String(s).trim(); return t === "" ? "" : /^-?\d+(\.\d+)?$/.test(t) ? Number(t) : t.slice(0, 20); };
+        const b = Object.assign({}, barras[i], { valor: leer(v), max: leer(m) });
         if (gm) { b.ver = f.querySelector("[data-ver]").checked; b.editar = f.querySelector("[data-editar]").checked; b.texto = f.querySelector("[data-texto]").value; b.enlace = f.querySelector("[data-enlace]").value || null; }
         return b;
       });
@@ -992,7 +994,9 @@
           // El jugador solo cambia las barras que el DJ le deja editar
           for (let i = 0; i < 3; i++) {
             const b = nd.barras[i], antes = barras[i];
-            if (b.editar && (b.valor !== antes.valor || b.max !== antes.max)) await TB.red.barra(o.id, i + 1, Number(b.valor) || 0, Number(b.max) || 0);
+            if (b.editar && (b.valor !== antes.valor || b.max !== antes.max)) {
+              try { await TB.red.barra(o.id, i + 1, b.valor, b.max); } catch (e) { aviso(mensajeError(e), true); }
+            }
           }
           // y su nombre, las barras y las auras (el servidor solo deja cambiar eso)
           try { await TB.red.ajustarPropio(o.id, { nombre: nd.nombre, verNombre: nd.verNombre, barraPos: nd.barraPos, barraEstilo: nd.barraEstilo, auras: nd.auras }); }
@@ -1324,7 +1328,8 @@
       { texto: "Agrupar", apagado: todos.length < 2, accion: () => { const g = "g" + Date.now().toString(36); aplicar(() => ({ grupo: g })); } },
       { texto: "Desagrupar", apagado: !todos.some(q => q.datos && q.datos.grupo), accion: () => aplicar(() => ({ grupo: null })) },
       { texto: algunoSinAjuste ? "Activar el ajuste de cuadrícula" : "Desactivar el ajuste de cuadrícula", accion: () => aplicar(() => ({ sinAjuste: !algunoSinAjuste })) },
-      { texto: algunoSinMenu ? "Activar menús de fichas" : "Desactivar menús de fichas", accion: () => aplicar(() => ({ sinMenu: !algunoSinMenu })) },
+      // Solo el DJ: un jugador que se quita el menú de su propia ficha no puede volver a ponérselo
+      ...(gm ? [{ texto: algunoSinMenu ? "Activar menús de fichas" : "Desactivar menús de fichas", accion: () => aplicar(() => ({ sinMenu: !algunoSinMenu })) }] : []),
       { texto: "Enumerar fichas", apagado: todos.length < 2, accion: () => {
         const orden = todos.slice().sort((a, b) => a.y - b.y || a.x - b.x);
         const nombre = q => String((q.datos && q.datos.nombre) || "Ficha").replace(/\s+\d+$/, "") + " " + (orden.indexOf(q) + 1);
