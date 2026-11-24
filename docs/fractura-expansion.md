@@ -614,6 +614,33 @@ Las partidas guardadas y las mesas en curso con reglas anteriores no se cargan (
 - Berserker: +1 de ataque y +1 de defensa por cada enemigo pegado a él de más que aliados pegados, hasta +3 (`minoriaBerserker`). Sin el +1 de la mitad de vida.
 - Botín (`mods.botin`): cada enemigo que mata da +2 comida y +1 oro (+5/+5 si era líder o héroe). Al tomar una ciudad de otro bando se lleva el 20 % de su comida, oro y materiales (hasta 30 de cada).
 - Viejas deudas (`mods.deudas`): +1 de ataque contra los ejércitos de `odia`.
-- Trofeos de caza (`mods.trofeos`): matar una criatura salvaje cura 3 y deja +1 de vida para toda la guerra (`u.trofeos`, hasta 5).
+- Trofeos de caza (saber `trofeos`, Furia 3 «Trofeos», antes `curaMatar: 2`): matar una criatura salvaje cura 3 y deja +1 de vida para toda la guerra (`u.trofeos`, hasta 5).
 - Marcha de la horda (`mods.horda`): +1 de movimiento a quien empieza el turno junto a otra tropa propia.
-- Campamentos (`mods.campamento: "chaman"`): el chamán levanta uno en una casilla de al lado (6 materiales y 4 comida), lejos de enemigos y ciudades enemigas; dura 6 turnos, hasta 2 a la vez. Cura 3 a las tropas propias en él o a su lado y entrena una tropa básica por turno (`reclutar` con `campamento`). Un enemigo que lo pisa lo arrasa. Están en `est.campamentos`; la IA los levanta cuando su chamán queda a 6 casillas o más de sus ciudades.
+- Campamentos (saber `campamento`, Clanes 1 «Fuegos de campamento», antes `comidaCiudad: 1`; `mods.campamento: "chaman"` dice qué tropa los levanta): el chamán levanta uno en una casilla de al lado (6 materiales y 4 comida), lejos de enemigos y ciudades enemigas; dura 6 turnos, hasta 2 a la vez. Cura 3 a las tropas propias en él o a su lado y entrena una tropa básica por turno (`reclutar` con `campamento`). Un enemigo que lo pisa lo arrasa. Están en `est.campamentos`; la IA los levanta cuando su chamán queda a 6 casillas o más de sus ciudades.
+
+## 19. Los demás ejércitos: pasivas y saber (noviembre de 2026)
+
+Cada ejército poco trabajado gana una pasiva de serie (en `mods`) y una pieza que se aprende. La pieza de saber sustituye a un escalón genérico de su árbol, no añade escalones.
+
+| Ejército | De serie | En el saber (escalón que sustituye) |
+|---|---|---|
+| Hijos del Acero | Marcar la presa (`mods.marcar`) | Trampas (`trampas`, Caza Mayor 1, antes `contra: { monstruo: 1 }`) |
+| Seosan | Postura (`mods.postura`) | Camino de la espada (`caminoEspada`, Escuelas 6, antes `duelo: 1`; sigue con `atq: 1`) |
+| Mravec | Enjambre (`mods.enjambre: 1`) | Túneles (`tuneles`, Panal 3, antes «Enjambre» con `formacion`) |
+| Brurland | Leva feudal (`mods.levaFeudal: 1`) | Levas del Reino (`levaFortaleza`, Murallas 3, antes `poblacion: 3`) |
+| Compañía Dorada | Rescates (`mods.rescate: 6`) | Contratos (`contratos`, Contratas 4, antes «Sede de la Compañía» con `poblacion: 4`) |
+| Balutia | Testudo (`mods.testudo: { clase: "guerrero", max: 2 }`) | Castra (`castra`, Legión 2, antes «Testudo» con `formacion`) |
+
+- Marcar la presa: ballesteros y halconeros marcan a un enemigo a la vista a 5 casillas o menos (`habilidad` con `id: "marcar"`). No gasta el turno; vuelve a los 3 turnos (`u.cdMarca`). La marca (`efectos.marca = { por, hasta }`) dura 2 turnos: `veUnidad` la ve aunque haya niebla o noche y todo su equipo le pega +1 (`marcadaPara`). La IA marca justo antes de atacar si alguien puede.
+- Trampas: cazadores, ballesteros y halconeros esconden una en un bosque libre de al lado (3 materiales, hasta 4, gasta el turno; `id: "trampa"`). Están en `est.trampas` y solo las dibuja su equipo. Al mover, la primera trampa enemiga del camino lo para ahí (si la casilla está libre), deja el movimiento a 0 y quita 2 de vida. La IA las pone en bosques a 4 casillas o menos de sus ciudades cuando no tiene a quién pegar.
+- Postura: al acabar su turno, las tropas que no se movieron (`recorrido` 0) quedan con `efectos.postura`: +2 de defensa y, si las atacan cuerpo a cuerpo, responden antes del golpe (y no otra vez después). Se quita al empezar su siguiente turno.
+- Camino de la espada: matar en duelo (a una unidad sola) suma 1 victoria más.
+- Enjambre: +1 de defensa con 2 o más aliados pegados.
+- Túneles: la Obrera zapadora abre una boca donde está y otra a entre 2 y 6 casillas, las dos en provincias propias (6 materiales, hasta 2, gasta el turno; `id: "tunel"`). Están en `est.tuneles`. `alcanzables` une las dos bocas por 1 de movimiento para las tropas de su dueño. Una tropa enemiga que pisa o cruza una boca hunde el túnel (`derrumbarTuneles`). La IA cava uno si acerca 3 casillas o más a una ciudad que tomar.
+- Leva feudal: `limiteTropas` suma 1 por cada fortaleza (`fortalezasDe`: las del mapa tomadas y las ciudades con Fortaleza en uso).
+- Levas del Reino: cada fortaleza entrega un Miliciano cada 5 turnos si cabe en el límite (`est.levaFeudal[j]` guarda el turno de cada una).
+- Rescates: matar a un oficial (capitán, veterano o mejor), un héroe o el líder hace pagar a su bando 6 (12 por héroe o líder), en oro y, si no le llega, en comida, materiales, mineral y maná (`cobrarRescate`).
+- Contratos: compra una ciudad sin dueño vacía por `10 + 8 × nivel` de oro con una tropa a 3 casillas o menos, una por turno (`id: "contrato"`). Usa `capturarCiudad` pero la tropa conserva su movimiento y su turno. La IA compra la más barata si le sobran 8 de oro.
+- Testudo: contra un ataque a distancia (`dist > 1`), el legionario suma +1 de defensa por cada legionario aliado pegado, hasta +2.
+- Castra: la ciudad que se conquista queda con `obras.fortificar` 3 turnos, gratis.
+- Pruebas: `tools/probar-fractura-v5.js` (116 comprobaciones). En 14 guerras de 4 bandos con estos ejércitos, la IA marcó 346 veces, puso 23 trampas, cavó 14 túneles (10 hundidos), recibió 18 milicianos de leva, golpeó primero en guardia 286 veces, fortificó 30 ciudades con Castra, cobró 4 rescates y compró 2 ciudades.

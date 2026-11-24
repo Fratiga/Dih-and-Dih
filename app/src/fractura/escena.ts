@@ -2,7 +2,7 @@
 import Phaser from "phaser";
 import {
   hash, lienzo, colorNum, estiloMar, hornearSuelo, pintarMar, pintarArbol, pintarPico, pintarRoca, pintarCalavera, pintarCristal, pintarJuncos,
-  pintarCiudad, ESTILO_CIUDAD, pintarFortaleza, pintarRuinas, pintarNucleo, pintarCostura, pintarMuro, pintarCampamento, pintarGlifo, pintarBandera, pintarGema,
+  pintarCiudad, ESTILO_CIUDAD, pintarFortaleza, pintarRuinas, pintarNucleo, pintarCostura, pintarMuro, pintarCampamento, pintarTrampa, pintarTunel, pintarGlifo, pintarBandera, pintarGema,
   pintarNiebla, pintarTerritorios, pintarBrillo, pintarAnillo, pintarAroSel, pintarTajo, pintarEspadas, pintarHumo, pintarFicha, pintarChispa, pintarGota, iconoDe, type Ctx
 } from "./pinturas";
 
@@ -419,7 +419,9 @@ export class EscenaGuerra extends Phaser.Scene {
       const hold = c.est === "nucleo" ? est.nucleoHold.map((n: number, k: number) => (n > 0 ? `${k}:${n}` : "")).join("") : "";
       const cons = est.consagradas && est.consagradas[`${x},${y}`] !== undefined ? `g${est.consagradas[`${x},${y}`]}` : "";
       const cpE = (est.campamentos || []).find((q: any) => q.x === x && q.y === y);
-      const muro = (cpE ? `C${cpE.dueno}` : "") + (est.muros && est.muros.some((m: any) => m.x === x && m.y === y) ? "M" : "") + (est.fuego && est.fuego.some((f: any) => f.x === x && f.y === y && f.hasta >= est.turno) ? "F" : "") + (ci && ci.sello >= est.turno ? "S" : "");
+      const trE = (est.trampas || []).find((q: any) => q.x === x && q.y === y && W.FracturaMotor.mismoEquipo(est, q.dueno, this.humano()));
+      const tuE = (est.tuneles || []).find((q: any) => (q.a.x === x && q.a.y === y) || (q.b.x === x && q.b.y === y));
+      const muro = (trE ? "T" : "") + (tuE ? `U${tuE.dueno}` : "") + (cpE ? `C${cpE.dueno}` : "") + (est.muros && est.muros.some((m: any) => m.x === x && m.y === y) ? "M" : "") + (est.fuego && est.fuego.some((f: any) => f.x === x && f.y === y && f.hasta >= est.turno) ? "F" : "") + (ci && ci.sello >= est.turno ? "S" : "");
       const fe = v === 0 ? "" : [c.est || "", ci ? `${ci.dueno}:${ci.nivel}:${ci.capital ? 1 : 0}:${ci.nombre}:${ci.asedio ? 1 : 0}` : "", fi >= 0 ? `f${fort}` : "", c.saqueada ? "s" : "", c.objetos && c.objetos.length ? "o" : "", hold, cons, muro, v].join("|");
       if (this.firmaEstr[i] !== fe || forzar) { this.firmaEstr[i] = fe; this.rehacerEstructura(i, x, y, c, v, ci, fort); }
     }
@@ -511,6 +513,10 @@ export class EscenaGuerra extends Phaser.Scene {
       const gl = this.add.image(X + T / 2, Y + T / 2, this.tex("glifo", 96, 96, g => pintarGlifo(g, 96))).setDisplaySize(T * 0.86, T * 0.86).setDepth(2.2).setAlpha(0.75);
       lista.push(gl);
     }
+    const tuD = (est.tuneles || []).find((q: any) => (q.a.x === x && q.a.y === y) || (q.b.x === x && q.b.y === y));
+    if (tuD && this.bandos[tuD.dueno]) { const col = this.bandos[tuD.dueno].col; const im = this.add.image(X + T / 2, Y + T / 2, this.tex(`tunel:${col}`, 96, 96, g => pintarTunel(g, 96, col))).setDisplaySize(T * 0.9, T * 0.9).setDepth(2.3); lista.push(im); }
+    const trD = (est.trampas || []).find((q: any) => q.x === x && q.y === y && W.FracturaMotor.mismoEquipo(est, q.dueno, this.humano()));
+    if (trD) { const im = this.add.image(X + T / 2, Y + T / 2, this.tex("trampa", 96, 96, g => pintarTrampa(g, 96))).setDisplaySize(T * 0.62, T * 0.62).setDepth(2.4).setAlpha(0.85); lista.push(im); }
     const cpD = (est.campamentos || []).find((q: any) => q.x === x && q.y === y);
     if (cpD && this.bandos[cpD.dueno]) { const col = this.bandos[cpD.dueno].col; pon(this.tex(`campamento:${col}`, 128, 128, g => pintarCampamento(g, 128, col)), T * 1.0); }
     if (est.muros && est.muros.some((m: any) => m.x === x && m.y === y)) { const mu = pon(this.tex("muro", 128, 128, g => pintarMuro(g, 128)), T * 1.05); if (!REDUCIDO) this.tweens.add({ targets: mu, alpha: 0.7, duration: 700, yoyo: true, repeat: -1 }); }

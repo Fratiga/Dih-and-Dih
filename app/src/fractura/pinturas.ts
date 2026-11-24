@@ -746,6 +746,27 @@ export function pintarMuro(g: Ctx, S: number): void {
   g.beginPath(); g.moveTo(-5, -20); g.lineTo(0, -6); g.lineTo(5, -20); g.moveTo(-6, -12); g.lineTo(6, -12); g.stroke();
   g.restore();
 }
+/* Trampa de cepo escondida entre la hojarasca (solo la ve su bando) */
+export function pintarTrampa(g: Ctx, S: number): void {
+  g.save(); g.translate(S / 2, S * 0.62); g.scale(S / 40, S / 40);
+  g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.ellipse(0, 1, 11, 3, 0, 0, 7); g.fill();
+  g.strokeStyle = "#6a6a70"; g.lineWidth = 1.6;
+  g.beginPath(); g.ellipse(0, 0, 9, 3.2, 0, 0, 7); g.stroke();
+  g.strokeStyle = "#9a9aa2"; g.lineWidth = 1.2; g.beginPath();
+  for (let i = -3; i <= 3; i++) { const x = i * 2.6; g.moveTo(x - 0.9, -2.6); g.lineTo(x, -5.4); g.lineTo(x + 0.9, -2.6); }
+  g.stroke();
+  g.fillStyle = "#4a3a24"; g.fillRect(-1.2, -1, 2.4, 2);
+  g.restore();
+}
+/* Boca de túnel (Mravec): un agujero con la tierra amontonada alrededor */
+export function pintarTunel(g: Ctx, S: number, col: string): void {
+  g.save(); g.translate(S / 2, S * 0.62); g.scale(S / 40, S / 40);
+  poli(g, "#6b5236", [[-14, 2], [-9, -4], [0, -6], [9, -4], [14, 2], [8, 5], [-8, 5]]);
+  g.fillStyle = "#120c08"; g.beginPath(); g.ellipse(0, 0, 8.6, 3.8, 0, 0, 7); g.fill();
+  g.fillStyle = "#3a2a1a"; g.beginPath(); g.ellipse(0, -1.4, 8.6, 1.6, 0, Math.PI, 0); g.fill();
+  g.strokeStyle = col; g.lineWidth = 1.6; g.beginPath(); g.ellipse(0, 0, 10.4, 4.8, 0, 0.2, Math.PI - 0.2); g.stroke();
+  g.restore();
+}
 /* Campamento nómada (Okran): una tienda de pieles con el color del bando, una hoguera y un estandarte */
 export function pintarCampamento(g: Ctx, S: number, col: string): void {
   g.save(); g.translate(S / 2, S * 0.82); g.scale(S / 40, S / 40);

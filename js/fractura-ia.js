@@ -240,6 +240,15 @@
     const capO = FM.ciudadesDe(est, j).find(c => c.capital);
     if (capO && FM.cuentaTropas(est, j) >= FM.limiteTropas(est, j) && rec.comida >= 24 && rec.oro >= 24) FM.aplicar(est, { t: "obra", ciudad: capO.id, id: "fiesta" });
     if (capO && rec.oro >= 40 && rec.comida >= 20 && FM.cuentaTropas(est, j) < FM.limiteTropas(est, j) - 2) FM.aplicar(est, { t: "obra", ciudad: capO.id, id: "levas" });
+    // Contratos (Compañía Dorada): compra la ciudad sin dueño más barata que tenga a mano, si le sobra el oro
+    if (FM.sab(est, j).contratos && jug.contratoT !== est.turno) {
+      const neutras = Object.values(est.ciudades).filter(c => c.dueno === null).sort((a, b) => FM.precioContrato(a) - FM.precioContrato(b));
+      for (const c of neutras) {
+        if (rec.oro < FM.precioContrato(c) + 8) break;
+        const t = FM.unidadesDe(est, j).find(w => !FM.razonContrato(est, j, w, c.x, c.y));
+        if (t && FM.aplicar(est, { t: "habilidad", id: "contrato", uid: t.uid, x: c.x, y: c.y }).ok) break;
+      }
+    }
     // Reclutamiento
     const tope = Math.min(FM.limiteTropas(est, j), 5 + Math.floor(est.turno * 0.7) + (nivel === "dificil" ? 2 : 0));
     FM.ciudadesDe(est, j).forEach(c => {
@@ -262,7 +271,16 @@
     let sem = (est.rs ^ (est.turno * 2654435761)) >>> 0;
     const azar = () => { sem = (Math.imul(sem, 1664525) + 1013904223) >>> 0; return sem / 4294967296; };
     const pasos = [];
-    const aplicar = acc => { const r = FM.aplicar(est, acc); if (r.ok) pasos.push(acc); return r; };
+    const aplicar0 = acc => { const r = FM.aplicar(est, acc); if (r.ok) pasos.push(acc); return r; };
+    const marca = FACCIONES[jug.faccion].mods.marcar;
+    const aplicar = acc => {
+      if (marca && acc.t === "atacar") {
+        const t = FM.unidadEn(est, acc.x, acc.y);
+        const m = t && !FM.marcadaPara(est, j, t) && FM.unidadesDe(est, j).find(w => !FM.razonMarcar(est, j, w, t.x, t.y));
+        if (m) aplicar0({ t: "habilidad", id: "marcar", uid: m.uid, x: t.x, y: t.y });
+      }
+      return aplicar0(acc);
+    };
     const fmAplicar = FM.aplicar;
     void fmAplicar;
 
@@ -449,6 +467,28 @@
     /* Lo propio de cada ejército: habilidades de héroe, consagrar y sobornar. Devuelve true si la unidad ya gastó su acción. */
     function habilidadesNuevas(u) {
       if (u.atacado || !est.unidades[u.uid]) return false;
+      // Trampas (Hijos del Acero): en los bosques cerca de casa, cuando no hay a quién pegar
+      if (FM.sab(est, j).trampas && FM.CLASES_TRAMPA.includes(u.clase) && azar() < 0.35 && (est.trampas || []).filter(t => t.dueno === j).length < 3 && jug.recursos.materiales >= 12 && !ataqueAqui(est, u)) {
+        const propias = FM.ciudadesDe(est, j);
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const x = u.x + dx, y = u.y + dy;
+          if (!FM.razonTrampa(est, j, u, x, y) && propias.some(c => cheb(c, { x, y }) <= 4) && aplicar({ t: "habilidad", id: "trampa", uid: u.uid, x, y }).ok) return true;
+        }
+      }
+      // Túneles (Mravec): la zapadora acerca el frente cavando hacia las ciudades que hay que tomar
+      if (u.clase === "zapadora" && FM.sab(est, j).tuneles && !(est.tuneles || []).some(t => t.dueno === j) && !FM.razonTunel(est, j, u)) {
+        const metas = Object.values(est.ciudades).filter(c => c.dueno !== j && (c.dueno === null || FM.hostil(est, c.dueno, j)));
+        if (metas.length) {
+          const L = FM.LARGO_TUNEL, d0 = Math.min(...metas.map(c => cheb(c, u)));
+          let mejor = null;
+          for (let y = u.y - L; y <= u.y + L; y++) for (let x = u.x - L; x <= u.x + L; x++) {
+            if (!FM.dentro(est, x, y) || FM.razonTunel(est, j, u, x, y)) continue;
+            const gana = d0 - Math.min(...metas.map(c => cheb(c, { x, y })));
+            if (gana >= 3 && (!mejor || gana > mejor.gana)) mejor = { x, y, gana };
+          }
+          if (mejor && aplicar({ t: "habilidad", id: "tunel", uid: u.uid, x: mejor.x, y: mejor.y }).ok) return true;
+        }
+      }
       const fac = FACCIONES[jug.faccion];
       const h = u.heroe ? HEROES[u.heroe] : null;
       const junto = (x, y) => Object.values(est.unidades).filter(w => cheb(w, { x, y }) <= 1);

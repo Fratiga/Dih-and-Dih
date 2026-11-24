@@ -294,6 +294,9 @@ const rico = jug => Object.keys(jug.recursos).forEach(k => { jug.recursos[k] = 9
   const est = guerra(["okran", "caballeros-del-reino"]);
   limpiar(est); est.activo = 0;
   const jo = est.jugadores[0], jc = est.jugadores[1];
+  ok(FM.razonCampamento(est, 0, poner(est, 0, "chaman", 3, 3)) !== null, "se levantan campamentos sin aprender Fuegos de campamento");
+  limpiar(est);
+  jo.sabEf = Object.assign({}, jo.sabEf, { trofeos: true, campamento: true });
   const x = 14, y = 14;
   for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) llano(est, x + dx, y + dy);
   // Viejas deudas: Okran odia a Brurland, así que le pega 1 más que a un bando que no odia
@@ -328,6 +331,7 @@ const rico = jug => Object.keys(jug.recursos).forEach(k => { jug.recursos[k] = 9
   ok(est.activo === 0 && h1.pm === FM.ef(est, h1).mov + 1 && h2.pm === FM.ef(est, h2).mov + 1 && solo.pm === FM.ef(est, solo).mov, "la marcha de la horda no da +1 de movimiento solo a los que van juntos");
   // Campamento: lo levanta el chamán, cura, entrena básicas una vez por turno y un enemigo lo arrasa
   limpiar(est); est.activo = 0; rico(jo);
+  jo.sabEf = Object.assign({}, jo.sabEf, { campamento: true });
   const ch = poner(est, 0, "chaman", x, y);
   ok(!!FM.razonCampamento(est, 0, poner(est, 0, "guerrero", x - 2, y), x - 2, y + 1), "un guerrero puede levantar campamentos");
   const rcp = FM.aplicar(est, { t: "habilidad", id: "campamento", uid: ch.uid, x: x + 1, y });
@@ -346,6 +350,186 @@ const rico = jug => Object.keys(jug.recursos).forEach(k => { jug.recursos[k] = 9
   const enemigo = poner(est, 1, "jinete", cp.x + 2, cp.y); enemigo.pm = 5;
   FM.aplicar(est, { t: "mover", uid: enemigo.uid, x: cp.x, y: cp.y });
   ok(!(est.campamentos || []).length, "un enemigo que pisa el campamento no lo arrasa");
+}
+
+// --- Los otros seis ejércitos: lo que tienen de serie y lo que aprenden ---
+const Sd = require("../js/fractura-soldados.js");
+const zona = (est, x, y, r) => { for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { llano(est, x + dx, y + dy); const c = est.casillas[y + dy][x + dx]; if (c.t === "bosque") c.t = "llanura"; } };
+const sinEstructura = (est, x, y, r) => { for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (est.casillas[y + dy][x + dx].est) return false; return true; };
+const sitioLimpio = est => { for (let y = 3; y < est.alto - 3; y++) for (let x = 3; x < est.ancho - 3; x++) if (sinEstructura(est, x, y, 2)) return { x, y }; return null; };
+// Hijos del Acero: Marcar la presa y Trampas
+{
+  const est = guerra(["hijos-del-acero", "okran"]);
+  limpiar(est); est.activo = 0;
+  const jh = est.jugadores[0], { x, y } = sitioLimpio(est);
+  zona(est, x, y, 2);
+  const b = poner(est, 0, "ballestero", x - 2, y), g = poner(est, 0, "guerrero", x, y + 1), e = poner(est, 1, "guerrero", x + 1, y + 1);
+  FM.actualizarVision(est, 0);
+  const sin = FM.calcularDano(est, g, e);
+  const r = FM.aplicar(est, { t: "habilidad", id: "marcar", uid: b.uid, x: e.x, y: e.y });
+  ok(r.ok, `el ballestero no marca la presa: ${r.error || ""}`);
+  ok(FM.calcularDano(est, g, e) === sin + 1, "contra la presa marcada no se pega 1 más");
+  est.vision[0].fill(0);
+  ok(FM.veUnidad(est, 0, e), "la presa marcada no se ve en la niebla");
+  ok(!FM.aplicar(est, { t: "habilidad", id: "marcar", uid: b.uid, x: e.x, y: e.y }).ok, "se puede marcar otra vez sin esperar");
+  ok(!FM.aplicar(est, { t: "habilidad", id: "marcar", uid: g.uid, x: e.x, y: e.y }).ok, "un guerrero puede marcar presas");
+  est.turno += 2;
+  ok(!FM.marcadaPara(est, 0, e), "la marca no se acaba a los 2 turnos");
+  est.turno -= 2;
+  // Trampas: solo con el saber, en un bosque libre de al lado
+  limpiar(est); rico(jh);
+  const c = poner(est, 0, "cazador", x, y);
+  est.casillas[y - 1][x].t = "bosque";
+  ok(!FM.aplicar(est, { t: "habilidad", id: "trampa", uid: c.uid, x, y: y - 1 }).ok, "se ponen trampas sin aprender Trampas");
+  jh.sabEf = Object.assign({}, jh.sabEf, { trampas: true });
+  ok(!FM.aplicar(est, { t: "habilidad", id: "trampa", uid: c.uid, x: x + 1, y }).ok, "se pone una trampa fuera del bosque");
+  const rt = FM.aplicar(est, { t: "habilidad", id: "trampa", uid: c.uid, x, y: y - 1 });
+  ok(rt.ok && est.trampas.length === 1, `el cazador no pone la trampa: ${rt.error || ""}`);
+  est.activo = 1;
+  const presa = poner(est, 1, "jinete", x - 2, y - 2); presa.pm = 6;
+  const hp0 = presa.hp;
+  FM.aplicar(est, { t: "mover", uid: presa.uid, x, y: y - 1 });
+  ok(presa.x === x && presa.y === y - 1 && presa.pm === 0 && presa.hp === hp0 - 2 && !est.trampas.length, "la trampa no para y hiere al que la pisa");
+}
+// Seosan: Postura y Camino de la espada
+{
+  const est = guerra(["seosan", "okran"]);
+  limpiar(est); est.activo = 0;
+  const js = est.jugadores[0], { x, y } = sitioLimpio(est);
+  zona(est, x, y, 2);
+  const s1 = poner(est, 0, "guerrero", x, y), andan = poner(est, 0, "guerrero", x - 2, y - 2), atk = poner(est, 1, "guerrero", x + 1, y);
+  const def0 = FM.ef(est, s1).def;
+  FM.aplicar(est, { t: "mover", uid: andan.uid, x: x - 2, y: y - 1 });
+  FM.aplicar(est, { t: "terminar" });
+  ok(s1.efectos.postura && FM.ef(est, s1).def === def0 + 2, "quien no se mueve no gana +2 de defensa");
+  ok(!andan.efectos.postura, "quien se movió también queda en guardia");
+  const ra = FM.aplicar(est, { t: "atacar", uid: atk.uid, x: s1.x, y: s1.y });
+  const golpes = (ra.ev || []).filter(v => v.k === "golpe");
+  ok(golpes.length >= 1 && golpes[0].de === s1.uid && golpes.filter(v => v.de === s1.uid).length === 1, "en guardia no golpea primero (o golpea dos veces)");
+  FM.aplicar(est, { t: "terminar" });
+  ok(!s1.efectos.postura, "la guardia no se acaba al empezar su turno");
+  // Camino de la espada: un duelo ganado vale 2 victorias
+  limpiar(est); est.activo = 0;
+  const d1 = poner(est, 0, "guerrero", x, y), solo = poner(est, 1, "guerrero", x + 1, y);
+  solo.hp = 1; FM.aplicar(est, { t: "atacar", uid: d1.uid, x: solo.x, y: solo.y });
+  const v1 = d1.vicG;
+  js.sabEf = Object.assign({}, js.sabEf, { caminoEspada: true });
+  const d2 = poner(est, 0, "guerrero", x, y + 2), solo2 = poner(est, 1, "guerrero", x + 1, y + 2);
+  solo2.hp = 1; d2.atacado = false; FM.aplicar(est, { t: "atacar", uid: d2.uid, x: solo2.x, y: solo2.y });
+  ok(v1 === 1 && d2.vicG === 2, `Camino de la espada no da una victoria más (${v1} y ${d2.vicG})`);
+}
+// Mravec: Enjambre y Túneles
+{
+  const est = guerra(["mravec", "okran"]);
+  limpiar(est); est.activo = 0;
+  const jm = est.jugadores[0], { x, y } = sitioLimpio(est);
+  zona(est, x, y, 2);
+  const a = poner(est, 0, "guerrero", x, y), d0 = FM.ef(est, a).def;
+  poner(est, 0, "picaro", x + 1, y);
+  ok(FM.ef(est, a).def === d0, "Enjambre da defensa con un solo aliado al lado");
+  poner(est, 0, "quimera", x - 1, y);
+  ok(FM.ef(est, a).def === d0 + 1, "Enjambre no da +1 de defensa con dos aliados al lado");
+  // Túneles: entre dos casillas del territorio propio
+  limpiar(est); rico(jm);
+  const cap = FM.ciudadesDe(est, 0).find(c => c.capital);
+  const boca = (bx, by) => FM.dentro(est, bx, by) && FM.enTerritorio(est, 0, bx, by) && est.casillas[by][bx].t !== "agua" && D.TERRENOS[est.casillas[by][bx].t].mov > 0 && !est.casillas[by][bx].est;
+  let A = null, B = null;
+  for (let dy = -2; dy <= 2 && !A; dy++) for (let dx = -2; dx <= 2 && !A; dx++) if ((dx || dy) && boca(cap.x + dx, cap.y + dy)) A = { x: cap.x + dx, y: cap.y + dy };
+  for (let r = 6; r >= 3 && !B && A; r--) for (let dy = -r; dy <= r && !B; dy++) for (let dx = -r; dx <= r && !B; dx++) if (Math.max(Math.abs(dx), Math.abs(dy)) === r && boca(A.x + dx, A.y + dy)) B = { x: A.x + dx, y: A.y + dy };
+  ok(A && B, "no hay sitio para probar los túneles");
+  if (A && B) {
+    const z = poner(est, 0, "zapadora", A.x, A.y);
+    ok(!FM.aplicar(est, { t: "habilidad", id: "tunel", uid: z.uid, x: B.x, y: B.y }).ok, "se cava un túnel sin aprender Túneles");
+    jm.sabEf = Object.assign({}, jm.sabEf, { tuneles: true });
+    const rt = FM.aplicar(est, { t: "habilidad", id: "tunel", uid: z.uid, x: B.x, y: B.y });
+    ok(rt.ok && est.tuneles.length === 1, `la zapadora no cava el túnel: ${rt.error || ""}`);
+    delete est.unidades[z.uid];
+    const w = poner(est, 0, "guerrero", A.x, A.y);
+    const nodo = FM.alcanzables(est, w).destinos.get(`${B.x},${B.y}`);
+    ok(nodo && nodo.c === 1, `cruzar el túnel no cuesta 1 (${nodo ? nodo.c : "no llega"})`);
+    // Un enemigo que pisa una boca lo hunde
+    est.activo = 1;
+    let cerca = null;
+    for (let dy = -1; dy <= 1 && !cerca; dy++) for (let dx = -1; dx <= 1 && !cerca; dx++) { const qx = B.x + dx, qy = B.y + dy; if ((dx || dy) && FM.dentro(est, qx, qy) && !FM.unidadEn(est, qx, qy) && D.TERRENOS[est.casillas[qy][qx].t].mov > 0 && est.casillas[qy][qx].t !== "agua" && !est.casillas[qy][qx].est) cerca = { x: qx, y: qy }; }
+    if (cerca) {
+      const e = poner(est, 1, "guerrero", cerca.x, cerca.y); e.pm = 6;
+      FM.aplicar(est, { t: "mover", uid: e.uid, x: B.x, y: B.y });
+      ok(e.x === B.x && !est.tuneles.length, "un enemigo que pisa la boca no hunde el túnel");
+    }
+  }
+}
+// Brurland: Leva feudal y Levas del Reino
+{
+  const est = guerra(["caballeros-del-reino", "okran"]);
+  limpiar(est); est.activo = 0;
+  const jb = est.jugadores[0];
+  const l0 = FM.limiteTropas(est, 0), n0 = FM.fortalezasDe(est, 0).length;
+  ok(est.fortalezas.length > 0, "el mapa no tiene fortalezas para probar");
+  const fi = est.fortalezasDueno.findIndex(d => d !== 0);
+  if (fi >= 0) {
+    est.fortalezasDueno[fi] = 0;
+    ok(FM.limiteTropas(est, 0) === l0 + 1 && FM.fortalezasDe(est, 0).length === n0 + 1, "una fortaleza tomada no sube el límite en 1");
+    jb.sabEf = Object.assign({}, jb.sabEf, { levaFortaleza: true });
+    for (let i = 0; i < 12; i++) FM.aplicar(est, { t: "terminar" });
+    const n = FM.fortalezasDe(est, 0).length, mil = FM.unidadesDe(est, 0).filter(u => u.clase === "guerrero").length;
+    ok(mil === n, `las fortalezas no dan un miliciano cada 5 turnos (${mil} milicianos, ${n} fortalezas)`);
+  }
+}
+// Compañía Dorada: Rescates y Contratos
+{
+  const est = guerra(["compania-dorada", "okran"]);
+  limpiar(est); est.activo = 0;
+  const jd = est.jugadores[0], jo = est.jugadores[1], { x, y } = sitioLimpio(est);
+  zona(est, x, y, 2);
+  const a = poner(est, 0, "guerrero", x, y);
+  const sol = Sd.crearSoldado({ s: 7 }, { clase: "guerrero", cultura: D.FACCIONES.okran.cultura, origen: "criatura", anio: 1 });
+  sol.capitan = true;
+  const e = FM.nuevaUnidad(est, 1, "guerrero", x + 1, y, sol); e.hp = 1; e.voluntadUsada = true;
+  jo.recursos.oro = 3; jo.recursos.comida = 50;
+  const oro0 = jd.recursos.oro, com0 = jd.recursos.comida;
+  FM.aplicar(est, { t: "atacar", uid: a.uid, x: e.x, y: e.y });
+  ok(!est.unidades[e.uid] && jo.recursos.oro === 0 && jo.recursos.comida === 47 && jd.recursos.oro === oro0 + 3 && jd.recursos.comida === com0 + 3, "el rescate del capitán no se paga (3 de oro y el resto en comida)");
+  // Contratos: comprar una ciudad sin dueño con una tropa cerca
+  const neutra = Object.values(est.ciudades).find(c => c.dueno === null);
+  ok(!!neutra, "no hay ciudad neutral para probar");
+  if (neutra) {
+    limpiar(est); jd.recursos.oro = 999;
+    let p = null;
+    for (let dy = -3; dy <= 3 && !p; dy++) for (let dx = -3; dx <= 3 && !p; dx++) { const qx = neutra.x + dx, qy = neutra.y + dy; if (Math.max(Math.abs(dx), Math.abs(dy)) >= 2 && FM.dentro(est, qx, qy) && !est.casillas[qy][qx].est) p = { x: qx, y: qy }; }
+    const t = poner(est, 0, "guerrero", p.x, p.y);
+    ok(!FM.aplicar(est, { t: "habilidad", id: "contrato", uid: t.uid, x: neutra.x, y: neutra.y }).ok, "se compra una ciudad sin aprender Contratos");
+    jd.sabEf = Object.assign({}, jd.sabEf, { contratos: true });
+    const precio = FM.precioContrato(neutra);
+    const rc = FM.aplicar(est, { t: "habilidad", id: "contrato", uid: t.uid, x: neutra.x, y: neutra.y });
+    ok(rc.ok && neutra.dueno === 0 && jd.recursos.oro === 999 - precio, `no se compra la ciudad neutral: ${rc.error || ""}`);
+    const otra = Object.values(est.ciudades).find(c => c.dueno === null);
+    if (otra) ok(!!FM.razonContrato(est, 0, t, otra.x, otra.y), "se compran dos ciudades en un turno");
+  }
+}
+// Balutia: Testudo y Castra
+{
+  const est = guerra(["balutia", "okran"]);
+  limpiar(est); est.activo = 1;
+  const jb = est.jugadores[0], { x, y } = sitioLimpio(est);
+  zona(est, x, y, 2);
+  const l = poner(est, 0, "guerrero", x, y);
+  poner(est, 0, "guerrero", x - 1, y); poner(est, 0, "guerrero", x, y - 1);
+  const arq = poner(est, 1, "ballestero", x + 2, y); arq.bonoDesafio = 8;
+  const mel = poner(est, 1, "guerrero", x + 1, y + 1); mel.bonoDesafio = 8;
+  const facB = D.FACCIONES.balutia, tt = facB.mods.testudo;
+  const conT = FM.calcularDano(est, arq, l), conTm = FM.calcularDano(est, mel, l);
+  delete facB.mods.testudo;
+  const sinT = FM.calcularDano(est, arq, l), sinTm = FM.calcularDano(est, mel, l);
+  facB.mods.testudo = tt;
+  ok(sinT - conT === 1, `Testudo no frena los disparos (${sinT} → ${conT})`);
+  ok(sinTm === conTm, "Testudo también frena el cuerpo a cuerpo");
+  // Castra: la ciudad tomada queda fortificada 3 turnos
+  const neutra = Object.values(est.ciudades).find(c => c.dueno === null);
+  if (neutra) {
+    jb.sabEf = Object.assign({}, jb.sabEf, { castra: true });
+    FM.capturarCiudad(est, l, neutra);
+    ok(neutra.dueno === 0 && neutra.obras.fortificar === est.turno + 2, "Castra no fortifica la ciudad conquistada");
+  }
 }
 
 console.log(`${hechas} comprobaciones, ${fallos} fallos`);

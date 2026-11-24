@@ -382,6 +382,7 @@
         <ul><li><strong>Haz crecer tus ciudades.</strong> Pulsa «Crecer» en el panel de la ciudad. Cada nivel de cada ciudad suma tropas al límite, y cuántas depende del ejército (en la tabla).</li>
         <li><strong>Toma más ciudades.</strong> Cada ciudad tuya suma lo de sus niveles. Desde la cuarta ciudad se paga administración en oro.</li>
         <li><strong>Aprende el saber que lo sube.</strong> Algunos escalones dan más tropas. Salen en la última columna.</li>
+        <li><strong>Brurland: toma fortalezas.</strong> Con la Leva feudal, cada fortaleza suya (del mapa o construida en una ciudad) suma 1 al límite.</li>
         <li><strong>Encarga una Fiesta.</strong> Es una obra de ciudad: +2 al límite durante 3 turnos por cada ciudad que la celebre.</li>
         <li>Lo demás nunca pasa del tope de tu ejército. La Fiesta sí: suma por encima del tope, hasta un máximo absoluto de 40 tropas.</li></ul>
         <p>No ocupan sitio los levantados de entre los muertos ni lo que traen algunos héroes al usar sus habilidades.</p>
@@ -1196,6 +1197,36 @@
       out.push({ ic: "⛺", nombre: "Levantar campamento", texto: `Monta un campamento en una casilla de al lado, lejos de enemigos y de ciudades enemigas. Dura ${FM.DURA_CAMPAMENTO} turnos: cura 3 a tus tropas que estén en él o a su lado y entrena una tropa básica por turno. Si un enemigo lo pisa, lo arrasa. Puedes tener ${FM.MAX_CAMPAMENTOS} a la vez.`,
         coste: FM.COSTE_CAMPAMENTO, razon: ya || r0 || (cas.size ? null : "No hay una casilla buena a su lado: libre, de tierra y lejos de enemigos."), casillas: cas, acc: { id: "campamento" } });
     }
+    // Marcar la presa (Hijos del Acero): no gasta el turno, pero tarda en volver
+    if ((fac.mods.marcar || []).includes(u.clase)) {
+      const cas = new Set();
+      Object.values(est.unidades).forEach(w => { if (!FM.razonMarcar(est, H, u, w.x, w.y)) cas.add(`${w.x},${w.y}`); });
+      const r0 = FM.razonMarcar(est, H, u);
+      const espera = u.cdMarca > 0 ? { t: `⟳ faltan ${u.cdMarca}`, lista: false, titulo: `Se recarga: le faltan ${u.cdMarca} ${u.cdMarca === 1 ? "turno" : "turnos"}.` } : { t: `⟳ cada ${FM.CD_MARCA}`, lista: true, titulo: `Lista. Después de usarla tarda ${FM.CD_MARCA} turnos en volver.` };
+      out.push({ ic: "◎", nombre: "Marcar la presa", texto: `Marca a un enemigo a ${FM.ALCANCE_MARCA} casillas o menos. Durante 2 turnos lo ves aunque haya niebla o noche y todas tus tropas le pegan 1 más. No gasta el turno.`,
+        razon: r0 || (cas.size ? null : "No hay enemigos a la vista tan cerca."), casillas: cas, acc: { id: "marcar" }, espera });
+    }
+    // Trampas (Hijos del Acero, con el saber)
+    if (FM.sab(est, H).trampas && FM.CLASES_TRAMPA.includes(u.clase)) {
+      const cas = new Set();
+      for (let y = u.y - 1; y <= u.y + 1; y++) for (let x = u.x - 1; x <= u.x + 1; x++) if (!FM.razonTrampa(est, H, u, x, y)) cas.add(`${x},${y}`);
+      const puestas = (est.trampas || []).filter(t => t.dueno === H).length;
+      out.push({ ic: "⚙", nombre: "Esconder una trampa", texto: `Esconde una trampa en un bosque libre de al lado. Solo la ve tu bando. El enemigo que la pisa se para ahí, pierde 2 de vida y la trampa se gasta. Tienes ${puestas} de ${FM.MAX_TRAMPAS}.`,
+        coste: FM.COSTE_TRAMPA, razon: ya || FM.razonTrampa(est, H, u) || (cas.size ? null : "No hay un bosque libre a su lado."), casillas: cas, acc: { id: "trampa" } });
+    }
+    // Túneles (Mravec, con el saber)
+    if (FM.sab(est, H).tuneles && u.clase === "zapadora") {
+      const cas = new Set(), L = FM.LARGO_TUNEL;
+      for (let y = u.y - L; y <= u.y + L; y++) for (let x = u.x - L; x <= u.x + L; x++) if (FM.dentro(est, x, y) && !FM.razonTunel(est, H, u, x, y)) cas.add(`${x},${y}`);
+      out.push({ ic: "◍", nombre: "Cavar un túnel", texto: `Abre una boca aquí y otra en una casilla de tu territorio a entre 2 y ${L} casillas. Tus tropas pasan de una boca a la otra por 1 de movimiento. Si un enemigo pisa una boca, el túnel se hunde. Puedes tener ${FM.MAX_TUNELES}.`,
+        coste: FM.COSTE_TUNEL, razon: ya || FM.razonTunel(est, H, u) || (cas.size ? null : "No hay sitio para la otra boca."), casillas: cas, acc: { id: "tunel" } });
+    }
+    // Contratos (Compañía Dorada, con el saber): comprar una ciudad sin dueño que esté cerca
+    if (FM.sab(est, H).contratos) Object.values(est.ciudades).filter(ci => ci.dueno === null && FM.dist(u, ci) <= 3).slice(0, 2).forEach(ci => {
+      const precio = FM.precioContrato(ci);
+      out.push({ ic: "¤", nombre: `Comprar ${ci.nombre}`, texto: `La ciudad pasa a ser tuya al momento por ${precio} de oro, sin asedio. Solo una compra por turno. No gasta el turno de la tropa.`,
+        coste: { oro: precio }, razon: FM.razonContrato(est, H, u, ci.x, ci.y), acc: { id: "contrato", x: ci.x, y: ci.y } });
+    });
     if (u.clase === "sanador" && fac.mods.consagra) out.push({ ic: "☀", nombre: "Consagrar", texto: "Consagra esta casilla y las de alrededor: tus tropas ganan +1 de defensa y se curan 1 más en ellas.", razon: ya || (FM.consagradaPara(est, H, u.x, u.y) && [[1, 0], [-1, 0], [0, 1], [0, -1]].every(([dx, dy]) => !FM.casilla(est, u.x + dx, u.y + dy) || FM.consagradaPara(est, H, u.x + dx, u.y + dy)) ? "Este terreno ya está consagrado." : null), acc: { id: "consagrar" } });
     // Tropas que se quedaron sin bandera al caer su ejército: se pueden acoger
     junto(u.x, u.y).filter(w => w.dueno === -1 && w.sinBandera && w !== u).slice(0, 2).forEach(w => {
@@ -1281,6 +1312,10 @@
     (u.rasgos || []).forEach(k => out.push([NOMBRE_RASGO[k], "cian"]));
     if (u.dueno >= 0 && FM.consagradaPara(est, u.dueno, u.x, u.y)) out.push(["En suelo consagrado", "oro"]);
     if (u.trofeos) out.push([`Trofeos de caza: +${Math.min(5, u.trofeos)} de vida`, "oro"]);
+    if (u.efectos && u.efectos.marca && u.efectos.marca.hasta >= est.turno) out.push([FM.marcadaPara(est, humano(), u) ? "Presa marcada: +1 de ataque contra ella" : "La han marcado como presa", "rojo"]);
+    if (u.efectos && u.efectos.postura) out.push(["En guardia: +2 defensa, golpea primero", "oro"]);
+    if (u.dueno >= 0 && FACCIONES[est.jugadores[u.dueno].faccion].mods.enjambre && FM.vecinosAliados(est, u).length >= 2) out.push(["Enjambre: +1 defensa", "oro"]);
+    if (u.dueno >= 0 && FACCIONES[est.jugadores[u.dueno].faccion].mods.testudo && FACCIONES[est.jugadores[u.dueno].faccion].mods.testudo.clase === u.clase) { const n = Math.min(2, FM.vecinosAliados(est, u).filter(w => w.clase === u.clase).length); if (n) out.push([`Testudo: +${n} defensa contra disparos`, "oro"]); }
     if (u.clase === "berserker") { const m = FM.minoriaBerserker(est, u); if (m) out.push([`En minoría: +${m} ataque, +${m} defensa`, "rojo"]); }
     if (u.orden && ORD[u.orden.tipo]) {
       const o = u.orden, w = o.uid && est.unidades[o.uid], ci = o.ciudad && est.ciudades[o.ciudad];
@@ -1348,6 +1383,17 @@
     pintarFiguras(c);
   }
 
+  /* Una trampa (solo si es de tu bando) o la boca de un túnel */
+  function tarjetaTrampaTunel(x, y) {
+    const H = humano(), tr = FM.trampaEn(est, x, y), tu = FM.tunelEn(est, x, y);
+    let h = "";
+    if (tr && FM.mismoEquipo(est, tr.dueno, H)) h += `<p class="fr-sel-texto"><strong>⚙ Trampa ${tr.dueno === H ? "tuya" : "aliada"}.</strong> El enemigo que la pisa se para aquí y pierde 2 de vida. Los rivales no la ven.</p>`;
+    if (tu) {
+      const otra = tu.a.x === x && tu.a.y === y ? tu.b : tu.a, mio = tu.dueno === H;
+      h += `<p class="fr-sel-texto"><strong>◍ Boca de túnel${mio ? " tuya" : ` de ${esc(FACCIONES[est.jugadores[tu.dueno].faccion].corto)}`}.</strong> ${mio ? `Lleva a la casilla ${otra.x + 1}, ${otra.y + 1} por 1 de movimiento.` : "Si una tropa tuya la pisa, el túnel se hunde."}</p>`;
+    }
+    return h;
+  }
   /* Un campamento (Okran): de quién es, cuánto le queda y, si es tuyo y es tu turno, qué puede entrenar */
   function tarjetaCampamento(x, y) {
     const cp = FM.campamentoEn(est, x, y);
@@ -1369,7 +1415,7 @@
         <div class="fr-sel-cab"><h3>${esc(t.nombre)}${ca.est ? ` · ${esc(D.ESTRUCTURAS[ca.est].nombre)}` : ""}</h3><p>${rg ? `${esc(rg.nombre)} · ${dueno ? (rg.dueno === H ? "provincia tuya" : `provincia de ${esc(FACCIONES[dueno.faccion].corto)}`) : "provincia sin dueño"} · estabilidad ${rg.estab}` : ""}</p></div>
         <div class="fr-stats"><span title="Lo que cuesta entrar">${ico("mov")}<b>${t.mov || "—"}</b></span><span title="Defensa que da a quien la ocupa">${ico("defensa")}<b>+${t.def + (ca.est ? D.ESTRUCTURAS[ca.est].def : 0)}</b></span><span title="Lo que rinde a una ciudad cercana" class="fr-coste">${rinde}</span>${FM.consagradaPara(est, H, x, y) ? `<span class="fr-stat-estado listo">Consagrada</span>` : ""}</div>
         ${que ? `<p class="fr-sel-texto">${esc(que)}</p>` : ""}${ca.est === "costura" && est.costuras[ca.costura] ? `<button type="button" class="fr-btn fr-btn-chico" data-ir-portal>Ir al otro extremo</button>` : ""}${ca.t === "agua" ? `<p class="fr-sel-texto">Agua navegable. Los barcos se mueven por ella. ${FM.puedeEmbarcar(est, H) ? "Tus tropas pueden embarcar: entrar les gasta el movimiento, y embarcadas no atacan ni tienen defensa." : "Tus tropas no pueden embarcar todavía: hace falta un Muelle en alguna de tus ciudades."}</p>` : !t.mov ? `<p class="fr-sel-texto">No se puede pisar.</p>` : ""}${ca.vado ? `<p class="fr-sel-texto">Un vado: por aquí se cruza el río a pie.</p>` : ""}
-        ${tarjetaCampamento(x, y)}
+        ${tarjetaCampamento(x, y)}${tarjetaTrampaTunel(x, y)}
         ${ca.objetos && ca.objetos.length ? `<p class="fr-sel-texto"><strong>En el suelo:</strong> ${ca.objetos.map(id => esc((est.reliquias[id] || {}).nombre || "algo")).join(", ")}</p>` : ""}
       </div><button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button></div>`;
   }

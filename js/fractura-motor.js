@@ -98,10 +98,17 @@
   /* Cuántas tropas puede tener un bando: lo que da su ejército más lo que da cada ciudad por su nivel, más el saber */
   function limiteTropas(est, j) {
     const fac = facDe(est, j), pb = fac.poblacion || { base: 4, porNivel: [3, 3, 3, 3, 3], tope: 30 };
-    let n = pb.base + (sab(est, j).poblacion || 0), fiesta = 0;
+    let n = pb.base + (sab(est, j).poblacion || 0) + (fac.mods.levaFeudal ? fortalezasDe(est, j).length * fac.mods.levaFeudal : 0), fiesta = 0;
     ciudadesDe(est, j).forEach(c => { for (let k = 0; k < c.nivel && k < pb.porNivel.length; k++) n += pb.porNivel[k]; if (c.obras && c.obras.fiesta >= est.turno) fiesta += 2; });
     // La Fiesta suma por encima del tope del ejército (si no, con el ejército al máximo no serviría de nada); el tope absoluto sigue
     return Math.min(MAX_UNIDADES, Math.min(pb.tope || 30, n) + fiesta);
+  }
+  /* Las fortalezas de un bando: las del mapa que tiene tomadas y sus ciudades con Fortaleza en uso */
+  function fortalezasDe(est, j) {
+    const out = [];
+    est.fortalezas.forEach((p, i) => { if (est.fortalezasDueno[i] === j) out.push({ x: p.x, y: p.y }); });
+    ciudadesDe(est, j).forEach(c => { if (c.edificios.includes("fortaleza") && !(c.desh.fortaleza >= est.turno)) out.push({ x: c.x, y: c.y }); });
+    return out;
   }
   // Los reanimados no cuentan para el límite
   const cuentaTropas = (est, j) => unidadesDe(est, j).filter(u => !u.reanimado && !u.invocado).length;
@@ -228,6 +235,8 @@
         if (cl.naval) { mov += se.barcoMov || 0; atq += se.barcoAtq || 0; def += se.barcoDef || 0; }
       }
       if (!sinAyuda && se.formacion && vecinosAliados(est, u).some(w => w.clase === u.clase)) def += +se.formacion;
+      // Enjambre (Mravec): con dos o más aliados al lado
+      if (!sinAyuda && m.enjambre && vecinosAliados(est, u).length >= 2) def += m.enjambre;
       cura += se.cura || 0;
       if (m.curaExtra) cura += m.curaExtra;
       if (jug.liderMuerto && fac.lider.estado) {
@@ -246,6 +255,7 @@
     if (u.efectos && u.efectos.sinMando && u.efectos.sinMando >= est.turno) atq -= 1;
     if (u.efectos && u.efectos.frenado && u.efectos.frenado >= est.turno) mov -= 1;
     if (u.efectos && u.efectos.formado && u.efectos.formado >= est.turno) def += u.efectos.formadoN || 1;
+    if (u.efectos && u.efectos.postura) def += 2;   // Postura (Seosan)
     if (u.efectos && u.efectos.miasma && u.efectos.miasma.hasta >= est.turno) atq -= u.efectos.miasma.n;
     if (u.efectos && u.efectos.marea >= est.turno) atq += 2;
     if (u.bonoDesafio) atq += u.bonoDesafio;
@@ -302,6 +312,7 @@
   function razonCampamento(est, j, u, x, y) {
     const jug = est.jugadores[j], fac = FACCIONES[jug.faccion];
     if (!u || u.dueno !== j || fac.mods.campamento !== u.clase) return "Esa tropa no levanta campamentos.";
+    if (!sab(est, j).campamento) return "Hace falta aprender Fuegos de campamento (Clanes).";
     if (u.atacado) return "Ya actuó este turno.";
     if ((est.campamentos || []).filter(cp => cp.dueno === j).length >= MAX_CAMPAMENTOS) return `Ya tienes ${MAX_CAMPAMENTOS} campamentos.`;
     if (!puedePagar(jug, COSTE_CAMPAMENTO)) return "No te alcanzan los recursos.";
@@ -523,7 +534,7 @@
     return true;
   }
   // Un gigante (2×2) se ve si se ve cualquiera de sus casillas
-  const veUnidad = (est, j, u) => (u.tam === 2 ? celdasDe(u).some(q => veCasilla(est, j, q.x, q.y)) : veCasilla(est, j, u.x, u.y)) && !oculta(est, u, j);
+  const veUnidad = (est, j, u) => marcadaPara(est, j, u) || (u.tam === 2 ? celdasDe(u).some(q => veCasilla(est, j, q.x, q.y)) : veCasilla(est, j, u.x, u.y)) && !oculta(est, u, j);
 
   /* --- Crear la guerra --- */
   function generarContingenteIA(est, j, n, anio, escala) {
@@ -785,6 +796,25 @@
         reg(est, `El taller de ${ciudad.nombre} entrega un autómata.`, "recluta");
       }
     }
+    // Levas del Reino (Brurland): cada fortaleza entrega un miliciano cada 5 turnos
+    if (!primero && sab(est, j).levaFortaleza) {
+      const viejo = (est.levaFeudal || {})[j] || {}, nuevo = {};
+      fortalezasDe(est, j).forEach(p => {
+        const k = `${p.x},${p.y}`;
+        nuevo[k] = viejo[k] === undefined ? est.turno : viejo[k];
+        if (est.turno - nuevo[k] < 5 || !hayHueco(est, j)) return;
+        const lib = casillaLibreCerca(est, p, j);
+        if (!lib) return;
+        nuevo[k] = est.turno;
+        const r = { s: est.rs };
+        const sol = S.crearSoldado(r, { clase: "guerrero", cultura: fac.cultura, origen: "habitante", anio: est.anio });
+        est.rs = r.s;
+        const m = nuevaUnidad(est, j, "guerrero", lib.x, lib.y, sol);
+        est.ev.push({ k: "nuevo", uid: m.uid, x: m.x, y: m.y });
+        reg(est, `La leva de ${regionDeCasilla(est, p.x, p.y).nombre} trae a ${S.nombreCompleto(sol)}.`, "recluta");
+      });
+      est.levaFeudal = est.levaFeudal || {}; est.levaFeudal[j] = nuevo;
+    }
     unidadesDe(est, j).forEach(u => {
       const e = ef(est, u);
       u.pm = e.mov; u.atacado = false; u.recorrido = 0; u.quieto = true; u.accion = false;
@@ -792,6 +822,8 @@
       if (u.enfriar > 0) u.enfriar -= 1;
       if (u.cd > 0) u.cd -= 1;
       if (u.cd2 > 0) u.cd2 -= 1;
+      if (u.cdMarca > 0) u.cdMarca -= 1;
+      if (u.efectos.postura) delete u.efectos.postura;
       if (u.efectos.clavado) { u.pm = 0; delete u.efectos.clavado; }
       if (u.efectos.traba >= est.turno) u.pm = 0;
     });
@@ -1028,6 +1060,7 @@
     tiposD.forEach(tp => { A += ((clA.contra || {})[tp] || 0) + ((seA.contra || {})[tp] || 0) + ((Hh && Hh.contraHeroe && Hh.contraHeroe[tp]) || 0); });
     if ((seA.atqCiudad || clA.atqCiudad) && enCiudadOFortaleza(est, d)) A += (seA.atqCiudad || 0) + (clA.atqCiudad || 0);
     // Viejas deudas (Okran): más ataque contra los ejércitos que odia
+    if (marcadaPara(est, a.dueno, d)) A += 1;   // Marcar la presa (Hijos del Acero)
     if (facA && facA.mods.deudas && d.dueno >= 0 && Array.isArray(facA.odia) && facA.odia.includes(est.jugadores[d.dueno].faccion)) A += facA.mods.deudas;
     // La magia quema a los no muertos: los magos pegan 2 más a los muertos vivientes y a los levantados
     if ((clA.tipo || []).includes("magia") && (CLASES[d.clase].muertoViviente || d.reanimado || (d.dueno >= 0 && facDe(est, d.dueno).mods.sinComida) || (d.heroe && HEROES[d.heroe].muertoViviente))) A += 2;
@@ -1043,6 +1076,8 @@
     if (facA && facA.mods.duelo && solo && !a.heroe) A += facA.mods.duelo + (seA.duelo || 0);
     if (a.clase === "maestro" && solo) A += 2;
     let Df = ED.def + defensaDelTerreno(est, d);
+    // Testudo (Balutia): contra lo que llega de lejos, cada legionario al lado cubre con su escudo
+    if (d.dueno >= 0 && dist(a, d) > 1) { const tt = facDe(est, d.dueno).mods.testudo; if (tt && d.clase === tt.clase) Df += Math.min(tt.max, vecinosAliados(est, d).filter(w => w.clase === tt.clase).length); }
     if (usaPolvora(est, a)) Df = Math.max(0, Df - 1);
     let dmg = Math.max(1, A + 1 - Math.floor(Df / 2));
     if (!duelo && vecinosAliados(est, d).some(w => w.clase === "guerrero")) dmg = Math.max(1, dmg - 1);
@@ -1089,6 +1124,17 @@
     }
     if (est.hayNoche && a.dueno >= 0 && facDe(est, a.dueno).mods.noche) a.descubierta = true;
     const distancia = dist(a, d);
+    // Postura (Seosan): quien esperó quieto golpea primero al que llega cuerpo a cuerpo
+    let primero = false;
+    if (!sinRetorno && distancia <= 1 && d.efectos && d.efectos.postura && CLASES[d.clase].atq > 1 && !CLASES[d.clase].sanador && !razonAgua(est, d, a)) {
+      primero = true;
+      const r = Math.max(1, Math.ceil(calcularDano(est, d, a, duelo || undefined) * 0.6));
+      reg(est, `${nombreUnidad(d)} esperaba en guardia y golpea primero por ${r}.`, "combate");
+      est.ev.push({ k: "golpe", de: d.uid, a: a.uid, x: a.x, y: a.y, dmg: r, dist: distancia, arma: "filo", respuesta: true });
+      a.descanso = false;
+      aplicarDano(est, a, r, d);
+      if (!est.unidades[a.uid]) return false;
+    }
     // El Vigilante: los aliados a su lado ignoran el primer golpe de cada turno
     const sello = est.turno * 16 + est.activo;
     if (d.dueno >= 0 && !d.heroe && d.escudoT !== sello && heroeCerca(est, d, "escudoAliados")) {
@@ -1122,7 +1168,7 @@
     const sinResp = (a.heroe && HEROES[a.heroe].ef.sinRespuesta) || CLASES[a.clase].sinRespuesta;
     // Ilvaren: lo que golpea se queda ardiendo
     if (a.heroe && HEROES[a.heroe].ef.ardiente && dmg > 0) prenderFuego(est, d.x, d.y, HEROES[a.heroe].ef.ardiente, a.dueno);
-    if (!sinRetorno && !sinResp && !murio && est.unidades[d.uid] && distancia <= ef(est, d).alc && est.unidades[a.uid] && CLASES[d.clase].atq > 1 && !razonAgua(est, d, a)) {
+    if (!sinRetorno && !sinResp && !primero && !murio && est.unidades[d.uid] && distancia <= ef(est, d).alc && est.unidades[a.uid] && CLASES[d.clase].atq > 1 && !razonAgua(est, d, a)) {
       const r = Math.max(1, Math.ceil(calcularDano(est, d, a, duelo || undefined) * 0.6));
       reg(est, `${nombreUnidad(d)} responde por ${r}.`, "combate");
       est.ev.push({ k: "golpe", de: d.uid, a: a.uid, x: a.x, y: a.y, dmg: r, dist: distancia, arma: "filo", respuesta: true });
@@ -1188,7 +1234,7 @@
         est.ev.push({ k: "mejora", uid: por.uid, x: por.x, y: por.y, texto: `Botín: +${c} comida, +${o} oro` });
       }
       // Trofeos de caza (Okran): cada criatura salvaje cura y deja +1 de vida para toda la guerra (hasta 5)
-      if (facP0.mods.trofeos && dueno === -1 && (u.errante || u.guardia || u.clase === "salvaje") && (por.trofeos || 0) < 5) {
+      if (sab(est, por.dueno).trofeos && dueno === -1 && (u.errante || u.guardia || u.clase === "salvaje") && (por.trofeos || 0) < 5) {
         por.trofeos = (por.trofeos || 0) + 1;
         por.hp = Math.min(ef(est, por).hpMax, por.hp + 3);
         reg(est, `${nombreUnidad(por)} se cobra un trofeo de caza.`, "combate");
@@ -1259,6 +1305,13 @@
       if ((jp.sabEf || VACIO).curaMatar && est.unidades[por.uid]) por.hp = Math.min(ef(est, por).hpMax, por.hp + jp.sabEf.curaMatar);
       const oficial = u.lider || (u.s && (u.s.capitan || S.rangoIndice(u.s.victorias + (u.vicG || 0)) >= 2));
       if (oficial) { por.vicG += 1; est.stats.oficiales[por.dueno]++; if (por.s) por.s.oficiales = (por.s.oficiales || 0) + 1; }
+      // Camino de la espada (Seosan): ganar un duelo vale una victoria más
+      if (estabaSolo && facP.mods.duelo && !por.heroe && (jp.sabEf || VACIO).caminoEspada) {
+        por.vicG += 1;
+        est.ev.push({ k: "mejora", uid: por.uid, x: por.x, y: por.y, texto: "Camino de la espada: +1 victoria" });
+      }
+      // Rescates (Compañía Dorada): por un oficial, un héroe o el líder, su bando paga
+      if ((oficial || u.heroe) && facP.mods.rescate && dueno >= 0 && hostil(est, dueno, por.dueno)) cobrarRescate(est, por.dueno, dueno, (u.lider || u.heroe) ? facP.mods.rescate * 2 : facP.mods.rescate, u);
       if (anima) sumar(jp, "anima", anima);
       if (u.dueno === -1 && u.guardia) { /* el botín de la guardia está en la casilla */ }
     }
@@ -1286,6 +1339,84 @@
       if (c.est === "ruinas" || c.est === "fortaleza") c.guardia = false;
     }
     comprobarVictoria(est);
+  }
+
+  /* Rescates (Compañía Dorada): el bando del caído paga en oro y, si no le llega, con lo que tenga */
+  function cobrarRescate(est, j, k, n, u) {
+    const pj = est.jugadores[j], pk = est.jugadores[k], lleva = [];
+    let falta = n;
+    ["oro", "comida", "materiales", "mineral", "mana"].forEach(r => {
+      if (falta <= 0) return;
+      const q = Math.min(falta, pk.recursos[r] || 0);
+      if (q > 0) { pk.recursos[r] -= q; sumar(pj, r, q); falta -= q; lleva.push(`${q} de ${D.RECURSO_NOMBRE[r].toLowerCase()}`); }
+    });
+    if (!lleva.length) return;
+    reg(est, `${pk.nombre} paga el rescate de ${nombreUnidad(u)} a ${pj.nombre}: ${lleva.join(", ")}.`, "combate");
+    est.ev.push({ k: "mejora", uid: u.uid, x: u.x, y: u.y, texto: `Rescate: ${lleva.join(", ")}` });
+  }
+
+  /* --- Trampas (Hijos del Acero) y túneles (Mravec) --- */
+  const COSTE_TRAMPA = { materiales: 3 }, MAX_TRAMPAS = 4, CLASES_TRAMPA = ["cazador", "ballestero", "halconero"];
+  const COSTE_TUNEL = { materiales: 6 }, MAX_TUNELES = 2, LARGO_TUNEL = 6;
+  const trampaEn = (est, x, y) => (est.trampas || []).find(t => t.x === x && t.y === y) || null;
+  const tunelEn = (est, x, y) => (est.tuneles || []).find(t => (t.a.x === x && t.a.y === y) || (t.b.x === x && t.b.y === y)) || null;
+  function razonTrampa(est, j, u, x, y) {
+    const jug = est.jugadores[j];
+    if (!sab(est, j).trampas || !u || u.dueno !== j || !CLASES_TRAMPA.includes(u.clase)) return "Esa tropa no pone trampas.";
+    if (u.atacado) return "Ya actuó este turno.";
+    if ((est.trampas || []).filter(t => t.dueno === j).length >= MAX_TRAMPAS) return `Ya tienes ${MAX_TRAMPAS} trampas puestas.`;
+    if (!puedePagar(jug, COSTE_TRAMPA)) return "No te alcanzan los materiales.";
+    if (x === undefined) return null;
+    const c = casilla(est, x, y);
+    if (!c || c.t !== "bosque" || c.est || dist(u, { x, y }) !== 1 || unidadEn(est, x, y) || trampaEn(est, x, y)) return "Tiene que ser un bosque libre a su lado.";
+    return null;
+  }
+  const enTerritorio = (est, j, x, y) => { const rg = regionDeCasilla(est, x, y); return !!rg && rg.dueno === j; };
+  function razonTunel(est, j, u, x, y) {
+    const jug = est.jugadores[j];
+    if (!sab(est, j).tuneles || !u || u.dueno !== j || u.clase !== "zapadora") return "Esa tropa no cava túneles.";
+    if (u.atacado) return "Ya actuó este turno.";
+    if ((est.tuneles || []).filter(t => t.dueno === j).length >= MAX_TUNELES) return `Ya tienes ${MAX_TUNELES} túneles.`;
+    if (!puedePagar(jug, COSTE_TUNEL)) return "No te alcanzan los materiales.";
+    const boca = (bx, by) => { const c = casilla(est, bx, by); return !!c && c.t !== "agua" && TERRENOS[c.t].mov > 0 && c.est !== "costura" && c.est !== "nucleo" && !tunelEn(est, bx, by) && enTerritorio(est, j, bx, by); };
+    if (!boca(u.x, u.y)) return "Tiene que estar en tu territorio, en tierra y sin otro túnel debajo.";
+    if (x === undefined) return null;
+    const d = dist(u, { x, y });
+    if (d < 2 || d > LARGO_TUNEL || !boca(x, y)) return `La otra boca va en tu territorio, a entre 2 y ${LARGO_TUNEL} casillas.`;
+    return null;
+  }
+  /* Una tropa enemiga que pisa la boca de un túnel lo hunde */
+  function derrumbarTuneles(est, u, x, y) {
+    if (u.dueno < 0 || !(est.tuneles || []).length) return;
+    const antes = est.tuneles.length;
+    est.tuneles = est.tuneles.filter(t => !(hostil(est, t.dueno, u.dueno) && ((t.a.x === x && t.a.y === y) || (t.b.x === x && t.b.y === y))));
+    if (est.tuneles.length < antes) { reg(est, `${nombreUnidad(u)} hunde un túnel.`, "suceso"); est.ev.push({ k: "explosion", x, y }); }
+  }
+  /* Marcar la presa (Hijos del Acero) */
+  const marcadaPara = (est, j, u) => !!(j >= 0 && u.efectos && u.efectos.marca && u.efectos.marca.hasta >= est.turno && mismoEquipo(est, j, u.efectos.marca.por));
+  const ALCANCE_MARCA = 5, CD_MARCA = 3;
+  function razonMarcar(est, j, u, x, y) {
+    if (!u || u.dueno !== j || !(facDe(est, j).mods.marcar || []).includes(u.clase)) return "Esa tropa no marca presas.";
+    if (u.cdMarca > 0) return `Le faltan ${u.cdMarca} ${u.cdMarca === 1 ? "turno" : "turnos"}.`;
+    if (x === undefined) return null;
+    const t = unidadEn(est, x, y);
+    if (!t || !hostil(est, t.dueno, j) || !veUnidad(est, j, t)) return "No hay un enemigo a la vista ahí.";
+    if (dist(u, t) > ALCANCE_MARCA) return `Tiene que estar a ${ALCANCE_MARCA} casillas o menos.`;
+    return null;
+  }
+  /* Contratos (Compañía Dorada): comprar una ciudad sin dueño */
+  const precioContrato = c => 10 + 8 * (c.nivel || 1);
+  function razonContrato(est, j, u, x, y) {
+    const jug = est.jugadores[j];
+    if (!sab(est, j).contratos || !u || u.dueno !== j) return "Tu ejército no compra ciudades.";
+    if (jug.contratoT === est.turno) return "Ya compraste una ciudad este turno.";
+    if (x === undefined) return null;
+    const c = ciudadEn(est, x, y);
+    if (!c || c.dueno !== null) return "Solo se compran ciudades sin dueño.";
+    if (dist(u, c) > 3) return "Necesitas una tropa a 3 casillas o menos.";
+    if (unidadEn(est, c.x, c.y)) return "Hay alguien dentro.";
+    if ((jug.recursos.oro || 0) < precioContrato(c)) return `Cuesta ${precioContrato(c)} de oro.`;
+    return null;
   }
 
   /* --- Movimiento --- */
@@ -1363,6 +1494,7 @@
     const embarca = !barco && u.dueno >= 0 && puedeEmbarcar(est, u.dueno);
     const libreAgua = !!(nv.marinos || nv.fondo);   // entrar o salir del agua no les corta el paso
     const muros = est.muros || [];
+    const tun = u.dueno >= 0 && !barco && !vuela ? (est.tuneles || []).filter(t => t.dueno === u.dueno) : [];
     const pos = new Map();
     for (const uid in est.unidades) { const w = est.unidades[uid]; celdasDe(w).forEach(q => pos.set(q.y * 64 + q.x, w)); }
     while (abiertos.length) {
@@ -1382,6 +1514,8 @@
         const guarda = [par.a, par.b].some(q => { const w = pos.get(q.y * 64 + q.x); return w && w !== u && hostil(est, w.dueno, u.dueno); });
         if (!guarda) vecinos.push({ x: otro.x, y: otro.y, tipo: "costura" });
       }
+      // Túneles propios (Mravec): de una boca a la otra por 1 de movimiento
+      tun.forEach(t => { if (t.a.x === nodo.x && t.a.y === nodo.y) vecinos.push({ x: t.b.x, y: t.b.y, tipo: "tunel" }); else if (t.b.x === nodo.x && t.b.y === nodo.y) vecinos.push({ x: t.a.x, y: t.a.y, tipo: "tunel" }); });
       vecinos.forEach(v => {
         if (!dentro(est, v.x, v.y)) return;
         const ct = casilla(est, v.x, v.y);
@@ -1398,7 +1532,7 @@
         if (muros.length && muros.some(m => m.x === v.x && m.y === v.y)) return;
         // Caminos propios: por las provincias de tu bando cuesta la mitad
         if (!vuela && !barco && !aguaV && costo > 1 && u.dueno >= 0) { const rg = est.regiones[ct.region]; if (rg && rg.dueno === u.dueno) costo = Math.max(1, Math.ceil(costo / 2)); }
-        if (v.tipo === "costura") costo = 1;
+        if (v.tipo === "costura" || v.tipo === "tunel") costo = 1;
         else if (ct.t === "bosque" && eq.movBosque) costo = Math.max(1, costo - eq.movBosque);
         const ocupante = pos.get(v.y * 64 + v.x);
         if (ocupante && !mismoEquipo(est, ocupante.dueno, u.dueno)) return;
@@ -1459,6 +1593,7 @@
       c.objetos.splice(0).forEach(id => { est.jugadores[u.dueno].mochila.push(id); const inst = est.reliquias[id]; if (inst) reg(est, `Se recoge ${inst.nombre}.`, "reliquia"); });
     }
     if (u.dueno < 0) return;
+    derrumbarTuneles(est, u, x, y);
     const jug = est.jugadores[u.dueno];
     // Ciudades y fortalezas: se capturan al entrar si nadie las guarda
     const fac = FACCIONES[jug.faccion];
@@ -1515,6 +1650,8 @@
       reg(est, `${jug.nombre} conquista ${ciudad.nombre}${antes !== null ? " a " + est.jugadores[antes].nombre : ""}.`, "conquista");
       crono(est, "conquista", { ciudad: ciudad.nombre, region: rg.nombre, por: nombreUnidad(u), porId: u.s ? u.s.id : null, dueno: u.dueno, antes, capital: ciudad.capital });
       if (fac.mods.consagra) consagrar(est, u.dueno, x, y, 1 + ((jug.sabEf || VACIO).consagraRadio || 0));
+      // Castra (Balutia): la ciudad conquistada queda fortificada 3 turnos
+      if ((jug.sabEf || VACIO).castra) { ciudad.obras = ciudad.obras || {}; ciudad.obras.fortificar = Math.max(ciudad.obras.fortificar || 0, est.turno + 2); reg(est, `${jug.nombre} levanta un campamento fortificado en ${ciudad.nombre}.`, "obra"); }
       // Tributo de Balutia: la ciudad conquistada entrega tropa, una vez por ciudad
       if (fac.mods.tributo && !ciudad.tributada && (efHeroe(est, u.dueno).tributoSinTope || jug.cuenta.tributos < fac.mods.tributo + ((jug.sabEf || VACIO).tributo || 0)) && hayHueco(est, u.dueno)) {
         const lib = casillaLibreCerca(est, ciudad, u.dueno);
@@ -1812,18 +1949,35 @@
         const k = clave(acc.x, acc.y);
         const destino = info.destinos.get(k);
         if (!destino) return error("No puede llegar ahí.");
-        const ruta = camino(info, acc.x, acc.y);
+        let ruta = camino(info, acc.x, acc.y);
+        // Una trampa enemiga en el camino lo para ahí (si la casilla está libre)
+        let trampa = null, destinoReal = destino;
+        if ((est.trampas || []).length) for (let i = 1; i < ruta.length && !trampa; i++) {
+          const cel = celdasDe({ x: ruta[i].x, y: ruta[i].y, tam: u.tam || 1 });
+          const t = est.trampas.find(q => hostil(est, q.dueno, j) && cel.some(c => c.x === q.x && c.y === q.y));
+          if (t && !cel.some(c => { const o = unidadEn(est, c.x, c.y); return o && o !== u; })) { trampa = t; ruta = ruta.slice(0, i + 1); destinoReal = info.mapa.get(clave(ruta[i].x, ruta[i].y)) || destino; }
+        }
+        if (trampa) { acc = Object.assign({}, acc, { x: ruta[ruta.length - 1].x, y: ruta[ruta.length - 1].y }); }
         const de = { x: u.x, y: u.y };
         const antesAgua = enAgua(est, u);
         Object.values(est.ciudades).forEach(c => { if (c.asedio && c.asedio.uid === u.uid) delete c.asedio; });
-        u.pm -= destino.c;
+        u.pm -= destinoReal.c;
         u.recorrido = (u.recorrido || 0) + ruta.length - 1;
+        // Pasar por la boca de un túnel enemigo lo hunde
+        if ((est.tuneles || []).length) ruta.slice(1, -1).forEach(p => celdasDe({ x: p.x, y: p.y, tam: u.tam || 1 }).forEach(q => derrumbarTuneles(est, u, q.x, q.y)));
         usar(u, "pasos", ruta.length - 1); if (enAgua(est, u)) usar(u, "mar");
         quemarAlLlegar(est, u, acc.x, acc.y);
         u.x = acc.x; u.y = acc.y; u.quieto = false; u.descanso = false;
         if (destino.fin || (!esBarco(u) && antesAgua !== enAgua(est, u) && !(navalDe(est, j).marinos || navalDe(est, j).fondo))) u.pm = 0;
         est.ev.push({ k: "mov", uid: u.uid, de, a: { x: u.x, y: u.y }, ruta });
         celdasDe(u).forEach(q => { if (est.unidades[u.uid]) entrarCasilla(est, u, q.x, q.y); });
+        if (trampa && est.unidades[u.uid]) {
+          est.trampas.splice(est.trampas.indexOf(trampa), 1);
+          u.pm = 0;
+          reg(est, `${nombreUnidad(u)} cae en una trampa de ${est.jugadores[trampa.dueno].nombre}.`, "combate");
+          est.ev.push({ k: "golpe", de: null, a: u.uid, x: trampa.x, y: trampa.y, dmg: 2, dist: 0, arma: "salpica" });
+          aplicarDano(est, u, 2, null);
+        }
         actualizarVision(est, j);
         comprobarVictoria(est);
         return { ok: true, ev: est.ev };
@@ -2077,6 +2231,53 @@
       c.t = acc.a;
       u.atacado = true; u.pm = 0; u.enfriar = 2;
       reg(est, `${nombreUnidad(u)} cambia el terreno a ${TERRENOS[acc.a].nombre.toLowerCase()}.`, "magia");
+      return { ok: true, ev: est.ev };
+    }
+    if (acc.id === "trampa") {
+      const r = razonTrampa(est, j, u, acc.x, acc.y);
+      if (r) return error(r);
+      pagar(jug, COSTE_TRAMPA);
+      est.trampas = est.trampas || [];
+      est.trampaN = (est.trampaN || 0) + 1;
+      est.trampas.push({ id: est.trampaN, x: acc.x, y: acc.y, dueno: j });
+      u.atacado = true; u.pm = 0;
+      return { ok: true, ev: est.ev };
+    }
+    if (acc.id === "tunel") {
+      const r = razonTunel(est, j, u, acc.x, acc.y);
+      if (r) return error(r);
+      pagar(jug, COSTE_TUNEL);
+      est.tuneles = est.tuneles || [];
+      est.tunelN = (est.tunelN || 0) + 1;
+      est.tuneles.push({ id: est.tunelN, dueno: j, a: { x: u.x, y: u.y }, b: { x: acc.x, y: acc.y } });
+      u.atacado = true; u.pm = 0;
+      reg(est, `${nombreUnidad(u)} cava un túnel.`, "obra");
+      est.ev.push({ k: "aura", x: acc.x, y: acc.y, dueno: j });
+      return { ok: true, ev: est.ev };
+    }
+    if (acc.id === "marcar") {
+      const r = razonMarcar(est, j, u, acc.x, acc.y);
+      if (r) return error(r);
+      const t = unidadEn(est, acc.x, acc.y);
+      t.efectos = t.efectos || {};
+      t.efectos.marca = { por: j, hasta: est.turno + 1 };
+      u.cdMarca = CD_MARCA;
+      reg(est, `${nombreUnidad(u)} marca a ${nombreUnidad(t)} como presa.`, "combate");
+      est.ev.push({ k: "mejora", uid: t.uid, x: t.x, y: t.y, texto: "Presa marcada" });
+      return { ok: true, ev: est.ev };
+    }
+    if (acc.id === "contrato") {
+      const r = razonContrato(est, j, u, acc.x, acc.y);
+      if (r) return error(r);
+      const ciudad = ciudadEn(est, acc.x, acc.y), precio = precioContrato(ciudad);
+      pagar(jug, { oro: precio });
+      jug.contratoT = est.turno;
+      reg(est, `${jug.nombre} compra ${ciudad.nombre} por ${precio} de oro.`, "conquista");
+      const pm = u.pm, at = u.atacado;
+      capturarCiudad(est, u, ciudad);
+      u.pm = pm; u.atacado = at;
+      actualizarVision(est, j);
+      comprobarVictoria(est);
       return { ok: true, ev: est.ev };
     }
     if (acc.id === "campamento") {
@@ -2508,6 +2709,8 @@
   function terminarTurno(est) {
     const j = est.activo;
     const jug = est.jugadores[j];
+    // Postura (Seosan): quien no se movió en su turno queda en guardia hasta el siguiente
+    if (FACCIONES[jug.faccion].mods.postura) unidadesDe(est, j).forEach(u => { if (!(u.recorrido > 0) && !esBarco(u)) u.efectos.postura = true; else delete u.efectos.postura; });
     const N = est.jugadores.length;
     // Núcleo del Sueño: quien lo ocupa suma un turno y corta la cuenta de los demás bandos
     const n = est.nucleo;
@@ -2546,7 +2749,8 @@
   }
 
   raiz.FracturaMotor = {
-    dist, minoriaBerserker, razonCampamento, razonReclutarCampamento, campamentoEn, COSTE_CAMPAMENTO, CLASES_CAMPAMENTO, MAX_CAMPAMENTOS, DURA_CAMPAMENTO,
+    dist, minoriaBerserker, fortalezasDe, cobrarRescate, razonTrampa, razonTunel, razonMarcar, razonContrato, precioContrato, marcadaPara, trampaEn, tunelEn, enTerritorio,
+    COSTE_TRAMPA, MAX_TRAMPAS, CLASES_TRAMPA, COSTE_TUNEL, MAX_TUNELES, LARGO_TUNEL, ALCANCE_MARCA, CD_MARCA, razonCampamento, razonReclutarCampamento, campamentoEn, COSTE_CAMPAMENTO, CLASES_CAMPAMENTO, MAX_CAMPAMENTOS, DURA_CAMPAMENTO,
     MAX_UNIDADES, rn, ri, clave, dentro, casilla, unidadEn, unidadesDe, ciudadEn, ciudadesDe, esMonstruo, nombreUnidad, regionDeCasilla, reg, crono,
     ef, auras, calcularDano, defensaDelTerreno, alcanzables, camino, aplicar, crearGuerra, puntuacion, ingresoDe, mantenimiento,
     costeReclutar, clasesDisponibles, razonNoReclutar, razonNoConstruir, razonNoInvestigar, costeInvestigar, puedePagar, tieneEdificio, vecinosEnemigos, vecinosAliados,

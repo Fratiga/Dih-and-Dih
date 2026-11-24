@@ -382,6 +382,7 @@
         <ul><li><strong>Haz crecer tus ciudades.</strong> Pulsa «Crecer» en el panel de la ciudad. Cada nivel de cada ciudad suma tropas al límite, y cuántas depende del ejército (en la tabla).</li>
         <li><strong>Toma más ciudades.</strong> Cada ciudad tuya suma lo de sus niveles. Desde la cuarta ciudad se paga administración en oro.</li>
         <li><strong>Aprende el saber que lo sube.</strong> Algunos escalones dan más tropas. Salen en la última columna.</li>
+        <li><strong>Brurland: toma fortalezas.</strong> Con la Leva feudal, cada fortaleza suya (del mapa o construida en una ciudad) suma 1 al límite.</li>
         <li><strong>Encarga una Fiesta.</strong> Es una obra de ciudad: +2 al límite durante 3 turnos por cada ciudad que la celebre.</li>
         <li>Lo demás nunca pasa del tope de tu ejército. La Fiesta sí: suma por encima del tope, hasta un máximo absoluto de 40 tropas.</li></ul>
         <p>No ocupan sitio los levantados de entre los muertos ni lo que traen algunos héroes al usar sus habilidades.</p>
