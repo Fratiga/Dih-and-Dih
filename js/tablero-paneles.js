@@ -1101,18 +1101,52 @@
     const lista = TB.misApariencias;
     const items = [];
     if (!lista) { TB.red.apariencias().then(l => { TB.misApariencias = l; }).catch(() => { TB.misApariencias = []; }); items.push({ texto: "Cargando…", apagado: true }); }
-    else if (!lista.length) items.push({ texto: "Todavía no has copiado ninguna", apagado: true });
+    else if (!lista.length) items.push({ texto: "Todavía no tienes ninguna", apagado: true });
     else lista.slice(0, 30).forEach(a => items.push({ texto: esc(a.nombre || "Sin nombre"), accion: () => TB.red.apariencia(o.id, a.datos).catch(e => aviso(mensajeError(e), true)) }));
     items.push("-", { texto: "Volver a mi aspecto", apagado: !(o.datos || {}).disfraz, accion: () => TB.red.apariencia(o.id, null).catch(e => aviso(mensajeError(e), true)) },
+      { texto: "Subir imágenes…", accion: () => elegirImagenesApariencia(o) },
       { texto: "Gestionar mis apariencias…", accion: () => gestionarApariencias(o) });
     return items;
   }
+  /* Apariencias desde una imagen propia: se sube (en WebP si pesa menos) a su carpeta y queda en su biblioteca
+     con el nombre del archivo, que luego se puede cambiar */
+  async function subirApariencias(archivos, alTerminar) {
+    const imgs = [...(archivos || [])].filter(f => /^image\//.test(f.type));
+    if (!imgs.length) { aviso("Elige una imagen."); return; }
+    if (!TB.misApariencias) TB.misApariencias = await TB.red.apariencias().catch(() => []);
+    for (const f of imgs) {
+      try {
+        aviso("Subiendo " + f.name + "…");
+        const src = await TB.red.subirPropio(TB.prefs.webp !== false ? await aWebp(f) : f);
+        const nombre = f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim().slice(0, 80);
+        const nueva = await TB.red.guardarApariencia({ nombre, datos: { src, nombre } });
+        TB.misApariencias.unshift(nueva);
+      } catch (e) { aviso(mensajeError(e), true); }
+    }
+    aviso(imgs.length > 1 ? "Apariencias guardadas." : "Apariencia guardada.");
+    if (alTerminar) alTerminar();
+  }
+  function elegirImagenesApariencia(o, alTerminar) {
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "image/*"; inp.multiple = true;
+    inp.addEventListener("change", () => subirApariencias(inp.files, alTerminar || (() => gestionarApariencias(o))));
+    inp.click();
+  }
   async function gestionarApariencias(o) {
     if (!TB.misApariencias) TB.misApariencias = await TB.red.apariencias().catch(() => []);
-    const c = el(`<div class="tb-apariencias"></div>`);
+    const c = el(`<div></div>`);
+    // Subir: botón o soltar imágenes encima de la lista
+    const subir = el(`<div class="tb-apariencias-subir"><button type="button" class="tb-btn tb-btn-mini" data-subir>Subir imágenes</button>
+      <span class="tb-nota">o suéltalas aquí. Se guardan solo para ti.</span></div>`);
+    const lista = el(`<div class="tb-apariencias"></div>`);
+    c.append(subir, lista);
+    subir.querySelector("[data-subir]").addEventListener("click", () => elegirImagenesApariencia(o, () => pintar()));
+    c.addEventListener("dragover", e => { if ([...(e.dataTransfer.types || [])].includes("Files")) { e.preventDefault(); c.classList.add("soltando"); } });
+    c.addEventListener("dragleave", e => { if (!c.contains(e.relatedTarget)) c.classList.remove("soltando"); });
+    c.addEventListener("drop", e => { e.preventDefault(); c.classList.remove("soltando"); subirApariencias(e.dataTransfer.files, () => pintar()); });
     const pintar = () => {
-      c.innerHTML = "";
-      if (!TB.misApariencias.length) { c.appendChild(el(`<p class="tb-nota">Todavía no has copiado ninguna. Haz clic derecho sobre una criatura de tu tamaño y elige «Copiar apariencia».</p>`)); return; }
+      lista.innerHTML = "";
+      if (!TB.misApariencias.length) { lista.appendChild(el(`<p class="tb-nota">Todavía no tienes ninguna. Sube una imagen, o haz clic derecho sobre una criatura de tu tamaño y elige «Copiar apariencia».</p>`)); return; }
       TB.misApariencias.forEach(a => {
         const f = el(`<div class="tb-apariencia"><span class="tb-apariencia-img" style="background-image:url('${esc((a.datos || {}).src || "")}')"></span><b>${esc(a.nombre || "Sin nombre")}</b>
           <button type="button" class="tb-btn tb-btn-mini" data-usar>Usar</button><button type="button" class="tb-btn tb-btn-mini tb-btn-rojo" data-borrar>Borrar</button></div>`);
@@ -1120,7 +1154,7 @@
         f.querySelector("[data-borrar]").addEventListener("click", async () => {
           try { await TB.red.borrarApariencia(a.id); TB.misApariencias = TB.misApariencias.filter(x => x.id !== a.id); pintar(); } catch (e) { aviso(mensajeError(e), true); }
         });
-        c.appendChild(f);
+        lista.appendChild(f);
       });
     };
     pintar();
