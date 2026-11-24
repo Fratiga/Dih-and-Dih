@@ -150,7 +150,23 @@ No hay ninguna infraestructura anticipada. Cuando llegue el momento, el sistema 
 - Las velas bajo cada mano son el marcador de puntos (veintiuna llamas); se vuelven azules al pasarte.
 - Animaciones: reparto desde el zapato, giro de la carta oculta, el turno del crupier carta a carta, cambio de placa de regla, resultado con brillo (victoria), apagón (derrota), saldo que cuenta, tokens que vuelan. Todas cuentan algo que el servidor ya confirmó, se saltan con un clic, Espacio o Intro, y se apagan con `prefers-reduced-motion`.
 - Teclado: P pedir, L plantarse, V la acción de la regla (Última voluntad, Ojo, Cartas marcadas, Trueque) o Fortuna, A aceptar la derrota, Intro otra mano. Foco visible, `aria-live` para anunciar cada carta y el resultado, botones deshabilitados con `aria-disabled` que explican por qué al pulsarlos, diálogos nativos con foco atrapado, objetivos táctiles de 44 px o más, contraste calculado.
-- Móvil: las cartas y los controles van primero; el dock de acciones se queda pegado abajo.
+- Móvil: en la mesa de uno hay composición vertical propia (ver «La presentación de juego»); en la de amigos, las cartas y los controles van primero y el dock se queda pegado abajo.
+
+## La presentación de juego de la mesa de uno (24-nov-2026)
+
+El usuario pidió que la Veintiuna y el Pozo se sintieran como videojuegos y no como páginas web, sin tocar reglas ni flujos. La mesa de uno (`veintiuna.html`) se rehízo así; la de amigos sigue con `css/veintiuna.css` hasta que se rehaga.
+
+- **Dirección artística** («la casa de Cera»): un salón barroco de noche, sin más luz que las velas, visto desde tu silla. Está escrita en la cabecera de `css/veintiuna-juego.css`.
+- **Escenario fijo**: todo se mide en unidades del escenario (`--u`): 1600 x 900 en pantalla ancha y 800 x 1500 en vertical (móvil). Cada forma tiene su propia composición; `body[data-forma]` la elige `js/veintiuna-salon.js` según la proporción de la ventana.
+- **El menú son objetos**: la puerta del salón privado (con amigos, detrás de la mesa), el tablón de desafíos, el letrero del Buhonero, el libro de la casa (reglas), el libro de cuentas (historial) y la cajita de música (efectos). Los ids de los botones son los de antes.
+- **La baranda de cuero** (el dock): tu bolsa con el saldo, el letrero con apuesta o práctica, el fichero (columnas de fichas que vuelan en arco al círculo de la apuesta), los ajustes y la campanilla, que se toca para repartir y para otra mano (Intro). Las acciones son placas con el gesto de la mesa de verdad (tocar el tapete, pasar la mano).
+- **La regla de la mano** es una carta de pie en su atril; se gira al cambiar.
+- **El resultado** es un sello de cera que cae sobre el tapete (polvo, temblor, chispas con el natural) con dos notas de papel debajo. Si ganas, la casa paga desde su bandeja y tu montón vuelve a la bolsa; si pierdes, la crupier se lo lleva.
+- **La sala reacciona**: luz cálida al ganar, penumbra al perder, rojo mientras la Fortuna te ofrece salvarte. Si te pasas, las velas de tu candelero se apagan con humo y el candelero tiembla.
+- **Diálogos**: el libro de la casa (índice a la izquierda, capítulo a la derecha, la hoja se pasa), el tablón (papeles clavados con chinchetas del color del nivel, reclamar es un sello rojo), el libro de cuentas (papel rayado, tinta verde y roja) y la carreta del Buhonero (toldo a rayas; su contenido sigue siendo el de `js/veintiuna-buhonero.js`).
+- **Sin rótulos en el tapete** (petición del usuario): «la veintiuna paga 3 a 2» y «la casa se planta con 17» están en el libro y en la carta de la Vela corta. Las plaquitas de los objetos solo llevan el nombre.
+- **Rendimiento** (gráfica integrada): un solo lienzo de partículas a baja resolución, 15 fps en reposo y 30 con efectos, dormido con la pestaña oculta o con «reducir movimiento». Paralaje con `transform`/`translate` en tres capas, solo al mover el ratón. Sin filtros SVG en la mesa (el tapete viejo usaba `feTurbulence`).
+- **Probar sin servidor**: `node scratchpad/hacer_arnes_vj.js` genera `scratchpad/vj-prueba.html` con un simulador (`scratchpad/veintiuna_mock.js`): `?regla=`, `?mazo=10p,9c,6c,9d,Kd`, `?saldo=`, `?auto=apostar:20,repartir,pedir`. Las capturas de Chrome sin ventana congelan algunas animaciones: para el flujo, el panel del navegador con clics reales.
 
 ## La Última Vela (Muerte Súbita contra Cera)
 

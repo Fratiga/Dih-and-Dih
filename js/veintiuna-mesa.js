@@ -90,7 +90,17 @@
       natural() { [523, 659, 784, 1047, 1319].forEach((f, i) => tono(f, 0.34, "triangle", 0.1, i * 0.08)); },
       pierde() { tono(233, 0.4, "sawtooth", 0.05); tono(175, 0.55, "sawtooth", 0.05, 0.2); },
       empate() { tono(440, 0.22, "sine", 0.08); tono(440, 0.22, "sine", 0.08, 0.2); },
-      vela() { ruido(0.22, 900, 0.2); tono(660, 0.12, "sine", 0.03); }
+      vela() { ruido(0.22, 900, 0.2); tono(660, 0.12, "sine", 0.03); },
+      // la campanilla de latón: dos parciales que se apagan despacio
+      campana() { tono(1318, 1.1, "sine", 0.11); tono(2637, 0.7, "sine", 0.05); tono(3951, 0.35, "sine", 0.025); ruido(0.03, 5000, 0.2); },
+      // golpe sordo: la campanilla no suena si no hay apuesta
+      sordo() { tono(140, 0.12, "triangle", 0.12); ruido(0.05, 400, 0.3); },
+      // velas que se apagan de un soplo
+      soplo() { ruido(0.5, 700, 0.32); ruido(0.3, 1400, 0.12, 0.08); },
+      // la crupier arrastra las fichas
+      rastrillo() { ruido(0.32, 2200, 0.28); ruido(0.18, 3200, 0.18, 0.14); },
+      // el sello de cera golpea el tapete
+      sello() { tono(90, 0.18, "sine", 0.2); ruido(0.08, 600, 0.4); }
     };
   })();
   const sonar = nombre => { try { Sonido[nombre](); } catch (e) { /* sin audio */ } };
@@ -142,7 +152,7 @@
     if (animarDesde == null || sinMovimiento() || S.saltar || animarDesde === hasta) { el.textContent = V.monedas(hasta); S.saldoMostrado = hasta; return; }
     const t0 = performance.now(), dur = 800;
     const paso = ahora => {
-      const k = Math.min(1, (ahora - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      const k = Math.max(0, Math.min(1, (ahora - t0) / dur)), e = 1 - Math.pow(1 - k, 3);
       el.textContent = V.monedas(animarDesde + (hasta - animarDesde) * e);
       if (k < 1) requestAnimationFrame(paso); else { el.textContent = V.monedas(hasta); S.saldoMostrado = hasta; }
     };
@@ -152,6 +162,7 @@
     setTimeout(() => { if (S._saldoObjetivo === hasta && S.saldoMostrado !== hasta) { el.textContent = V.monedas(hasta); S.saldoMostrado = hasta; } }, dur + 200);
     el.classList.remove("sube", "baja"); void el.offsetWidth;
     el.classList.add(hasta > animarDesde ? "sube" : "baja");
+    if (hasta > animarDesde) { const b = document.querySelector(".vj-bolsa"); if (b) { b.classList.remove("recibe"); void b.offsetWidth; b.classList.add("recibe"); } }
   }
   const saldoActual = () => (S.mesa ? Number(S.mesa.saldo) : 0);
 
@@ -165,11 +176,23 @@
   function velas(el, total, opciones) {
     prepararVelas(el);
     const o = opciones || {};
+    const antes = el.dataset.total === "" || el.dataset.total == null ? null : Number(el.dataset.total);
     el.classList.toggle("pasado", total > 21);
     el.classList.toggle("veintiuna", total === 21);
     el.querySelectorAll("i").forEach((v, i) => v.classList.toggle("on", total != null && i < Math.min(total, 21)));
     el.dataset.total = total == null ? "" : total;
     el.style.visibility = o.oculto ? "hidden" : "";
+    // Lo que se ve al cambiar: humo de todas las velas si te pasas, chispas si llegas a 21
+    const Salon = window.VeintiunaSalon;
+    if (!Salon || o.oculto || total == null || antes === total || S.saltar) return;
+    if (total > 21 && !(antes > 21)) {
+      sonar("soplo");
+      el.querySelectorAll("i.on").forEach((v, i) => { if (i % 2) return; const r = v.getBoundingClientRect(); Salon.humo(r.left + r.width / 2, r.top - 4, 2); });
+      if (el.classList.contains("vj-velas-jugador")) { el.classList.remove("tiembla"); void el.offsetWidth; el.classList.add("tiembla"); }
+    } else if (total === 21 && antes !== 21) {
+      const r = el.getBoundingClientRect();
+      Salon.chispas(r.left + r.width - 10, r.top, 18, ["#fff3c4", "#ffd27a"], 0.7);
+    }
   }
 
   /* ---------------------------------------------------------------- manos */
@@ -261,8 +284,9 @@
     $("vvPlacaIcono").innerHTML = A.ICONOS[reglaId];
     $("vvPlacaEtq").textContent = modoEtiqueta === "proxima" ? "Regla de la próxima mano" : "Regla de esta mano";
     $("vvPlacaNombre").textContent = R.nombre;
-    $("vvLeyendaPaga").textContent = reglaId === "vela" ? "La veintiuna paga seis a cinco" : "La veintiuna paga tres a dos";
-    $("vvLeyendaPlanta").textContent = reglaId === "vela" ? "La casa se planta con dieciséis" : "La casa se planta con diecisiete";
+    // los rótulos del tapete (solo existen en la mesa con amigos; en la mesa de uno lo dice la carta de la regla)
+    if ($("vvLeyendaPaga")) $("vvLeyendaPaga").textContent = reglaId === "vela" ? "La veintiuna paga seis a cinco" : "La veintiuna paga tres a dos";
+    if ($("vvLeyendaPlanta")) $("vvLeyendaPlanta").textContent = reglaId === "vela" ? "La casa se planta con dieciséis" : "La casa se planta con diecisiete";
     $("vvPlacaEfecto").textContent = R.resumen;
     const usada = est ? !!est.regla.usada : false;
     const fase = est ? est.fase : "";
@@ -308,18 +332,50 @@
 
   /* ---------------------------------------------------------------- la apuesta sobre la mesa (montoncito de fichas) */
   function pintarFichasMesa(est) {
+    if (!est) { pintarPila(0); return; }
+    pintarPila(Number(est.apuesta), { practica: est.modo === "practica", peajes: Number(est.peajes) || 0 });
+  }
+  // La pila del círculo de la apuesta: de las fichas más grandes a las más pequeñas, como mucho 9. «cae» hace rebotar la de arriba.
+  function pintarPila(cantidad, opciones) {
+    const o = opciones || {};
     const el = $("vvApuestaMesa");
-    if (!est) { el.innerHTML = ""; el.classList.remove("hay"); return; }
-    let resto = Number(est.apuesta), pila = "";
-    const den = [100, 50, 20, 10];
+    if (!(cantidad > 0)) { el.innerHTML = ""; el.classList.remove("hay"); el.dataset.n = "0"; return; }
+    let resto = Number(cantidad);
+    const den = [5000, 1000, 500, 100, 50, 20, 10];
     const fichas = [];
-    for (const d of den) while (resto >= d && fichas.length < 7) { fichas.push(d); resto -= d; }
-    if (resto > 0 && fichas.length < 7) fichas.push(den[den.length - 1]);
-    pila = fichas.map((d, i) => `<span class="vv-ficha-pila" style="--k:${i}">${A.ficha(d)}</span>`).join("");
-    const peajes = Number(est.peajes) || 0;
-    el.innerHTML = `<span class="vv-pila">${pila}</span><span class="vv-apuesta-valor">${est.modo === "practica" ? "práctica" : V.monedas(est.apuesta)}${peajes ? `<small>+ peaje ${V.monedas(peajes)}</small>` : ""}</span>`;
+    for (const d of den) while (resto >= d && fichas.length < 9) { fichas.push(d); resto -= d; }
+    if (resto > 0 && fichas.length < 9) fichas.push(10);
+    const antes = Number(el.dataset.n || 0);
+    const pila = fichas.map((d, i) => `<span class="vv-ficha-pila${o.cae && i >= antes - 1 && i === fichas.length - 1 ? " cae" : ""}" style="--k:${i}">${A.ficha(d)}</span>`).join("");
+    el.innerHTML = `<span class="vv-pila">${pila}</span><span class="vv-apuesta-valor">${o.practica ? "práctica" : V.monedas(cantidad)}${o.peajes ? `<small>+ peaje ${V.monedas(o.peajes)}</small>` : ""}</span>`;
+    el.dataset.n = String(fichas.length);
     el.classList.add("hay");
     el.setAttribute("aria-hidden", "true");
+  }
+  // Lo que vuela por la pantalla se quita al terminar o, como mucho, pasado su tiempo (con la pestaña oculta las animaciones se congelan)
+  function alTerminar(anim, el, ms) {
+    return Promise.race([anim.finished.catch(() => {}), new Promise(ok => setTimeout(ok, ms + 400))]).then(() => { try { anim.finish(); } catch (e) { /* ya terminó */ } el.remove(); });
+  }
+  // Una ficha vuela en arco desde el fichero hasta el círculo de la apuesta
+  function lanzarFicha(desde, valor) {
+    const destino = $("vvApuestaMesa").getBoundingClientRect();
+    if (!desde || sinMovimiento()) return Promise.resolve();
+    const lado = Math.max(28, Math.round(destino.width || 48));
+    const f = document.createElement("span");
+    f.className = "vj-ficha-vuelo";
+    f.style.width = f.style.height = lado + "px";
+    f.innerHTML = A.ficha(valor);
+    const x0 = desde.left + desde.width / 2 - lado / 2, y0 = desde.top + desde.height * 0.3 - lado / 2;
+    const x1 = destino.left + destino.width / 2 - lado / 2, y1 = destino.top + destino.height * 0.55 - lado / 2;
+    f.style.left = x0 + "px"; f.style.top = y0 + "px";
+    document.body.appendChild(f);
+    const dx = x1 - x0, dy = y1 - y0, alto = Math.min(-80, dy - 120);
+    const a = f.animate([
+      { transform: "translate(0,0) rotate(0deg) scale(.9)" },
+      { transform: `translate(${dx * 0.5}px, ${alto}px) rotate(200deg) scale(1.08)`, offset: 0.5 },
+      { transform: `translate(${dx}px, ${dy}px) rotate(360deg) scale(1)` }
+    ], { duration: 420, easing: "cubic-bezier(.35,.1,.4,1)" });
+    return alTerminar(a, f, 420);
   }
 
   /* ---------------------------------------------------------------- el dock: apuesta, acciones y fin de mano */
@@ -360,49 +416,66 @@
     const sinFondos = !practica && saldo < lim.min;
     const regla = V.REGLAS[m.proxima_regla];
     const peajeLinea = regla && m.peajes[regla.id] != null ? ` Peaje: ${peajeTexto(regla.id)}.` : "";
+    const bloqueada = practica ? false : (!!motivo || S.apuesta <= 0 || sinFondos);
+    // el fichero: cada valor es una columna de fichas (más alta cuantas más caben con tu saldo)
+    const columnas = fichas.map(f => {
+      const cabe = (S.apuesta + f) <= Math.min(V.tope(lim), saldo);
+      const alto = Math.max(1, Math.min(5, Math.floor((saldo - S.apuesta) / f)));
+      return `<button type="button" class="vv-ficha${cabe ? "" : " sin-fondos"}" data-ficha="${f}" aria-disabled="${!cabe}" aria-label="Añadir ${f} tokens"${cabe ? "" : ` title="${esc(S.apuesta + f > V.tope(lim) ? "Pasarías la apuesta máxima de " + V.monedas(lim.max) : "No te alcanzan los tokens")}"`}>${window.VeintiunaSalon ? window.VeintiunaSalon.columna(f, cabe ? alto : 1) : A.ficha(f)}<span class="vj-ficha-valor" aria-hidden="true">${V.monedas(f)}</span></button>`;
+    }).join("");
     cuerpo.innerHTML = `
-      <div class="vv-apuesta-panel">
+      <div class="vj-apostar vv-apuesta-panel">
         <div class="vv-modos" role="radiogroup" aria-label="Modalidad de la mesa">
           <button type="button" role="radio" aria-checked="${!practica}" class="vv-modo${!practica ? " activo" : ""}" data-modo="apuesta"><strong>Con apuesta</strong><small>tokens de juego</small></button>
-          <button type="button" role="radio" aria-checked="${practica}" class="vv-modo${practica ? " activo" : ""}" data-modo="practica"><strong>Mesa de práctica</strong><small>sin tokens, no cuenta para los desafíos</small></button>
+          <button type="button" role="radio" aria-checked="${practica}" class="vv-modo${practica ? " activo" : ""}" data-modo="practica"><strong>Práctica</strong><small>sin tokens ni desafíos</small></button>
         </div>
-        <div class="vv-apuesta-centro">
         ${practica ? `
           <div class="vv-practica"><p>Apuesta simbólica de <strong>${V.monedas(lim.min)}</strong>: no se cobra ni se paga.${esc(peajeLinea)} Las mismas cartas, las mismas reglas.</p></div>`
         : `
-          <div class="vv-fichas" role="group" aria-label="Fichas para apostar">
-            ${fichas.map(f => { const cabe = (S.apuesta + f) <= Math.min(V.tope(lim), saldo); return `<button type="button" class="vv-ficha${cabe ? "" : " sin-fondos"}" data-ficha="${f}" aria-disabled="${!cabe}" aria-label="Añadir ${f} tokens"${cabe ? "" : ` title="${esc(S.apuesta + f > V.tope(lim) ? "Pasarías la apuesta máxima de " + V.monedas(lim.max) : "No te alcanzan los tokens")}"`}>${A.ficha(f)}</button>`; }).join("")}
+          <div class="vj-fichero-caja">
+            <div class="vv-fichas" role="group" aria-label="Fichas para apostar">${columnas}</div>
           </div>
           <div class="vv-apuesta-total">
-            <button type="button" class="vv-paso" data-paso="-1" aria-label="Bajar la apuesta ${V.monedas(lim.paso)}" ${S.apuesta <= 0 ? 'aria-disabled="true"' : ""}>−</button>
-            <div class="vv-apuesta-cifra" aria-live="polite"><small>Apuesta</small><strong id="vvApuestaCifra">${V.monedas(S.apuesta)}</strong></div>
-            <button type="button" class="vv-paso" data-paso="1" aria-label="Subir la apuesta ${V.monedas(lim.paso)}">+</button>
-            <button type="button" class="vv-enlace" data-borrar ${S.apuesta <= 0 ? 'aria-disabled="true"' : ""}>Quitar fichas</button>
-            <button type="button" class="vv-enlace" data-todo>Todo lo que tengo</button>
-            ${S.ultimaApuesta && S.ultimaApuesta !== S.apuesta ? `<button type="button" class="vv-enlace" data-repetir>Repetir ${V.monedas(S.ultimaApuesta)}</button>` : ""}
+            <div class="vj-cifra-fila">
+              <button type="button" class="vv-paso" data-paso="-1" aria-label="Bajar la apuesta ${V.monedas(lim.paso)}" ${S.apuesta <= 0 ? 'aria-disabled="true"' : ""}>−</button>
+              <div class="vv-apuesta-cifra" aria-live="polite"><small>Apuesta</small><strong id="vvApuestaCifra">${V.monedas(S.apuesta)}</strong></div>
+              <button type="button" class="vv-paso" data-paso="1" aria-label="Subir la apuesta ${V.monedas(lim.paso)}">+</button>
+            </div>
+            <div class="vj-atajos-apuesta">
+              <button type="button" class="vv-enlace" data-borrar ${S.apuesta <= 0 ? 'aria-disabled="true"' : ""}>Quitar</button>
+              <button type="button" class="vv-enlace" data-todo>Todo</button>
+              ${S.ultimaApuesta && S.ultimaApuesta !== S.apuesta ? `<button type="button" class="vv-enlace" data-repetir>Repetir ${V.monedas(S.ultimaApuesta)}</button>` : ""}
+            </div>
           </div>`}
-        </div>
-        <div class="vv-apuesta-acciones">
-          <button type="button" class="vv-boton vv-boton-principal" data-repartir ${(practica ? false : (!!motivo || S.apuesta <= 0 || sinFondos)) ? 'aria-disabled="true"' : ""}>
-            <span class="vv-boton-texto">Repartir</span><span class="vv-boton-sub">${practica ? "mano de práctica" : S.apuesta > 0 ? "apuesta " + V.monedas(S.apuesta) : "elige una apuesta"}</span></button>
-          ${sinFondos ? `<button type="button" class="vv-boton" data-modo="practica">Jugar en la práctica</button>` : ""}
-        </div>
-        ${practica ? "" : `<p class="vv-nota-apuesta${motivo && S.apuesta > 0 ? " mal" : ""}" id="vvNotaApuesta">${sinFondos
+        <button type="button" class="vj-campana" data-repartir ${bloqueada ? 'aria-disabled="true"' : ""} aria-keyshortcuts="Enter">
+          <span class="vj-campana-dib">${window.VeintiunaSalon ? window.VeintiunaSalon.campana() : ""}</span>
+          <span class="vv-boton-texto">Repartir</span><span class="vv-boton-sub">${practica ? "mano de práctica" : S.apuesta > 0 ? "apuesta " + V.monedas(S.apuesta) : "elige una apuesta"}</span><kbd aria-hidden="true">↵</kbd></button>
+        ${sinFondos ? `<button type="button" class="vv-boton" data-modo="practica"><span class="vv-boton-texto">Jugar en la práctica</span></button>` : ""}
+        ${practica ? "" : `<p class="vv-nota-apuesta${motivo && S.apuesta > 0 ? " mal" : ""}${sinFondos ? " sin" : ""}" id="vvNotaApuesta">${sinFondos
             ? `No tienes tokens para la apuesta mínima (${V.monedas(lim.min)}). Puedes vender una carta al <a href="hipodromo.html#cartas" data-buhonero>Buhonero</a> o jugar en la mesa de práctica.`
             : motivo && S.apuesta > 0 ? esc(motivo)
             : `${V.textoLimites(lim)} Victoria 1 a 1, blackjack natural 3 a 2, empate devuelve.${esc(peajeLinea)}`}</p>`}
       </div>`;
+    // la pila del círculo enseña la apuesta que estás montando (si hay fichas en el aire, la pone al día la que aterriza)
+    if (!S.vuelos) pintarPila(practica ? 0 : S.apuesta);
   }
 
+  // Los gestos de la mesa de verdad: tocar el tapete para pedir, pasar la mano por encima para plantarse
+  const GESTOS = {
+    pedir: `<svg class="vj-gesto" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M13 27V11a2 2 0 0 1 4 0v8l6 1c2 .4 3 2 2.6 4L24 28H14z" fill="currentColor" opacity=".9"/><path d="M8 6l3 3M15 2v4M22 6l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+    plantar: `<svg class="vj-gesto" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M4 18c0-2 2-3 4-2l3 2V8a2 2 0 0 1 4 0v6-9a2 2 0 0 1 4 0v9-7a2 2 0 0 1 4 0v10c0 6-3 10-9 10-5 0-7-3-10-9z" fill="currentColor" opacity=".9"/><path d="M2 8c2-2 3-2 5 0M26 4c2-2 3-2 5 0" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>`,
+    aceptar: `<svg class="vj-gesto" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M6 22h20M9 18h14M12 14h8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`
+  };
   function pintarAcciones(cuerpo) {
     const est = S.est, plan = V.acciones(est);
     const fortuna = plan.fase === "fortuna";
+    const icono = b => b.especial || b.id === "fortuna" ? `<span class="vj-icono-regla" aria-hidden="true">${A.ICONOS[est.regla.id] || ""}</span>` : GESTOS[b.id] || "";
     cuerpo.innerHTML = `
       <div class="vv-acciones${fortuna ? " vv-acciones-fortuna" : ""}">
         ${fortuna ? `<p class="vv-acciones-aviso" id="vvAvisoFortuna"><strong>Te pasaste de 21.</strong> La Fortuna puede convertir esa última carta en un as de valor 1, pero cobra su peaje.</p>` : ""}
-        <div class="vv-botones">
+        <div class="vv-botones vj-entra">
           ${plan.botones.map(b => `<button type="button" class="vv-boton${b.principal ? " vv-boton-principal" : ""}${b.especial ? " vv-boton-especial" : ""}${b.id === "aceptar" ? " vv-boton-fantasma" : ""}" data-accion="${b.id}" aria-disabled="${!b.habilitado}"${b.motivo ? ` data-motivo="${esc(b.motivo)}"` : ""} aria-keyshortcuts="${b.tecla}">
-            <span class="vv-boton-texto">${esc(b.texto)}</span>${b.sub ? `<span class="vv-boton-sub">${esc(b.sub)}</span>` : ""}<kbd aria-hidden="true">${b.tecla}</kbd></button>`).join("")}
+            <span class="vv-boton-texto">${icono(b)}${esc(b.texto)}</span>${b.sub ? `<span class="vv-boton-sub">${esc(b.sub)}</span>` : ""}<kbd aria-hidden="true">${b.tecla}</kbd></button>`).join("")}
         </div>
       </div>`;
   }
@@ -412,11 +485,9 @@
     const lim = S.mesa.limites;
     const sin = S.est.modo === "apuesta" && saldoActual() < lim.min;
     cuerpo.innerHTML = `
-      <div class="vv-fin">
+      <div class="vv-fin vj-entra">
         <div class="vv-fin-resumen"><strong>${esc(r ? r.titulo : "")}</strong><span>${esc(r ? r.linea : "")}</span></div>
-        <div class="vv-botones">
-          <button type="button" class="vv-boton vv-boton-principal" data-otra aria-keyshortcuts="Enter"><span class="vv-boton-texto">Otra mano</span><span class="vv-boton-sub">${sin ? "cambia de apuesta" : "elige tu apuesta"}</span><kbd aria-hidden="true">↵</kbd></button>
-        </div>
+        <button type="button" class="vj-campana" data-otra aria-keyshortcuts="Enter"><span class="vj-campana-dib">${window.VeintiunaSalon ? window.VeintiunaSalon.campana() : ""}</span><span class="vv-boton-texto">Otra mano</span><span class="vv-boton-sub">${sin ? "cambia de apuesta" : "elige tu apuesta"}</span><kbd aria-hidden="true">↵</kbd></button>
       </div>`;
   }
 
@@ -473,6 +544,7 @@
     $("vvMesa").classList.remove("res-victoria", "res-derrota", "res-empate", "res-natural");
     pintarPlaca(S.mesa.proxima_regla, "proxima", null);
     crupierEstado("espera");
+    luz("");
     fase("apuesta");
     if (primera) decir("ronda", 0.6);
     if (document.activeElement === document.body || primera) enfocarDock();
@@ -495,6 +567,7 @@
     tostada("Recuperé tu mano abierta. Sigue donde la dejaste.", { icono: "🕯" });
   }
 
+const luz = (t, ms) => { try { if (window.VeintiunaSalon) window.VeintiunaSalon.luz(t, ms); } catch (e) { /* sin sala */ } };
   const musica = (activa) => { try { if (window.MusicaPaginas) window.MusicaPaginas.partida(!!activa); } catch (e) { /* sin música */ } };
 
   /* ---------------------------------------------------------------- aplicar lo que confirma el servidor */
@@ -521,12 +594,14 @@
       musica(true);
       fase(est.fase === "fortuna" ? "fortuna" : "mano");
       crupierEstado("jugador");
+      luz(est.fase === "fortuna" ? "fortuna" : "");
       enfocarDock();
     }
   }
 
   async function nuevaMano(est) {
     fase("espera");
+    luz("");
     $("vvResultado").hidden = true;
     $("vvMesa").classList.remove("res-victoria", "res-derrota", "res-empate", "res-natural");
     await barrerMesa();
@@ -671,6 +746,7 @@
     $("vvResultadoLinea").textContent = r.linea;
     $("vvResultado").hidden = false;
     $("vvResultado").className = "vv-resultado " + clase.replace("res-", "res-");
+    efectosDeResultado(r);
     // La crupier reacciona: si tú ganas, ella pierde
     if (r.gano) { crupierEstado("pierde"); decir(r.tipo === "natural" ? "natural" : est.razon === "crupier_se_pasa" || (est.resultado && est.resultado.razon === "crupier_se_pasa") ? "sePasa" : "pierde"); sonar(r.tipo === "natural" ? "natural" : "gana"); }
     else if (r.empate) { crupierEstado("empate"); decir("empate"); sonar("empate"); }
@@ -701,24 +777,87 @@
     } catch (e) { /* si falla se actualiza en la siguiente mano */ }
   }
 
+  // El sello del resultado cae sobre el tapete: polvo al golpear, chispas si ganas, la sala cambia de luz
+  function efectosDeResultado(r) {
+    const Salon = window.VeintiunaSalon;
+    if (!Salon) return;
+    Salon.luz(r.tipo === "natural" ? "natural" : r.gano ? "gana" : r.empate ? "" : "pierde", r.gano ? 2600 : 0);
+    if (sinMovimiento() || S.saltar) return;
+    setTimeout(() => {
+      const t = $("vvResultadoTitulo").getBoundingClientRect();
+      if (!t.width) return;
+      sonar("sello");
+      Salon.polvo(t.left + t.width / 2, t.bottom - 6, 22);
+      Salon.temblor($("vvFieltro"), r.tipo === "natural" ? 5 : 3);
+      if (r.tipo === "natural") {
+        Salon.chispas(t.left + t.width / 2, t.top + t.height / 2, 70, ["#fff3c4", "#ffd27a", "#ffb24a", "#ffffff"], 1.3);
+        setTimeout(() => Salon.chispas(t.left + t.width * 0.2, t.top, 24, ["#ffd27a", "#fff3c4"], 0.8), 260);
+        setTimeout(() => Salon.chispas(t.right - t.width * 0.2, t.top, 24, ["#ffd27a", "#fff3c4"], 0.8), 420);
+      } else if (r.gano) Salon.chispas(t.left + t.width / 2, t.top + t.height / 2, 34, ["#ffd27a", "#ffb24a", "#fff3c4"], 1);
+    }, 230);
+  }
+
+  // Las fichas de verdad: si ganas, la casa paga desde su bandeja y tu montón vuelve a la bolsa; si pierdes, la crupier se lo lleva
   function volarMonedas(r) {
     if (sinMovimiento() || S.saltar) return;
-    const desde = $("vvApuestaMesa").getBoundingClientRect(), hasta = (r.gano ? $("vvSaldo") : $("vvCrupierArte")).getBoundingClientRect();
-    if (!desde.width || !hasta.width) return;
-    const n = r.empate ? 3 : Math.min(8, 3 + Math.round(Math.abs(r.neto) / 10));
-    for (let i = 0; i < n; i++) {
-      const m = document.createElement("span");
-      m.className = "vv-moneda-vuelo";
-      m.innerHTML = `<svg viewBox="0 0 40 40" aria-hidden="true"><use href="#vv-moneda"/></svg>`;
-      m.style.left = (desde.left + desde.width / 2) + "px"; m.style.top = (desde.top + desde.height / 2) + "px";
-      document.body.appendChild(m);
-      const dx = hasta.left + hasta.width / 2 - (desde.left + desde.width / 2), dy = hasta.top + hasta.height / 2 - (desde.top + desde.height / 2);
-      m.animate([
-        { transform: "translate(-50%, -50%) scale(.6)", opacity: 0 },
-        { transform: `translate(calc(-50% + ${dx * 0.2}px), calc(-50% + ${dy * 0.2 - 50}px)) scale(1)`, opacity: 1, offset: 0.3 },
-        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.7)`, opacity: 0.1 }
-      ], { duration: 820, delay: 200 + i * 70, easing: "cubic-bezier(.3,.7,.3,1)", fill: "both" }).finished.then(() => m.remove(), () => m.remove());
-      if (i === 0) setTimeout(() => sonar("ficha"), 320);
+    const pila = $("vvApuestaMesa").querySelector(".vv-pila");
+    const etq = $("vvApuestaMesa").querySelector(".vv-apuesta-valor");
+    if (etq) setTimeout(() => { etq.style.visibility = "hidden"; }, r.gano ? 1300 : 700);
+    const bolsa = document.querySelector(".vj-bolsa-dib") || $("vvSaldo");
+    const cera = $("vvCrupierArte").getBoundingClientRect();
+    if (!pila || !bolsa || !cera.width) return;
+    const bandeja = { x: cera.left + cera.width / 2, y: cera.bottom - cera.height * 0.06 };
+    const fichasDe = () => [...pila.querySelectorAll(".vv-ficha-pila")];
+    const volar = (el, x, y, retraso, dur) => {
+      const r0 = el.getBoundingClientRect();
+      const c = el.cloneNode(true);
+      c.className = "vj-ficha-vuelo";
+      Object.assign(c.style, { left: r0.left + "px", top: r0.top + "px", width: r0.width + "px", height: r0.height + "px" });
+      document.body.appendChild(c);
+      el.style.visibility = "hidden";
+      const dx = x - (r0.left + r0.width / 2), dy = y - (r0.top + r0.height / 2);
+      const a = c.animate([
+        { transform: "translate(0,0) rotate(0)" },
+        { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 60}px) rotate(160deg)`, offset: 0.5 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(300deg) scale(.6)`, opacity: 0.2 }
+      ], { duration: dur || 560, delay: retraso, easing: "cubic-bezier(.4,.1,.4,1)", fill: "both" });
+      return alTerminar(a, c, (dur || 560) + retraso);
+    };
+    const haciaBolsa = (retraso) => {
+      const b = bolsa.getBoundingClientRect();
+      fichasDe().reverse().forEach((el, i) => volar(el, b.left + b.width / 2, b.top + b.height * 0.55, retraso + i * 55));
+      setTimeout(() => sonar("ficha"), retraso + 380);
+    };
+    if (r.gano) {
+      // la paga: unas fichas salen de la bandeja de la casa y caen sobre tu montón
+      const p = pila.getBoundingClientRect();
+      const n = Math.min(6, 2 + Math.round(Math.abs(r.neto) / Math.max(10, Number(S.est && S.est.apuesta) || 10)));
+      for (let i = 0; i < n; i++) {
+        const f = document.createElement("span");
+        f.className = "vj-ficha-vuelo";
+        const lado = p.width || 48;
+        Object.assign(f.style, { left: (bandeja.x - lado / 2) + "px", top: (bandeja.y - lado / 2) + "px", width: lado + "px", height: lado + "px" });
+        f.innerHTML = A.ficha([10, 20, 50, 100][i % 4]);
+        document.body.appendChild(f);
+        setTimeout(() => f.remove(), 2600 + i * 120);
+        f.animate([
+          { transform: "translate(0,0) scale(.7)", opacity: 0 },
+          { transform: `translate(${(p.left + p.width / 2 - bandeja.x) * 0.5}px, ${(p.top - bandeja.y) * 0.5 - 50}px) scale(1)`, opacity: 1, offset: 0.45 },
+          { transform: `translate(${p.left + p.width / 2 - bandeja.x}px, ${p.top + p.height * 0.4 - bandeja.y}px) scale(1)`, opacity: 1 }
+        ], { duration: 520, delay: 380 + i * 80, easing: "cubic-bezier(.35,.1,.4,1)", fill: "both" }).finished.then(() => {
+          // y luego van con el resto a tu bolsa
+          const b = bolsa.getBoundingClientRect(), q = f.getBoundingClientRect();
+          return f.animate([{ transform: `translate(${p.left + p.width / 2 - bandeja.x}px, ${p.top + p.height * 0.4 - bandeja.y}px)` }, { transform: `translate(${b.left + b.width / 2 - bandeja.x}px, ${b.top + b.height / 2 - bandeja.y}px) scale(.6)`, opacity: 0.2 }], { duration: 520, delay: 380 + (n - i) * 40, easing: "cubic-bezier(.4,.1,.4,1)", fill: "both" }).finished;
+        }).then(() => f.remove(), () => f.remove());
+      }
+      setTimeout(() => sonar("ficha"), 820);
+      haciaBolsa(1100);
+    } else if (r.empate) {
+      haciaBolsa(500);
+    } else {
+      // la crupier arrastra tu montón hasta su bandeja
+      setTimeout(() => sonar("rastrillo"), 520);
+      fichasDe().forEach((el, i) => volar(el, bandeja.x + (i - 2) * 10, bandeja.y, 520 + i * 40, 640));
     }
   }
 
@@ -817,7 +956,16 @@
     if (t.dataset.ficha) {
       const f = Number(t.dataset.ficha), lim = S.mesa.limites, saldo = saldoActual();
       if (S.apuesta + f > Math.min(V.tope(lim), saldo)) { aviso(S.apuesta + f > V.tope(lim) ? `La apuesta máxima es ${V.monedas(lim.max)}.` : `No te alcanzan los tokens: tienes ${V.monedas(saldo)}.`, { tipo: "info", cerrar: true }); return; }
-      S.apuesta += f; sonar("ficha"); aviso(""); pintarDock(); const f2 = $("vvDockCuerpo").querySelector(`[data-ficha="${f}"]`); if (f2) f2.focus({ preventScroll: true }); return;
+      const desde = t.getBoundingClientRect();
+      S.apuesta += f; aviso("");
+      S.vuelos = (S.vuelos || 0) + 1;
+      pintarDock();
+      lanzarFicha(desde, f).then(() => {
+        S.vuelos = Math.max(0, S.vuelos - 1);
+        sonar("ficha");
+        if (S.fase === "apuesta" && S.modo === "apuesta") pintarPila(S.apuesta, { cae: true });
+      });
+      const f2 = $("vvDockCuerpo").querySelector(`[data-ficha="${f}"]`); if (f2) f2.focus({ preventScroll: true }); return;
     }
     if (t.dataset.paso) {
       const lim = S.mesa.limites, nueva = S.apuesta + Number(t.dataset.paso) * lim.paso;
@@ -828,9 +976,26 @@
     if ("borrar" in t.dataset) { S.apuesta = 0; aviso(""); pintarDock(); return; }
     if ("todo" in t.dataset) { S.apuesta = V.ajustarApuesta(Infinity, saldoActual(), S.mesa.limites); sonar("ficha"); aviso(""); pintarDock(); const f2 = $("vvDockCuerpo").querySelector("[data-todo]"); if (f2) f2.focus({ preventScroll: true }); return; }
     if ("repetir" in t.dataset) { S.apuesta = V.ajustarApuesta(S.ultimaApuesta, saldoActual(), S.mesa.limites); pintarDock(); return; }
-    if ("repartir" in t.dataset) { if (t.getAttribute("aria-disabled") === "true") { const m = S.modo === "practica" ? "" : (saldoActual() < S.mesa.limites.min ? "No tienes tokens para la apuesta mínima. Prueba la mesa de práctica." : (V.motivoApuesta(S.apuesta, saldoActual(), S.mesa.limites) || "Elige una apuesta con las fichas.")); if (m) aviso(m, { tipo: "info", cerrar: true }); return; } repartir(); return; }
-    if ("otra" in t.dataset) { sonar("ficha"); empezarOtra(); return; }
+    if ("repartir" in t.dataset) { tocarCampana(t); return; }
+    if ("otra" in t.dataset) { sonarCampana(t); empezarOtra(); return; }
     if (t.dataset.accion) { intentarAccion(t.dataset.accion, t); }
+  }
+  // La campanilla: se hunde, suena y la crupier reparte. Sin apuesta válida da un golpe sordo y dice qué falta.
+  function sonarCampana(b) {
+    if (b) { b.classList.remove("suena"); void b.offsetWidth; b.classList.add("suena"); }
+    sonar("campana");
+  }
+  function tocarCampana(b) {
+    if (S.ocupado || S.animando) return;
+    if (b && b.getAttribute("aria-disabled") === "true") {
+      sonar("sordo");
+      if (window.VeintiunaSalon) window.VeintiunaSalon.temblor(b, 3);
+      const m = S.modo === "practica" ? "" : (saldoActual() < S.mesa.limites.min ? "No tienes tokens para la apuesta mínima. Prueba la mesa de práctica." : (V.motivoApuesta(S.apuesta, saldoActual(), S.mesa.limites) || "Elige una apuesta con las fichas."));
+      if (m) aviso(m, { tipo: "info", cerrar: true });
+      return;
+    }
+    sonarCampana(b);
+    repartir();
   }
   async function empezarOtra() {
     await barrerMesa();
@@ -849,12 +1014,17 @@
       const plan = V.acciones(S.est);
       const b = plan.botones.find(x => x.tecla === k);
       if (b) { ev.preventDefault(); intentarAccion(b.id); }
-    } else if (S.fase === "fin" && k === "Enter" && (!t || !t.matches("button, a"))) { ev.preventDefault(); sonar("ficha"); empezarOtra(); }
+    } else if (S.fase === "fin" && k === "Enter" && (!t || !t.matches("button, a"))) { ev.preventDefault(); sonarCampana(document.querySelector("[data-otra]")); empezarOtra(); }
+    else if (S.fase === "apuesta" && k === "Enter" && (!t || !t.matches("button, a"))) { ev.preventDefault(); tocarCampana(document.querySelector("[data-repartir]")); }
   }
 
   /* ---------------------------------------------------------------- diálogos */
+  // Cada diálogo es un objeto de la sala: el tablón y el libro de cuentas envuelven su contenido en su material
+  const MATERIAL = { "vj-dlg-tablon": "vj-tablero", "vj-dlg-cuentas": "vj-cuentas" };
   function abrir(dlg, html) {
-    dlg.innerHTML = html;
+    const envoltorio = Object.keys(MATERIAL).find(c => dlg.classList.contains(c));
+    dlg.innerHTML = envoltorio ? `<div class="${MATERIAL[envoltorio]}">${html}</div>` : html;
+    if (!sinMovimiento()) sonar(envoltorio === "vj-dlg-cuentas" || dlg.id === "vvDlgReglas" ? "carta" : "giro");
     dlg.querySelectorAll("[data-cerrar]").forEach(b => b.addEventListener("click", () => dlg.close()));
     if (!dlg.dataset.listo) {
       dlg.dataset.listo = "1";
@@ -866,55 +1036,89 @@
   }
   const cabeceraDlg = (id, titulo, sub) => `<header class="vv-dlg-cab"><div><p class="eyebrow">LAS VEINTIUNA VELAS</p><h2 id="${id}">${esc(titulo)}</h2>${sub ? `<p class="vv-dlg-sub">${esc(sub)}</p>` : ""}</div><button type="button" class="vv-cerrar" data-cerrar aria-label="Cerrar">×</button></header>`;
 
-  function abrirReglas(foco) {
+  // El libro de la casa: a la izquierda el índice, a la derecha el capítulo. Cambiar de capítulo pasa la hoja.
+  function capitulosReglas() {
     const m = S.mesa;
     const por = { fortuna: 60, voluntad: 50, ojo: 35, marcadas: 18, trueque: 100 };
     const peajeDe = id => (m && m.peajes && m.peajes[id] != null ? Math.round(m.peajes[id] * 100) : por[id]) + " % de la apuesta";
     const lim = m ? m.limites : { min: 10, max: 100, paso: 10 };
-    const reglas = V.ORDEN_REGLAS.map(id => {
-      const R = V.REGLAS[id];
-      const lineas = R.detalle(peajeDe(id));
-      return `<article class="vv-regla-ficha" data-regla="${id}" id="vvRegla-${id}"><div class="vv-regla-icono" aria-hidden="true">${A.ICONOS[id]}</div><div><h3>${esc(R.nombre)}</h3><p class="vv-regla-lema">${esc(R.lema)}</p><ul>${lineas.map(l => `<li>${esc(l)}</li>`).join("")}</ul></div></article>`;
-    }).join("");
-    abrir($("vvDlgReglas"), `${cabeceraDlg("vvDlgReglasT", "Cómo se juega", "Blackjack contra la casa, con una regla especial por mano")}
-      <div class="vv-dlg-cuerpo">
-        <section><h3>La mano</h3><ul>
+    const caps = [
+      { id: "mano", titulo: "La mano", html: `<h3>La mano</h3><ul>
           <li>Baraja de 52 cartas, barajada de nuevo en cada mano. Recibes dos cartas; el crupier, una boca arriba y otra oculta.</li>
           <li>El as vale 1 u 11, J, Q y K valen 10 (11 con la Maldición) y el resto, su número. Gana quien más se acerque a 21 sin pasarse.</li>
           <li>Puedes <strong>pedir carta</strong> o <strong>plantarte</strong>. Si pasas de 21, pierdes. No hay dividir, doblar, seguro ni rendición.</li>
           <li>El crupier pide con 16 o menos y se planta con 17 o más, <strong>también con un 17 blando</strong>. Con la Vela corta se planta ya con 16.</li>
           <li>Un <strong>blackjack natural</strong> es un 21 con las dos primeras cartas. Un 21 conseguido pidiendo carta no lo es.</li>
-        </ul></section>
-        <section><h3>Pagos</h3>
+        </ul>
+        <p class="vj-pie-hoja">Las velas de tu candelero cuentan tus puntos: una por punto, hasta 21. Si te pasas, se apagan.</p>` },
+      { id: "pagos", titulo: "Pagos", html: `<h3>Pagos</h3>
           <table class="vv-tabla"><thead><tr><th>Resultado</th><th>Cobras</th></tr></thead><tbody>
             <tr><td>Victoria</td><td>1 a 1: tu apuesta y otra igual</td></tr>
             <tr><td>Blackjack natural</td><td>3 a 2: tu apuesta y una vez y media más (6 a 5 con la Vela corta)</td></tr>
             <tr><td>Empate</td><td>Te devuelven la apuesta</td></tr>
             <tr><td>Derrota</td><td>Pierdes la apuesta</td></tr></tbody></table>
           <p>${V.sinTope(lim) ? `Apuestas desde ${V.monedas(lim.min)}, de ${V.monedas(lim.paso)} en ${V.monedas(lim.paso)}, sin máximo: puedes apostar todo lo que tengas.` : `Apuestas de ${V.monedas(lim.min)} a ${V.monedas(lim.max)}, de ${V.monedas(lim.paso)} en ${V.monedas(lim.paso)}.`} Los peajes de las reglas no se devuelven.</p>
-          <p><strong>Orden al repartir:</strong> si te pasas de 21 (solo con la Maldición), pierdes; si los dos tenéis blackjack natural, es empate; si lo tienes tú, cobras 3 a 2; si el crupier se pasa de 21 (solo con la Maldición), ganas. Si la mano sigue, se juega con normalidad. Un blackjack natural del crupier no corta la mano: la juegas igual, pero su natural gana a cualquier 21 que no sea natural.</p>
-        </section>
-        <section><h3>Las ocho reglas especiales</h3><p>Cada mano trae una, elegida por el servidor. La próxima se enseña antes de que apuestes y no cambia hasta que la repartas.</p><div class="vv-reglas-lista">${reglas}</div></section>
-        <section><h3>Mesa de práctica y desafíos</h3><ul>
+          <h4>Orden al repartir</h4>
+          <p>Si te pasas de 21 (solo con la Maldición), pierdes; si los dos tenéis blackjack natural, es empate; si lo tienes tú, cobras 3 a 2; si el crupier se pasa de 21 (solo con la Maldición), ganas. Si la mano sigue, se juega con normalidad. Un blackjack natural del crupier no corta la mano: la juegas igual, pero su natural gana a cualquier 21 que no sea natural.</p>` }
+    ];
+    V.ORDEN_REGLAS.forEach(id => {
+      const R = V.REGLAS[id];
+      caps.push({ id, titulo: R.nombre, html: `<div class="vj-regla-cab vv-regla-ficha" data-regla="${id}" id="vvRegla-${id}"><div class="vv-regla-icono" aria-hidden="true">${A.ICONOS[id]}</div><div><h3>${esc(R.nombre)}</h3><p class="vv-regla-lema">${esc(R.lema)}</p></div></div>
+        <ul>${R.detalle(peajeDe(id)).map(l => `<li>${esc(l)}</li>`).join("")}</ul>
+        <p class="vj-pie-hoja">Cada mano trae una de las ocho reglas, elegida por el servidor. La próxima se enseña en su atril antes de que apuestes y no cambia hasta que la repartas.</p>` });
+    });
+    caps.push({ id: "practica", titulo: "Práctica y desafíos", html: `<h3>Práctica y desafíos</h3><ul>
           <li>La <strong>mesa de práctica</strong> usa las mismas cartas y reglas con una apuesta simbólica: no cobra ni paga tokens. No cuenta para los desafíos ni para las rachas: para aprender las reglas.</li>
           <li>Los <strong>desafíos</strong> se comprueban en el servidor. Cada uno que completes se puede reclamar una vez y da una carta del juego de Triunfos, siempre respetando los límites de la colección (como mucho una carta al día desde esta mesa). Los desafíos se reinician cada día: puedes completarlos de nuevo, y lo que no reclames antes del reinicio se pierde.</li>
           <li>Si dejas una mano a medias, queda guardada. Pasados ${m ? m.inactividad_min : 30} minutos sin jugarla, el servidor se planta por ti.</li>
-        </ul></section>
+        </ul>
+        <p class="vj-pie-hoja">Los tokens de juego son los mismos del <a href="hipodromo.html">Hipódromo</a>. La baraja y las reglas viven en el servidor: ni tú ni nadie pueden saber la carta oculta.</p>` });
+    caps.push({ id: "atajos", titulo: "Atajos de teclado", html: `<h3>Atajos de teclado</h3>${tablaAtajos()}` });
+    return caps;
+  }
+  function tablaAtajos() {
+    return `<table class="vv-tabla"><tbody>
+        <tr><td><kbd>P</kbd></td><td>Pedir carta</td></tr><tr><td><kbd>L</kbd></td><td>Plantarse</td></tr>
+        <tr><td><kbd>V</kbd></td><td>La acción de la regla de la mano: Última voluntad, Ojo del Tahúr, Cartas marcadas, Trueque o salvar la mano con la Fortuna</td></tr><tr><td><kbd>A</kbd></td><td>Aceptar la derrota (cuando la Fortuna te lo ofrece)</td></tr>
+        <tr><td><kbd>Intro</kbd></td><td>Tocar la campanilla: repartir, u otra mano cuando termina la anterior</td></tr><tr><td><kbd>Espacio</kbd></td><td>Saltar la animación</td></tr></tbody></table>
+      <p>Todos los botones también se manejan con Tab e Intro.</p>`;
+  }
+  function abrirReglas(foco) {
+    const caps = capitulosReglas();
+    let actual = caps.find(c => c.id === foco) ? foco : "mano";
+    const dlg = $("vvDlgReglas");
+    const indice = () => caps.map((c, i) => `<li><button type="button" data-cap="${c.id}"${c.id === actual ? " aria-current=\"page\"" : ""}>${esc(c.titulo)}<span>${i + 1}</span></button></li>`).join("");
+    abrir(dlg, `<div class="vj-libro">
+        <button type="button" class="vv-cerrar" data-cerrar aria-label="Cerrar el libro">×</button>
+        <div class="vj-hoja vj-hoja-izq">
+          <p class="eyebrow">Las Veintiuna Velas</p>
+          <h2 id="vvDlgReglasT">El libro de la casa</h2>
+          <p class="vv-dlg-sub">Blackjack contra la casa, con una regla especial por mano</p>
+          <nav aria-label="Capítulos"><ol class="vj-indice">${indice()}</ol></nav>
+        </div>
+        <article class="vj-hoja vj-hoja-der" id="vjHojaReglas" tabindex="-1">${caps.find(c => c.id === actual).html}</article>
       </div>`);
-    if (foco) { const el = $("vvRegla-" + foco); if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("destacada"); } }
+    const hoja = $("vjHojaReglas");
+    dlg.querySelector(".vj-indice").addEventListener("click", ev => {
+      const b = ev.target.closest("[data-cap]");
+      if (!b || b.dataset.cap === actual) return;
+      actual = b.dataset.cap;
+      dlg.querySelectorAll("[data-cap]").forEach(x => { if (x.dataset.cap === actual) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current"); });
+      hoja.innerHTML = caps.find(c => c.id === actual).html;
+      hoja.scrollTop = 0;
+      hoja.classList.remove("pasa"); void hoja.offsetWidth;
+      if (!sinMovimiento()) hoja.classList.add("pasa");
+      sonar("carta");
+      if (window.matchMedia("(max-width: 720px)").matches) { try { hoja.scrollIntoView({ block: "start" }); } catch (e) { /* sin desplazamiento */ } }
+    });
   }
 
   function abrirAtajos() {
-    abrir($("vvDlgAtajos"), `${cabeceraDlg("vvDlgAtajosT", "Atajos de teclado")}
-      <div class="vv-dlg-cuerpo"><table class="vv-tabla"><tbody>
-        <tr><td><kbd>P</kbd></td><td>Pedir carta</td></tr><tr><td><kbd>L</kbd></td><td>Plantarse</td></tr>
-        <tr><td><kbd>V</kbd></td><td>La acción de la regla de la mano: Última voluntad, Ojo del Tahúr, Cartas marcadas, Trueque o salvar la mano con la Fortuna</td></tr><tr><td><kbd>A</kbd></td><td>Aceptar la derrota (cuando la Fortuna te lo ofrece)</td></tr>
-        <tr><td><kbd>Intro</kbd></td><td>Otra mano, cuando termina la anterior</td></tr><tr><td><kbd>Espacio</kbd></td><td>Saltar la animación</td></tr></tbody></table>
-      <p>Todos los botones también se manejan con Tab e Intro.</p></div>`);
+    abrir($("vvDlgAtajos"), `${cabeceraDlg("vvDlgAtajosT", "Atajos de teclado")}<div class="vv-dlg-cuerpo">${tablaAtajos()}</div>`);
   }
 
   async function abrirHistorial() {
-    abrir($("vvDlgHistorial"), `${cabeceraDlg("vvDlgHistorialT", "Historial", "Tus últimas manos terminadas")}<div class="vv-dlg-cuerpo"><p class="vv-dock-texto">Buscando tus manos...</p></div>`);
+    abrir($("vvDlgHistorial"), `${cabeceraDlg("vvDlgHistorialT", "El libro de cuentas", "Tus últimas manos en esta mesa")}<div class="vv-dlg-cuerpo"><p class="vv-dock-texto">Buscando tus manos...</p></div>`);
     try {
       const filas = await api.historial(15);
       const est = S.mesa ? S.mesa.estadisticas : null;
@@ -956,7 +1160,7 @@
       </li>`;
     };
     const apagado = !m.recompensas.activas;
-    abrir($("vvDlgDesafios"), `${cabeceraDlg("vvDlgDesafiosT", "Desafíos de la mesa", "Se comprueban en el servidor y valen lo mismo con o sin apuesta")}
+    abrir($("vvDlgDesafios"), `${cabeceraDlg("vvDlgDesafiosT", "El tablón de desafíos", "Se comprueban en el servidor y valen lo mismo con o sin apuesta")}
       <div class="vv-dlg-cuerpo">
         <p class="vv-nota-aviso vv-dlg-estado" id="vvDesafiosEstado" role="status" aria-live="polite"${S.mensajeDesafios ? "" : " hidden"}>${esc(S.mensajeDesafios || "")}</p>
         ${apagado ? `<p class="vv-nota-aviso">Las cartas de esta mesa todavía no se reparten. Tus desafíos se siguen completando y quedan guardados hasta el reinicio del día.</p>` : ""}
@@ -996,7 +1200,13 @@
   function montarArte() {
     document.body.insertAdjacentHTML("afterbegin", A.sprite());
     $("vvEmblema").innerHTML = A.emblema();
-    $("vvTapete").innerHTML = A.tapete();
+    const Salon = window.VeintiunaSalon;
+    if (Salon) {
+      Salon.montar();
+      $("vvTapete").innerHTML = Salon.tapete();
+      document.querySelectorAll("[data-dib]").forEach(e => { e.innerHTML = Salon.OBJ[e.dataset.dib] || ""; });
+      const b = $("vjBolsa"); if (b) b.innerHTML = Salon.bolsa();
+    } else $("vvTapete").innerHTML = A.tapete();
     $("vvCrupierArte").innerHTML = A.crupier();
     $("vvZapato").innerHTML = `<span class="vv-zapato-lomo"></span><span class="vv-zapato-carta">${A.dorso()}</span><span class="vv-zapato-carta">${A.dorso()}</span>`;
     prepararVelas($("vvVelasCrupier")); prepararVelas($("vvVelasJugador"));
