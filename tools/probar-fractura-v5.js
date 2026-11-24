@@ -289,5 +289,64 @@ const rico = jug => Object.keys(jug.recursos).forEach(k => { jug.recursos[k] = 9
   ok(FM.minoriaBerserker(est, b) === 0, "sin enemigos al lado tiene bono de minoría");
 }
 
+// --- Okran: botín, saqueo, viejas deudas, trofeos de caza, marcha de la horda y campamentos ---
+{
+  const est = guerra(["okran", "caballeros-del-reino"]);
+  limpiar(est); est.activo = 0;
+  const jo = est.jugadores[0], jc = est.jugadores[1];
+  const x = 14, y = 14;
+  for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) llano(est, x + dx, y + dy);
+  // Viejas deudas: Okran odia a Brurland, así que le pega 1 más que a un bando que no odia
+  const g = poner(est, 0, "guerrero", x, y), e = poner(est, 1, "guerrero", x + 1, y);
+  const conDeuda = FM.calcularDano(est, g, e);
+  const facOk = D.FACCIONES.okran; const odiaba = facOk.odia; facOk.odia = [];
+  const sinDeuda = FM.calcularDano(est, g, e); facOk.odia = odiaba;
+  ok(conDeuda === sinDeuda + 1, `Viejas deudas no suma 1 (${sinDeuda} → ${conDeuda})`);
+  // Botín: matar da comida y oro
+  rico(jo); const c0 = jo.recursos.comida, o0 = jo.recursos.oro;
+  e.hp = 1; FM.aplicar(est, { t: "atacar", uid: g.uid, x: e.x, y: e.y });
+  ok(!est.unidades[e.uid] && jo.recursos.comida === c0 + 2 && jo.recursos.oro === o0 + 1, "matar no da el botín (+2 comida, +1 oro)");
+  // Trofeos de caza: una criatura salvaje cura y da +1 de vida para toda la guerra
+  const g2 = poner(est, 0, "guerrero", x, y + 2), bestia = poner(est, -1, "salvaje", x + 1, y + 2, { errante: true });
+  bestia.hp = 1; const hpMax0 = FM.ef(est, g2).hpMax; g2.hp = 3;
+  FM.aplicar(est, { t: "atacar", uid: g2.uid, x: bestia.x, y: bestia.y });
+  ok(g2.trofeos === 1 && FM.ef(est, g2).hpMax === hpMax0 + 1 && g2.hp >= 6, "el trofeo de caza no cura o no da +1 de vida");
+  // Saqueo: al tomar una ciudad de otro bando se lleva el 20 % (hasta 30)
+  jc.recursos.comida = 100; jc.recursos.oro = 50; jc.recursos.materiales = 10;
+  const ciu = FM.ciudadesDe(est, 1)[0], oA = jo.recursos.oro;
+  FM.capturarCiudad(est, g, ciu);
+  ok(jc.recursos.comida === 80 && jc.recursos.oro === 40 && jo.recursos.oro === oA + 10, "el saqueo no se lleva el 20 %");
+}
+{
+  // Marcha de la horda: +1 de movimiento a quien empieza junto a otra tropa propia (en otra guerra: la de arriba acabó al tomar la capital)
+  const est = guerra(["okran", "caballeros-del-reino"]);
+  const jo = est.jugadores[0], x = 14, y = 14;
+  for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) llano(est, x + dx, y + dy);
+  limpiar(est); est.activo = 0;
+  const h1 = poner(est, 0, "guerrero", x, y), h2 = poner(est, 0, "guerrero", x + 1, y), solo = poner(est, 0, "guerrero", x - 3, y - 3);
+  FM.aplicar(est, { t: "terminar" }); FM.aplicar(est, { t: "terminar" });
+  ok(est.activo === 0 && h1.pm === FM.ef(est, h1).mov + 1 && h2.pm === FM.ef(est, h2).mov + 1 && solo.pm === FM.ef(est, solo).mov, "la marcha de la horda no da +1 de movimiento solo a los que van juntos");
+  // Campamento: lo levanta el chamán, cura, entrena básicas una vez por turno y un enemigo lo arrasa
+  limpiar(est); est.activo = 0; rico(jo);
+  const ch = poner(est, 0, "chaman", x, y);
+  ok(!!FM.razonCampamento(est, 0, poner(est, 0, "guerrero", x - 2, y), x - 2, y + 1), "un guerrero puede levantar campamentos");
+  const rcp = FM.aplicar(est, { t: "habilidad", id: "campamento", uid: ch.uid, x: x + 1, y });
+  ok(rcp.ok, `el chamán no levanta el campamento: ${rcp.error || ""}`);
+  const cp = (est.campamentos || [])[0];
+  ok(cp && cp.x === x + 1, "no queda el campamento");
+  const r1 = FM.aplicar(est, { t: "reclutar", campamento: cp.id, clase: "guerrero" });
+  ok(r1.ok && FM.unidadEn(est, cp.x, cp.y), `no se entrena en el campamento: ${r1.error || ""}`);
+  ok(!FM.aplicar(est, { t: "reclutar", campamento: cp.id, clase: "guerrero" }).ok, "el campamento entrena dos veces en un turno");
+  ok(!FM.aplicar(est, { t: "reclutar", campamento: cp.id, clase: "berserker" }).ok, "en el campamento se entrena algo que no es básico");
+  const herido = FM.unidadEn(est, cp.x, cp.y); herido.hp = 2;
+  FM.aplicar(est, { t: "terminar" }); FM.aplicar(est, { t: "terminar" });
+  ok(herido.hp >= 5, `el campamento no cura (vida ${herido.hp})`);
+  est.activo = 1;
+  delete est.unidades[herido.uid];
+  const enemigo = poner(est, 1, "jinete", cp.x + 2, cp.y); enemigo.pm = 5;
+  FM.aplicar(est, { t: "mover", uid: enemigo.uid, x: cp.x, y: cp.y });
+  ok(!(est.campamentos || []).length, "un enemigo que pisa el campamento no lo arrasa");
+}
+
 console.log(`${hechas} comprobaciones, ${fallos} fallos`);
 process.exit(fallos ? 1 : 0);

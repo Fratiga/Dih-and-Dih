@@ -746,6 +746,25 @@ export function pintarMuro(g: Ctx, S: number): void {
   g.beginPath(); g.moveTo(-5, -20); g.lineTo(0, -6); g.lineTo(5, -20); g.moveTo(-6, -12); g.lineTo(6, -12); g.stroke();
   g.restore();
 }
+/* Campamento nómada (Okran): una tienda de pieles con el color del bando, una hoguera y un estandarte */
+export function pintarCampamento(g: Ctx, S: number, col: string): void {
+  g.save(); g.translate(S / 2, S * 0.82); g.scale(S / 40, S / 40);
+  g.fillStyle = "rgba(0,0,0,.28)"; g.beginPath(); g.ellipse(0, 1, 15, 3.4, 0, 0, 7); g.fill();
+  // la tienda
+  poli(g, "#6b4a2e", [[-13, 0], [-2, -22], [9, 0]]);
+  poli(g, "#8a6240", [[-2, -22], [9, 0], [13, 0], [2, -20]]);
+  poli(g, "#2a1a0e", [[-4.4, 0], [-2, -9], [0.4, 0]]);
+  g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.moveTo(-9.6, -6); g.lineTo(5.4, -6); g.stroke();
+  g.strokeStyle = "#3a2614"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-2, -22); g.lineTo(-4, -26); g.moveTo(-2, -22); g.lineTo(0, -26.4); g.stroke();
+  // hoguera
+  poli(g, "#3a2614", [[11, 1], [19, -1], [19, 1], [11, 3]]);
+  poli(g, "#ffb04a", [[13, -0.4], [15, -7], [17, -0.4]]);
+  poli(g, "#ffe07a", [[14.2, -0.6], [15, -4], [15.8, -0.6]]);
+  // estandarte
+  g.strokeStyle = "#2a2018"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-15, 0); g.lineTo(-15, -24); g.stroke();
+  poli(g, col, [[-15, -24], [-7, -22], [-15, -18]]);
+  g.restore();
+}
 /* Marca de terreno consagrado: un sol pequeño en el suelo */
 export function pintarGlifo(g: Ctx, S: number): void {
   g.save(); g.translate(S / 2, S / 2); g.scale(S / 40, S / 40);

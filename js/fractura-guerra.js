@@ -1189,6 +1189,13 @@
       for (let y = u.y - 1; y <= u.y + 1; y++) for (let x = u.x - 1; x <= u.x + 1; x++) { const c = FM.casilla(est, x, y); if (c && c.t === "bosque" && !c.est && !FM.unidadEn(est, x, y)) cas.add(`${x},${y}`); }
       if (cas.size) out.push({ ic: "⚒", nombre: "Derribar el bosque", texto: "Tira los árboles de una casilla de al lado y la deja en llanura. Gasta su turno.", razon: ya, casillas: cas, acc: { id: "talar" } });
     }
+    if (fac.mods.campamento && fac.mods.campamento === u.clase) {
+      const cas = new Set();
+      for (let y = u.y - 1; y <= u.y + 1; y++) for (let x = u.x - 1; x <= u.x + 1; x++) if (!FM.razonCampamento(est, H, u, x, y)) cas.add(`${x},${y}`);
+      const r0 = FM.razonCampamento(est, H, u);
+      out.push({ ic: "⛺", nombre: "Levantar campamento", texto: `Monta un campamento en una casilla de al lado, lejos de enemigos y de ciudades enemigas. Dura ${FM.DURA_CAMPAMENTO} turnos: cura 3 a tus tropas que estén en él o a su lado y entrena una tropa básica por turno. Si un enemigo lo pisa, lo arrasa. Puedes tener ${FM.MAX_CAMPAMENTOS} a la vez.`,
+        coste: FM.COSTE_CAMPAMENTO, razon: ya || r0 || (cas.size ? null : "No hay una casilla buena a su lado: libre, de tierra y lejos de enemigos."), casillas: cas, acc: { id: "campamento" } });
+    }
     if (u.clase === "sanador" && fac.mods.consagra) out.push({ ic: "☀", nombre: "Consagrar", texto: "Consagra esta casilla y las de alrededor: tus tropas ganan +1 de defensa y se curan 1 más en ellas.", razon: ya || (FM.consagradaPara(est, H, u.x, u.y) && [[1, 0], [-1, 0], [0, 1], [0, -1]].every(([dx, dy]) => !FM.casilla(est, u.x + dx, u.y + dy) || FM.consagradaPara(est, H, u.x + dx, u.y + dy)) ? "Este terreno ya está consagrado." : null), acc: { id: "consagrar" } });
     // Tropas que se quedaron sin bandera al caer su ejército: se pueden acoger
     junto(u.x, u.y).filter(w => w.dueno === -1 && w.sinBandera && w !== u).slice(0, 2).forEach(w => {
@@ -1273,6 +1280,7 @@
     if (est.hayNoche && u.dueno >= 0 && FACCIONES[est.jugadores[u.dueno].faccion].mods.noche && u.dueno === humano()) { const rivs = FM.rivalesDe(est, u.dueno); out.push(rivs.length && rivs.every(q => FM.oculta(est, u, q)) ? ["Oculta en la noche", "cian"] : ["A la vista", ""]); }
     (u.rasgos || []).forEach(k => out.push([NOMBRE_RASGO[k], "cian"]));
     if (u.dueno >= 0 && FM.consagradaPara(est, u.dueno, u.x, u.y)) out.push(["En suelo consagrado", "oro"]);
+    if (u.trofeos) out.push([`Trofeos de caza: +${Math.min(5, u.trofeos)} de vida`, "oro"]);
     if (u.clase === "berserker") { const m = FM.minoriaBerserker(est, u); if (m) out.push([`En minoría: +${m} ataque, +${m} defensa`, "rojo"]); }
     if (u.orden && ORD[u.orden.tipo]) {
       const o = u.orden, w = o.uid && est.unidades[o.uid], ci = o.ciudad && est.ciudades[o.ciudad];
@@ -1340,6 +1348,17 @@
     pintarFiguras(c);
   }
 
+  /* Un campamento (Okran): de quién es, cuánto le queda y, si es tuyo y es tu turno, qué puede entrenar */
+  function tarjetaCampamento(x, y) {
+    const cp = FM.campamentoEn(est, x, y);
+    if (!cp) return "";
+    const H = humano(), mio = cp.dueno === H, jug = est.jugadores[H], quedan = cp.hasta - est.turno + 1;
+    const botones = mio && soyYo() ? FM.CLASES_CAMPAMENTO.filter(cl => FM.clasesDisponibles(est, H).includes(cl)).map(cl => {
+      const razon = FM.razonReclutarCampamento(est, H, cp.id, cl), tr = D.tropa(jug.faccion, cl);
+      return `<button type="button" class="fr-accion${razon ? " no" : ""}" data-recluta-camp="${cl}" data-camp="${cp.id}" title="${esc(tr.texto)}${razon ? ` — ${esc(razon)}` : ""}"><i>⚔</i><span>Entrenar ${esc(tr.nombre)}</span>${costeHtml(FM.costeReclutar(est, H, cl, null), jug)}${razon ? `<small>${esc(razon)}</small>` : ""}</button>`;
+    }).join("") : "";
+    return `<p class="fr-sel-texto"><strong>⛺ Campamento${mio ? " tuyo" : ` de ${esc(FACCIONES[est.jugadores[cp.dueno].faccion].corto)}`}.</strong> ${quedan <= 1 ? "Se desmonta al acabar este turno" : `Quedan ${quedan} turnos`}. Cura 3 a sus tropas en él o a su lado.${mio ? " Entrena una tropa básica por turno." : " Si una tropa tuya lo pisa, lo arrasa."}</p>${botones ? `<div class="fr-sel-acciones">${botones}</div>` : ""}`;
+  }
   function pintarCasilla(c, x, y) {
     const ca = FM.casilla(est, x, y), t = D.TERRENOS[ca.t], rg = est.regiones[ca.region], H = humano();
     const dueno = rg && rg.dueno !== null ? est.jugadores[rg.dueno] : null;
@@ -1350,6 +1369,7 @@
         <div class="fr-sel-cab"><h3>${esc(t.nombre)}${ca.est ? ` · ${esc(D.ESTRUCTURAS[ca.est].nombre)}` : ""}</h3><p>${rg ? `${esc(rg.nombre)} · ${dueno ? (rg.dueno === H ? "provincia tuya" : `provincia de ${esc(FACCIONES[dueno.faccion].corto)}`) : "provincia sin dueño"} · estabilidad ${rg.estab}` : ""}</p></div>
         <div class="fr-stats"><span title="Lo que cuesta entrar">${ico("mov")}<b>${t.mov || "—"}</b></span><span title="Defensa que da a quien la ocupa">${ico("defensa")}<b>+${t.def + (ca.est ? D.ESTRUCTURAS[ca.est].def : 0)}</b></span><span title="Lo que rinde a una ciudad cercana" class="fr-coste">${rinde}</span>${FM.consagradaPara(est, H, x, y) ? `<span class="fr-stat-estado listo">Consagrada</span>` : ""}</div>
         ${que ? `<p class="fr-sel-texto">${esc(que)}</p>` : ""}${ca.est === "costura" && est.costuras[ca.costura] ? `<button type="button" class="fr-btn fr-btn-chico" data-ir-portal>Ir al otro extremo</button>` : ""}${ca.t === "agua" ? `<p class="fr-sel-texto">Agua navegable. Los barcos se mueven por ella. ${FM.puedeEmbarcar(est, H) ? "Tus tropas pueden embarcar: entrar les gasta el movimiento, y embarcadas no atacan ni tienen defensa." : "Tus tropas no pueden embarcar todavía: hace falta un Muelle en alguna de tus ciudades."}</p>` : !t.mov ? `<p class="fr-sel-texto">No se puede pisar.</p>` : ""}${ca.vado ? `<p class="fr-sel-texto">Un vado: por aquí se cruza el río a pie.</p>` : ""}
+        ${tarjetaCampamento(x, y)}
         ${ca.objetos && ca.objetos.length ? `<p class="fr-sel-texto"><strong>En el suelo:</strong> ${ca.objetos.map(id => esc((est.reliquias[id] || {}).nombre || "algo")).join(", ")}</p>` : ""}
       </div><button type="button" class="fr-sel-x" data-soltar aria-label="Soltar la selección">×</button></div>`;
   }
@@ -1496,6 +1516,12 @@
       if (PISTA_GRUPO[tipo]) { grupoPendiente = grupoPendiente === tipo ? null : tipo; aviso(grupoPendiente ? PISTA_GRUPO[tipo] : "Orden cancelada."); son("clic"); refrescar(); return; }
       us.forEach(u => { if (tipo === "quitar") delete u.orden; else u.orden = { tipo }; });
       aviso(tipo === "quitar" ? "Sin órdenes." : `${us.length} tropas: ${ORD[tipo].nombre.toLowerCase()}.`); son("clic"); refrescar(); return;
+    }
+    const rcm = t.closest("[data-recluta-camp]");
+    if (rcm) {
+      const r = aplicarYo({ t: "reclutar", campamento: Number(rcm.dataset.camp), clase: rcm.dataset.reclutaCamp });
+      if (!r.ok) { aviso(r.error, true); son("error"); } else son("recluta");
+      despuesDeAccion(); return;
     }
     const vc = t.closest("[data-ver-caido]");
     if (vc) { const a = accionesActuales[+vc.dataset.verCaido]; if (a && a.caido) abrirFichaCaido(a.caido); return; }

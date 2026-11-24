@@ -608,3 +608,12 @@ Las partidas guardadas y las mesas en curso con reglas anteriores no se cargan (
 - La música de partida de `fractura.html` suena también en la guerra (`window.MUSICA_PAGINA` en `js/musica-paginas.js`).
 - La portada enseña «Tus guerras»: la guardada en este navegador y las mesas en curso o en espera, con el ejército de cada una.
 
+
+## 18. Okran (noviembre de 2026)
+
+- Berserker: +1 de ataque y +1 de defensa por cada enemigo pegado a él de más que aliados pegados, hasta +3 (`minoriaBerserker`). Sin el +1 de la mitad de vida.
+- Botín (`mods.botin`): cada enemigo que mata da +2 comida y +1 oro (+5/+5 si era líder o héroe). Al tomar una ciudad de otro bando se lleva el 20 % de su comida, oro y materiales (hasta 30 de cada).
+- Viejas deudas (`mods.deudas`): +1 de ataque contra los ejércitos de `odia`.
+- Trofeos de caza (`mods.trofeos`): matar una criatura salvaje cura 3 y deja +1 de vida para toda la guerra (`u.trofeos`, hasta 5).
+- Marcha de la horda (`mods.horda`): +1 de movimiento a quien empieza el turno junto a otra tropa propia.
+- Campamentos (`mods.campamento: "chaman"`): el chamán levanta uno en una casilla de al lado (6 materiales y 4 comida), lejos de enemigos y ciudades enemigas; dura 6 turnos, hasta 2 a la vez. Cura 3 a las tropas propias en él o a su lado y entrena una tropa básica por turno (`reclutar` con `campamento`). Un enemigo que lo pisa lo arrasa. Están en `est.campamentos`; la IA los levanta cuando su chamán queda a 6 casillas o más de sus ciudades.

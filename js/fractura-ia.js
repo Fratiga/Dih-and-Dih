@@ -247,6 +247,12 @@
       const cl = escogerClase(est, j, c, azar);
       if (cl) FM.aplicar(est, { t: "reclutar", ciudad: c.id, clase: cl });
     });
+    // Los campamentos (Okran) también entrenan: una tropa básica cada uno
+    (est.campamentos || []).filter(cp => cp.dueno === j).forEach(cp => {
+      if (FM.cuentaTropas(est, j) >= tope) return;
+      const cl = FM.CLASES_CAMPAMENTO[Math.floor(azar() * FM.CLASES_CAMPAMENTO.length)];
+      if (!FM.razonReclutarCampamento(est, j, cp.id, cl)) FM.aplicar(est, { t: "reclutar", campamento: cp.id, clase: cl });
+    });
   }
 
   function jugarTurno(est, j, opciones) {
@@ -313,6 +319,15 @@
     orden.forEach(u => {
       if (est.ganador !== null || !est.unidades[u.uid]) return;
       // Habilidades
+      // Campamento (Okran): el chamán lo levanta cuando el frente queda lejos de las ciudades propias
+      if (FACCIONES[jug.faccion].mods.campamento === u.clase && !u.atacado && !(est.campamentos || []).some(cp => cp.dueno === j)) {
+        const propias = FM.ciudadesDe(est, j), lejos = !propias.length || Math.min(...propias.map(c => cheb(u, c))) >= 6;
+        if (lejos && !FM.razonCampamento(est, j, u)) {
+          let sitio = null;
+          for (let dy = -1; dy <= 1 && !sitio; dy++) for (let dx = -1; dx <= 1 && !sitio; dx++) if ((dx || dy) && !FM.razonCampamento(est, j, u, u.x + dx, u.y + dy)) sitio = { x: u.x + dx, y: u.y + dy };
+          if (sitio && aplicar({ t: "habilidad", id: "campamento", uid: u.uid, x: sitio.x, y: sitio.y }).ok) return;
+        }
+      }
       if (u.clase === "picaro" && !u.atacado) {
         const ciu = tregua ? null : Object.values(est.ciudades).find(c => esRival(c.dueno) && cheb(u, c) <= 1 && c.edificios.some(e => !(c.desh[e] >= est.turno)));
         if (ciu) { const ed = ciu.edificios.find(e => !(ciu.desh[e] >= est.turno)); if (aplicar({ t: "habilidad", id: "sabotear", uid: u.uid, x: ciu.x, y: ciu.y, edificio: ed }).ok) return; }

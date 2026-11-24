@@ -190,6 +190,7 @@
     const H = heroeDe(u);
     let hpMax = cl.hp, atq = cl.atq, def = cl.def, mov = cl.mov, alc = cl.alc, vision = 2 + (cl.vision || 0), cura = 0;
     if (H) { hpMax = H.hp; atq = H.atq; def = H.def; mov = H.mov; alc = H.alc; vision = 3; }
+    hpMax += Math.min(5, u.trofeos || 0);   // trofeos de caza (Okran)
     (u.rasgos || []).forEach(k => { if (k === "hp") hpMax += 2; else if (k === "alc") alc += 1; else if (k === "atq") atq += 1; else if (k === "def") def += 1; else if (k === "mov") mov += 1; });
     if (s) {
       const rg = S.rangoDe(s.victorias + (u.vicG || 0));
@@ -294,6 +295,34 @@
 
   function tieneEdificio(est, j, id) { return ciudadesDe(est, j).some(c => c.edificios.includes(id) && !(c.desh[id] >= est.turno)); }
 
+  /* --- Campamentos nómadas (Okran) --- */
+  const COSTE_CAMPAMENTO = { materiales: 6, comida: 4 }, MAX_CAMPAMENTOS = 2, DURA_CAMPAMENTO = 6;
+  const CLASES_CAMPAMENTO = ["guerrero", "cazador"];
+  const campamentoEn = (est, x, y) => (est.campamentos || []).find(cp => cp.x === x && cp.y === y) || null;
+  function razonCampamento(est, j, u, x, y) {
+    const jug = est.jugadores[j], fac = FACCIONES[jug.faccion];
+    if (!u || u.dueno !== j || fac.mods.campamento !== u.clase) return "Esa tropa no levanta campamentos.";
+    if (u.atacado) return "Ya actuó este turno.";
+    if ((est.campamentos || []).filter(cp => cp.dueno === j).length >= MAX_CAMPAMENTOS) return `Ya tienes ${MAX_CAMPAMENTOS} campamentos.`;
+    if (!puedePagar(jug, COSTE_CAMPAMENTO)) return "No te alcanzan los recursos.";
+    if (x === undefined) return null;
+    const c = casilla(est, x, y);
+    if (!c || dist(u, { x, y }) > 1 || TERRENOS[c.t].mov === 0 || c.est || unidadEn(est, x, y) || campamentoEn(est, x, y)) return "Elige una casilla libre de tierra a su lado.";
+    if (Object.values(est.unidades).some(w => hostil(est, w.dueno, j) && w.dueno >= 0 && dist(w, { x, y }) <= 2)) return "Hay enemigos demasiado cerca.";
+    if (Object.values(est.ciudades).some(ci => ci.dueno !== null && hostil(est, ci.dueno, j) && dist(ci, { x, y }) <= 2)) return "Está demasiado cerca de una ciudad enemiga.";
+    return null;
+  }
+  function razonReclutarCampamento(est, j, id, clase) {
+    const cp = (est.campamentos || []).find(c => c.id === id && c.dueno === j);
+    if (!cp) return "Ese campamento ya no existe.";
+    if (est.activo !== j) return "No es tu turno.";
+    if (cp.reclutado) return "Ese campamento ya entrenó una tropa este turno.";
+    if (!CLASES_CAMPAMENTO.includes(clase) || !clasesDisponibles(est, j).includes(clase)) return "En un campamento solo se entrenan las tropas básicas.";
+    if (!hayHueco(est, j)) return "Has llegado al límite de tropas.";
+    if (!puedePagar(est.jugadores[j], costeReclutar(est, j, clase, null))) return "No te alcanzan los recursos.";
+    if (!unidadEn(est, cp.x, cp.y) && TERRENOS[est.casillas[cp.y][cp.x].t].mov > 0) return null;
+    return casillaLibreCerca(est, cp, j) ? null : "No hay sitio libre junto al campamento.";
+  }
   function costeReclutar(est, j, clase, ciudad) {
     const jug = est.jugadores[j], fac = FACCIONES[jug.faccion];
     const c = Object.assign({}, CLASES[clase].coste);
@@ -766,6 +795,13 @@
       if (u.efectos.clavado) { u.pm = 0; delete u.efectos.clavado; }
       if (u.efectos.traba >= est.turno) u.pm = 0;
     });
+    if (FACCIONES[jug.faccion].mods.horda) {
+      const propias = unidadesDe(est, j).filter(u => !esBarco(u));
+      propias.forEach(u => { if (u.pm > 0 && propias.some(w => w !== u && dist(w, u) <= 1)) u.pm += 1; });
+    }
+    // Campamentos (Okran): los que caducan se desmontan; los que quedan vuelven a poder entrenar
+    est.campamentos = (est.campamentos || []).filter(cp => cp.hasta >= est.turno);
+    est.campamentos.filter(cp => cp.dueno === j).forEach(cp => { cp.reclutado = false; });
     // El fuego quema a quien empieza su turno encima
     est.fuego = (est.fuego || []).filter(f => f.hasta >= est.turno);
     est.desafios = (est.desafios || []).filter(d => d.hasta >= est.turno && est.unidades[d.a] && est.unidades[d.b]);
@@ -775,6 +811,7 @@
       const e = ef(est, u);
       let cura = 0;
       if (u.descanso) cura += 2;
+      if ((est.campamentos || []).some(cp => cp.dueno === j && dist(u, cp) <= 1)) cura += 3;   // campamento (Okran)
       const c = celdasDe(u).map(q => ciudadEn(est, q.x, q.y)).find(ci => ci && ci.dueno === j) || null;
       const fortP = celdasDe(u).find(q => casilla(est, q.x, q.y).est === "fortaleza" && est.fortalezasDueno[est.fortalezas.findIndex(p => p.x === q.x && p.y === q.y)] === j);
       if (c && c.dueno === j) { cura += 3 + ((jug.sabEf || VACIO).curaCiudad || 0); if (c.edificios.includes("fortaleza")) cura += 2; if (c.obras && c.obras.fiesta >= est.turno) cura += 2; }
@@ -990,6 +1027,8 @@
     const tiposD = tiposDe(d), seA = sab(est, a.dueno), Hh = a.heroe ? HEROES[a.heroe].ef : null;
     tiposD.forEach(tp => { A += ((clA.contra || {})[tp] || 0) + ((seA.contra || {})[tp] || 0) + ((Hh && Hh.contraHeroe && Hh.contraHeroe[tp]) || 0); });
     if ((seA.atqCiudad || clA.atqCiudad) && enCiudadOFortaleza(est, d)) A += (seA.atqCiudad || 0) + (clA.atqCiudad || 0);
+    // Viejas deudas (Okran): más ataque contra los ejércitos que odia
+    if (facA && facA.mods.deudas && d.dueno >= 0 && Array.isArray(facA.odia) && facA.odia.includes(est.jugadores[d.dueno].faccion)) A += facA.mods.deudas;
     // La magia quema a los no muertos: los magos pegan 2 más a los muertos vivientes y a los levantados
     if ((clA.tipo || []).includes("magia") && (CLASES[d.clase].muertoViviente || d.reanimado || (d.dueno >= 0 && facDe(est, d.dueno).mods.sinComida) || (d.heroe && HEROES[d.heroe].muertoViviente))) A += 2;
     if (Hh && Hh.atqSolo && solo) A += Hh.atqSolo;
@@ -1142,6 +1181,19 @@
       const jp0 = est.jugadores[por.dueno], facP0 = FACCIONES[jp0.faccion], hp0 = heroeDe(por);
       if (dueno >= 0 && hostil(est, dueno, por.dueno)) { est.stats.muertes[por.dueno]++; jp0.cuenta.racha++; if (estabaSolo) jp0.cuenta.duelos++; }
       if (dueno === -1) jp0.cuenta.salvajes++;
+      // Botín (Okran): cada enemigo que cae da comida y oro; más si era un líder o un héroe
+      if (facP0.mods.botin && dueno >= 0 && hostil(est, dueno, por.dueno)) {
+        const gordo = u.lider || u.heroe, c = gordo ? 5 : 2, o = gordo ? 5 : 1;
+        sumar(jp0, "comida", c); sumar(jp0, "oro", o);
+        est.ev.push({ k: "mejora", uid: por.uid, x: por.x, y: por.y, texto: `Botín: +${c} comida, +${o} oro` });
+      }
+      // Trofeos de caza (Okran): cada criatura salvaje cura y deja +1 de vida para toda la guerra (hasta 5)
+      if (facP0.mods.trofeos && dueno === -1 && (u.errante || u.guardia || u.clase === "salvaje") && (por.trofeos || 0) < 5) {
+        por.trofeos = (por.trofeos || 0) + 1;
+        por.hp = Math.min(ef(est, por).hpMax, por.hp + 3);
+        reg(est, `${nombreUnidad(por)} se cobra un trofeo de caza.`, "combate");
+        est.ev.push({ k: "mejora", uid: por.uid, x: por.x, y: por.y, texto: "Trofeo de caza: +1 de vida" });
+      }
       if (hp0 && hp0.ef.curaAlMatar) por.hp = Math.min(ef(est, por).hpMax, por.hp + hp0.ef.curaAlMatar);
       if (CLASES[por.clase].curaAlMatar) por.hp = Math.min(ef(est, por).hpMax, por.hp + CLASES[por.clase].curaAlMatar);
       // Devorar y adaptar (Mravec)
@@ -1381,6 +1433,12 @@
 
   function entrarCasilla(est, u, x, y) {
     const c = est.casillas[y][x];
+    const cpPisado = campamentoEn(est, x, y);
+    if (cpPisado && u.dueno >= 0 && hostil(est, u.dueno, cpPisado.dueno)) {
+      est.campamentos.splice(est.campamentos.indexOf(cpPisado), 1);
+      reg(est, `${nombreUnidad(u)} arrasa un campamento de ${est.jugadores[cpPisado.dueno].nombre}.`, "conquista");
+      est.ev.push({ k: "explosion", x, y });
+    }
     // Reliquias en el suelo
     if (c.objetos.length && u.s) {
       c.objetos.splice(0).forEach(id => {
@@ -1437,6 +1495,12 @@
     delete ciudad.asedio;
     usar(u, "ciudades");
     jug.renombre = (jug.renombre || 0) + (ciudad.capital ? 8 : 4);
+    // Botín (Okran): al tomar una ciudad de otro bando se lleva parte de lo que ese bando guarda
+    if (fac.mods.botin && antes !== null && antes >= 0 && est.jugadores[antes]) {
+      const v = est.jugadores[antes], lleva = [];
+      ["comida", "oro", "materiales"].forEach(k => { const n = Math.min(30, Math.floor((v.recursos[k] || 0) * 0.2)); if (n > 0) { v.recursos[k] -= n; sumar(jug, k, n); lleva.push(`${n} ${D.RECURSO_NOMBRE[k].toLowerCase()}`); } });
+      if (lleva.length) { reg(est, `${jug.nombre} saquea ${ciudad.nombre}: se lleva ${lleva.join(", ")}.`, "conquista"); est.ev.push({ k: "mejora", uid: u.uid, x, y, texto: `Saqueo: ${lleva.join(", ")}` }); }
+    }
       ciudad.dueno = u.dueno;
       Object.keys(ciudad.desh).forEach(k => delete ciudad.desh[k]);
       ciudad.edificios = ciudad.edificios.filter(id => !EDIFICIOS[id].solo || EDIFICIOS[id].solo === jug.faccion);
@@ -1784,6 +1848,23 @@
         return { ok: true, ev: est.ev };
       }
       case "reclutar": {
+        if (acc.campamento !== undefined) {
+          const rc = razonReclutarCampamento(est, j, acc.campamento, acc.clase);
+          if (rc) return error(rc);
+          const cp = est.campamentos.find(c => c.id === acc.campamento);
+          pagar(jug, costeReclutar(est, j, acc.clase, null));
+          const p = !unidadEn(est, cp.x, cp.y) && TERRENOS[est.casillas[cp.y][cp.x].t].mov > 0 ? { x: cp.x, y: cp.y } : casillaLibreCerca(est, cp, j);
+          const facC = FACCIONES[jug.faccion], rr = { s: est.rs };
+          const s = S.crearSoldado(rr, { clase: acc.clase, cultura: facC.cultura, origen: elegirDe(est, facC.origenes), anio: est.anio });
+          est.rs = rr.s;
+          const u = nuevaUnidad(est, j, s.clase, p.x, p.y, s, { nuevo: true });
+          u.pm = 0; u.atacado = true;
+          cp.reclutado = true;
+          est.ev.push({ k: "nuevo", uid: u.uid, x: u.x, y: u.y });
+          reg(est, `${jug.nombre} recluta en un campamento a ${S.nombreCompleto(s)}, ${D.tropa(jug.faccion, s.clase).nombre.toLowerCase()}.`, "recluta");
+          actualizarVision(est, j);
+          return { ok: true, ev: est.ev, uid: u.uid };
+        }
         const razon = razonNoReclutar(est, j, acc.ciudad, acc.clase);
         if (razon) return error(razon);
         const ciudad = est.ciudades[acc.ciudad];
@@ -1996,6 +2077,18 @@
       c.t = acc.a;
       u.atacado = true; u.pm = 0; u.enfriar = 2;
       reg(est, `${nombreUnidad(u)} cambia el terreno a ${TERRENOS[acc.a].nombre.toLowerCase()}.`, "magia");
+      return { ok: true, ev: est.ev };
+    }
+    if (acc.id === "campamento") {
+      const r = razonCampamento(est, j, u, acc.x, acc.y);
+      if (r) return error(r);
+      pagar(jug, COSTE_CAMPAMENTO);
+      est.campamentos = est.campamentos || [];
+      est.campamentoN = (est.campamentoN || 0) + 1;
+      est.campamentos.push({ id: est.campamentoN, x: acc.x, y: acc.y, dueno: j, hasta: est.turno + DURA_CAMPAMENTO - 1, reclutado: false });
+      u.atacado = true; u.pm = 0;
+      reg(est, `${nombreUnidad(u)} levanta un campamento.`, "obra");
+      est.ev.push({ k: "aura", x: acc.x, y: acc.y, dueno: j });
       return { ok: true, ev: est.ev };
     }
     if (acc.id === "talar") {
@@ -2453,7 +2546,7 @@
   }
 
   raiz.FracturaMotor = {
-    dist, minoriaBerserker,
+    dist, minoriaBerserker, razonCampamento, razonReclutarCampamento, campamentoEn, COSTE_CAMPAMENTO, CLASES_CAMPAMENTO, MAX_CAMPAMENTOS, DURA_CAMPAMENTO,
     MAX_UNIDADES, rn, ri, clave, dentro, casilla, unidadEn, unidadesDe, ciudadEn, ciudadesDe, esMonstruo, nombreUnidad, regionDeCasilla, reg, crono,
     ef, auras, calcularDano, defensaDelTerreno, alcanzables, camino, aplicar, crearGuerra, puntuacion, ingresoDe, mantenimiento,
     costeReclutar, clasesDisponibles, razonNoReclutar, razonNoConstruir, razonNoInvestigar, costeInvestigar, puedePagar, tieneEdificio, vecinosEnemigos, vecinosAliados,
