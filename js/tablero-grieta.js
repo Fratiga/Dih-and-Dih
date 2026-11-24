@@ -503,13 +503,18 @@
   }
   async function anomaliaMovimiento(ids, tipo, motivo) {
     const cx = contexto();
-    if (tipo === "intercambio" && !motivo && ids && ids.length === 2) {
-      const a = TB.L.objeto(ids[0]), b = TB.L.objeto(ids[1]);
-      if (a && b && esToken(a) && esToken(b)) {
-        const pa = buscarValido(a, b.x, b.y, Object.assign({}, cx, { ignorar: new Set([b.id]) }), 3) || encajar(a, b.x, b.y, cx.pag);
-        const pb = buscarValido(b, a.x, a.y, Object.assign({}, cx, { ignorar: new Set([a.id]) }), 3) || encajar(b, a.x, a.y, cx.pag);
-        const ops = await saltar([{ id: a.id, x: pa.x, y: pa.y }, { id: b.id, x: pb.x, y: pb.y }]);
-        return ops ? { clase: "mov", titulo: "Intercambio", detalle: `${nombreDe(a)} y ${nombreDe(b)} cambian de sitio`, ops } : null;
+    if (tipo === "intercambio" && !motivo && ids && ids.length >= 2) {
+      const fichas = ids.map(id => TB.L.objeto(id)).filter(esToken);
+      if (fichas.length >= 2) {
+        const todos = new Set(fichas.map(f => f.id));
+        const cambios = fichas.map((f, i) => {
+          const sig = fichas[(i + 1) % fichas.length];
+          const p = buscarValido(f, sig.x, sig.y, Object.assign({}, cx, { ignorar: todos }), 3) || encajar(f, sig.x, sig.y, cx.pag);
+          return { id: f.id, x: p.x, y: p.y };
+        });
+        const ops = await saltar(cambios);
+        const det = fichas.length === 2 ? `${nombreDe(fichas[0])} y ${nombreDe(fichas[1])} cambian de sitio` : fichas.map((f, i) => `${nombreDe(f)} → sitio de ${nombreDe(fichas[(i + 1) % fichas.length])}`).join("\n");
+        return ops ? { clase: "mov", titulo: "Intercambio", detalle: det, ops } : null;
       }
     }
     const todos = [], lineas = [];
@@ -893,7 +898,7 @@
   const corto = { fue: "FUE", des: "DES", con: "CON", int: "INT", sab: "SAB", car: "CAR" };
   async function anomaliaStats(nivel, opciones = {}) {
     const todos = await participantes();
-    if (todos.length < 2) return null;
+    if (todos.length < 2 && !(opciones.ids && opciones.ids.length >= 2)) return null;
     const I = cfg().intensidad, ops = [], lineas = [];
     let elegidos = barajar(todos.slice()), dirigido = false;
     if (opciones.ids && opciones.ids.length >= 2) {
@@ -904,6 +909,10 @@
         if (p && !sel.includes(p)) sel.push(p);
       });
       if (sel.length >= 2) { elegidos = sel; dirigido = true; }
+      else {
+        const sin = opciones.ids.map(id => TB.L.objeto(id)).filter(o => o && !todos.some(q => q.objeto === o.id || (q.tipo === "ficha" && q.id === TB.fichaDeObjeto(o)))).map(nombreDe);
+        return { error: `No se puede: ${sin.join(", ") || "las fichas seleccionadas"} no ${sin.length === 1 ? "tiene" : "tienen"} estadísticas. Hace falta una hoja del compendio enlazada, el nombre exacto de unas estadísticas o estadísticas propias (y estar en la capa de fichas).` };
+      }
     }
     const fija = opciones.atributo || (cfg().atributoN1 !== "azar" ? cfg().atributoN1 : null);
     if (nivel === 1) {
@@ -1071,10 +1080,11 @@
         if (!a) continue;
         const sel = a.grupo === "mov" ? (ids && ids.length ? ids : fichasAlAzar()) : ids;
         const r = await a.hacer(sel, modo);
+        if (r && r.error) { avisoPanel(r.error); aviso(r.error, true); continue; }
         if (r) partes.push(r);
         if (claves.length > 1) await esperar(220);
       }
-      if (!partes.length) { if (TB.esGM() && ventanas.has("grieta")) avisoPanel("No hubo forma de hacerlo (no había destino válido o faltaban participantes)."); return; }
+      if (!partes.length) { if (TB.esGM() && ventanas.has("grieta") && !avisoTexto) avisoPanel("No hubo forma de hacerlo (no había destino válido o faltaban participantes)."); return; }
       apuntar(partes.length === 1 ? partes[0] : { clase: "combinada", titulo: "Anomalías combinadas", detalle: partes.map(p => "• " + p.titulo + (p.detalle ? "\n  " + p.detalle.split("\n").join("\n  ") : "")).join("\n"), ops: [].concat(...partes.map(p => p.ops)) });
     });
   }
@@ -1176,7 +1186,7 @@
   /* ============================================================ panel del DJ */
   let avisoTexto = "", avisoReloj = null;
   function avisoPanel(t) { avisoTexto = t; clearTimeout(avisoReloj); avisoReloj = setTimeout(() => { avisoTexto = ""; pintarPanel(); }, 5000); pintarPanel(); }
-  const GRUPOS = [["mov", "Movimiento", "A las fichas seleccionadas; si no hay ninguna, a unas al azar. Intercambio con dos fichas seleccionadas las cambia de sitio entre ellas."], ["visual", "Mapa · solo visual", "Un instante en todas las pantallas. No cambia nada."],
+  const GRUPOS = [["mov", "Movimiento", "A las fichas seleccionadas; si no hay ninguna, a unas al azar. Intercambio con dos o más fichas seleccionadas las cambia de sitio entre ellas (con tres o más, en rueda)."], ["visual", "Mapa · solo visual", "Un instante en todas las pantallas. No cambia nada."],
     ["real", "Mapa · real", "Cambia coordenadas de verdad. Recomponer lo devuelve a como estaba."], ["stats", "Estadísticas", "Con los datos reales de las fichas y de los enemigos de la página. Con dos o más fichas seleccionadas, el intercambio es entre ellas."]];
   function abrirPanel() {
     if (!TB.esGM()) return;
