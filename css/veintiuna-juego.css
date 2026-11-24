@@ -685,3 +685,5 @@ body.vv-ocupado .vv-boton, body.vv-ocupado .vj-campana { opacity: .6; pointer-ev
 .vj[data-forma="alta"] .vj-campana-dib { width: calc(112 * var(--u)); }
 .vj[data-forma="alta"] .vv-practica { order: 1; flex: 1; }
 .vj[data-forma="alta"] .vv-boton { min-width: calc(230 * var(--u)); min-height: calc(90 * var(--u)); }
+/* en el tablón, el sello «Cumplido» ya lo dice: el texto «Reclamado» sobra */
+.vv-logro.reclamado .vv-logro-estado { visibility: hidden; }

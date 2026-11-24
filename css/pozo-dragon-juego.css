@@ -1,0 +1,222 @@
+/* =============================================================================
+   EL POZO DEL DRAGÓN: la presentación de juego (pozo-dragon.html)
+   Se carga después de pozo-dragon.css y pozo-dragon-escena.css y cambia cómo se ve todo sin tocar lo que hace.
+
+   Dirección artística: «la guarida». Estás en el borde del tesoro de un dragón al que solo se le ven los ojos.
+   Es lo contrario de Las Veintiuna Velas: allí hay una anfitriona, madera, latón y cera; aquí hay una bestia, roca, oro y brasas.
+   - Materiales: piedra tallada (losas con las esquinas picadas, letras grabadas), oro (lo que vale dinero), hueso (lo que se lee)
+     y brasa (el riesgo). Nada de tarjetas con borde: las losas se recortan con esquinas irregulares.
+   - Composición: los ojos arriba, en la oscuridad; el altar de piedra en el centro, donde caen los dados; el tesoro brillando
+     al fondo. En el vestíbulo, el duelo y el pozo compartido son dos túneles a los lados del altar.
+   - Paleta: roca (#1c0f12, #26151a), piedra (#2a1a1e, #3a2629), oro (#c9a44a, #8a6420, #f0d68a), hueso (#e8dcc0),
+     brasa (#c2542a) y sangre seca (#8c2f2f). Colores planos en todo lo que se pulsa; la luz (el resplandor del oro) solo en el mundo.
+   - Botones: losas planas sin sombras ni brillos (la prueba lo vigila). El relieve sale del recorte de las esquinas y de un
+     borde inferior más oscuro, como piedra tallada.
+   - Movimiento: lo que ya había (dados que ruedan, ojos que miran y parpadean, oro que cae o que el dragón devora) más el
+     paralaje de la cueva y las losas que entran desde abajo. Con «reducir movimiento», quieto.
+============================================================================= */
+body.pzj {
+  --roca: #1c0f12; --roca-2: #26151a; --piedra: #2a1a1e; --piedra-2: #3a2629; --piedra-3: #4a3034;
+  --oro: #c9a44a; --oro-2: #8a6420; --oro-claro: #f0d68a; --hueso: #e8dcc0; --brasa: #c2542a; --sangre: #8c2f2f;
+  --px: 0; --py: 0;
+  --tallado: polygon(14px 0, calc(100% - 9px) 0, 100% 11px, 100% calc(100% - 7px), calc(100% - 15px) 100%, 8px 100%, 0 calc(100% - 13px), 0 9px);
+  --tallado-chico: polygon(7px 0, calc(100% - 5px) 0, 100% 6px, 100% calc(100% - 4px), calc(100% - 8px) 100%, 4px 100%, 0 calc(100% - 7px), 0 5px);
+  background: #0d0607;
+}
+.pzj .mj-barra { position: fixed; top: 0; left: 0; right: 0; z-index: 40; background: transparent; border: 0; pointer-events: none; }
+.pzj .mj-barra > * { pointer-events: auto; }
+.pzj .mj-volver { color: var(--hueso); text-shadow: 0 1px 0 #000; }
+
+/* ------------------------------------------------------------------ la cueva */
+.pzj-guarida { position: fixed; inset: -24px; z-index: 0; pointer-events: none; }
+.pzj-cueva-svg { display: block; width: 100%; height: 100%; }
+.pzj-capa-fondo { transform: translate(calc(var(--px) * -10px), calc(var(--py) * -6px)); transition: transform .7s cubic-bezier(.2, .7, .2, 1); }
+.pzj-capa-frente { transform: translate(calc(var(--px) * 12px), calc(var(--py) * 4px)); transition: transform .7s cubic-bezier(.2, .7, .2, 1); }
+.pzj-oro-luz { animation: pzj-respira-oro 6s ease-in-out infinite; }
+.pzj .pz-escena { position: relative; z-index: 1; background: transparent; min-height: 100vh; padding-top: 44px; }
+.pzj .pz-escena::before, .pzj .pz-escena::after { display: none; }
+.pzj .pz-fondo-dragon { display: none; }
+
+/* ------------------------------------------------------------------ la cornisa: título grabado, tu oro y los glifos del menú */
+.pzj .pz-cabecera { position: relative; z-index: 6; align-items: center; margin-bottom: 8px; }
+.pzj .pz-marca .eyebrow { color: var(--oro-2); letter-spacing: .5em; text-transform: uppercase; }
+.pzj .pz-titulo { color: var(--oro); letter-spacing: .12em; }
+.pzj .pz-herramientas { gap: 4px 6px; align-items: flex-end; }
+.pzj .pz-saldo { order: -1; margin-right: 14px; padding: 4px 16px 4px 8px; background: var(--piedra); border: 0; border-radius: 0; clip-path: var(--tallado-chico); }
+.pzj .pz-saldo-datos strong { color: var(--oro-claro); font-family: var(--font-heading); }
+.pzj-glifo { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; min-height: 0; min-width: 62px; padding: 4px 8px 6px; background: none; border: 0; color: var(--hueso); border-radius: 0; cursor: pointer; transition: color .2s, transform .2s cubic-bezier(.3, 1.4, .5, 1); }
+.pzj-glifo:hover, .pzj-glifo:focus-visible { color: var(--oro-claro); transform: translateY(-3px); background: none; border: 0; }
+.pzj-glifo-dib { display: block; width: 34px; height: 34px; }
+.pzj-glifo-dib svg { display: block; width: 100%; height: 100%; }
+.pzj-glifo-etq { font: 600 .72rem var(--font-heading); letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }
+.pzj-glifo.apagado { color: #8a7a6a; }
+.pzj-glifo[aria-pressed="true"]#pzBtnRapido { color: var(--oro-claro); }
+.pzj .pz-insignia { position: absolute; top: -2px; right: 6px; background: var(--sangre); color: var(--hueso); border: 2px solid #3a0a10; }
+.pzj-glifo { position: relative; }
+
+/* ------------------------------------------------------------------ las losas: todo lo que antes era una tarjeta */
+.pzj .pz-caja, .pzj .pz-terminos, .pzj .pz-asiento, .pzj .pz-opcion-dec, .pzj .pz-fin, .pzj .pz-panel-form, .pzj .pz-prob, .pzj .pz-dock, .pzj .pz-jugador {
+  background: var(--piedra); border: 0; border-radius: 0; clip-path: var(--tallado); box-shadow: inset 0 3px 0 #ffffff0c, inset 0 -5px 0 #00000059;
+}
+.pzj .pz-caja h3, .pzj .pz-terminos h2 { color: var(--oro); font-family: var(--font-heading); letter-spacing: .14em; text-transform: uppercase; font-size: 1rem; }
+.pzj .pz-ayuda, .pzj .pz-pozo-sub { color: #bfa9a0; }
+
+/* los botones: losas de piedra; el principal, oro; el de riesgo, brasa */
+.pzj .pz-boton { background: var(--piedra-2); color: var(--hueso); border: 0; border-bottom: 5px solid #170c0e; border-radius: 0; clip-path: var(--tallado-chico); font-family: var(--font-heading); letter-spacing: .1em; transition: transform .14s, background .2s; }
+.pzj .pz-boton:hover { background: var(--piedra-3); transform: translateY(-2px); }
+.pzj .pz-boton:active { transform: translateY(3px); border-bottom-width: 2px; }
+.pzj .pz-boton-principal { background: var(--oro); color: #1a0e08; border-bottom-color: var(--oro-2); }
+.pzj .pz-boton-principal:hover { background: var(--oro-claro); }
+.pzj .pz-boton-riesgo { background: var(--sangre); color: var(--hueso); border-bottom-color: #4a1010; }
+.pzj .pz-boton-riesgo:hover { background: #a63a34; }
+.pzj .pz-boton[aria-disabled="true"] { opacity: .45; transform: none; }
+.pzj .pz-boton kbd { background: #00000040; color: inherit; border: 1px solid currentColor; }
+.pzj .pz-boton-mini:not(.pzj-glifo) { background: transparent; color: var(--hueso); border: 1px solid #6a4a40; border-radius: 0; clip-path: var(--tallado-chico); }
+
+/* los campos: ranuras talladas en la piedra */
+.pzj .pz-campo input, .pzj .pz-campo select { background: #120709; color: var(--oro-claro); border: 0; border-bottom: 2px solid var(--oro-2); border-radius: 0; font-family: var(--font-heading); }
+.pzj .pz-campo input:focus-visible, .pzj .pz-campo select:focus-visible { border-bottom-color: var(--oro-claro); }
+
+/* ------------------------------------------------------------------ el vestíbulo: el altar en el centro, dos túneles a los lados */
+.pzj #pzLobby:not([hidden]) { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(0, 2fr) minmax(180px, 1fr); grid-template-areas: "heroe heroe heroe" "duelo pie compartido" "form form form" "reglas reglas reglas"; gap: 18px; align-items: start; }
+.pzj .pz-lobby-pie { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.pzj .pz-heroe { grid-area: heroe; background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; margin: 0; overflow: visible; }
+.pzj .pz-heroe-cuerpo { background: transparent; }
+.pzj .pz-heroe::before, .pzj .pz-heroe::after { display: none; }
+.pzj .pz-otros { display: contents; }
+.pzj .pz-panel-form { grid-area: form; }
+.pzj .pz-lobby-pie { grid-area: pie; }
+.pzj .pz-pie-reglas { grid-area: reglas; }
+.pzj .pzj-tunel[data-modo-tarjeta="duelo"] { grid-area: duelo; }
+.pzj .pzj-tunel[data-modo-tarjeta="compartido"] { grid-area: compartido; }
+/* un túnel: arco de roca, oscuro por dentro, con su emblema y su nombre grabado */
+.pzj .pzj-tunel { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 10px; min-height: 340px; padding: 70px 14px 18px; background: #070304; border: 0; border-radius: 48% 48% 0 0 / 30% 30% 0 0; box-shadow: inset 0 0 0 10px var(--roca-2), inset 0 0 0 13px #0d0607; text-align: center; transition: transform .35s cubic-bezier(.3, 1.3, .5, 1); }
+.pzj .pzj-tunel::before { content: ""; position: absolute; left: 22%; right: 22%; top: 30%; height: 30%; border-radius: 50%; background: radial-gradient(closest-side, #c2542a33, transparent); animation: pzj-respira-oro 4s ease-in-out infinite; }
+.pzj .pzj-tunel:hover { transform: translateY(-6px); }
+.pzj .pzj-tunel h2 { margin: 0; font: 600 1.05rem var(--font-heading); letter-spacing: .12em; text-transform: uppercase; color: var(--hueso); }
+.pzj .pzj-tunel .pz-modo-mini-arte { position: relative; display: flex; justify-content: center; gap: 6px; }
+.pzj .pzj-tunel .pz-boton { width: 100%; }
+/* el altar del solitario */
+.pzj .pz-solo { background: var(--piedra); border: 0; border-radius: 0; clip-path: polygon(4% 0, 96% 0, 100% 16%, 100% 100%, 0 100%, 0 16%); box-shadow: inset 0 4px 0 #ffffff10, inset 0 -8px 0 #00000066; padding-top: 22px; }
+.pzj .pz-solo h2 { color: var(--oro); }
+.pzj .pz-heroe-titulo { color: var(--oro); }
+/* las apuestas rápidas: montoncitos de monedas, más altos cuanto más se apuesta */
+.pzj .pz-ficha { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; min-width: 58px; height: auto; padding: 4px 6px; background: transparent; border: 0; border-radius: 0; color: var(--hueso); font-family: var(--font-heading); }
+.pzj .pz-ficha[aria-pressed="true"] { color: var(--oro-claro); background: transparent; }
+.pzj .pz-ficha[aria-pressed="true"] .pzj-montoncito { transform: translateY(-4px); }
+.pzj-montoncito { display: block; width: 34px; height: calc(var(--n) * 5px + 8px); background: repeating-linear-gradient(to top, var(--oro) 0 4px, var(--oro-2) 4px 5px); border-radius: 50% 50% 6px 6px / 8px 8px 6px 6px; transition: transform .2s cubic-bezier(.3, 1.6, .5, 1); }
+.pzj .pz-ficha:hover .pzj-montoncito { transform: translateY(-3px); }
+
+/* ------------------------------------------------------------------ la mesa: el altar de piedra donde caen los dados */
+.pzj .pz-tapete { background: radial-gradient(ellipse 72% 68% at 50% 46%, #0d0607f0 48%, #0d060700 100%); border: 0; outline: 0; box-shadow: none; }
+.pzj .pz-tapete::before, .pzj .pz-tapete::after { border: 0; }
+.pzj .pz-bandeja, .pzj .pz-bandeja-lado { position: relative; background: transparent; border: 0; }
+/* la losa del altar bajo los dados, vista en perspectiva, con un anillo de runas */
+.pzj .pz-bandeja::before, .pzj .pz-bandeja-lado::before { content: ""; position: absolute; left: 4%; right: 4%; bottom: 2%; height: 46%; z-index: -1; border-radius: 50%; background: var(--piedra-2); box-shadow: inset 0 -10px 0 #00000066, 0 12px 0 #120709; }
+.pzj .pz-bandeja::after, .pzj .pz-bandeja-lado::after { content: ""; position: absolute; left: 10%; right: 10%; bottom: 9%; height: 30%; z-index: -1; border-radius: 50%; border: 2px dashed #c9a44a40; }
+.pzj .pz-barra { border: 0; }
+.pzj .pz-codigo { background: transparent; color: var(--oro); border: 0; border-bottom: 2px solid var(--oro-2); border-radius: 0; }
+
+/* la decisión: coger el oro o tentar al dragón */
+.pzj .pz-opcion-dec[data-t="cobrar"] { background: #2e2310; }
+.pzj .pz-opcion-dec[data-t="cobrar"] .pz-dec-cifra { color: var(--oro-claro); }
+.pzj .pz-opcion-dec[data-t="seguir"] { background: #2e1214; }
+.pzj .pz-opcion-dec[data-t="seguir"] .pz-dec-cifra { color: #ff9c86; }
+.pzj .pz-dec-etq { font-family: var(--font-heading); letter-spacing: .2em; color: #bfa9a0; }
+.pzj .pz-medidor { background: #0d0607; border: 0; border-radius: 0; height: 8px; clip-path: polygon(0 0, 100% 0, 99% 100%, 1% 100%); }
+.pzj .pz-medidor i { background: var(--brasa); }
+.pzj .pz-opcion-dec { animation: pzj-sube .45s cubic-bezier(.2, 1.2, .4, 1) both; }
+.pzj .pz-opcion-dec + .pz-opcion-dec { animation-delay: .08s; }
+
+/* el duelo: dos estandartes frente a frente */
+.pzj .pz-duelo-lado { background: #3a1620; border: 0; border-radius: 0; clip-path: polygon(0 0, 100% 0, 100% 92%, 50% 100%, 0 92%); box-shadow: inset 0 6px 0 var(--oro-2); padding-bottom: 34px; transition: transform .4s cubic-bezier(.3, 1.3, .5, 1); }
+.pzj .pz-duelo-lado[data-yo="0"] { background: #1f2a33; }
+.pzj .pz-duelo-lado[data-turno="1"] { transform: translateY(-8px); box-shadow: inset 0 6px 0 var(--oro-claro), inset 0 0 0 3px var(--oro); }
+.pzj .pz-ronda-punto { border-radius: 0; transform: rotate(45deg); border-color: var(--oro); }
+.pzj .pz-ronda-punto[data-g="1"] { background: var(--oro); }
+
+/* el pozo compartido: los jugadores como estandartes en fila alrededor del pozo */
+.pzj .pz-jugador { clip-path: polygon(0 0, 100% 0, 100% 90%, 50% 100%, 0 90%); padding-bottom: 26px; }
+.pzj .pz-jugador[data-turno="1"] { background: #3a2a14; box-shadow: inset 0 0 0 3px var(--oro); }
+.pzj .pz-jugador[data-e="ruina"] { background: #1a0d0e; opacity: .7; }
+.pzj .pz-peso { background: #0d0607; border: 0; border-radius: 0; }
+.pzj .pz-peso i { background: var(--oro); }
+
+/* la sala de espera: asientos de piedra */
+.pzj .pz-asiento[data-yo="1"] { background: #33241a; }
+.pzj .pz-asiento[data-e="vacio"] { background: #160b0d; }
+.pzj .pz-chip { border-radius: 0; clip-path: var(--tallado-chico); }
+
+/* el final: una losa grabada */
+.pzj .pz-fin { text-align: center; padding: 26px 22px 22px; animation: pzj-sube .55s cubic-bezier(.2, 1.2, .4, 1) both; }
+.pzj .pz-fin h2 { font: 700 clamp(1.4rem, 2.6vw, 2rem)/1.15 var(--font-heading); letter-spacing: .12em; text-transform: uppercase; }
+.pzj .pz-fin[data-c="gana"] { background: #2e2310; } .pzj .pz-fin[data-c="gana"] h2 { color: var(--oro-claro); }
+.pzj .pz-fin[data-c="pierde"] { background: #2e1214; } .pzj .pz-fin[data-c="pierde"] h2 { color: #ff9c86; }
+
+/* ------------------------------------------------------------------ diálogos: tablilla de piedra con las letras grabadas */
+.pzj .pz-dialogo { background: var(--piedra); color: var(--hueso); border: 0; border-radius: 0; clip-path: var(--tallado); box-shadow: inset 0 4px 0 #ffffff0c, inset 0 -8px 0 #00000066; }
+.pzj .pz-dialogo[open] { animation: pzj-tablilla .45s cubic-bezier(.2, 1.2, .4, 1); }
+.pzj .pz-dialogo::backdrop { background: rgba(6, 2, 3, .86); }
+.pzj .pz-dlg-cab { border-bottom: 2px solid #00000055; }
+.pzj .pz-dlg-cab h2 { color: var(--oro); }
+.pzj .pz-cerrar { background: var(--piedra-3); color: var(--hueso); border: 0; border-radius: 0; clip-path: var(--tallado-chico); }
+.pzj .pz-tabla th, .pzj .pz-tabla td { border-color: #00000040; }
+/* los desafíos: marcas de garra en la roca, cada uno en un trozo de pergamino */
+.pzj .pz-logro { background: var(--hueso); color: #2a1a12; border: 0; border-radius: 0; clip-path: polygon(2% 0, 100% 3%, 98% 100%, 0 96%); }
+.pzj .pz-logro p, .pzj .pz-logro .pz-logro-estado, .pzj .pz-logro-carta { color: #5a4030; }
+.pzj .pz-logro.listo { background: #f3e3b0; }
+.pzj .pz-logro.reclamado { opacity: .6; }
+.pzj .pz-barra-logro { background: #00000020; border-radius: 0; }
+.pzj .pz-barra-logro i { background: var(--sangre); }
+
+/* ------------------------------------------------------------------ pantallas medianas y pequeñas */
+@media (max-width: 900px) {
+  .pzj #pzLobby:not([hidden]) { grid-template-columns: 1fr 1fr; grid-template-areas: "heroe heroe" "duelo compartido" "form form" "pie pie" "reglas reglas"; }
+  .pzj .pzj-tunel { min-height: 220px; padding-top: 48px; }
+}
+@media (max-width: 560px) {
+  .pzj-glifo { min-width: 48px; padding: 2px 4px; }
+  .pzj-glifo-dib { width: 26px; height: 26px; }
+  .pzj-glifo-etq { font-size: .6rem; letter-spacing: .06em; }
+  .pzj .pzj-tunel h2 { font-size: .85rem; }
+}
+
+@keyframes pzj-respira-oro { 0%, 100% { opacity: 1; } 50% { opacity: .72; } }
+@keyframes pzj-sube { from { transform: translateY(26px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes pzj-tablilla { from { transform: translateY(-40px) rotate(-1.5deg); opacity: 0; } 70% { transform: translateY(4px); opacity: 1; } to { transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  body.pzj:not(.pz-mov) * { animation: none !important; transition-duration: .01s !important; }
+  .pzj-capa-fondo, .pzj-capa-frente { transform: none !important; }
+}
+
+/* la bandeja vieja (un rectángulo oscuro) desaparece: los dados caen sobre la losa del altar */
+.pzj .pz-bandeja, .pzj .pz-bandeja-lado { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+.pzj .pz-mesa-item { background: #160b0d; border: 0; border-radius: 0; clip-path: var(--tallado-chico); }
+/* en el pozo compartido cada estandarte cabe entero: el nombre y su estado bajan de línea si hace falta */
+.pzj .pz-jugadores { grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)); }
+.pzj .pz-jugador { min-width: 0; }
+.pzj .pz-jugador .pz-asiento-cab { flex-wrap: wrap; gap: 4px 8px; }
+.pzj .pz-jugador-datos { flex-wrap: wrap; gap: 2px 10px; }
+
+/* ------------------------------------------------------------------ móvil: la decisión siempre a mano, pegada abajo y compacta */
+@media (max-width: 720px) {
+  .pzj .mj-volver-sec { display: none; }
+  .pzj .pz-escena { padding-top: 54px; }
+  .pzj .mj-volumen-control { top: 10px !important; bottom: auto !important; right: 118px !important; padding: 2px; background: transparent; border: 0; box-shadow: none; }
+  .pzj .mj-volumen-control input, .pzj .mj-volumen-control output { display: none; }
+  .pzj .pz-herramientas { justify-content: center; }
+  .pzj .pz-saldo { margin-right: 4px; }
+  .pzj #pzSolo .pz-dock, .pzj #pzMesa .pz-dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; margin: 0; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); background: var(--roca); clip-path: none; box-shadow: 0 -4px 0 #0d0607; }
+  .pzj #pzSolo:not([hidden]), .pzj #pzMesa:not([hidden]) { padding-bottom: 190px; }
+  .pzj .pz-dock .pz-decision { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px; }
+  .pzj .pz-dock .pz-decision > * { min-width: 0; }
+  .pzj .pz-opcion-dec { padding: 8px 8px 10px; }
+  .pzj .pz-opcion-dec .pz-dec-texto { display: none; }
+  .pzj .pz-opcion-dec .pz-dec-cifra { font-size: 1.15rem; margin: 0 0 6px; }
+  .pzj .pz-opcion-dec .pz-dec-etq { font-size: .62rem; letter-spacing: .12em; }
+  .pzj .pz-opcion-dec .pz-boton { width: 100%; padding: 8px 6px; font-size: .9rem; }
+  .pzj .pz-opcion-dec .pz-boton-sub, .pzj .pz-opcion-dec kbd { display: none; }
+  .pzj .pz-dock .pz-ayuda.pz-centrado { font-size: .78rem; margin: 6px 0 0; }
+  .pzj .pz-vigia { max-height: 90px; }
+}

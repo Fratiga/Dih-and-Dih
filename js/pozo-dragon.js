@@ -319,12 +319,11 @@
         <div class="pz-heroe-cuerpo">
           <p class="eyebrow">CASA DE JUEGO</p>
           <p class="pz-heroe-titulo" aria-hidden="true">El Pozo del Dragón</p>
-          <p class="pz-heroe-lema">Tres dados. Un tesoro. Una criatura que espera que te equivoques.</p>
           <form class="pz-solo" data-form-solo novalidate>
-            <div class="pz-solo-cab"><span class="pz-solo-icono" aria-hidden="true">${A.ojo()}</span><div><h2>Solo contra el Dragón</h2><p>Aumenta el premio y decide cuándo retirarte.</p></div></div>
+            <div class="pz-solo-cab"><span class="pz-solo-icono" aria-hidden="true">${A.ojo()}</span><div><h2>Solo contra el Dragón</h2></div></div>
             <div class="pz-solo-apuesta">
               <label class="pz-campo"><span>Tu apuesta, en tokens</span><input type="number" data-f="dinero" min="0" step="${aj.apuesta_paso}" value="${min}" inputmode="numeric"></label>
-              <div class="pz-fichas" role="group" aria-label="Apuestas rápidas">${fichas.map(n => `<button type="button" class="pz-ficha" data-ficha="${n}">${V.num(n)}</button>`).join("")}<button type="button" class="pz-ficha pz-ficha-todo" data-ficha-todo>Todo</button></div>
+              <div class="pz-fichas" role="group" aria-label="Apuestas rápidas">${fichas.map((n, i) => `<button type="button" class="pz-ficha" data-ficha="${n}"><span class="pzj-montoncito" aria-hidden="true" style="--n:${i + 1}"></span>${V.num(n)}</button>`).join("")}<button type="button" class="pz-ficha pz-ficha-todo" data-ficha-todo><span class="pzj-montoncito" aria-hidden="true" style="--n:6"></span>Todo</button></div>
             </div>
             <p class="pz-riesgo" data-resumen-solo></p>
             <button type="submit" class="pz-boton pz-boton-principal pz-boton-grande">Jugar en solitario</button>
@@ -332,14 +331,14 @@
         </div>
       </section>
       <div class="pz-otros">
-        <article class="pz-modo-mini" data-modo-tarjeta="duelo">
+        <article class="pz-modo-mini pzj-tunel" data-modo-tarjeta="duelo">
           <div class="pz-modo-mini-arte" aria-hidden="true">${A.dado(6)}${A.dado(5)}</div>
-          <div class="pz-modo-mini-texto"><h2>Duelo de Dragones</h2><p>Desafía a otro jugador.</p></div>
+          <div class="pz-modo-mini-texto"><h2>Duelo de Dragones</h2></div>
           <button type="button" class="pz-boton" data-abrir-form="duelo">Crear un duelo</button>
         </article>
-        <article class="pz-modo-mini" data-modo-tarjeta="compartido">
+        <article class="pz-modo-mini pzj-tunel" data-modo-tarjeta="compartido">
           <div class="pz-modo-mini-arte pz-ojos" aria-hidden="true">${A.ojo()}${A.ojo()}${A.ojo()}</div>
-          <div class="pz-modo-mini-texto"><h2>Pozo Compartido</h2><p>Todos arriesgan por el tesoro.</p></div>
+          <div class="pz-modo-mini-texto"><h2>Pozo Compartido</h2></div>
           <button type="button" class="pz-boton" data-abrir-form="compartido">Crear una mesa</button>
         </article>
       </div>
@@ -1141,7 +1140,8 @@
     const b = $("pzBtnMovimiento"); if (!b) return;
     b.hidden = !reducir.matches;
     b.setAttribute("aria-pressed", String(forzarMovimiento)); b.classList.toggle("apagado", !forzarMovimiento);
-    b.textContent = forzarMovimiento ? "Animaciones: sí" : "Animaciones: no";
+    const etq = $("pzMovTexto") || b;
+    etq.textContent = forzarMovimiento ? "Animaciones: sí" : "Animaciones: no";
     document.body.classList.toggle("pz-mov", forzarMovimiento && reducir.matches);
   }
   function pintarRapidoBoton() {
@@ -1150,6 +1150,7 @@
   }
   async function iniciar() {
     document.body.insertAdjacentHTML("afterbegin", A.defs());
+    if (window.PozoGuarida) window.PozoGuarida.montar();
     E.ritmo(S.rapido ? 0.55 : 1); pintarRapidoBoton();
     E.forzar(forzarMovimiento); pintarMovimientoBoton();
     if (reducir.addEventListener) reducir.addEventListener("change", pintarMovimientoBoton);

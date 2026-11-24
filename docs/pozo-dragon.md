@@ -212,7 +212,19 @@ Se probaron cinco paletas (Obsidiana y hielo, Esmeralda y latón, Vino y oro, Vi
 - Fondo oscuro y limpio con humo lento y brasas discretas; el grano y el relieve se reservan para el dragón, el tablero y el tesoro. Botones planos.
 - **Foto propia opcional:** si existe `assets/cosas/pozo-dragon-heroe.webp`, sustituye al dibujo del dragón del lobby (si no está, se queda el dibujo).
 
-## Pruebas
+## La guarida: presentación de juego (24-nov-2026)
+
+El usuario pidió que el Pozo y la Veintiuna se sintieran videojuegos y no páginas web, sin tocar reglas ni flujos. Es una capa encima de lo que ya había: `css/pozo-dragon-juego.css` (con la dirección artística en su cabecera) y `js/pozo-dragon-guarida.js`.
+
+- **Dirección artística** («la guarida»): estás al borde del tesoro de un dragón al que solo se le ven los ojos. Roca, piedra tallada, oro, hueso y brasa. Es a propósito lo contrario de la casa de Cera (madera, latón y cera).
+- **La cueva**: un SVG fijo detrás de todo (paredes de roca en dos planos, estalactitas, el resplandor del oro y el montón de monedas al fondo) con paralaje en dos capas al mover el ratón.
+- **La cornisa**: tu oro a la izquierda y el menú como glifos tallados (tablilla de reglas, teclas, marcas de garra para los desafíos, reloj de arena para «Rápido», cuerno para los efectos, ojo para las animaciones), solo con su nombre.
+- **El vestíbulo**: los ojos arriba, el título grabado y el altar del solitario (apuestas rápidas como montoncitos de monedas). Debajo, el duelo y el pozo compartido son dos túneles a los lados de la cornisa de las mesas abiertas. Se quitaron el lema (era una tríada) y los subtítulos de los modos.
+- **Las losas**: todo lo que era una tarjeta con borde es una losa de piedra con las esquinas picadas (`clip-path`). Los botones son losas planas: el principal de oro y el de riesgo de sangre seca. Sin sombras en `.pz-boton` (la prueba lo vigila).
+- **La mesa**: los dados caen sobre la losa del altar con un anillo de runas; la decisión del solitario y del compartido es oro contra sangre. En el duelo, dos estandartes frente a frente (el que tiene el turno se adelanta); en el compartido, los jugadores son estandartes en fila. El final es una losa grabada.
+- **Móvil**: la decisión (Cobrar / Seguir tirando) queda fija abajo en dos columnas compactas, para no tener que bajar a por los botones. El volumen general se queda solo con su botón, junto a «Iniciar sesión».
+
+
 
 ```bash
 node docs/pruebas-web/pozo_dragon.js     # 120 comprobaciones sin base de datos
