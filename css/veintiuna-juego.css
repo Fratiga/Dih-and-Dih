@@ -687,3 +687,31 @@ body.vv-ocupado .vv-boton, body.vv-ocupado .vj-campana { opacity: .6; pointer-ev
 .vj[data-forma="alta"] .vv-boton { min-width: calc(230 * var(--u)); min-height: calc(90 * var(--u)); }
 /* en el tablón, el sello «Cumplido» ya lo dice: el texto «Reclamado» sobra */
 .vv-logro.reclamado .vv-logro-estado { visibility: hidden; }
+
+/* ------------------------------------------------------------------ la baranda cabe entera en pantalla ancha (no se sale por abajo) y se lee mejor */
+.vj[data-forma="ancha"] .vv-dock { top: calc(778 * var(--u)); bottom: 0; padding: calc(10 * var(--u)) calc(250 * var(--u)) calc(8 * var(--u)); }
+.vj[data-forma="ancha"] .vj-atajos { bottom: calc(10 * var(--u)); }
+.vj[data-forma="ancha"] .vv-nota-apuesta { top: calc(-42 * var(--u)); }
+/* lo de tu lado del tapete sube un poco para dejarle sitio */
+.vj[data-forma="ancha"] .vj-lado-jugador .vv-mano { top: calc(640 * var(--u)); }
+.vj[data-forma="ancha"] .vj-velas-jugador { top: calc(756 * var(--u)); }
+.vj[data-forma="ancha"] .vj-lado-jugador .vv-etiqueta { top: calc(662 * var(--u)); }
+.vj[data-forma="ancha"] .vv-apuesta { top: calc(700 * var(--u)); }
+.vj[data-forma="ancha"] .vv-centro { top: calc(630 * var(--u)); }
+/* fichero, letrero y campanilla más bajos */
+.vj[data-forma="ancha"] .vv-ficha { width: calc(44 * var(--u)); }
+.vj[data-forma="ancha"] .vv-fichas { padding: calc(4 * var(--u)) calc(10 * var(--u)) calc(2 * var(--u)); gap: calc(10 * var(--u)); }
+.vj[data-forma="ancha"] .vj-campana-dib { width: calc(78 * var(--u)); }
+.vj[data-forma="ancha"] .vj-campana .vv-boton-sub { display: none; }
+.vj[data-forma="ancha"] .vv-modo { padding: calc(3 * var(--u)) calc(14 * var(--u)); }
+.vj[data-forma="ancha"] .vv-boton { min-height: calc(70 * var(--u)); }
+/* letra de la baranda: más grande y más clara */
+.vv-ficha .vj-ficha-valor { font-size: max(12px, calc(17 * var(--u))); color: #fff3dc; }
+.vv-saldo-datos small { font-size: max(12px, calc(15 * var(--u))); color: #d8cab0; }
+.vv-modo { font-size: max(13px, calc(17 * var(--u))); }
+.vv-modo small { font-size: max(11px, calc(13.5 * var(--u))); }
+.vv-modo:not(.activo) { color: #d8cab0; }
+.vv-dock .vv-enlace { font-size: max(13px, calc(17 * var(--u))); color: #fff3dc; }
+.vj-atajos { font-size: max(12px, calc(14 * var(--u))) !important; color: #d8cab0 !important; }
+.vv-apuesta-cifra small { font-size: max(10px, calc(13 * var(--u))); color: #d8cab0; }
+.vj-campana .vv-boton-texto { font-size: max(14px, calc(20 * var(--u))); }
