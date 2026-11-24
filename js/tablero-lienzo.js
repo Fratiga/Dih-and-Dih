@@ -1780,6 +1780,18 @@
       }
     });
 
+    /* Si el botón se soltó donde el tablero no se entera (fuera de la ventana del navegador, o al cambiar de
+       ventana con él pulsado), la cámara o la ficha se quedaban pegadas al ratón. En cuanto el ratón se mueve sin
+       ningún botón pulsado, o la ventana pierde el foco, se termina lo que estuviera a medias. */
+    function soltarTodo(ev) {
+      if (st.arrastre && st.arrastre.fantasma) { try { st.arrastre.fantasma.stopDrag(); } catch (err) { /* nada */ } if (st.arrastre) soltarFantasma(); }
+      if (gesto && gesto.tipo !== "pluma" && gesto.tipo !== "nieblaPoli") {
+        if (gesto.tipo === "camara" || gesto.tipo === "derecho") { gesto = null; contenedor.classList.remove("arrastrando-camara"); }
+        else terminarGesto({ evt: ev || {} });
+      }
+    }
+    window.addEventListener("mousemove", e => { if (e.buttons === 0 && (gesto || st.arrastre)) soltarTodo(e); }, true);
+    window.addEventListener("blur", () => { if (gesto || st.arrastre) soltarTodo(null); });
     stage.on("mousemove touchmove", e => {
       const p = punteroMundo();
       if (pulsacion) {
