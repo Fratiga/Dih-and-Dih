@@ -289,7 +289,9 @@
     function actualizarAnim() {
       const hay = [...st.nodos.values()].some(n => ((n.o.datos || {}).estados || []).some(e => e && ANIMADOS[e.id]));
       if (hay && !bucleAnim) {
-        bucleAnim = new Konva.Animation(f => { if (document.hidden || f.time - ultimoCuadro < 50) return false; ultimoCuadro = f.time; }, [lAnim, lAnimFondo]);
+        // Con el reloj real: el tiempo de cada Konva.Animation empieza en 0, y comparar con el del bucle anterior
+        // dejaba las animaciones quietas tanto rato como hubiera durado aquel
+        bucleAnim = new Konva.Animation(() => { const ahora = performance.now(); if (document.hidden || ahora - ultimoCuadro < 50) return false; ultimoCuadro = ahora; }, [lAnim, lAnimFondo]);
         bucleAnim.start();
       } else if (!hay && bucleAnim) { bucleAnim.stop(); bucleAnim = null; lAnim.batchDraw(); lAnimFondo.batchDraw(); }
     }
