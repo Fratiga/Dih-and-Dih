@@ -715,3 +715,8 @@ body.vv-ocupado .vv-boton, body.vv-ocupado .vj-campana { opacity: .6; pointer-ev
 .vj-atajos { font-size: max(12px, calc(14 * var(--u))) !important; color: #d8cab0 !important; }
 .vv-apuesta-cifra small { font-size: max(10px, calc(13 * var(--u))); color: #d8cab0; }
 .vj-campana .vv-boton-texto { font-size: max(14px, calc(20 * var(--u))); }
+/* la mesa cubre toda la escena pero solo atrapa el ratón en lo que se pulsa: así la puerta, que está detrás, se puede abrir */
+.vv-mesa { pointer-events: none; }
+.vv-mesa .vv-dock, .vv-mesa .vv-fieltro > * { pointer-events: auto; }
+.vv-mesa .vv-fieltro > .vv-tapete, .vv-mesa .vv-fieltro > .vv-lado-mano, .vv-mesa .vv-fieltro > .vv-centro { pointer-events: none; }
+.vv-mesa .vv-mano, .vv-mesa .vv-resultado { pointer-events: auto; }
