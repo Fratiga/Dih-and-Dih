@@ -3,6 +3,8 @@
    fractura-motor.js y lo que persiste entre guerras en fractura-campana.js.
    Se carga igual en el navegador y en Node (tools/probar-fractura.js).
    REGLAS es la versión de las reglas: una guerra guardada con otra versión no se puede continuar.
+   MOTOR cambia con cada ajuste de reglas dentro de una versión: las mesas que empezaron con otro MOTOR se
+   recalculan con el código nuevo en vez de bloquearse (súbelo en el mismo commit que cambie el motor o la IA).
 
    Lore: la Fractura es un espacio fuera del mundo conocido, hecho de fragmentos de lugares,
    sueños y recuerdos. Lo que pasa en una guerra no cambia el canon. Los nombres de lugares y
@@ -1027,7 +1029,7 @@
 
   raiz.FRACTURA_DATOS = {
     RECURSOS, RECURSO_NOMBRE, TERRENOS, ESTRUCTURAS, CLASES, CLASES_BASE, ESPECIALIZACIONES, RANGOS, EDIFICIOS, ESCUELAS, RELIQUIAS, SLOTS, OBRAS, FACCIONES,
-    TIPOS_FRACTURA, FRAGMENTOS, SUCESOS, DIFICULTADES, NOMBRES, ORIGENES, APODOS, HEROES, RENOMBRE_HEROE, TURNO_HEROE, ALIAS_FACCION, faccionReal, tropa, textoEdificio, nombreEdificio, nivelCiudad, BARCOS_BASE, NOMBRES_BARCO, FORMAS_MAPA, REGLAS: 5
+    TIPOS_FRACTURA, FRAGMENTOS, SUCESOS, DIFICULTADES, NOMBRES, ORIGENES, APODOS, HEROES, RENOMBRE_HEROE, TURNO_HEROE, ALIAS_FACCION, faccionReal, tropa, textoEdificio, nombreEdificio, nivelCiudad, BARCOS_BASE, NOMBRES_BARCO, FORMAS_MAPA, REGLAS: 5, MOTOR: 20271155
   };
   if (typeof module !== "undefined" && module.exports) module.exports = raiz.FRACTURA_DATOS;
 })(typeof window !== "undefined" ? window : globalThis);

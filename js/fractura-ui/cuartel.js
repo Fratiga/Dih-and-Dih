@@ -897,7 +897,7 @@ pintarHero();
           const n = mesaNueva;
           // La máquina rellena con ejércitos al azar que no sean el mío; el servidor salta los que ya estén en la mesa
           const relleno = Object.keys(FACCIONES).filter(f => f !== ej.faccion).sort(() => Math.random() - 0.5);
-          await Red.mesaCrear(n.nombre, { plazas: n.plazas, tamano: n.tamano, mapaPara: Math.max(n.plazas, n.mapaPara), tipo: n.tipo, forma: n.tipo === "horizonte" ? "continente" : n.forma, equipos: !!n.equipos, ia: !!n.ia, relleno, dificultad: n.dificultad, horas: n.horas, privada: !!n.privada, hold: 6, anio: ej.anio, reglas: D.REGLAS },
+          await Red.mesaCrear(n.nombre, { plazas: n.plazas, tamano: n.tamano, mapaPara: Math.max(n.plazas, n.mapaPara), tipo: n.tipo, forma: n.tipo === "horizonte" ? "continente" : n.forma, equipos: !!n.equipos, ia: !!n.ia, relleno, dificultad: n.dificultad, horas: n.horas, privada: !!n.privada, hold: 6, anio: ej.anio, reglas: D.REGLAS, motor: D.MOTOR },
             C.prepararBando(ej, ajustesGuerra.ids), n.privada ? n.invitados : []);
           await guardar();
           aviso("Mesa abierta.");

@@ -1561,7 +1561,7 @@
     est = MESA.crear(cfg, miIdx);
     cfgGuerraActual = { faccion: ej.faccion };
     const nombres = humanos.map(u => { const a = (fila.asientos || []).find(x => x.user === u); return a ? a.nombre : null; });
-    pvp = { id, mesa: true, n: 0, acciones: [], timer: null, humanos, nombres, limite: fila.limite, actualizada: fila.actualizada, estado: fila.estado, roto: false, horas: cfg.horas || 48,
+    pvp = { id, mesa: true, motor: cfg.motor || 0, n: 0, acciones: [], timer: null, humanos, nombres, limite: fila.limite, actualizada: fila.actualizada, estado: fila.estado, roto: false, horas: cfg.horas || 48,
       conApuestas: Object.values(fila.apuestas || {}).some(a => a && a.length) };
     aplicarTurnosMesa(fila);
     if (est.ganador === null && fila.estado === "activa") recuperarTurnoMesa();
@@ -1582,7 +1582,13 @@
   function aplicarTurnosMesa(fila) {
     const turnos = fila.turnos || [];
     for (let i = pvp.n; i < turnos.length; i++) {
-      if (!aplicarEntrada(est, pvp.humanos, turnos[i])) { pvp.roto = true; break; }
+      if (aplicarEntrada(est, pvp.humanos, turnos[i])) continue;
+      // Mesa empezada con un motor anterior: todos los navegadores la recalculan igual con las reglas nuevas, así que se sigue
+      if (pvp.motor !== D.MOTOR) {
+        if (!pvp.recalculada) { pvp.recalculada = true; aviso("Esta guerra empezó con una versión anterior de las reglas. Se ha recalculado con las nuevas, así que puede no verse igual que antes.", false); }
+        continue;
+      }
+      pvp.roto = true; break;
     }
     pvp.n = turnos.length; pvp.limite = fila.limite; pvp.estado = fila.estado; pvp.actualizada = fila.actualizada;
     // El servidor ya la cerró (los demás avisaron del final o lo decidió el admin)
