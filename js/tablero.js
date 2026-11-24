@@ -389,8 +389,30 @@
   /* ------------------------------------------------------------ deshacer (GM) */
   const historial = [], rehechos = [];
   function apuntar(paso) { historial.push(paso); if (historial.length > 60) historial.shift(); rehechos.length = 0; }
+  /* Mover fichas (arrastrando o con las flechas) también se deshace con Ctrl+Z, el DJ y cada jugador con las suyas.
+     Las fichas que se sueltan a la vez (una selección de varias) son un solo paso. */
+  let pasoMov = null;
+  function apuntarMovimiento(id, desde) {
+    if (!desde) return;
+    if (!pasoMov) { pasoMov = { tipo: "mover", cambios: [] }; apuntar(pasoMov); setTimeout(() => { pasoMov = null; }, 0); }
+    if (!pasoMov.cambios.some(c => c.id === id)) pasoMov.cambios.push({ id, antes: { x: desde.x, y: desde.y } });
+  }
   // Aplica un paso al revés y devuelve el paso que lo vuelve a hacer
   async function aplicarInverso(p) {
+    if (p.tipo === "mover") {
+      // Vuelve a donde estaba: aquí al momento y en las demás pantallas recorriendo el camino, como un movimiento normal
+      const vuelta = [];
+      for (const c of p.cambios) {
+        const o = TB.L.objeto(c.id);
+        if (!o) continue;
+        vuelta.push({ id: c.id, antes: { x: o.x, y: o.y } });
+        TB.L.marcarLocal(c.id);
+        TB.L.upsert(Object.assign({}, o, c.antes));
+        if (o.capa !== "gm") TB.red.emitir("mov", { id: c.id, x: c.antes.x, y: c.antes.y, escena: TB.escenaId });
+        TB.guardarPosicion(c.id, c.antes.x, c.antes.y);
+      }
+      return vuelta.length ? { tipo: "mover", cambios: vuelta } : null;
+    }
     if (p.tipo === "cambiar") {
       const vuelta = [];
       for (const c of p.cambios) {
@@ -722,7 +744,7 @@
   function callbacksLienzo() {
     return {
       onCambiar: (id, cambios) => TB.cambiarObjeto(id, cambios),
-      onMovido: (o, ruta) => { TB.guardarPosicion(o.id, o.x, o.y); TB.lanzar("movido", { id: o.id, desde: ruta && ruta[0], hasta: { x: o.x, y: o.y }, local: true }); },
+      onMovido: (o, ruta) => { apuntarMovimiento(o.id, ruta && ruta[0]); TB.guardarPosicion(o.id, o.x, o.y); TB.lanzar("movido", { id: o.id, desde: ruta && ruta[0], hasta: { x: o.x, y: o.y }, local: true }); },
       onMovEnCurso: (id, x, y, ruta) => TB.red.emitir("mov", { id, x, y, escena: TB.escenaId, ruta: Array.isArray(ruta) ? ruta.slice(0, 25).map(p => ({ x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 })) : undefined }),
       // En la capa Iluminación, lo que se dibuja son muros (del tipo elegido en el panel de iluminación)
       onCrear: filas => TB.crearObjetos(filas.map(f => f.capa === "luz" && f.tipo === "dibujo"
@@ -819,7 +841,7 @@
     if (ctrl && k === "s") { e.preventDefault(); TBPaneles.setHerramienta("seleccionar"); return; }
     if (ctrl && k === "g") { e.preventDefault(); TBPaneles.setHerramienta("texto"); return; }
     if (ctrl && k === "u" && sel.length) { e.preventDefault(); TB.anadirAlTurno(sel); return; }
-    if (ctrl && (k === "y" || (e.shiftKey && k === "z")) && TB.yo.esGM) { e.preventDefault(); rehacer(); return; }
+    if (ctrl && (k === "y" || (e.shiftKey && k === "z"))) { e.preventDefault(); rehacer(); return; }
     if (ctrl && k === "a") {
       e.preventDefault();
       TB.L.seleccionar(TB.L.objetos().filter(o => (TB.yo.esGM ? o.capa === TB.capa : TB.controla(o)) && (e.shiftKey || o.tipo !== "pin")).map(o => o.id));
@@ -836,7 +858,7 @@
     if (e.key === "Escape") { TB.L.deseleccionar(); TB.L.cancelarGesto(); TB.L.limpiarMedida(); TBUI.cerrarMenu(); return; }
     if (e.key === "Enter") { TB.L.terminarPoligono(); return; }
     if ((e.key === "Delete" || e.key === "Backspace") && sel.length) { e.preventDefault(); TB.borrarObjetos(sel); return; }
-    if (ctrl && e.key.toLowerCase() === "z" && TB.yo.esGM) { e.preventDefault(); deshacer(); return; }
+    if (ctrl && e.key.toLowerCase() === "z") { e.preventDefault(); deshacer(); return; }
     if (ctrl && e.key.toLowerCase() === "c" && sel.length) { TB.copiar(sel); return; }
     if (ctrl && e.key.toLowerCase() === "v" && portapapeles.length && TB.yo.esGM) { e.preventDefault(); TB.pegar(TB.L.punteroMundo()); return; }
     if (ctrl && e.key.toLowerCase() === "f") { e.preventDefault(); TBPaneles.elegirDibujo("mano"); return; }
@@ -845,7 +867,7 @@
       e.preventDefault();
       const t = e.shiftKey ? TB.L.tamCelda() / 5 : TB.L.tamCelda();
       const dx = e.key === "ArrowLeft" ? -t : e.key === "ArrowRight" ? t : 0, dy = e.key === "ArrowUp" ? -t : e.key === "ArrowDown" ? t : 0;
-      if (TB.yo.esGM && !e.repeat) apuntar({ tipo: "cambiar", cambios: sel.map(id => { const o = TB.L.objeto(id) || {}; return { id, antes: { x: o.x, y: o.y } }; }) });
+      if (!e.repeat) sel.forEach(id => { const o = TB.L.objeto(id); if (o && (TB.yo.esGM || TB.controla(o))) apuntarMovimiento(id, { x: o.x, y: o.y }); });
       for (const id of sel) {
         const o = TB.L.objeto(id);
         if (!o) continue;
