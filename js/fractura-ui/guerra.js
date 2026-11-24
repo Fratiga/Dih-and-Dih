@@ -668,6 +668,7 @@
     if (est.hayNoche && u.dueno >= 0 && FACCIONES[est.jugadores[u.dueno].faccion].mods.noche && u.dueno === humano()) { const rivs = FM.rivalesDe(est, u.dueno); out.push(rivs.length && rivs.every(q => FM.oculta(est, u, q)) ? ["Oculta en la noche", "cian"] : ["A la vista", ""]); }
     (u.rasgos || []).forEach(k => out.push([NOMBRE_RASGO[k], "cian"]));
     if (u.dueno >= 0 && FM.consagradaPara(est, u.dueno, u.x, u.y)) out.push(["En suelo consagrado", "oro"]);
+    if (u.clase === "berserker") { const m = FM.minoriaBerserker(est, u); if (m) out.push([`En minoría: +${m} ataque, +${m} defensa`, "rojo"]); }
     if (u.orden && ORD[u.orden.tipo]) {
       const o = u.orden, w = o.uid && est.unidades[o.uid], ci = o.ciudad && est.ciudades[o.ciudad];
       const destino = w ? ` · escolta a ${FM.nombreUnidad(w)}` : ci ? ` · ${ci.nombre}` : o.x !== undefined && o.tipo !== "defender" && o.tipo !== "reforzar" ? " · hacia el punto marcado" : "";

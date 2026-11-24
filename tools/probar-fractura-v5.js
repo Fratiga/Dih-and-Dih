@@ -267,5 +267,27 @@ const rico = jug => Object.keys(jug.recursos).forEach(k => { jug.recursos[k] = 9
   ok(!FM.aplicar(est, { t: "reclutar", ciudad: cap.id, clase: "guerrero" }).ok, "con Levas se entrenan tres tropas");
 }
 
+// --- Berserker: en minoría pega y aguanta más (hasta +3) ---
+{
+  const est = guerra(["okran", "hijos-del-acero"]);
+  limpiar(est); est.activo = 0;
+  const x = 12, y = 12;
+  for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) llano(est, x + dx, y + dy);
+  const b = poner(est, 0, "berserker", x, y);
+  const base = FM.ef(est, b);
+  const e1 = poner(est, 1, "guerrero", x + 1, y), e2 = poner(est, 1, "guerrero", x - 1, y), e3 = poner(est, 1, "guerrero", x, y + 1);
+  const con3 = FM.ef(est, b);
+  ok(con3.atq === base.atq + 3 && con3.def === base.def + 3, `solo contra 3 no gana +3/+3 (ataque ${base.atq}→${con3.atq}, defensa ${base.def}→${con3.def})`);
+  const al = poner(est, 0, "guerrero", x, y - 1);
+  const con3y1 = FM.ef(est, b);
+  ok(con3y1.atq === base.atq + 2 && con3y1.def === base.def + 2, "con un aliado al lado no baja a +2/+2");
+  delete est.unidades[al.uid];
+  poner(est, 1, "guerrero", x + 1, y + 1);
+  ok(FM.ef(est, b).atq === base.atq + 3, "con 4 enemigos pasa del tope de +3");
+  [e1, e2, e3].forEach(w => { delete est.unidades[w.uid]; });
+  Object.values(est.unidades).filter(w => w.dueno === 1).forEach(w => { delete est.unidades[w.uid]; });
+  ok(FM.minoriaBerserker(est, b) === 0, "sin enemigos al lado tiene bono de minoría");
+}
+
 console.log(`${hechas} comprobaciones, ${fallos} fallos`);
 process.exit(fallos ? 1 : 0);

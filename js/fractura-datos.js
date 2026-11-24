@@ -77,7 +77,7 @@
       texto: "+2 de ataque contra una unidad que está sola, además del Duelo de Seosan. Fuerte contra la infantería." },
     berserker: { nombre: "Berserker", tipo: ["infanteria"], contra: { piquero: 2 }, rol: "Choque", hp: 11, atq: 4, def: 0, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "okran",
       perfil: { FUE: 8, CON: 7, VEL: 5, INT: 2, VOL: 7, MAG: 1 }, coste: { comida: 3, oro: 2 }, requiere: {},
-      texto: "Furia reforzada: gana 1 de ataque más cuando baja de la mitad de la vida." },
+      texto: "En minoría pega y aguanta más: +1 de ataque y +1 de defensa por cada enemigo a su lado de más que aliados a su lado, hasta +3. También al defenderse." },
     barrilero: { nombre: "Barrilero", tipo: ["asedio"], contra: {}, rol: "Demolición", hp: 6, atq: 3, def: 0, mov: 3, alc: 1, atqEstat: "FUE", exclusiva: "pelgiria",
       perfil: { FUE: 5, CON: 4, VEL: 5, INT: 3, VOL: 8, MAG: 1 }, coste: { comida: 1, oro: 3 }, requiere: {},
       texto: "Al morir explota: 3 de daño a todo lo que tenga alrededor, amigo o enemigo." },

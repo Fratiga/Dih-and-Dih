@@ -171,6 +171,17 @@
     return a;
   }
 
+  /* Berserker: +1 de ataque y +1 de defensa por cada enemigo pegado a él de más que aliados pegados, hasta +3 (un gigante cuenta una vez) */
+  function minoriaBerserker(est, u) {
+    let enemigos = 0, aliados = 0;
+    for (const id in est.unidades) {
+      const w = est.unidades[id];
+      if (w === u || dist(w, u) > 1) continue;
+      if (hostil(est, w.dueno, u.dueno)) { if (w.dueno >= 0 || w.errante || w.guardia) enemigos++; }
+      else if (w.dueno >= 0) aliados++;
+    }
+    return Math.min(3, Math.max(0, enemigos - aliados));
+  }
   function ef(est, u, sinAyuda) {
     const cl = CLASES[u.clase];
     const s = u.s;
@@ -243,7 +254,8 @@
     if (jug && fac) {
       const tope = (H && H.ef.furia) || (fac.mods.furia ? fac.mods.furia + ((jug.sabEf && jug.sabEf.furia) || 0) : 0);
       if (tope && u.hp < hpMax) atq += Math.min(tope, Math.floor((1 - u.hp / hpMax) * Math.max(4, tope + 1)));
-      if (u.clase === "berserker" && u.hp * 2 <= hpMax) atq += 1;
+      // Berserker (Okran): en minoría pega y aguanta más (embarcado sigue sin defensa)
+      if (u.clase === "berserker") { const m = minoriaBerserker(est, u); atq += m; if (!enAgua(est, u)) def += m; }
       // Noche eterna (Nikaalia): quien tiene a Nikaalia de rival ve una casilla menos
       if (est.hayNoche && !fac.mods.noche && est.jugadores.some(o => !o.eliminado && FACCIONES[o.faccion].mods.noche && hostil(est, o.id, u.dueno))) vision = Math.max(1, vision - 1);
     }
@@ -2441,7 +2453,7 @@
   }
 
   raiz.FracturaMotor = {
-    dist,
+    dist, minoriaBerserker,
     MAX_UNIDADES, rn, ri, clave, dentro, casilla, unidadEn, unidadesDe, ciudadEn, ciudadesDe, esMonstruo, nombreUnidad, regionDeCasilla, reg, crono,
     ef, auras, calcularDano, defensaDelTerreno, alcanzables, camino, aplicar, crearGuerra, puntuacion, ingresoDe, mantenimiento,
     costeReclutar, clasesDisponibles, razonNoReclutar, razonNoConstruir, razonNoInvestigar, costeInvestigar, puedePagar, tieneEdificio, vecinosEnemigos, vecinosAliados,
