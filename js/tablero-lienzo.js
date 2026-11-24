@@ -965,7 +965,23 @@
         const y = debajo ? o.alto / 2 + 3 + k * (hb + sb) : -o.alto / 2 - 3 - (barras.length - k) * (hb + sb);
         const frac = Math.max(0, Math.min(1, (parseFloat(b.valor) || 0) / parseFloat(b.max)));
         n.deco.add(new Konva.Rect({ x: -w / 2, y, width: w, height: hb, fill: "rgba(0,0,0,.2)", cornerRadius: hb / 2 }));
-        if (frac > 0) n.deco.add(new Konva.Rect({ x: -w / 2, y, width: Math.max(hb, w * frac), height: hb, fill: COLORES_BARRA[i], cornerRadius: hb / 2 }));
+        // La parte llena, exacta: recortada dentro de la barra redondeada, sin ancho mínimo (antes, por debajo de
+        // cierto valor siempre se veía el mismo circulito y quitar vida no se notaba)
+        const lleno = new Konva.Group({ clipFunc: cx => { const r = hb / 2; cx.beginPath(); cx.moveTo(-w / 2 + r, y); cx.arcTo(w / 2, y, w / 2, y + hb, r); cx.arcTo(w / 2, y + hb, -w / 2, y + hb, r); cx.arcTo(-w / 2, y + hb, -w / 2, y, r); cx.arcTo(-w / 2, y, w / 2, y, r); cx.closePath(); } });
+        if (frac > 0) lleno.add(new Konva.Rect({ x: -w / 2, y, width: Math.max(1, w * frac), height: hb, fill: COLORES_BARRA[i] }));
+        // Al bajar, el trozo perdido se ilumina y se encoge: el golpe se ve aunque sea poco
+        n.fracBarras = n.fracBarras || [];
+        const antes = n.fracBarras[i];
+        n.fracBarras[i] = frac;
+        n.deco.add(lleno);
+        if (antes != null && frac < antes - 0.0005 && n.deco.getParent()) {
+          // va al lado de las barras, no dentro: la ficha se redibuja al guardar y se lo llevaría
+          const golpe = new Konva.Group({ x: o.x, y: o.y, listening: false, clipFunc: lleno.clipFunc() });
+          const trozo = new Konva.Rect({ x: -w / 2 + w * frac, y, width: Math.max(2, w * (antes - frac)), height: hb, fill: "#fff6d8", opacity: 0.95 });
+          golpe.add(trozo);
+          n.deco.getParent().add(golpe);
+          trozo.to({ width: 0, opacity: 0.35, duration: 0.7, easing: Konva.Easings.EaseIn, onFinish: () => golpe.destroy() });
+        }
         const verTexto = !compacto && ((b.texto || "editores") === "todos" || ((b.texto || "editores") === "editores" && (st.esGM || controla(o))));
         const fs = hb * 0.74, comun = { fontSize: fs, fontFamily: "Arial, Helvetica, sans-serif", fontStyle: "bold", fill: "#fff", stroke: "#000", strokeWidth: fs * 0.2, lineJoin: "round", fillAfterStrokeEnabled: true, y: y + (hb - fs) / 2 + fs * 0.06 };
         if (verTexto) n.deco.add(new Konva.Text(Object.assign({ x: -w / 2, width: w, align: "center", text: `${b.valor}/${b.max}` }, comun)));
