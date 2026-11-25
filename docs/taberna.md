@@ -18,6 +18,7 @@
 - **Salas** (en la misma página, por el hash de la URL; se llega a ellas con las pestañas de arriba de la escena): `#biblioteca`, `#juegos`, `#establos` y `#despacho` (solo admin; sin permiso vuelve a la taberna).
   Las dibuja `js/lobby-salas.js` a partir de `MAPA`, que es la única lista de enlaces: de ahí salen también las pestañas de arriba de la escena y la lista
   «Todas las puertas del sitio». En el móvil (menos de 700 px) la escena se cambia por puertas grandes y la lista va abierta.
+- **Nuevas puertas (25-nov-2026).** La mesa de rol de abajo a la derecha lleva al **Tablero** (`tablero.html`, donde se juegan las partidas). La Biblioteca tiene el estante de la **Biblioteca de los jugadores**; la Sala recreativa dibuja la mesa de **Las Veintiuna Velas**, **El Pozo del Dragón** y, solo para el admin, la máquina de **Estocatta**; el Despacho tiene la **cabina** y el **programa** del Concurso (cerrado al público). No se enlazan a propósito `fractura-guerra.html` (se entra desde La Fractura) ni `concurso-jugador.html` (solo funciona con el enlace personal de cada jugador).
 - **Hipódromo.** No está en la sala de juegos: vive en los Establos con el Hipódromo en vivo y los Corrales.
 - **Aviso de la carrera.** Con 5 minutos o menos para la salida, la taberna enseña bajo la cinta de novedades una franja con la cuenta atrás, un enlace al Hipódromo en vivo y otro
   para apostar (mientras no cierren las apuestas). Mientras corre dice que está corriendo y luego se quita sola (`js/aviso-hipodromo.js`; lee `hipodromo_programa` y el reloj

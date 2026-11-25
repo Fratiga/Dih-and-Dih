@@ -26,18 +26,18 @@
     taberna: {
       nombre: "Taberna", grupos: [{ titulo: "Taberna", enlaces: [
         ["compendio.html", "El Compendio"], ["mapa.html", "Mapa"], ["rocola.html", "Rocola"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Tablón (peticiones)"], ["discord.html", "Tablón de Discord"], ["cronica.html", "El Registro (crónica)"],
-        ["fichas.html", "Mis personajes"], ["minijuegos.html", "Salón de juegos (Minijuegos)"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["habitacion.html", "Mi habitación"], ["veintiuna.html", "Mesa de blackjack (Las Veintiuna Velas)"]] }]
+        ["fichas.html", "Mis personajes"], ["minijuegos.html", "Salón de juegos (Minijuegos)"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["habitacion.html", "Mi habitación"], ["veintiuna.html", "Mesa de blackjack (Las Veintiuna Velas)"], ["tablero.html", "El tablero (partidas)"]] }]
     },
     biblioteca: {
       nombre: "Biblioteca", lema: "Todo lo que se sabe del mundo, estante por estante.", grupos: [
         { titulo: "Mundo", enlaces: [["cronologia.html", "Cronología", "libros"], ["lugares.html", "Lugares", "libros"], ["facciones.html", "Facciones", "libros"], ["personajes.html", "Personajes", "libros"], ["razas.html", "Razas", "libros"], ["religion.html", "Religión", "libros"]] },
         { titulo: "Archivo", enlaces: [["textos.html", "Textos", "libros"], ["pergaminos.html", "Pergaminos", "libros"], ["armas.html", "Armas", "libros"], ["objetos.html", "Objetos", "libros"], ["bestiario.html", "Bestiario", "libros"]] },
-        { titulo: "Reglas y cifras", enlaces: [["reglas.html", "Reglas", "libros"], ["economia.html", "Economía", "libros"], ["estadisticas.html", "Estadísticas", "libros"]] }]
+        { titulo: "Reglas y cifras", enlaces: [["reglas.html", "Reglas", "libros"], ["economia.html", "Economía", "libros"], ["estadisticas.html", "Estadísticas", "libros"], ["biblioteca.html", "Biblioteca de los jugadores", "libros"]] }]
     },
     juegos: {
       nombre: "Sala recreativa", lema: "Cada juego en su máquina. Minijuegos los junta todos.", grupos: [
         { titulo: "Juegos", enlaces: [["ajedrez.html", "Ajedrez", "ajedrez"], ["arqueria.html", "Arquería", "diana"], ["ritmo.html", "Zarabanda", "arcade-ritmo"], ["parranda.html", "Parranda", "arcade-parranda"], ["sacrificio.html", "Hooey", "arcade-hooey"],
-          ["duelo.html", "Duelo", "espadas", true], ["ostelar.html", "Ostelar", "trampilla", true], ["fractura.html", "La Fractura", "arcade-fractura"], ["veintiuna.html", "Las Veintiuna Velas", "cartas"], ["pozo-dragon.html", "El Pozo del Dragón", "cartas"]] },
+          ["duelo.html", "Duelo", "espadas", true], ["ostelar.html", "Ostelar", "trampilla", true], ["fractura.html", "La Fractura", "arcade-fractura"], ["veintiuna.html", "Las Veintiuna Velas", "cartas"], ["pozo-dragon.html", "El Pozo del Dragón", "pozo"], ["estocatta.html", "Estocatta", "arcade-estocatta", true]] },
         { titulo: "Triunfos", enlaces: [["cartas.html", "Álbum", "cartas"], ["mazos.html", "Mazos", "cartas"], ["batalla.html", "Batalla", "cartas"]] }]
     },
     establos: {
@@ -46,7 +46,7 @@
     },
     despacho: {
       nombre: "Despacho", lema: "Solo para el admin.", admin: true, grupos: [
-        { titulo: "Despacho", enlaces: [["admin.html", "Panel de Admin", "escritorio", true], ["ritmo-editor.html", "Editor de Zarabanda", "arcade-ritmo", true], ["parranda-editor.html", "Editor de Parranda", "arcade-parranda", true]] }]
+        { titulo: "Despacho", enlaces: [["admin.html", "Panel de Admin", "escritorio", true], ["ritmo-editor.html", "Editor de Zarabanda", "arcade-ritmo", true], ["parranda-editor.html", "Editor de Parranda", "arcade-parranda", true], ["concurso.html", "Concurso: la cabina", "escritorio", true], ["concurso-programa.html", "Concurso: el programa", "escritorio", true]] }]
     }
   };
   const ORDEN = ["taberna", "biblioteca", "juegos", "establos", "despacho"];

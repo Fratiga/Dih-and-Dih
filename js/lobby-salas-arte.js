@@ -122,9 +122,10 @@ window.LobbySalasArte = (function () {
     ritmo: `${R(8, 8, 8, 26, "#5fe0d2", ' class="lb-neon lb-n1"')}${R(22, 16, 8, 18, "#ff7ac0", ' class="lb-neon lb-n2"')}${R(36, 6, 8, 28, "#ffd84a", ' class="lb-neon lb-n3"')}${R(50, 20, 8, 14, "#5fe0d2", ' class="lb-neon lb-n1"')}`,
     parranda: `${[6, 20, 34, 48, 62].map(x => R(x, 4, 2, 34, "#ffffff44")).join("")}${R(8, 10, 10, 6, "#ff7ac0", ' class="lb-neon lb-n1"')}${R(22, 20, 10, 6, "#5fe0d2", ' class="lb-neon lb-n2"')}${R(36, 6, 10, 6, "#ffd84a", ' class="lb-neon lb-n3"')}${R(50, 26, 10, 6, "#ff7ac0", ' class="lb-neon lb-n2"')}`,
     hooey: `${R(22, 22, 24, 14, "#e8872a")}${R(26, 12, 16, 12, "#f0b038", ' class="lb-llama"')}${R(30, 6, 8, 10, "#f7dd6a", ' class="lb-llama lb-l2"')}${R(50, 28, 8, 8, "#f2ead2")}`,
+    estocatta: `${R(0, 36, 70, 2, "#5fe0d2")}${R(10, 20, 6, 16, "#e8b84a")}${R(16, 24, 16, 2, "#f2ead2", ' class="lb-neon lb-n1"')}${R(48, 20, 6, 16, "#ff7ac0")}${R(32, 26, 16, 2, "#f2ead2", ' class="lb-neon lb-n2"')}`,
     fractura: `${[0, 1, 2].map(i => [0, 1].map(j => R(8 + i * 18, 6 + j * 18, 14, 14, (i + j) % 2 ? "#5a3f27" : "#8d6a45")).join("")).join("")}${R(26, 24, 14, 14, "#b6453f", ' class="lb-neon lb-n2"')}`
   };
-  const CAB = { ritmo: "#2a5a8a", parranda: "#8a2f5a", hooey: "#8a3a22", fractura: "#4a4066" };
+  const CAB = { ritmo: "#2a5a8a", parranda: "#8a2f5a", hooey: "#8a3a22", fractura: "#4a4066", estocatta: "#2a6a5a" };
   function maquina(x, y, tipo) {
     return R(x, y, 88, 124, CAB[tipo]) + R(x, y, 88, 6, "#ffffff2a") + R(x + 6, y + 10, 76, 16, "#e8b84a") + R(x + 10, y + 14, 68, 8, "#1c1422") +
       R(x + 14, y + 16, 8, 4, "#e8b84a") + R(x + 28, y + 16, 8, 4, "#ff7ac0") + R(x + 42, y + 16, 8, 4, "#5fe0d2") + R(x + 56, y + 16, 8, 4, "#e8b84a") +
@@ -151,7 +152,20 @@ window.LobbySalasArte = (function () {
     // Máquinas en la pared del fondo
     const filas = [["ritmo.html", "Zarabanda", "ritmo"], ["parranda.html", "Parranda", "parranda"], ["sacrificio.html", "Hooey", "hooey"], ["fractura.html", "La Fractura", "fractura"]];
     const x0 = 330;
+    if (admin) filas.push(["estocatta.html", "Estocatta", "estocatta", true]);
     filas.forEach((f, i) => { s += enlace(f[0], f[1], maquina(x0 + i * 112, 276, f[2]), [x0 + i * 112 + 44, 420], f[3]); });
+    // Las Veintiuna Velas (abajo a la izquierda): la mesa de fieltro con Cera, la crupier de cera, y sus velas
+    s += enlace("veintiuna.html", "Las Veintiuna Velas",
+      R(150, 548, 34, 46, "#efe3c3") + R(150, 548, 34, 4, "#fff6dc") + R(154, 530, 26, 20, "#f2ead2") + R(160, 538, 4, 4, "#3a2a2a") + R(170, 538, 4, 4, "#3a2a2a") + R(163, 545, 8, 2, "#a8434f") +
+      [86, 100, 228, 242].map((x, i) => R(x, 586, 5, 14, "#f2ead2") + R(x, 578, 5, 8, "#f0b038", ' class="lb-llama' + (i % 2 ? " lb-l2" : "") + '"')).join("") +
+      R(70, 600, 194, 14, "#1f5a46") + R(70, 600, 194, 3, "#2c7a60") + R(64, 614, 206, 6, "#8d6a45") + R(74, 620, 186, 14, "#4a2f1f") + R(82, 634, 10, 30, "#6b4a2f") + R(242, 634, 10, 30, "#6b4a2f") +
+      R(116, 602, 14, 10, "#f2ead2") + R(134, 603, 14, 9, "#f2ead2") + R(196, 602, 14, 10, "#7a2f4a") + R(214, 605, 12, 4, "#e8b84a") + C(167, 590, 60, "#f0b038", ' fill-opacity=".06" class="lb-brillo"'), [167, 690]);
+    // El Pozo del Dragón (abajo a la derecha): un pozo de piedra con un dragón enroscado en el brocal
+    let pozo = R(1114, 424, 8, 96, "#6b4a2f") + R(1226, 424, 8, 96, "#6b4a2f") + P("1098,430 1174,392 1250,430", "#7a2f2f") + R(1098, 428, 152, 6, "#5a2020") + R(1172, 430, 2, 50, "#c9b48a") + R(1162, 478, 22, 18, "#8d6a45") + R(1162, 478, 22, 3, "#a8834f");
+    pozo += R(1108, 516, 132, 10, "#8b8696") + R(1112, 526, 124, 62, "#6e6a78") + [0, 1, 2].map(j => [0, 1, 2, 3, 4].map(i => R(1112 + i * 26 + (j % 2) * 13, 528 + j * 20, 2, 18, "#5a5668")).join("") + R(1112, 546 + j * 20, 124, 2, "#5a5668")).join("");
+    pozo += R(1116, 506, 60, 12, "#3f7a3a") + R(1116, 506, 60, 3, "#5a9a4a") + R(1176, 500, 30, 14, "#3f7a3a") + R(1200, 494, 22, 14, "#3f7a3a") + R(1216, 498, 3, 3, "#ffd84a") + P("1204,494 1208,484 1212,494", "#2f5a2c") + R(1102, 512, 18, 6, "#3f7a3a") +
+      R(1128, 590, 8, 6, "#e8b84a") + R(1142, 594, 8, 6, "#e8b84a") + R(1206, 592, 8, 6, "#e8b84a") + C(1174, 520, 64, "#6fe08a", ' fill-opacity=".05" class="lb-brillo"');
+    s += enlace("pozo-dragon.html", "El Pozo del Dragón", pozo, [1174, 618]);
     // Ajedrez (derecha): mesa con tablero, reloj y dos taburetes
     let aj = R(900, 336, 150, 12, "#8d6a45") + R(908, 348, 14, 54, "#6b4a2f") + R(1028, 348, 14, 54, "#6b4a2f");
     for (let i = 0; i < 8; i++) for (let j = 0; j < 2; j++) aj += R(918 + i * 14, 306 + j * 14, 14, 14, (i + j) % 2 ? "#3a2a1d" : "#e9dcc0");
@@ -243,6 +257,14 @@ window.LobbySalasArte = (function () {
       R(130, 470, 230, 16, "#8d6a45") + R(140, 486, 14, 70, "#6b4a2f") + R(336, 486, 14, 70, "#6b4a2f") + R(150, 430, 200, 40, "#1c2450") + [0, 1, 2, 3, 4, 5, 6, 7].map(i => R(158 + i * 24, 436, 18, 28, i % 2 ? "#e9dcc0" : "#f2ead2")).join("") + [1, 3, 6].map(i => R(170 + i * 24, 436, 10, 18, "#1c1422")).join("") + R(220, 400, 60, 28, "#0c1a2a") + R(228, 408, 8, 14, "#5fe0d2", ' class="lb-neon lb-n1"') + R(244, 404, 8, 18, "#ff7ac0", ' class="lb-neon lb-n2"') + R(260, 410, 8, 12, "#ffd84a", ' class="lb-neon lb-n3"'), [245, 586], true);
     s += enlace("parranda-editor.html", "Editor de Parranda",
       C(1040, 520, 46, "#b6453f") + C(1040, 520, 38, "#e9dcc0") + R(1000, 580, 80, 10, "#6b4a2f") + R(1036, 566, 8, 36, "#8d8d99") + C(1130, 480, 28, "#c9a14a") + C(1130, 480, 22, "#e8b84a") + R(1128, 508, 4, 80, "#8d8d99") + C(960, 556, 30, "#2a5a8a") + C(960, 556, 24, "#e9dcc0") + R(948, 586, 4, 40, "#8d8d99") + R(1000, 542, 30, 4, "#8d6a45", ' transform="rotate(-20 1015 544)"'), [1040, 650], true);
+    // El Concurso: el guion del programa en la pared y la cabina desde la que se dirige
+    s += enlace("concurso-programa.html", "Concurso: el programa",
+      R(668, 104, 214, 126, "#6b4a2f") + R(676, 112, 198, 110, "#e9dcc0") + [0, 1, 2, 3, 4].map(i => R(690, 124 + i * 18, 10, 10, i === 1 ? "#b6453f" : "#3b4a8a") + R(708, 127 + i * 18, 110 - (i * 23) % 50, 3, "#8a7a5a")).join("") + R(842, 116, 24, 24, "#e8b84a") + R(848, 122, 12, 12, "#b6453f"), [775, 250], true);
+    s += enlace("concurso.html", "Concurso: la cabina",
+      R(780, 282, 96, 22, "#7a2020") + R(786, 288, 84, 10, "#e04a4a", ' class="lb-neon lb-n2"') + R(658, 384, 240, 14, "#8d6a45") + R(666, 398, 12, 22, "#6b4a2f") + R(878, 398, 12, 22, "#6b4a2f") +
+      R(800, 328, 84, 54, "#1c1422") + R(806, 334, 72, 42, "#0c1a2a") + R(812, 360, 10, 12, "#5fe0d2", ' class="lb-neon lb-n1"') + R(828, 350, 10, 22, "#e8b84a", ' class="lb-neon lb-n3"') + R(844, 344, 10, 28, "#ff7ac0", ' class="lb-neon lb-n2"') +
+      R(700, 330, 4, 54, "#8d8d99") + R(692, 316, 20, 16, "#2a2030") + R(694, 318, 16, 4, "#4a4058") + R(686, 382, 32, 4, "#8d8d99") +
+      C(744, 378, 7, "#ff7ac0") + C(764, 378, 7, "#5fe0d2") + C(784, 378, 7, "#e8b84a"), [778, 440], true);
     s += R(360, 560, 560, 130, "#4a2a30", ' opacity=".9"') + R(368, 568, 544, 114, "none", ' stroke="#c9a14a" stroke-width="3" opacity=".6"');
     s += puertaTaberna(16, 266);
     s += `<rect id="salaTinte" width="1280" height="700" fill="none" opacity="0" pointer-events="none"/>`;

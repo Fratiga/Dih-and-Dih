@@ -17,13 +17,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20271111">
-  <link rel="stylesheet" href="css/taberna.css?v=20271111">
-  <link rel="stylesheet" href="css/lobby.css?v=20271111">
-  <link rel="stylesheet" href="css/cielo.css?v=20271111">
+  <link rel="stylesheet" href="css/style.css?v=20271269">
+  <link rel="stylesheet" href="css/taberna.css?v=20271269">
+  <link rel="stylesheet" href="css/lobby.css?v=20271269">
+  <link rel="stylesheet" href="css/cielo.css?v=20271269">
 </head>
 <body class="lb lb-invitado lb-grande">
-  <script src="js/carga.js?v=20271111"></script>
+  <script src="js/carga.js?v=20271269"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
   <div class="lb-pagina">
@@ -401,6 +401,24 @@
                 <text x="1094" y="552" text-anchor="middle" class="lb-etq">INTERCAMBIOS</text>
               </a>
 
+              <!-- La mesa de rol, abajo a la derecha: lleva al Tablero, donde se juegan las partidas -->
+              <a class="lb-spot" href="tablero.html" aria-label="El tablero: la mesa de rol donde se juegan las partidas">
+                <g class="lb-forma">
+                  <rect x="1150" y="566" width="40" height="34" fill="#7a2f4a"/><rect x="1150" y="566" width="40" height="4" fill="#e8b84a"/><rect x="1156" y="576" width="12" height="14" fill="#e9dcc0"/><rect x="1172" y="576" width="12" height="14" fill="#e9dcc0"/>
+                  <rect x="976" y="594" width="214" height="26" fill="#4a7a52"/><rect x="976" y="594" width="214" height="3" fill="#6fa06a"/>
+                  <rect x="1008" y="597" width="2" height="23" fill="#3a6040"/><rect x="1040" y="597" width="2" height="23" fill="#3a6040"/><rect x="1072" y="597" width="2" height="23" fill="#3a6040"/><rect x="1104" y="597" width="2" height="23" fill="#3a6040"/><rect x="1136" y="597" width="2" height="23" fill="#3a6040"/><rect x="976" y="607" width="214" height="2" fill="#3a6040"/>
+                  <rect x="1046" y="598" width="26" height="9" fill="#7a5a3a" opacity=".7"/><rect x="1110" y="610" width="20" height="8" fill="#3f6fa0" opacity=".8"/>
+                  <rect x="994" y="584" width="6" height="12" fill="#b6453f"/><rect x="993" y="578" width="8" height="7" fill="#e0b890"/>
+                  <rect x="1020" y="586" width="6" height="12" fill="#4f7fb5"/><rect x="1019" y="580" width="8" height="7" fill="#e0b890"/>
+                  <rect x="1084" y="582" width="6" height="14" fill="#e8b84a"/><rect x="1083" y="576" width="8" height="7" fill="#e0b890"/>
+                  <rect x="1118" y="580" width="10" height="16" fill="#2a2030"/><rect x="1120" y="574" width="6" height="7" fill="#8a3d3d"/>
+                  <rect x="1060" y="612" width="8" height="8" fill="#f2ead2" transform="rotate(45 1064 616)"/><rect x="1088" y="613" width="6" height="6" fill="#b6453f"/>
+                  <rect x="970" y="620" width="226" height="8" fill="#8d6a45"/><rect x="976" y="628" width="214" height="16" fill="#6b4a2f"/>
+                  <rect x="984" y="644" width="12" height="36" fill="#4a2f1f"/><rect x="1170" y="644" width="12" height="36" fill="#4a2f1f"/>
+                </g>
+                <text x="1083" y="696" text-anchor="middle" class="lb-etq">EL TABLERO</text>
+              </a>
+
               <!-- LA MESA COMÚN: el foco de la sala. Luz cálida, alfombra, banco corrido, taburetes en las cabeceras y jarras delante de cada plaza. -->
               <ellipse cx="640" cy="590" rx="380" ry="120" style="fill:var(--lb-luz)" fill-opacity=".1" class="lb-brillo"/>
               <g>
@@ -461,6 +479,7 @@
           <a href="intercambios.html">Intercambios</a>
           <a href="forja.html">La forja</a>
           <a href="habitacion.html">Mi habitación</a>
+          <a href="tablero.html">El tablero</a>
         </nav>
 
         <details class="lb-todo lb-solo-socio">
@@ -502,37 +521,37 @@
     </footer>
   </div>
 
-  <script src="data/rotacion.js?v=20271111"></script>
-  <script src="data/musica.js?v=20271111"></script>
-  <script src="js/musica-nube.js?v=20271111"></script>
-  <script src="js/common.js?v=20271235"></script>
-  <script src="js/temas.js?v=20271111"></script>
-  <script src="js/player.js?v=20271111"></script>
-  <script src="data/jumpscare.js?v=20271111"></script>
-  <script src="data/contrasenas.js?v=20271111"></script>
-  <script src="js/dialogos.js?v=20271111"></script>
-  <script src="js/fichas-supabase.js?v=20271111"></script>
-  <script src="js/interruptores.js?v=20271111"></script>
-  <script src="js/presencia.js?v=20271111"></script>
-  <script src="js/lado.js?v=20271111"></script>
-  <script src="js/slappy.js?v=20271111"></script>
-  <script src="js/peticiones-supabase.js?v=20271111"></script>
-  <script src="data/novedades.js?v=20271240"></script>
-  <script src="js/contenido-servidor.js?v=20271111"></script>
-  <script src="data/saludos.js?v=20271111"></script>
-  <script src="js/bienvenida.js?v=20271111"></script>
-  <script src="data/protagonistas.js?v=20271111"></script>
-  <script src="js/taberna-mesa.js?v=20271111"></script>
-  <script src="js/cielo.js?v=20271111"></script>
-  <script src="js/lobby-salas-arte.js?v=20271121"></script>
-  <script src="js/lobby-salas.js?v=20271121"></script>
-  <script src="js/lobby.js?v=20271235"></script>
-  <script src="js/aviso-hipodromo.js?v=20271111"></script>
-  <script src="js/cronica.js?v=20271111"></script>
-  <script src="js/cronica-taberna.js?v=20271111"></script>
-  <script src="js/avisos-taberna.js?v=20271111"></script>
-  <script src="js/guia-inicial.js?v=20271111"></script>
-  <script src="js/avisos-admin.js?v=20271111"></script>
-  <script src="js/musica-paginas.js?v=20271260"></script>
+  <script src="data/rotacion.js?v=20271269"></script>
+  <script src="data/musica.js?v=20271269"></script>
+  <script src="js/musica-nube.js?v=20271269"></script>
+  <script src="js/common.js?v=20271269"></script>
+  <script src="js/temas.js?v=20271269"></script>
+  <script src="js/player.js?v=20271269"></script>
+  <script src="data/jumpscare.js?v=20271269"></script>
+  <script src="data/contrasenas.js?v=20271269"></script>
+  <script src="js/dialogos.js?v=20271269"></script>
+  <script src="js/fichas-supabase.js?v=20271269"></script>
+  <script src="js/interruptores.js?v=20271269"></script>
+  <script src="js/presencia.js?v=20271269"></script>
+  <script src="js/lado.js?v=20271269"></script>
+  <script src="js/slappy.js?v=20271269"></script>
+  <script src="js/peticiones-supabase.js?v=20271269"></script>
+  <script src="data/novedades.js?v=20271269"></script>
+  <script src="js/contenido-servidor.js?v=20271269"></script>
+  <script src="data/saludos.js?v=20271269"></script>
+  <script src="js/bienvenida.js?v=20271269"></script>
+  <script src="data/protagonistas.js?v=20271269"></script>
+  <script src="js/taberna-mesa.js?v=20271269"></script>
+  <script src="js/cielo.js?v=20271269"></script>
+  <script src="js/lobby-salas-arte.js?v=20271269"></script>
+  <script src="js/lobby-salas.js?v=20271269"></script>
+  <script src="js/lobby.js?v=20271269"></script>
+  <script src="js/aviso-hipodromo.js?v=20271269"></script>
+  <script src="js/cronica.js?v=20271269"></script>
+  <script src="js/cronica-taberna.js?v=20271269"></script>
+  <script src="js/avisos-taberna.js?v=20271269"></script>
+  <script src="js/guia-inicial.js?v=20271269"></script>
+  <script src="js/avisos-admin.js?v=20271269"></script>
+  <script src="js/musica-paginas.js?v=20271269"></script>
 </body>
 </html>

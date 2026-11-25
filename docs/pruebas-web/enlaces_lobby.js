@@ -11,7 +11,7 @@ const mal = t => { console.log("  FALLA " + t); fallos++; };
 const comprobar = (t, cond, extra) => (cond ? ok(t) : mal(t + (extra ? ` (${extra})` : "")));
 
 // Páginas que no se enlazan a propósito: la propia portada y las secretas
-const EXCLUIDAS = new Set(["index.html", "secreto.html", "muerte-subita.html", "encuentro-verdam.html", "veintiuna-amigos.html", "ultima-vela.html"]);   // la mesa con amigos solo se entra desde Las Veintiuna Velas y La Última Vela desde Muerte Súbita; El Pozo del Dragón está oculto (solo admin, tarjeta «En pruebas» de Minijuegos) hasta que se abra
+const EXCLUIDAS = new Set(["index.html", "secreto.html", "muerte-subita.html", "encuentro-verdam.html", "veintiuna-amigos.html", "ultima-vela.html", "fractura-guerra.html", "concurso-jugador.html", "taberna-3d.html", "mapa-vectorial-prueba.html"]);   // fractura-guerra se abre desde el cuartel de La Fractura; concurso-jugador solo sirve con el enlace personal de cada jugador; taberna-3d y mapa-vectorial-prueba son pruebas locales   // la mesa con amigos solo se entra desde Las Veintiuna Velas y La Última Vela desde Muerte Súbita; El Pozo del Dragón está oculto (solo admin, tarjeta «En pruebas» de Minijuegos) hasta que se abra
 
 // El mapa del lobby: se ejecuta lobby-salas.js sin navegador, con la página «sin cargar» para que no dibuje nada
 const ventana = {};
@@ -56,6 +56,10 @@ const sala = (clave) => new Set(MAPA[clave].grupos.flatMap(g => g.enlaces.map(e 
 ["admin.html", "ritmo-editor.html", "parranda-editor.html"].forEach(h => comprobar(`${h} está en el despacho (solo admin)`, sala("despacho").has(h) && MAPA.despacho.admin));
 ["cronologia.html", "lugares.html", "facciones.html", "personajes.html", "razas.html", "religion.html", "textos.html", "pergaminos.html", "armas.html", "objetos.html", "bestiario.html", "reglas.html", "economia.html", "estadisticas.html"].forEach(h => comprobar(`${h} está en la biblioteca`, sala("biblioteca").has(h)));
 
+comprobar("el tablero de las partidas es un objeto de la taberna", hrefsEscena.includes("tablero.html"));
+comprobar("Estocatta está en la sala recreativa y solo para el admin", MAPA.juegos.grupos.some(g => g.enlaces.some(e => e[0] === "estocatta.html" && e[3])));
+comprobar("la cabina y el programa del Concurso están en el despacho", sala("despacho").has("concurso.html") && sala("despacho").has("concurso-programa.html"));
+comprobar("la biblioteca de los jugadores está en la Biblioteca", sala("biblioteca").has("biblioteca.html"));
 console.log("== Otros");
 comprobar("la lista «Todas las puertas» sale de la misma fuente (está vacía en el HTML)", /<section class="lb-zonas" id="lbZonas"><\/section>/.test(html));
 const puertas = html.slice(html.indexOf('<nav class="lb-puertas'), html.indexOf("</nav>", html.indexOf('<nav class="lb-puertas')));
