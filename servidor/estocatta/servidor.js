@@ -352,8 +352,16 @@ function crearServidor(opciones) {
 
     // la misma cuenta en otra pestaña: se queda con la plaza (reconexión) y la conexión vieja se cierra
     const codigo = salaDe.get(cuenta.id);
-    const s = codigo ? salas.get(codigo) : null;
-    const i = s ? s.plazas.findIndex(p => p && p.id === cuenta.id) : -1;
+    let s = codigo ? salas.get(codigo) : null;
+    let i = s ? s.plazas.findIndex(p => p && p.id === cuenta.id) : -1;
+    // una sala ya terminada no retiene a nadie: quien vuelve empieza de cero
+    if (s && i >= 0 && s.estado === "fin") {
+      const vieja = s.plazas[i].ws;
+      if (vieja && vieja !== cliente.ws) { vieja.reemplazada = true; try { vieja.close(4000); } catch (e) { /* ya cerrada */ } }
+      s.plazas[i] = null; salaDe.delete(cuenta.id);
+      if (!s.plazas[0] && !s.plazas[1]) borrarSala(s); else difundirSala(s);
+      s = null; i = -1;
+    }
     if (s && i >= 0) {
       const p = s.plazas[i];
       const vieja = p.ws;

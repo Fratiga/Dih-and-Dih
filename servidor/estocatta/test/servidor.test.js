@@ -330,3 +330,17 @@ test("el resultado de la simulación llega por la red: territorio al acabarse el
   assert.equal(registros.length, 1);
   await cerrarTodo(srv, ca, cb);
 });
+
+test("quien vuelve después de una partida terminada puede crear otra sala", async () => {
+  const { srv, puerto } = await iniciar({ ajustarPartida: CERCA_DE_SALIDA });
+  const { ca, cb } = await parejaEnSala(puerto, "ana", "beto");
+  await empezarPartida(ca, cb);
+  ca.enviar({ t: "in", mov: 1, correr: true });
+  await ca.esperar(m => m.t === "est" && m.f === "fin");
+  // la pestaña vieja sigue abierta (o el servidor aún no sabe que murió)
+  const ca2 = await entrar(puerto, "T:ana:ana");
+  ca2.enviar({ t: "crear" });
+  const sala = await ca2.esperar(m => m.t === "sala" && m.estado === "espera");
+  assert.equal(sala.jugadores.filter(Boolean).length, 1);
+  await cerrarTodo(srv, ca, cb, ca2);
+});
