@@ -98,6 +98,14 @@ body.lb {
 
 /* La escena */
 .lb-escena-caja { position: relative; border: 4px ridge var(--lb-borde); background: #000; box-shadow: 6px 6px 0 #000; }
+/* Las salas en 2.5D (js/salas3d): sustituyen al dibujo plano; el nombre de cada objeto sale pequeño junto al cursor */
+.lb-3d .lb-escena-scroll, .lb-3d #lbSalas { display: none !important; }
+.t3d { position: relative; width: 100%; aspect-ratio: 2 / 1; background: #0a0810; overflow: hidden; }
+.t3d[hidden] { display: none; }
+.t3d-lienzo { display: block; width: 100%; height: auto; }
+.t3d-etq { position: absolute; z-index: 5; pointer-events: none; padding: 2px 6px; background: rgba(14, 10, 18, .88); color: #f2e6cc; font: 16px "VT323", monospace; white-space: nowrap; border: 1px solid #3a2e46; }
+.t3d:not([data-sala="taberna"]) .lb-slappy-sitio { display: none; }
+.lb-sala-lista { margin: 12px; }
 .lb-escena-scroll { overflow-x: auto; overflow-y: hidden; }
 /* El lienzo mide lo mismo que el dibujo y lleva encima (sin recibir clics) el Bufón que baila: sus coordenadas son porcentajes del dibujo */
 .lb-escena-lienzo { position: relative; min-width: 640px; }

@@ -1,4 +1,4 @@
-/* Mi habitación: tu colección, tus mazos y la forja. Los corrales donde crían tus criaturas viven en su propia pantalla (corrales.html,
+/* Mi habitación: tu colección, tus mazos y la forja. Los corrales donde crían tus criaturas viven en su propia pantalla (corrales.html, a la que se llega desde los Establos;
    js/corrales.js); aquí solo se ve, en la lámpara de la puerta, si hay una cría lista. La forja tiene su propia página (forja.html, js/forja.js); aquí es solo la puerta. */
 (function () {
   const $ = id => document.getElementById(id);
@@ -78,7 +78,7 @@
     const tipos = ver.corrales.map(c => window.Corrales.estado(c).tipo);
     const t = tipos.includes("listo") ? "listo" : tipos.includes("cria") ? "cria" : tipos.includes("disponible") ? "disponible" : "";
     l.setAttribute("class", `hb-lampara${t ? " hb-e-" + t : ""}`);
-    $("hbPuertaCorrales").setAttribute("aria-label", `Los corrales: el patio donde crían tus criaturas${t === "listo" ? " (hay una cría lista)" : ""}`);
+    $("hbPuertaCorrales").setAttribute("aria-label", `El patio: baja a los establos, donde están los corrales${t === "listo" ? " (hay una cría lista)" : ""}`);
   }
 
   async function cargar() {

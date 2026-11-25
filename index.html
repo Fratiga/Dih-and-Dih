@@ -17,13 +17,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20271269">
-  <link rel="stylesheet" href="css/taberna.css?v=20271269">
-  <link rel="stylesheet" href="css/lobby.css?v=20271269">
-  <link rel="stylesheet" href="css/cielo.css?v=20271269">
+  <link rel="stylesheet" href="css/style.css?v=20271271">
+  <link rel="stylesheet" href="css/taberna.css?v=20271271">
+  <link rel="stylesheet" href="css/lobby.css?v=20271271">
+  <link rel="stylesheet" href="css/cielo.css?v=20271271">
 </head>
 <body class="lb lb-invitado lb-grande">
-  <script src="js/carga.js?v=20271269"></script>
+  <script src="js/carga.js?v=20271271"></script>
   <div class="lb-fondo" aria-hidden="true"></div>
 
   <div class="lb-pagina">
@@ -113,6 +113,27 @@
         <nav class="lb-salas-nav lb-solo-socio" id="lbSalasNav" aria-label="Salas de la taberna"></nav>
         <p class="lb-sala-lema lb-solo-socio" id="lbSalaLema" role="status"></p>
         <div class="lb-escena-caja">
+          <!-- Las salas en 2.5D (js/salas3d): en pantallas anchas y con WebGL sustituyen al dibujo plano de abajo, que queda para cuando falla -->
+          <div class="t3d lb-escena-3d" id="lbSalas3d" hidden></div>
+          <script>
+            (function () {
+              // Vuelve al dibujo plano (sin WebGL, si la librería no llega o si la maqueta falla)
+              window.lbPlano = function () {
+                document.body.classList.remove("lb-3d");
+                const caja = document.getElementById("lbSalas3d"), lienzo = document.querySelector(".lb-escena-lienzo"), slappy = document.getElementById("slappyContenedor");
+                if (caja) caja.hidden = true;
+                if (slappy && lienzo && slappy.parentNode !== lienzo) { slappy.dataset.spawns = "[[29.7,36.4,17.2,27.1],[58.2,36.4,17.2,27.1]]"; lienzo.appendChild(slappy); }
+              };
+              try {
+                if (/[?&]plano/.test(location.search) || window.innerWidth < 700) return;
+                const lz = document.createElement("canvas");
+                if (!(lz.getContext("webgl2") || lz.getContext("webgl"))) return;
+                window.lbTresD = true;
+                document.body.classList.add("lb-3d");
+                document.getElementById("lbSalas3d").hidden = false;
+              } catch (e) { /* sin 3D: se queda el dibujo plano */ }
+            })();
+          </script>
           <div class="lb-escena-scroll">
             <div class="lb-escena-lienzo">
             <svg class="lb-escena" id="lbEscena" viewBox="0 0 1280 700" shape-rendering="crispEdges" role="group" aria-label="La taberna: la mesa común en el centro y, alrededor, las puertas y los objetos que llevan a cada zona">
@@ -480,6 +501,8 @@
           <a href="forja.html">La forja</a>
           <a href="habitacion.html">Mi habitación</a>
           <a href="tablero.html">El tablero</a>
+          <a href="cartas.html">Triunfos</a>
+          <a href="cronica.html">El Registro</a>
         </nav>
 
         <details class="lb-todo lb-solo-socio">
@@ -521,37 +544,54 @@
     </footer>
   </div>
 
-  <script src="data/rotacion.js?v=20271269"></script>
-  <script src="data/musica.js?v=20271269"></script>
-  <script src="js/musica-nube.js?v=20271269"></script>
-  <script src="js/common.js?v=20271269"></script>
-  <script src="js/temas.js?v=20271269"></script>
-  <script src="js/player.js?v=20271269"></script>
-  <script src="data/jumpscare.js?v=20271269"></script>
-  <script src="data/contrasenas.js?v=20271269"></script>
-  <script src="js/dialogos.js?v=20271269"></script>
-  <script src="js/fichas-supabase.js?v=20271269"></script>
-  <script src="js/interruptores.js?v=20271269"></script>
-  <script src="js/presencia.js?v=20271269"></script>
-  <script src="js/lado.js?v=20271269"></script>
-  <script src="js/slappy.js?v=20271269"></script>
-  <script src="js/peticiones-supabase.js?v=20271269"></script>
-  <script src="data/novedades.js?v=20271269"></script>
-  <script src="js/contenido-servidor.js?v=20271269"></script>
-  <script src="data/saludos.js?v=20271269"></script>
-  <script src="js/bienvenida.js?v=20271269"></script>
-  <script src="data/protagonistas.js?v=20271269"></script>
-  <script src="js/taberna-mesa.js?v=20271269"></script>
-  <script src="js/cielo.js?v=20271269"></script>
-  <script src="js/lobby-salas-arte.js?v=20271269"></script>
-  <script src="js/lobby-salas.js?v=20271269"></script>
-  <script src="js/lobby.js?v=20271269"></script>
-  <script src="js/aviso-hipodromo.js?v=20271269"></script>
-  <script src="js/cronica.js?v=20271269"></script>
-  <script src="js/cronica-taberna.js?v=20271269"></script>
-  <script src="js/avisos-taberna.js?v=20271269"></script>
-  <script src="js/guia-inicial.js?v=20271269"></script>
-  <script src="js/avisos-admin.js?v=20271269"></script>
-  <script src="js/musica-paginas.js?v=20271269"></script>
+  <script src="data/rotacion.js?v=20271271"></script>
+  <script src="data/musica.js?v=20271271"></script>
+  <script src="js/musica-nube.js?v=20271271"></script>
+  <script src="js/common.js?v=20271271"></script>
+  <script src="js/temas.js?v=20271271"></script>
+  <script src="js/player.js?v=20271271"></script>
+  <script src="data/jumpscare.js?v=20271271"></script>
+  <script src="data/contrasenas.js?v=20271271"></script>
+  <script src="js/dialogos.js?v=20271271"></script>
+  <script src="js/fichas-supabase.js?v=20271271"></script>
+  <script src="js/interruptores.js?v=20271271"></script>
+  <script src="js/presencia.js?v=20271271"></script>
+  <script src="js/lado.js?v=20271271"></script>
+  <script>
+    // Con las salas 2.5D, el Bufón baila en el suelo libre de delante de la mesa (antes de que js/slappy.js lea sus sitios)
+    (function () {
+      const slappy = document.getElementById("slappyContenedor"), caja = document.getElementById("lbSalas3d");
+      if (slappy && caja && document.body.classList.contains("lb-3d")) { caja.appendChild(slappy); slappy.dataset.spawns = "[[34,46,13,36],[52,46,13,36]]"; }
+    })();
+  </script>
+  <script src="js/slappy.js?v=20271271"></script>
+  <script src="js/peticiones-supabase.js?v=20271271"></script>
+  <script src="data/novedades.js?v=20271271"></script>
+  <script src="js/contenido-servidor.js?v=20271271"></script>
+  <script src="data/saludos.js?v=20271271"></script>
+  <script src="js/bienvenida.js?v=20271271"></script>
+  <script src="data/protagonistas.js?v=20271271"></script>
+  <script src="js/taberna-mesa.js?v=20271271"></script>
+  <script src="js/cielo.js?v=20271271"></script>
+  <script src="js/lobby-salas-arte.js?v=20271271"></script>
+  <script src="js/lobby-salas.js?v=20271271"></script>
+  <script src="js/lobby.js?v=20271271"></script>
+  <script src="js/aviso-hipodromo.js?v=20271271"></script>
+  <script src="js/cronica.js?v=20271271"></script>
+  <script src="js/cronica-taberna.js?v=20271271"></script>
+  <script src="js/avisos-taberna.js?v=20271271"></script>
+  <script src="js/guia-inicial.js?v=20271271"></script>
+  <script src="js/avisos-admin.js?v=20271271"></script>
+  <script src="js/musica-paginas.js?v=20271271"></script>
+  <script type="module" onerror="window.lbPlano && window.lbPlano()">
+    import { montarSalas3D } from "./js/salas3d/motor.js?v=20271271";
+    if (window.lbTresD) {
+      try {
+        const salas = montarSalas3D(document.getElementById("lbSalas3d"), { esAdmin: () => typeof window.esAdmin === "function" && !!window.esAdmin() });
+        window.Salas3DActiva = salas;
+        if (window.__lbPresencia) salas.fijar(window.__lbPresencia);
+      } catch (e) { console.warn("Las salas 2.5D no se pudieron montar:", e); window.lbPlano(); }
+    }
+  </script>
 </body>
 </html>

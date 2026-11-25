@@ -1,6 +1,30 @@
 # La taberna (index.html): salas, mesa de protagonistas y sprites
 
-## Qué hay
+## Las salas en 2.5D (desde el 25-nov-2026)
+
+En pantallas de 700 px o más y con WebGL, la taberna y sus salas son maquetas 3D sencillas con texturas pixel art y los personajes como sprites
+2D: `js/salas3d/motor.js` (el motor: la caja de cada sala, puertas, ventanas con el cielo real, fuego, velas, la gente de la mesa, caminos con A*,
+cursor y clics, el bucle), `js/salas3d/salas.js` (lo que hay en cada sala) y `js/salas3d/texturas.js` (las texturas, pintadas con semilla fija).
+Usa three.js 0.180 desde jsDelivr. Si no hay WebGL, si la librería no llega o si algo falla, vuelve el dibujo plano de siempre (`window.lbPlano`).
+`index.html?plano` fuerza el dibujo plano. En el móvil siguen las puertas grandes.
+
+Cada página está en **una sola sala** (lo comprueba `docs/pruebas-web/enlaces_lobby.js`, que además mira que cada página de `MAPA` tenga su
+objeto en la maqueta):
+
+| Sala (hash) | Qué hay |
+|---|---|
+| Taberna | La mesa de los protagonistas, la chimenea con el cuadro de fanarts, la barra con el tabernero, la rocola, el tablón de peticiones (con los cuatro fanarts nuevos) y el Intercambios. La escalera sube a Mi habitación y hay una puerta a cada sala (el Despacho solo lo ve el admin). |
+| `#biblioteca` | Dos alturas de estantes (Mundo abajo, Archivo en la galería), Reglas y cifras en la pared derecha con la Biblioteca de los jugadores, y el Compendio completo en la mesa de lectura. |
+| `#juegos` | Sala recreativa: Minijuegos (el rótulo de neón), las máquinas, arquería y ajedrez; solo admin, Estocatta, Duelo y Ostelar. La mesa de billar es decoración. |
+| `#naipes` | Salón de naipes: Álbum, Mazos y Batalla de Triunfos, Las Veintiuna Velas (con Cera) y El Pozo del Dragón. |
+| `#campana` | Sala de campaña: el Tablero, el Mapa, Mis personajes, el Registro y el tablón de Discord. |
+| `#establos` | El portón al Hipódromo (con la pista en directo), el espejo del Hipódromo en vivo y los Corrales con criaturas. Es la única entrada a los Corrales: la puerta del patio de Mi habitación baja aquí. |
+| `#despacho` | Solo admin: el panel, los editores de ritmo y el Concurso (cerrado al público). |
+
+Para añadir una página: ponla en `MAPA` (`js/lobby-salas.js`) en su sala y dale un objeto en `js/salas3d/salas.js` con `c.zona(grupo, "pagina.html", "Nombre")`.
+Pruebas a mano: `?hora=21&cielo=lluvia`, `?paseo=rapido`. Rendimiento: tope de píxeles, sin MSAA, 20 a 30 fps y parado fuera de pantalla.
+
+## El dibujo plano (sin WebGL)
 
 - **Sala principal.** Escenario SVG de 1280 x 700 dentro de `index.html` (`#lbEscena`). La portada es más ancha que antes (`body.lb-grande`).
   La mesa común es el foco: banco corrido, dos taburetes, jarras delante de cada plaza y los protagonistas al triple de tamaño. En la pared solo hay

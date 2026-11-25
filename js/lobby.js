@@ -412,6 +412,8 @@
     }
     window.Presencia.suscribir(lista => {
       if (window.TabernaMesa) window.TabernaMesa.fijar(lista);
+      window.__lbPresencia = lista;                       // la taberna 2.5D (js/salas3d) la lee al montarse
+      if (window.Salas3DActiva) window.Salas3DActiva.fijar(lista);
       ver("lbPresentes", lista.length
         ? lista.map(n => `<div class="lb-presente${n.oculto ? " lb-lejos" : ""}">
             <span class="lb-punto"></span><b>${esc(n.nombre)}</b>${n.id === miId ? ` <span class="lb-chico">(tú)</span>` : ""}

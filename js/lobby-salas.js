@@ -2,10 +2,14 @@
    LAS SALAS DE LA TABERNA
    El lobby (index.html) es la sala principal. Desde ella se entra a otras salas que viven en la misma página, cada una con los enlaces de
    su grupo, para que desde la taberna se llegue a TODAS las páginas del sitio sin que el salón principal se llene:
-     Biblioteca       el compendio por estantes (Mundo, Archivo, Reglas y cifras)
-     Sala recreativa  los juegos uno por uno y las cartas (el Hipódromo no está aquí: tiene su propio sitio)
+     Biblioteca       el compendio por estantes (Mundo, Archivo, Reglas y cifras) y el Compendio completo
+     Sala recreativa  las máquinas y los juegos de habilidad (el Hipódromo no está aquí: tiene su propio sitio)
+     Salón de naipes  Triunfos, Las Veintiuna Velas y El Pozo del Dragón
+     Sala de campaña  el Tablero, el Mapa, Mis personajes, el Registro y el tablón de Discord
      Establos         el Hipódromo, el Hipódromo en vivo y los corrales
-     Despacho         solo admin: el panel y los editores de mapas de ritmo
+     Despacho         solo admin: el panel, los editores de mapas de ritmo y el Concurso
+   Cada página está en una sola sala. En pantallas anchas las salas se ven en 2.5D (js/salas3d/: la maqueta de cada una); el dibujo plano de
+   index.html y de js/lobby-salas-arte.js queda para cuando no hay WebGL (y el móvil enseña puertas grandes).
    Mi habitación y el Intercambios son puertas de la taberna que llevan a su propia página.
 
    MAPA es la lista de enlaces del lobby y la única fuente: de ella salen las salas dibujadas y la lista «Todas las puertas».
@@ -25,20 +29,28 @@
   const MAPA = {
     taberna: {
       nombre: "Taberna", grupos: [{ titulo: "Taberna", enlaces: [
-        ["compendio.html", "El Compendio"], ["mapa.html", "Mapa"], ["rocola.html", "Rocola"], ["fanarts.html", "Fanarts"], ["peticiones.html", "Tablón (peticiones)"], ["discord.html", "Tablón de Discord"], ["cronica.html", "El Registro (crónica)"],
-        ["fichas.html", "Mis personajes"], ["minijuegos.html", "Salón de juegos (Minijuegos)"], ["cartas.html", "Triunfos"], ["intercambios.html", "Intercambios"], ["forja.html", "La forja"], ["habitacion.html", "Mi habitación"], ["veintiuna.html", "Mesa de blackjack (Las Veintiuna Velas)"], ["tablero.html", "El tablero (partidas)"]] }]
+        ["fanarts.html", "Fanarts"], ["peticiones.html", "Tablón (peticiones)"], ["rocola.html", "Rocola"], ["intercambios.html", "Intercambios"],
+        ["habitacion.html", "Mi habitación"], ["forja.html", "La forja (en Mi habitación)"]] }]
     },
     biblioteca: {
       nombre: "Biblioteca", lema: "Todo lo que se sabe del mundo, estante por estante.", grupos: [
         { titulo: "Mundo", enlaces: [["cronologia.html", "Cronología", "libros"], ["lugares.html", "Lugares", "libros"], ["facciones.html", "Facciones", "libros"], ["personajes.html", "Personajes", "libros"], ["razas.html", "Razas", "libros"], ["religion.html", "Religión", "libros"]] },
         { titulo: "Archivo", enlaces: [["textos.html", "Textos", "libros"], ["pergaminos.html", "Pergaminos", "libros"], ["armas.html", "Armas", "libros"], ["objetos.html", "Objetos", "libros"], ["bestiario.html", "Bestiario", "libros"]] },
-        { titulo: "Reglas y cifras", enlaces: [["reglas.html", "Reglas", "libros"], ["economia.html", "Economía", "libros"], ["estadisticas.html", "Estadísticas", "libros"], ["biblioteca.html", "Biblioteca de los jugadores", "libros"]] }]
+        { titulo: "Reglas y cifras", enlaces: [["reglas.html", "Reglas", "libros"], ["economia.html", "Economía", "libros"], ["estadisticas.html", "Estadísticas", "libros"], ["biblioteca.html", "Biblioteca de los jugadores", "libros"], ["compendio.html", "El Compendio completo", "libros"]] }]
     },
     juegos: {
-      nombre: "Sala recreativa", lema: "Cada juego en su máquina. Minijuegos los junta todos.", grupos: [
-        { titulo: "Juegos", enlaces: [["ajedrez.html", "Ajedrez", "ajedrez"], ["arqueria.html", "Arquería", "diana"], ["ritmo.html", "Zarabanda", "arcade-ritmo"], ["parranda.html", "Parranda", "arcade-parranda"], ["sacrificio.html", "Hooey", "arcade-hooey"],
-          ["duelo.html", "Duelo", "espadas", true], ["ostelar.html", "Ostelar", "trampilla", true], ["fractura.html", "La Fractura", "arcade-fractura"], ["veintiuna.html", "Las Veintiuna Velas", "cartas"], ["pozo-dragon.html", "El Pozo del Dragón", "pozo"], ["estocatta.html", "Estocatta", "arcade-estocatta", true]] },
-        { titulo: "Triunfos", enlaces: [["cartas.html", "Álbum", "cartas"], ["mazos.html", "Mazos", "cartas"], ["batalla.html", "Batalla", "cartas"]] }]
+      nombre: "Sala recreativa", lema: "Máquinas y juegos de habilidad. Minijuegos los junta todos.", grupos: [
+        { titulo: "Juegos", enlaces: [["minijuegos.html", "Minijuegos", "arcade-ritmo"], ["ajedrez.html", "Ajedrez", "ajedrez"], ["arqueria.html", "Arquería", "diana"], ["ritmo.html", "Zarabanda", "arcade-ritmo"], ["parranda.html", "Parranda", "arcade-parranda"], ["sacrificio.html", "Hooey", "arcade-hooey"],
+          ["fractura.html", "La Fractura", "arcade-fractura"], ["duelo.html", "Duelo", "espadas", true], ["ostelar.html", "Ostelar", "trampilla", true], ["estocatta.html", "Estocatta", "arcade-estocatta", true]] }]
+    },
+    naipes: {
+      nombre: "Salón de naipes", lema: "Cartas, dados y apuestas.", grupos: [
+        { titulo: "Triunfos", enlaces: [["cartas.html", "Álbum", "cartas"], ["mazos.html", "Mazos", "cartas"], ["batalla.html", "Batalla", "cartas"]] },
+        { titulo: "Apuestas", enlaces: [["veintiuna.html", "Las Veintiuna Velas", "cartas"], ["pozo-dragon.html", "El Pozo del Dragón", "pozo"]] }]
+    },
+    campana: {
+      nombre: "Sala de campaña", lema: "Todo lo de las partidas de rol.", grupos: [
+        { titulo: "Campaña", enlaces: [["tablero.html", "El Tablero (partidas)", "mesa"], ["mapa.html", "Mapa", "mapa"], ["fichas.html", "Mis personajes", "fichas"], ["cronica.html", "El Registro (crónica)", "libro"], ["discord.html", "Tablón de Discord", "tablon"]] }]
     },
     establos: {
       nombre: "Establos", lema: "Carreras de criaturas y los corrales donde se crían.", grupos: [
@@ -49,7 +61,7 @@
         { titulo: "Despacho", enlaces: [["admin.html", "Panel de Admin", "escritorio", true], ["ritmo-editor.html", "Editor de Zarabanda", "arcade-ritmo", true], ["parranda-editor.html", "Editor de Parranda", "arcade-parranda", true], ["concurso.html", "Concurso: la cabina", "escritorio", true], ["concurso-programa.html", "Concurso: el programa", "escritorio", true]] }]
     }
   };
-  const ORDEN = ["taberna", "biblioteca", "juegos", "establos", "despacho"];
+  const ORDEN = ["taberna", "biblioteca", "juegos", "naipes", "campana", "establos", "despacho"];
   const visible = e => !e[3] || esAdmin();
 
   /* ---------------------------------------------------------------- navegación */
@@ -69,10 +81,11 @@
     const hall = $("lbEscena"), caja = $("lbSalas");
     if (!hall || !caja) return;
     actual = sala;
-    if (sala === "taberna") { caja.hidden = true; caja.innerHTML = ""; hall.classList.remove("lb-oculta"); }
+    if (sala === "taberna" || document.body.classList.contains("lb-3d")) { caja.hidden = true; caja.innerHTML = ""; hall.classList.remove("lb-oculta"); }
     else {
       const arte = window.LobbySalasArte && window.LobbySalasArte[sala];
-      caja.innerHTML = arte ? arte(MAPA[sala], esAdmin()) : "";
+      caja.innerHTML = arte ? arte(MAPA[sala], esAdmin())
+        : `<div class="lb-caja lb-sala-lista"><h2>${esc(MAPA[sala].nombre)}</h2><div class="lb-caja-cuerpo lb-lista-links">${MAPA[sala].grupos.flatMap(g => g.enlaces.filter(visible)).map(e => `<a href="${esc(e[0])}">${esc(e[1])}</a>`).join("")}<a href="#taberna">Volver a la taberna</a></div></div>`;
       caja.hidden = false; hall.classList.add("lb-oculta");
       capaEtiquetas(caja.querySelector("svg"));
       if (window.Cielo) window.Cielo.aplicar();   // el cielo y la luz de las salas que tienen ventana
