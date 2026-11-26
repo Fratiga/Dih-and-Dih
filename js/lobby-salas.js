@@ -41,7 +41,7 @@
     juegos: {
       nombre: "Sala recreativa", lema: "Máquinas y juegos de habilidad. Minijuegos los junta todos.", grupos: [
         { titulo: "Juegos", enlaces: [["minijuegos.html", "Minijuegos", "arcade-ritmo"], ["ajedrez.html", "Ajedrez", "ajedrez"], ["arqueria.html", "Arquería", "diana"], ["ritmo.html", "Zarabanda", "arcade-ritmo"], ["parranda.html", "Parranda", "arcade-parranda"], ["sacrificio.html", "Hooey", "arcade-hooey"],
-          ["fractura.html", "La Fractura", "arcade-fractura"], ["duelo.html", "Duelo", "espadas", true], ["ostelar.html", "Ostelar", "trampilla", true], ["estocatta.html", "Estocatta", "arcade-estocatta", true]] }]
+          ["fractura.html", "La Fractura", "arcade-fractura"], ["duelo.html", "Duelo", "espadas", true], ["ostelar.html", "Ostelar", "trampilla", true], ["estocatta.html", "Estocatta", "arcade-estocatta"]] }]
     },
     naipes: {
       nombre: "Salón de naipes", lema: "Cartas, dados y apuestas.", grupos: [

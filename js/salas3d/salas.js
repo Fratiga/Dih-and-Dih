@@ -354,7 +354,7 @@ function juegos(c) {
   }
   // Las máquinas en fila contra la pared del fondo
   const filas = [["ritmo", 0x2a5a8a, "ritmo.html", "Zarabanda", "RITMO"], ["parranda", 0x8a2f5a, "parranda.html", "Parranda", "PARRANDA"], ["hooey", 0x8a3a22, "sacrificio.html", "Hooey", "HOOEY"], ["fractura", 0x4a4066, "fractura.html", "La Fractura", "FRACTURA"]];
-  if (c.admin) filas.push(["estocatta", 0x2a6a5a, "estocatta.html", "Estocatta (admin)", "ESTOCATTA"]);
+  filas.push(["estocatta", 0x2a6a5a, "estocatta.html", "Estocatta", "ESTOCATTA"]);
   const x0 = -(filas.length - 1) * 0.65;
   filas.forEach((f, i) => { const m = maquina(c, x0 + i * 1.3, ZF + 0.5, f[0], f[1], f[2], f[3], f[4]); m.scale.setScalar(1.12); });
   filas.forEach((f, i) => c.puntual([0x5fe0d2, 0xff7ac0, 0xffd84a, 0x8a7aff, 0x6fe08a][i], 3, 2.6, x0 + i * 1.3, 1.6, ZF + 1.4));

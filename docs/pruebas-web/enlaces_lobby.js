@@ -59,7 +59,7 @@ const sala = (clave) => new Set(MAPA[clave].grupos.flatMap(g => g.enlaces.map(e 
 ["cronologia.html", "lugares.html", "facciones.html", "personajes.html", "razas.html", "religion.html", "textos.html", "pergaminos.html", "armas.html", "objetos.html", "bestiario.html", "reglas.html", "economia.html", "estadisticas.html"].forEach(h => comprobar(`${h} está en la biblioteca`, sala("biblioteca").has(h)));
 
 comprobar("el tablero de las partidas es un objeto de la taberna", hrefsEscena.includes("tablero.html"));
-comprobar("Estocatta está en la sala recreativa y solo para el admin", MAPA.juegos.grupos.some(g => g.enlaces.some(e => e[0] === "estocatta.html" && e[3])));
+comprobar("Estocatta está en la sala recreativa y abierta a todos", MAPA.juegos.grupos.some(g => g.enlaces.some(e => e[0] === "estocatta.html" && !e[3])));
 comprobar("la cabina y el programa del Concurso están en el despacho", sala("despacho").has("concurso.html") && sala("despacho").has("concurso-programa.html"));
 comprobar("la biblioteca de los jugadores está en la Biblioteca", sala("biblioteca").has("biblioteca.html"));
 console.log("== Cada página en una sola sala");

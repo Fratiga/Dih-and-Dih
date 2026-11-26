@@ -152,7 +152,7 @@ window.LobbySalasArte = (function () {
     // Máquinas en la pared del fondo
     const filas = [["ritmo.html", "Zarabanda", "ritmo"], ["parranda.html", "Parranda", "parranda"], ["sacrificio.html", "Hooey", "hooey"], ["fractura.html", "La Fractura", "fractura"]];
     const x0 = 330;
-    if (admin) filas.push(["estocatta.html", "Estocatta", "estocatta", true]);
+    filas.push(["estocatta.html", "Estocatta", "estocatta"]);
     filas.forEach((f, i) => { s += enlace(f[0], f[1], maquina(x0 + i * 112, 276, f[2]), [x0 + i * 112 + 44, 420], f[3]); });
     // Las Veintiuna Velas (abajo a la izquierda): la mesa de fieltro con Cera, la crupier de cera, y sus velas
     s += enlace("veintiuna.html", "Las Veintiuna Velas",

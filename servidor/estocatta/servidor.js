@@ -12,7 +12,7 @@
      SUPABASE_URL             por defecto el proyecto del compendio
      SUPABASE_ANON_KEY        clave pública para validar tokens
      SUPABASE_SERVICE_KEY     clave de servicio: solo para anotar resultados
-     SOLO_ADMIN               "1" (por defecto) solo deja entrar a admins; "0" abre a todos
+     SOLO_ADMIN               "1" solo deja entrar a admins (para pruebas); por defecto entra cualquier cuenta
      ORIGENES                 orígenes permitidos separados por comas
    Los resultados se anotan una sola vez por partida (ver docs/estocatta.sql). */
 
@@ -40,7 +40,7 @@ const POR_DEFECTO = {
 function crearVerificadorSupabase(env) {
   const url = env.SUPABASE_URL || "https://ilicqboqelrjuvtslaxd.supabase.co";
   const clave = env.SUPABASE_ANON_KEY || "sb_publishable_c9kPJ1tWbzCSiqVvmBJ0og_rUW9uLee";
-  const soloAdmin = env.SOLO_ADMIN !== "0";
+  const soloAdmin = env.SOLO_ADMIN === "1";
   async function pedir(ruta, token, opciones) {
     return fetch(url + ruta, Object.assign({ headers: { apikey: clave, Authorization: "Bearer " + token, "Content-Type": "application/json" } }, opciones || {}));
   }
@@ -456,6 +456,6 @@ module.exports = { crearServidor, POR_DEFECTO };
 if (require.main === module) {
   const srv = crearServidor({ log: m => console.log(new Date().toISOString(), m) });
   const puerto = Number(process.env.PORT) || 8787;
-  srv.escuchar(puerto).then(p => console.log("Estocatta escuchando en el puerto " + p + (process.env.SOLO_ADMIN === "0" ? "" : " (solo admin)")));
+  srv.escuchar(puerto).then(p => console.log("Estocatta escuchando en el puerto " + p + (process.env.SOLO_ADMIN === "1" ? " (solo admin)" : "")));
   process.on("SIGTERM", () => { srv.cerrar().then(() => process.exit(0)); });
 }

@@ -1083,9 +1083,16 @@
   }));
   document.querySelectorAll("[data-guardia]").forEach(b => b.addEventListener("click", () => { SON.elige(); estado.escuela.guardia = Number(b.dataset.guardia); ponerOpcionesEscuela(); }));
   boton("estRestablecer", () => { teclasPropias = null; try { localStorage.removeItem(CLAVE_TECLAS); } catch (e) { /* nada */ } pintarTeclas(); });
-  boton("estPantalla", () => {
+  function pantallaCompleta() {
     const el = $("estJuego");
-    if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (el.requestFullscreen) el.requestFullscreen().catch(() => banda("El navegador no dejó pasar a pantalla completa.", 3000));
+  }
+  boton("estPantalla", pantallaCompleta);
+  boton("estPantallaPortada", pantallaCompleta);
+  document.addEventListener("fullscreenchange", () => {
+    $("estPantalla").textContent = document.fullscreenElement ? "Salir de pantalla completa" : "Pantalla completa";
+    setTimeout(ajustar, 50);
   });
 
   /* El maniquí tiembla cuando lo golpean; la escuela comenta lo que pasa. */

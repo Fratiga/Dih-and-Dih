@@ -11,7 +11,7 @@
 ============================================================================= */
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.min.js";
 import { crearTexturas } from "./texturas.js?v=20271271";
-import { SALAS } from "./salas.js?v=20271271";
+import { SALAS } from "./salas.js?v=20271272";
 
 export function montarSalas3D(caja, opciones = {}) {
   const base = opciones.base || "";

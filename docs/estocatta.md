@@ -1,6 +1,6 @@
 # Estocatta
 
-Duelo de esgrima en tiempo real inspirado en Nidhogg. Dos esgrimistas en una pista horizontal; gana quien cruza la puerta del rival. Un golpe limpio mata, el caído reaparece delante de quien lo mató y la partida sigue. Está **en pruebas**: solo la ve el admin (`js/oculto.js`), con tarjeta en Minijuegos › En pruebas y puerta en la Sala recreativa de la taberna.
+Duelo de esgrima en tiempo real inspirado en Nidhogg. Dos esgrimistas en una pista horizontal; gana quien cruza la puerta del rival. Un golpe limpio mata, el caído reaparece delante de quien lo mató y la partida sigue. Es **pública** desde el 26-nov-2026: tarjeta en Minijuegos y máquina en la Sala recreativa de la taberna. El modo en línea necesita el servidor desplegado.
 
 ## Archivos
 
@@ -70,7 +70,7 @@ Abre `estocatta.html?servidor=ws://localhost:8787` en dos pestañas. En la conso
    - Plan: Free
 3. **Variables de entorno:**
    - `SUPABASE_SERVICE_KEY`: la clave `service_role` de Supabase. Solo vive en Render; no va nunca al repositorio.
-   - `SOLO_ADMIN`: `1` mientras esté en pruebas; `0` para abrirlo a todos.
+   - `SOLO_ADMIN` (opcional): `1` para dejar entrar solo al admin; sin ella entra cualquier cuenta.
    - `ORIGENES` (opcional): por defecto `https://fratiga.github.io`.
 4. **Base de datos:** pegar `docs/estocatta.sql` en el editor SQL de Supabase.
 5. **Conectar la página:** poner la dirección del servicio en `js/estocatta-config.js` con `wss://`, por ejemplo `wss://estocatta.onrender.com`, y subir la versión de caché.
