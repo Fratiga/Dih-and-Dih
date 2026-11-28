@@ -833,7 +833,7 @@ window.PERSONAJES = [
     title: "Torvrena",
     category: "Personajes",
     tags: ["npc", "hombre-bestia", "cazadora-de-monstruos"],
-    summary: "Cazadora de monstruos hombre bestia gato, contratada por los protagonistas antes de partir hacia la Espesura.",
+    summary: "Cazadora de monstruos hombre bestia gato, elegida por los protagonistas entre tres aventureros que les ofreció la corona antes de partir hacia la Espesura.",
     retrato: "",
     titulo: "Cazadora de Monstruos",
     raza: "Hombre bestia (Gato)",
@@ -846,9 +846,10 @@ window.PERSONAJES = [
     relacionesConocidas: [],
     content: `
       <p>Una cazadora de monstruos hombre bestia gato, cubierta de cicatrices y
-      de pocas palabras. Los protagonistas la contrataron antes de partir hacia
-      el norte, y se sumó a la marcha apenas salieron de Kigan sin necesitar
-      mucha presentación. Para eso ya estaba pagada.</p>
+      de pocas palabras. La corona puso a tres aventureros a disposición de los
+      protagonistas antes de partir hacia el norte, y ellos la eligieron a ella.
+      Se sumó a la marcha apenas salieron de Kigan sin necesitar mucha
+      presentación. Para eso ya estaba pagada.</p>
     `
   },
   {
@@ -1187,7 +1188,7 @@ window.PERSONAJES = [
     title: "Darian Veyr",
     category: "Personajes",
     tags: ["npc", "guerrero"],
-    summary: "El Indigerible. Guerrero de élite, único superviviente de una expedición de treinta y dos soldados tragada por la bestia de la mansión; guía a los protagonistas a cambio de que entreguen su cuaderno a las familias de los caídos.",
+    summary: "El Indigerible. Guerrero de élite, único superviviente de una expedición de treinta y dos soldados tragada por la bestia de la mansión. Guió a los protagonistas dentro de la bestia y murió en la Grieta, peleando contra un elemental menor de oscuridad.",
     retrato: "",
     titulo: "El Indigerible",
     raza: "Humano",
@@ -1197,27 +1198,42 @@ window.PERSONAJES = [
     faccion: "",
     primeraAparicion: "El Vientre de la Bestia",
     lado: ["B"],
-    relacionesConocidas: [],
+    relacionesConocidas: [
+      { id: "ryn", nota: "Lo convenció de salir de la bestia con una excusa" },
+      { id: "clef", nota: "Lo reconoció como sujeto de pruebas y quiso que se lo devolvieran" },
+      { id: "dexter", nota: "Murió peleando a su lado contra el elemental de la Grieta" },
+      { id: "eledar-b", nota: "Le dedicó unas palabras y puso su nombre a su mazo de cartas" }
+    ],
     content: `
       <p>Guerrero de élite enviado al dominio de carne con una expedición de
-      treinta y dos soldados. Es el único que sigue vivo. Doce años dentro le
+      treinta y dos soldados. Fue el único que sobrevivió. Doce años dentro le
       enseñaron a reconocer los latidos de las paredes y los corredores que
       cambian de lugar con cada contracción. El dominio intentó asimilarlo
-      tantas veces que ya no está del todo separado de él. Uno de sus pulmones
-      pertenece a la criatura y una raíz nerviosa le atraviesa la columna.
-      Sigue siendo humano por pura obstinación.</p>
-      <p>Es enorme, de unos cincuenta años, con armadura de placas óseas y
-      cuero de las paredes. Empuña Desgarro, un mandoble tallado de una
-      costilla gigante que intenta regenerarse y que debe afilar arrancándole
-      los dientes nuevos. Práctico y desconfiado y. Al conocer a los protagonistas 
-      cree que son otra imitación del dominio.</p>
-      <p>Sabe que el dominio es un único organismo y que su salida es la Herida
-      Original, cerrada como una cicatriz. Nunca pudo cruzarla porque abrirla contrae todo el organismo.
-      Necesita que otros mantengan abiertos varios conductos mientras él corta
-      el núcleo. Fuera, su cuerpo rechazará los órganos del dominio y se irá
-      debilitando hora tras hora. Aun así quiere salir para entregar a las
-      familias el cuaderno con los nombres y los últimos mensajes de los treinta
-      y un compañeros que perdió.</p>
+      tantas veces que ya no estaba del todo separado de él. Uno de sus pulmones
+      pertenecía a la criatura y una raíz nerviosa le atravesaba la columna.
+      Seguía siendo humano por pura obstinación.</p>
+      <p>Era enorme, de unos cincuenta años, con armadura de placas óseas y
+      cuero de las paredes. Empuñaba Desgarro, un mandoble tallado de una
+      costilla gigante que intentaba regenerarse y que debía afilar arrancándole
+      los dientes nuevos. Práctico y desconfiado, al conocer a los protagonistas
+      creyó que eran otra imitación del dominio.</p>
+      <p>Sabía que el dominio era un único organismo y que su salida era la Herida
+      Original, cerrada como una cicatriz. Nunca pudo cruzarla porque abrirla
+      contrae todo el organismo. Necesitaba que otros mantuvieran abiertos
+      varios conductos mientras él cortaba el núcleo. Fuera, su cuerpo rechazaría
+      los órganos del dominio y se iría debilitando hora tras hora. Aun así
+      quería salir para entregar a las familias el cuaderno con los nombres y los
+      últimos mensajes de los treinta y un compañeros que perdió.</p>
+      <p>Cuando el grupo estaba por dejar la bestia se negó a participar en la
+      salida. Llevaba doce años dentro y la idea de marcharse lo aterraba. Ryn lo
+      convenció con una excusa, diciéndole que su capitán lo estaba llamando, y
+      se unió al grupo. Clef lo reconoció después como un sujeto de pruebas que
+      había asimilado parte de La Carne.</p>
+      <p>En la pelea contra Harrow perdió un brazo y buena parte de su voluntad.
+      Siguió con los protagonistas hasta la Grieta, donde se vio a sí mismo de
+      joven. Murió allí, peleando contra el elemental menor de oscuridad.
+      Eledar lo honró con unas palabras y le puso su nombre a su mazo de
+      cartas.</p>
     `
   },
   {
@@ -1383,6 +1399,61 @@ window.PERSONAJES = [
       pero Clef canceló el ataque al acordar con el grupo que los dejaba ir a
       cambio de que le trajeran a Darian de vuelta después. La promesa era
       falsa.</p>
+    `
+  },
+  {
+    id: "dexter",
+    title: "Dexter",
+    category: "Personajes",
+    tags: ["npc", "científico", "laboratorio"],
+    summary: "Líder del Instituto Vesalio. Científico raro y torpe en el trato que investiga el origen de las emociones, en especial el amor, con niños que el Nigredo transformó en mutantes y a los que considera hijos suyos.",
+    retrato: "",
+    titulo: "Líder del Instituto Vesalio",
+    raza: "",
+    tipo: "NPC",
+    lugarOrigen: "",
+    ocupacion: "Director del Instituto Vesalio",
+    faccion: "fundacion-dexter",
+    primeraAparicion: "La Mesa de Dexter",
+    lado: ["B"],
+    relacionesConocidas: [
+      { id: "laia", nota: "Lo ató a una mesa para estudiarlo y le extirpó el dedo meñique" },
+      { id: "torvrena", nota: "La tumbó de un golpe y después la reparó cuando el elemental la partió a la mitad" },
+      { id: "eledar-b", nota: "Le leyó el tarot en el domo" },
+      { id: "darian", nota: "Murió a su lado peleando contra el elemental de la Grieta" },
+      { id: "coronel-tobi", nota: "Uno de los niños criados en su laboratorio" }
+    ],
+    content: `
+      <p>Dirige el laboratorio del Instituto Vesalio por el que los protagonistas
+      tuvieron que abrirse paso. Es un científico raro y muy torpe en el trato.
+      Desde niño está acostumbrado a que los demás lo aparten, y se le da mal
+      agradarle a la gente. Mira a quien tiene delante como a un espécimen y lo
+      hace sin malicia aparente.</p>
+      <p>Su investigación busca el origen de las emociones. Sostiene que cada una
+      echa raíces en un elemento natural que la alimenta y la potencia, el fuego
+      con la ira, el agua con la calma, y así hasta el amor. Según sus mediciones,
+      el amor responde por igual a la luz y a la oscuridad. Los niños del
+      laboratorio, tan cariñosos como modificados por el Nigredo, la forma más
+      pura de la oscuridad, son mutantes por culpa de esa investigación. Los
+      considera sus hijos y los quiere de verdad. Dice que todo el estudio sirve
+      para encontrar el origen.</p>
+      <p>Trabaja a base de pruebas. A Laia lo ató a una mesa, lo obligó a tomar una
+      forma básica de sí mismo y le extirpó el dedo meñique para estudiar su
+      tejido. Cuando los protagonistas irrumpieron en su oficina, pasó a las pruebas
+      emocionales. Tumbó a Torvrena delante de Laia y observó su reacción. Con eso
+      tuvo lo que necesitaba, así que lanzó el dedo al reactor y activó el mecanismo
+      gigante del laboratorio. Del reactor salió un orbe negro y de este un elemental
+      menor de oscuridad.</p>
+      <p>Alarmado, convenció a los protagonistas de accionar el mecanismo otra vez,
+      y este los llevó a todos a la undécima dimensión, a la que llama la Grieta.
+      Ahí levantó un domo estable, reparó a Torvrena cuando el elemental la partió
+      a la mitad y dio el golpe final a la criatura. De su cadáver sacó la
+      respuesta que buscaba. No era la que esperaba, y volvió taciturno.</p>
+      <p>Su historia personal sigue a medio contar. Contó que solo un amigo y otra
+      persona no lo apartaron nunca, y que a esa persona decidió borrarla de su
+      cabeza. El dolor siguió, sin que supiera de dónde venía, y de ahí nació la
+      investigación. Fue su amigo quien le dijo que ese dolor era amor. En la
+      Grieta vio una silueta que no supo reconocer.</p>
     `
   }
 ];

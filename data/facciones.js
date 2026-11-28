@@ -299,7 +299,7 @@ window.FACCIONES = [
     tipo: "Investigación",
     region: "Brurland",
     ideologia: "",
-    miembrosConocidos: ["coronel-tobi", "baltasar-sorel", "elias-morcant", "nico", "clef"],
+    miembrosConocidos: ["dexter", "coronel-tobi", "baltasar-sorel", "elias-morcant", "nico", "clef"],
     relaciones: [],
     content: `
       <p>Una institución médica dirigida por Dexter y financiada por Brurland. Oficialmente investiga
