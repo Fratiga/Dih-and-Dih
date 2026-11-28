@@ -613,6 +613,264 @@ window.CRONOLOGIA_B = [
       <p>El grupo intentó pasar sin que lo notaran. No funcionó. Uno de los golpes lanzó
       al chico de piel roja contra Eledar, y al caer se dio cuenta de que estaban ahí.
       Otra pelea empezó.</p>
+
+      <p>La pelea se complicó enseguida. El "Silenciador" (Niño autista para los amigos) volvió a aparecer entre los
+      chicos del laboratorio y, casi al mismo tiempo, una criatura gigante se descolgó
+      de los ductos del techo y cayó en medio del basurero. Lo que siguió fue un
+      combate descomunal, con golpes que llegaban de todas partes. El grupo logró
+      salir de ahí por muy poco.</p>
+
+      <h4>La puerta</h4>
+
+      <p>Lo más difícil de la huida resultó ser una puerta. Los primeros intentos de
+      abrirla fueron a golpes, y los golpes dañaron el mecanismo, de modo que ya no
+      había forma de accionarlo como se debía. Torvrena tuvo que abrirla a la fuerza.
+      La mantuvo así, sosteniéndola con todo el cuerpo, mientras los demás pasaban uno
+      a uno hacia el otro lado.</p>
+    `
+  },
+  {
+    id: "capitulo-13",
+    orden: 13,
+    numero: "Capítulo XIII",
+    title: "Las Llaves",
+    fecha: "Frente a la oficina de Dexter",
+    content: `
+      <p>Siguieron hasta la entrada de la oficina de Dexter y la encontraron cerrada.
+      Les faltaba la llave. Buscándola dieron con una habitación donde trabajaban los
+      tres científicos que ya habían visto antes, Baltasar Sorel, Elías Morcant y Nico,
+      sin sospechar que tenían visita.</p>
+
+      <p>Laia y Ryn unieron sus habilidades. Entraron sin hacer ruido, tomaron lo que
+      parecían ser las llaves de acceso del lugar y salieron antes de que ninguno de
+      los tres se diera cuenta. No hubo pelea. Con las llaves encima, el grupo sintió
+      que por fin estaba un paso más cerca de irse.</p>
+
+      <h4>El descanso</h4>
+
+      <p>Decidieron descansar en el sitio que habían encontrado antes, cerca de la
+      entrada de la oficina. Hablaron un buen rato. En algún momento Torvrena le contó
+      a Cassius que desde niña soñaba con entrar a los Hijos del Acero y que aquel
+      trabajo era para ella un escalón, nada más.</p>
+
+      <p>La corona había puesto a tres aventureros a disposición de los protagonistas,
+      y ellos habían elegido a Torvrena. Lo que no sabían era lo que la corona les
+      había ofrecido. Una suma bastante alta, que podría cobrar al regresar.
+      Si el grupo moría, también la cobraría, siempre que trajera pruebas de sus
+      muertes. Lo contó con total calma. Dijo que de verdad no le importaba si vivían
+      o no. No tenía planes de matarlos, pero lo que la movía era cazar un par de
+      criaturas dracónicas que le valieran un puesto entre los Hijos del Acero.</p>
+
+      <p>A los chicos les cayó mal, y a Laia más que a nadie. Cassius le había salvado
+      la vida varias veces, y esa respuesta les parecía injusta. Cassius no se lo tomó
+      como algo personal. Conocía mejor el rubro y sabía cómo funcionaban esos
+      contratos. Le dijo a Torvrena que, aunque ese fuera el caso, no se arrepentía y
+      que lo haría de nuevo. Ella puso cara de disgusto y siguió fumando.</p>
+
+      <p>El resto conversó un poco más, socializó otro rato y se fue a dormir. Laia se
+      acostó muy molesto.</p>
+
+      <p>Laia desapareció esa noche.</p>
+    `
+  },
+  {
+    id: "capitulo-14",
+    orden: 14,
+    numero: "Capítulo XIV",
+    title: "La Mesa de Dexter",
+    fecha: "La noche en que Laia desapareció",
+    content: `
+      <p>Laia despertó atado a una mesa. Pasó unos momentos horribles sin entender
+      dónde estaba, hasta que se dio cuenta de que no estaba solo.</p>
+
+      <h4>El interrogatorio</h4>
+
+      <p>Dexter se acercó con total naturalidad. Lo saludó, le tomó medidas y empezó a
+      hacerle preguntas sin esperar a que respondiera. A Laia le desagradó lo invasivo
+      de todo aquello y se negó a contestar. Dexter lo miraba como se mira a un
+      espécimen, eso era lo que más lo incomodaba.</p>
+
+      <h4>La teoría de Dexter</h4>
+
+      <p>Para explicarle qué hacía ahí, Dexter se puso a hablar de su laboratorio y de
+      sus investigaciones. Buscaba el origen de una emocion en especifico. Sostenía que ninguna
+      flota suelta en la mente. Cada una echa raíces en un elemento natural, que la
+      alimenta y la potencia. La ira se arraiga en el fuego. La calma, en el agua. Y
+      así con todas las demás, hasta llegar a la más extraña de la lista, el amor.</p>
+
+      <p>El amor era la excepción. Según Dexter, se anclaba por igual a la luz y a la
+      oscuridad, y crecía con ambas. Eso lo volvía la más virtuosa de las emociones y
+      la más difícil de medir.</p>
+
+      <p>Con esa teoría, lo que el grupo había visto hasta ahora cobraba sentido. Los
+      niños del laboratorio eran cariñosos de una manera casi desconcertante, y todos
+      habían sido transformados por el Nigredo, la forma más pura de la oscuridad. Eran
+      mutantes por culpa de la investigación de Dexter sobre el amor. Él los
+      consideraba sus hijos y los quería de verdad. Decía que todo el estudio servía
+      para encontrar el origen.</p>
+
+      <p>Las razones le resbalaron a Laia. Lo único que consiguieron fue reforzar su
+      convicción de que Dexter era un tipo raro que merecía morir por lo que les había
+      hecho a esos niños.</p>
+
+      <h4>Las pruebas físicas</h4>
+
+      <p>Dexter intentó acercarse a Laia conversando, pero se le daba muy mal agradarle
+      a la gente y esa noche no fue la excepción. Al ver que la charla no llevaba a
+      nada, pasó a las pruebas físicas.</p>
+
+      <p>Obligó a Laia a adoptar una forma básica de sí mismo y lo mantuvo así. Mientras
+      tanto le preguntaba por qué tenía la apariencia que tenía y por qué había vivido
+      como había vivido, una pregunta detrás de otra, hasta dejarlo casi sin
+      reaccionar. El punto de quiebre llegó cuando Dexter quiso estudiar su tejido y le
+      extirpó el dedo meñique.</p>
+
+      <p>Laia gritó.</p>
+
+      <h4>La oficina</h4>
+
+      <p>El grito llegó hasta el resto del grupo, que irrumpió en la oficina de Dexter
+      sin pensarlo dos veces. Dexter no pareció sorprendido. Comentó que habían
+      encontrado la llave que él les había dejado y se preparó para recibirlos.</p>
+
+      <p>Torvrena fue la primera en lanzarse sobre él para sacar a Laia de la mesa.
+      Dexter decidido pasar a las pruebas emocionales. Atacó a los
+      protagonistas con cuidado de no herir a Laia, y mientras tanto los niños del
+      laboratorio fueron cerrando un cerco alrededor de los demás. La situación empezó
+      a verse complicada.</p>
+
+      <p>Tan complicada que Dexter llegó a interponerse en un ataque que uno de sus
+      propios niños dirigía directo a Laia. Después tumbó a Torvrena de un golpe. Con
+      ella abatida en el suelo, se volvió hacia Laia y le preguntó qué sentía al
+      respecto. Observó su reacción con atención, y con eso ya tuvo los datos que
+      necesitaba.</p>
+
+      <h4>El reactor</h4>
+
+      <p>Tomó el dedo de Laia, lo arrojó al reactor y activó el mecanismo gigante que
+      nadie había cuestionado desde que entraron.</p>
+
+      <p>Todo empezó a temblar. Del reactor emergió un orbe negro, y Dexter lo miró
+      convencido de que había funcionado. No le dio tiempo ni de pensar en cómo
+      limpiar su oficina de intrusos. Del orbe salió una criatura terriblemente
+      macabra y poderosa.</p>
+
+      <p>Dexter se alarmó. A costa de un par de golpes logró convencer a los
+      protagonistas de que volvieran a accionar el mecanismo. Este se cerró sobre sí
+      mismo y se los llevó a todos a un lugar desconocido.</p>
+    `
+  },
+  {
+    id: "capitulo-15",
+    orden: 15,
+    numero: "Capítulo XV",
+    title: "La Grieta",
+    fecha: "En la undécima dimensión",
+    content: `
+      <p>Dexter y un par de sus niños aparecieron junto a los protagonistas en un
+      lugar que parecía no obedecer ninguna regla. Todo ahí era irreal, incongruente,
+      caótico por naturaleza. Era como una dimensión rota, un fallo en la realidad.
+      Dexter lo llamaba la Grieta.</p>
+
+      <p>Les explicó que los seres como ellos habitaban tres dimensiones y que en ese
+      momento estaban en la undécima. Es un espacio invisible, inaccesible y
+      microscópico, donde vibran las cuerdas de las que está hecha toda la materia.
+      Cada forma de vibrar es un universo posible, y la undécima dimensión los
+      mantiene a todos unidos en una sola estructura. Esa estructura no estaba
+      preparada para recibir visitas y, con la presencia del grupo, empezaba a
+      fallar.</p>
+
+      <p>El problema, según Dexter, era la conciencia de los protagonistas. Sus mentes
+      sobrescribían el lugar y lo deformaban. En un espacio que no tiene forma propia,
+      el pensamiento se vuelve materia. Lo que más pesaba en la cabeza de cada uno
+      tomaba cuerpo frente a ellos, a veces como una imagen y a veces como algo bastante
+      más literal.</p>
+
+      <h4>Lo que vieron</h4>
+
+      <p>Dexter les recomendó vaciar la mente para evitar las apariciones. Surgieron
+      más apariciones. Pedirle a alguien que no piense en algo es pedirle que piense
+      en eso.</p>
+
+      <p>Torvrena había llegado inconsciente y no produjo nada. Laia se encontró
+      consigo mismo en su forma base, sin rasgos. Nunca se había visto así, y la
+      imagen lo dejó marcado. Eledar vio a su abuela. Ryn vio a Coach, y a Cassius se
+      le apareció su hija muerta. Darian se vio a sí mismo de joven. A Hooey no se le
+      apareció nada, para sorpresa de nadie.</p>
+
+      <p>Dexter, por su parte, vio una silueta que no supo reconocer. Entre todos esos
+      rostros surgió además un minotauro que nadie conocía.</p>
+
+      <h4>La zona estable</h4>
+
+      <p>Dexter detectó una zona más estable, donde podría levantar un espacio seguro.
+      Llegar hasta ahí fue una odisea. La Grieta no seguía ninguna lógica. Los
+      protagonistas se teletransportaban, cambiaban de lugar unos con otros, el
+      terreno se movía bajo sus pies y las cabezas se les sacudían con cada salto.</p>
+
+      <p>La mayoría logró cruzar. Aunque un niño pequeño se quedó atrás.</p>
+    `
+  },
+  {
+    id: "capitulo-16",
+    orden: 16,
+    numero: "Capítulo XVI",
+    title: "El Elemental de Oscuridad",
+    fecha: "En el domo de Dexter",
+    content: `
+      <p>Dexter logró levantar un domo donde la realidad volvía a comportarse. Dentro,
+      el grupo pudo recomponerse un poco. Se ocuparon de las heridas del cuerpo y
+      también de las otras, y se fueron consolando unos a otros por lo que cada quien
+      había visto en la zona anterior. Hubo un rato para los que ya no estaban.</p>
+
+      <p>Entonces Dexter explicó qué había salido del orbe. Era un elemental menor de
+      oscuridad. Su plan original había sido estudiarlo desde afuera, en aquel espacio
+      flexible, para obtener por fin la respuesta que buscaba. Nada había salido según
+      lo previsto, y en medio del desastre los demás lo habían ido dejando de lado.
+      Era un hombre raro y tan torpe en el trato que costaba aguantarlo. Eledar, que
+      ya le había leído el tarot a Cassius a petición de este, fue el único que se
+      animó a leérselo también a Dexter.</p>
+
+      <p>Dexter preguntó si por fin lograría dar por terminada su investigación y
+      encontrar la respuesta. Después comentó, sin darle importancia, que estaba
+      acostumbrado a que lo apartaran. Le pasaba desde la infancia, y nunca se le dio
+      bien hacer amigos. Solo dos personas habían sido distintas. Una era su único
+      amigo. La otra era alguien a quien él mismo había decidido borrar.</p>
+
+      <p>Esa persona era el origen de toda la investigación. La había sacado de su
+      cabeza por completo y el dolor seguía igual, solo que ya no sabía de dónde
+      venía. Su amigo le había sugerido que se trataba de amor. De ahí nació la idea
+      de estudiarlo.</p>
+
+      <p>Los protagonistas se sintieron incómodos y también un poco tristes por él.
+      Eledar le dijo que los secretos del amor no se podían estudiar sobre una mesa y
+      que tendría que vivirlos por su cuenta. Dexter contestó, contento, que justo por
+      eso estaba bien, porque en ese momento estaban haciendo trabajo de campo. Se
+      había perdido el sentido de lo que Eledar le dijo, y a los demás les quedó claro
+      otra vez que ese hombre no andaba bien de la cabeza.</p>
+
+      <p>Dexter agregó que el elemental guardaba las respuestas que buscaba y que
+      además era la llave para salir de ahí.</p>
+
+      <h4>La batalla</h4>
+
+      <p>Para alcanzarlo tuvieron que salir del domo y volver a la Grieta. La batalla
+      fue dura y trajo de vuelta las complicaciones espaciales de antes, con
+      teletransportes y cambios de lugar por todas partes. El elemental parecía haber
+      aprendido a controlar la Grieta hasta cierto punto. Se movía entre el caos y la
+      oscuridad con una soltura que los demás no tenían.</p>
+
+      <p>En un momento Torvrena recibió un daño brutal y la partieron a la mitad.
+      Dexter logró repararla. Darian no tuvo esa suerte y no sobrevivió.</p>
+
+      <p>El golpe final lo dio Dexter. Del cadáver sacó la respuesta que buscaba, y
+      desde ese mismo cuerpo tomo algo antes de devolverse al domo.</p>
+
+      <h4>Darian</h4>
+
+      <p>Dexter estaba taciturno. Dijo que la respuesta que había conseguido no era la
+      que esperaba. Eledar quiso honrar a Darian con unas palabras y le puso su
+      nombre a su mazo de cartas.</p>
     `
   }
 ];
